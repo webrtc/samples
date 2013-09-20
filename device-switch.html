@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Device Switching</title>
+<style>
+video {
+    border:5px solid black;
+    width:480px;
+    height:360px;
+}
+button {
+    font: 18px sans-serif;
+    padding: 8px;
+}
+</style>
+<script>
+
+// If the getSourceInfos call is not present, fake it.
+var fakeSources = [
+  {"id": "zxyfyz", "kind": "audio", "label": "Default audio"},
+  {"id": "xfesaa", "kind": "video", "label": "Default video",
+   "facing": "front"},
+  {"id": "blwe4e", "kind": "video", "label": "Alternate video",
+   "facing": "rear"}
+];
+
+var fakeSourcesNoLabel = [
+  {"id": "zxyfyz", "kind": "audio"},
+  {"id": "xfesaa", "kind": "video", "facing": "front"},
+  {"id": "blwe4e", "kind": "video", "facing": "rear"}
+];
+
+var isAuthorized = false;
+
+// Make sure there's a MediaStreamTrack object to manipulate.
+if (typeof(MediaStreamTrack) === 'undefined') {
+  MediaStreamTrack = new Object;
+}
+
+if (!MediaStreamTrack.getSourceInfos) {
+  MediaStreamTrack.getSourceInfos = function() {
+    if (!isAuthorized) {
+      return fakeSourcesNoLabel;
+    }
+    return fakeSources;
+  };
+}
+// End fake getSourceInfos implementation.
+
+var mainStream;
+var choices;
+
+</script>
+</head>
+<body>
+This demo shows device switching via the (proposed) device selection API.
+The big frame shows the currently playing stream; the grid below shows
+available devices, with a button for choosing a device.
+<p>
+<video id="vid" autoplay="true"></video>
+<br>
+<button id="btn" onclick="start()">Start</button>
+<div id="choices">
+</div>
+<script>
+function failure() {
+  console.log("Failure");
+  alert("Failure!")
+}
+
+function start() {
+  navigator.webkitGetUserMedia({video:true}, gotStream, failure);
+  btn.disabled = true;
+}
+
+function gotStream(stream) {
+  mainStream = stream;
+  video.src = webkitURL.createObjectURL(stream);
+  // Telling fake that permission is granted:
+  isAuthorized = true;
+  getChoices();
+}
+
+function switchTo(id) {
+  console.log('Switching to camera with id ' + id);
+  // Note: Constraint should be mandatory. Setting it to optional here
+  // so that call won't fail when the constraint is not known.
+  navigator.webkitGetUserMedia({'audio':false,
+                                'video': {'optional': [{'sourceId': id }]}},
+      switchedTo, failure);
+}
+
+function switchedTo(stream) {
+  console.log("Switching main video feed to new track");
+  try {
+    mainStream.removeTrack(mainStream.getVideoTracks()[0]);
+    mainStream.addTrack(stream.getVideoTracks()[0]);
+  } catch(e) {
+    console.log('Failure to switch tracks: ' + e);
+  }
+}
+
+function getChoices() {
+  choices = MediaStreamTrack.getSourceInfos();
+  var choiceTable = document.getElementById("choices");
+  var choicelist = "";
+  choicelist += "<table border>"
+  for (i = 0; i < choices.length; i++) {
+    if (choices[i].kind === 'video') {
+      // Create a table entry for the video, with a select button.
+      // There is a cleaner way to do this in JS. Apologies.
+      choicelist += "<tr><td>";
+      choicelist += choices[i].id;
+      choicelist += "<td>";
+      choicelist += choices[i].label;
+      choicelist += '<td><button onclick="switchTo(choices[';
+      choicelist += i;
+      choicelist += '].id)">Choose</button>';
+      choicelist += "<td>"
+      if (choices[i].id === videoIdNowPlaying()) {
+        choicelist += "Playing";
+      }
+    }
+  }
+  choicelist += "</table>"
+  choiceTable.innerHTML = choicelist;
+}
+
+// Returns the ID of the source of the currently playing video track.
+// This function always returns a string, and logs why the right string
+// is not returned if there is a problem.
+function videoIdNowPlaying() {
+  if (!mainStream) {
+    console.log('No main stream');
+    return 'No main stream';
+  }
+  if (mainStream.getVideoTracks().length == 0) {
+    console.log('No video tracks');
+    return 'No video tracks';
+  }
+  if (!mainStream.getVideoTracks()[0].sourceId) {
+    console.log('No source ID');
+    return 'No source id';
+  }
+  return mainStream.videoTracks()[0].sourceId;
+}
+
+video = document.getElementById("vid");
+getChoices();
+
+</script>
+</body>
+</html>
+

@@ -3,7 +3,9 @@ webrtc
 
 This repository is for WebRTC demos.
 
-Many of these examples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set. 
+Many of these examples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
+
+All of these examples use adapter.js, a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/interop](http://www.webrtc.org/interop).
 
 For more information about WebRTC, we maintain a list of [WebRTC Resources](https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit).
 
