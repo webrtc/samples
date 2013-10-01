@@ -10,58 +10,99 @@ button {
 textarea {
   font-family: monospace;
   margin: 2px;
-  width: 480px;
-  height: 640px;
+  height: 400px;
+  width: 300px;
 }
-#left { position: absolute; left: 0; top: 0; width: 50%; }
-#right { position: absolute; right: 0; top: 0; width: 50%; }
- 
+div#send {
+  float: left;
+  margin-right: 20px;
+}
+div#receive {
+}
+div#sendreceive {
+  margin: 0 0 20px 0;
+}
+h2 {
+  margin: 0 0 10px 0;
+}
 </style>
 </head>
 <body>
-<div id="left">
-<br>
+<div id="sendreceive">
+<div id="send">
 <h2>Send data</h2>
-<textarea id="dataChannelSend" rows="5" cols="15" disabled="true">
-</textarea><br>
-<button id="startButton" onclick="createConnection()">Start</button>
-<button id="sendButton" onclick="sendData()">Send Data</button>
-<button id="closeButton" onclick="closeDataChannels()">Stop Send Data
-</button>
-<br>
+<textarea id="dataChannelSendId" rows="5" cols="15" disabled="true"
+          placeholder="Press Start, enter some text, then press Send Data.">
+</textarea>
 </div>
-<div id="right">
-<br>
+<div id="receive">
 <h2>Received Data</h2>
-<textarea id="dataChannelReceive" rows="5" cols="15" disabled="true">
-</textarea><br>
+<textarea id="dataChannelReceiveId" rows="5" cols="15" disabled="true">
+</textarea>
 </div>
+</div>
+<form>
+<p>Choose SCTP or RTP for transmitting data.</p>
+<input type="radio" id="useSctp" name="transportbtn" checked/>
+<label for="useSctp">Use SCTP</label>
+<input type="radio" id="useRtp" name="transportbtn"/>
+<label for="useRtp">Use RTP</label>
+</form>
+<button id="startButton">Start</button>
+<button id="sendButton" disabled>Send Data</button>
+<button id="closeButton" disabled>Stop</button>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src='../../base/adapter.js'></script>
 <script>
-var pc1, pc2, sendChannel, receiveChannel;
-startButton.disabled = false;
-sendButton.disabled = true;
-closeButton.disabled = true;
+var pc1, pc2, sendChannel, receiveChannel, pcConstraint, dataConstraint;
+var dataChannelSend = document.getElementById("dataChannelSendId");
+var dataChannelReceive = document.getElementById("dataChannelReceiveId");
+var sctp_select = document.getElementById('useSctp');
+var rtp_select = document.getElementById('useRtp');
+var startButton = document.querySelector('button#startButton');
+var sendButton = document.querySelector('button#sendButton');
+var closeButton = document.querySelector('button#closeButton');
+startButton.onclick = createConnection;
+sendButton.onclick = sendData;
+closeButton.onclick = closeDataChannels;
+rtp_select.onclick = enableStartButton;
+sctp_select.onclick = enableStartButton;
 
-function trace(text) {
-  // This function is used for logging.
-  if (text[text.length - 1] == '\n') {
-    text = text.substring(0, text.length - 1);
-  }
-  console.log((performance.now() / 1000).toFixed(3) + ": " + text);
+function enableStartButton() {
+  startButton.disabled = false;
 }
- 
+
 function createConnection() {
+  dataChannelSendId.placeholder = "";
   var servers = null;
-  pc1 = new webkitRTCPeerConnection(servers,
-                                    {optional: [{RtpDataChannels: true}]});
+  pcConstraint = {optional: [{RtpDataChannels: true}]};
+  dataConstraint = {reliable: false};
+  if (sctp_select.checked &&
+      webrtcDetectedBrowser === 'chrome' &&
+      webrtcDetectedVersion >= 31) {
+    // SCTP is supported from Chrome M31. In current canary builds,
+    // you might need to enable it through flag #enable-sctp-data-channels.
+    // Use SCTP with reliable set to true.
+    pcConstraint = {optional: [{DtlsSrtpKeyAgreement: true}]};
+    dataConstraint = {reliable: true};
+    trace('Using SCTP based Data Channels');
+  } else {
+    if (!rtp_select.checked) {
+      // Use rtp data channels for chrome versions older than M31.
+      trace('Using RTP based Data Channels,' +
+            'as you are on an older version than M31.');
+      alert('Reverting to RTP based data channels,' +
+            'as you are on an older version than M31.');
+      rtp_select.checked = true;
+    }
+  }
+  pc1 = new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object pc1');
   
   try {
-    // Reliable Data Channels not yet supported in Chrome
     // Data Channel api supported from Chrome M25. 
-    // You need to start chrome with  --enable-data-channels flag.
-    sendChannel = pc1.createDataChannel("sendDataChannel", 
-                                         {reliable: false});
+    // You might need to start chrome with  --enable-data-channels flag.
+    sendChannel = pc1.createDataChannel("sendDataChannel", dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
@@ -72,8 +113,7 @@ function createConnection() {
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
   
-  pc2 = new webkitRTCPeerConnection(servers, 
-                                    {optional: [{RtpDataChannels: true}]});
+  pc2 = new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object pc2');
   
   pc2.onicecandidate = iceCallback2;
@@ -85,7 +125,7 @@ function createConnection() {
 }
  
 function sendData() {
-  var data = document.getElementById("dataChannelSend").value;
+  var data = dataChannelSend.value;
   sendChannel.send(data);
   trace('Sent Data: ' + data);
 }
@@ -104,9 +144,9 @@ function closeDataChannels() {
   startButton.disabled = false;
   sendButton.disabled = true;
   closeButton.disabled = true;
-  document.getElementById("dataChannelSend").value = "";
-  document.getElementById("dataChannelReceive").value = "";
-  document.getElementById("dataChannelSend").disabled = true;
+  dataChannelSend.value = "";
+  dataChannelReceive.value = "";
+  dataChannelSend.disabled = true;
 }
 
 function gotDescription1(desc) {
@@ -148,18 +188,19 @@ function receiveChannelCallback(event) {
 
 function onReceiveMessageCallback(event) {
   trace('Received Message');
-  document.getElementById("dataChannelReceive").value = event.data;
+  dataChannelReceive.value = event.data;
 }
 
 function onSendChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
   if (readyState == "open") {
-    document.getElementById("dataChannelSend").disabled = false;
+    dataChannelSend.disabled = false;
+    dataChannelSendId.focus();
     sendButton.disabled = false;
     closeButton.disabled = false;
   } else {
-    document.getElementById("dataChannelSend").disabled = true;
+    dataChannelSend.disabled = true;
     sendButton.disabled = true;
     closeButton.disabled = true;
   }
@@ -173,4 +214,3 @@ function onReceiveChannelStateChange() {
 </script>
 </body>
 </html>
-
