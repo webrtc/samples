@@ -11,8 +11,7 @@ For more information about WebRTC, we maintain a list of [WebRTC Resources](http
 The demos
 =========
 
-[Constraints and stats](http://googlechrome.github.io/webrtc/constraints-and-
-stats.html)
+[Constraints and stats](http://googlechrome.github.io/webrtc/constraints-and-stats.html)
 
 [Data channels](http://googlechrome.github.io/webrtc/dc1.html)
 
@@ -22,36 +21,26 @@ stats.html)
 
 [Face tracking](http://googlechrome.github.io/webrtc/face.html)
 
-[Simple getUserMedia()
-example](http://googlechrome.github.io/webrtc/gum1.html)
+[Simple getUserMedia() example](http://googlechrome.github.io/webrtc/gum1.html)
 
 [getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/gum2.html)
 
-[getUserMedia() + CSS filters +
-Canvas](http://googlechrome.github.io/webrtc/gum3.html)
+[getUserMedia() + CSS filters + Canvas](http://googlechrome.github.io/webrtc/gum3.html)
 
-[getUserMedia() with resolution
-constraints](http://googlechrome.github.io/webrtc/gum4.html)
+[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/gum4.html)
 
-[Audio-only getUserMedia() output to local audio
-element](http://googlechrome.github.io/webrtc/local-audio-rendering.html)
+[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/local-audio-rendering.html)
 
-[Multiple peer
-connections](http://googlechrome.github.io/webrtc/multiple.html)
+[Multiple peer connections](http://googlechrome.github.io/webrtc/multiple.html)
 
-[Audio-only peer
-connection](http://googlechrome.github.io/webrtc/pc1-audio.html)
+[Audio-only peer connection](http://googlechrome.github.io/webrtc/pc1-audio.html)
 
-[Streaming between two RTCPeerConnections on one
-page](http://googlechrome.github.io/webrtc/pc1.html)
+[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/pc1.html)
 
-[Accept incoming peer
-connection](http://googlechrome.github.io/webrtc/pranswer.html)
+[Accept incoming peer connection](http://googlechrome.github.io/webrtc/pranswer.html)
 
-[Peer connection
-rehydration](http://googlechrome.github.io/webrtc/rehydrate.html)
+[Peer connection rehydration](http://googlechrome.github.io/webrtc/rehydrate.html)
 
 [Peer connection states](http://googlechrome.github.io/webrtc/states.html)
 
-[Web Audio output as input to peer
-connection](http://googlechrome.github.io/webrtc/webaudio-and-webrtc.html)
+[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/webaudio-and-webrtc.html)
