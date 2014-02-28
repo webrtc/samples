@@ -13,6 +13,8 @@ The demos
 
 [Constraints and stats](http://googlechrome.github.io/webrtc/constraints-and-stats.html)
 
+[Display createOffer output](http://googlechrome.github.io/webrtc/create-offer.html)
+
 [Data channels](http://googlechrome.github.io/webrtc/dc1.html)
 
 [Switch devices](http://googlechrome.github.io/webrtc/device-switch.html)
@@ -29,13 +31,21 @@ The demos
 
 [getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/gum4.html)
 
+[ICE Candidate gathering](http://googlechrome.github.io/webrtc/ice-servers.html)
+
 [Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/local-audio-rendering.html)
 
-[Multiple peer connections](http://googlechrome.github.io/webrtc/multiple.html)
+[Local audio rendering + volume](http://googlechrome.github.io/webrtc/local-audio-volume.html)
+
+[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/pc1.html)
 
 [Audio-only peer connection](http://googlechrome.github.io/webrtc/pc1-audio.html)
 
-[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/pc1.html)
+[Multiple peer connections](http://googlechrome.github.io/webrtc/multiple.html)
+
+[Multiple relay](http://googlechrome.github.io/webrtc/multiple-relay.html)
+
+[Munge SDP](http://googlechrome.github.io/webrtc/pc1_sdp_munge.html)
 
 [Accept incoming peer connection](http://googlechrome.github.io/webrtc/pranswer.html)
 
