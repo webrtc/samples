@@ -31,46 +31,62 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>
-<a name="webrtc" class="anchor" href="#webrtc"><span class="octicon octicon-link"></span></a>WebRTC demos</h1>
+        <p>This is a repository for WebRTC demos.</p>
 
-<p>This repository is for WebRTC demos.</p>
+<p>Many of these examples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.</p>
 
-<p>Many of these examples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set. Some examples may be retained here, though no longer functional.</p>
-
-<p>All the examples that use <code>getUserMedia()</code> must be run from a server or from localhost. Calling <code>getUserMedia()</code> from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.</p>
+<p>NB: all the examples that use <code>getUserMedia()</code> must be run from a server. Calling <code>getUserMedia()</code> from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.</p>
 
 <p>All of these examples use <a href="https://github.com/GoogleChrome/webrtc/blob/master/adapter.js">adapter.js</a>, a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see <a href="http://www.webrtc.org/interop">webrtc.org/interop</a>.</p>
 
-<p>For more information about WebRTC, we maintain a list of <a href="https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit">WebRTC Resources</a>.</p>
+<p>For more information about WebRTC, we maintain a list of <a href="https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit">WebRTC Resources</a>. If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O <a href="http://www.youtube.com/watch?v=p2HzZkd2A40">WebRTC presentation</a>.</p>
 
-<p>If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O <a href="http://www.youtube.com/watch?v=p2HzZkd2A40">WebRTC presentation</a>.</p>
-
-<h3>The demos</h3>
+<h1>
+<a name="the-demos" class="anchor" href="#the-demos"><span class="octicon octicon-link"></span></a>The demos</h1>
 
 <p><a href="http://googlechrome.github.io/webrtc/constraints-and-stats.html">Constraints and stats</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/create-offer.html">Display createOffer output</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/dc1.html">Data channels</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/device-switch.html">Switch devices</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/dtmf1.html">DTMF</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/face.html">Face tracking</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/gum1.html">Simple getUserMedia() example</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/gum2.html">getUserMedia() + Canvas</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/gum3.html">getUserMedia() + CSS filters + Canvas</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/gum4.html">getUserMedia() with resolution constraints</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/ice-servers.html">ICE Candidate gathering</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/local-audio-rendering.html">Audio-only getUserMedia() output to local audio element</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/local-audio-volume.html">Local audio rendering + volume</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/pc1.html">Streaming between two RTCPeerConnections on one page</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/multiple.html">Multiple peer connections</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/pc1_sdp_munge.html">Munge SDP</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/multiple-relay.html">Multiple relay</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/pc1-audio.html">Audio-only peer connection</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/pranswer.html">Accept incoming peer connection</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/rehydrate.html">Peer connection rehydration</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/states.html">Peer connection states</a></p>
-<p><a href="http://googlechrome.github.io/webrtc/webaudio-and-webrtc.html">Web Audio output as input to peer connection</a></p>
 
+<p><a href="http://googlechrome.github.io/webrtc/create-offer.html">Display createOffer output</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/dc1.html">Data channels</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/device-switch.html">Switch devices</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/dtmf1.html">DTMF</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/face.html">Face tracking</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/gum1.html">Simple getUserMedia() example</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/gum2.html">getUserMedia() + Canvas</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/gum3.html">getUserMedia() + CSS filters + Canvas</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/gum4.html">getUserMedia() with resolution constraints</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/ice-servers.html">ICE Candidate gathering</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/local-audio-rendering.html">Audio-only getUserMedia() output to local audio element</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/local-audio-volume.html">Local audio rendering + volume</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/pc1.html">Streaming between two RTCPeerConnections on one page</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/pc1-audio.html">Audio-only peer connection</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/multiple.html">Multiple peer connections</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/multiple-relay.html">Multiple relay</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/pc1_sdp_munge.html">Munge SDP</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/pranswer.html">Accept incoming peer connection</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/rehydrate.html">Peer connection rehydration</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/states.html">Peer connection states</a></p>
+
+<p><a href="http://googlechrome.github.io/webrtc/webaudio-and-webrtc.html">Web Audio output as input to peer connection</a></p>
       </section>
     </div>
 
@@ -82,6 +98,16 @@
       </footer>
     </div>
 
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-48530561-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
 
 
   </body>
