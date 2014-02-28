@@ -2,6 +2,8 @@
 <html>
 <head>
 <title>getUserMedia Demo 1</title>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src="../../base/adapter.js"></script>
 <style>
 video {
     border:5px solid black;
@@ -21,11 +23,11 @@ button {
 <script>
 video = document.getElementById("vid");
 function start() {
-  navigator.webkitGetUserMedia({video:true}, gotStream, function() {}); 
+  navigator.getUserMedia({video:true}, gotStream, function() {});
   btn.disabled = true;
 }
 function gotStream(stream) {
-  video.src = webkitURL.createObjectURL(stream);
+  attachMediaStream(video, stream);
 }
 </script>
 </body>

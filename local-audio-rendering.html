@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>Local Audio Rendering Demo</title>
-<script type="text/javascript" src="adapter.js"></script>
+<script type="text/javascript" src="../../base/adapter.js"></script>
 <script>
   var audioElement;
   var buttonStart;
   var buttonStop;
   var localStream;
-
+  
   $ = function(id) {
     return document.getElementById(id);
   };
@@ -20,13 +20,13 @@
     buttonStart.disabled = true;
     buttonStop.disabled = false;
   }
-
+  
   function stop() {
     buttonStart.enabled = true;
     buttonStop.enabled = false;
     localStream.stop();
   }
-
+  
   function gotStream(stream) {
     videoTracks = stream.getVideoTracks();
     audioTracks = stream.getAudioTracks();
@@ -39,27 +39,27 @@
         buttonStart.disabled = false;
         buttonStop.disabled = true;
       };
-
+      
       localStream = stream;
     } else {
       alert('The media stream contains an invalid amount of audio tracks.');
       stream.stop();
     }
   }
-
+  
   function gotStreamFailed(error) {
     buttonStart.disabled = false;
     buttonStop.disabled = true;
     alert('Failed to get access to local media. Error code: ' + error.code);
   }
-
+  
   function onload() {
     audioElement = $('audio');
     buttonStart = $('start');
     buttonStop = $('stop');
     buttonStart.enabled = true;
     buttonStop.disabled = true;
-  }
+  } 
 </script>
 </head>
 

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Local Audio Rendering Demo</title>
+<script type="text/javascript" src="../../base/adapter.js"></script>
+<script>
+  var buttonStart;
+  var buttonStop;
+  var localStream;
+  var reporter;
+  var audioContext;
+
+  // Meter class that generates a number correlated to audio volume.
+  // The meter class itself displays nothing, but it makes the
+  // instantaneous and time-decaying volumes available for inspection.
+  // It also reports on the fraction of samples that were at or near
+  // the top of the measurement range.
+  function SoundMeter(context) {
+    this.context = context
+    this.volume = 0.0;
+    this.slow_volume = 0.0;
+    this.clip = 0.0;
+    this.script = context.createScriptProcessor(2048, 1, 1);
+    that = this;
+    this.script.onaudioprocess = function(event) {
+      var input = event.inputBuffer.getChannelData(0);
+      var i;
+      var sum = 0.0;
+      var clipcount = 0;
+      for (i = 0; i < input.length; ++i) {
+        sum += input[i] * input[i];
+        if (Math.abs(input[i]) > 0.99) {
+          clipcount += 1
+        }
+      }
+      that.volume = Math.sqrt(sum / input.length);
+      that.slow_volume = 0.95 * that.slow_volume + 0.05 * that.volume;
+      that.clip = clipcount / input.length;
+    }
+  }
+
+  SoundMeter.prototype.connectToSource = function(stream) {
+    console.log('SoundMeter connecting');
+    this.mic = this.context.createMediaStreamSource(stream);
+    this.mic.connect(this.script);
+    // Necessary to make sample run, but should not be.
+    this.script.connect(this.context.destination);
+  }
+
+  SoundMeter.prototype.stop = function() {
+    this.mic.disconnect();
+    this.script.disconnect();
+  }
+
+  // End of SoundMeter class.
+
+  $ = function(id) {
+    return document.getElementById(id);
+  };
+
+  function start() {
+    var constraints = {audio:true, video:false};
+    getUserMedia(constraints, gotStream, gotStreamFailed);
+    buttonStart.disabled = true;
+    buttonStop.disabled = false;
+  }
+
+  function stop() {
+    buttonStart.enabled = true;
+    buttonStop.enabled = false;
+    localStream.stop();
+    clearInterval(reporter);
+    soundMeter.stop();
+  }
+
+  function gotStream(stream) {
+    var videoTracks = stream.getVideoTracks();
+    var audioTracks = stream.getAudioTracks();
+    if (audioTracks.length == 1 && videoTracks.length == 0) {
+      console.log('gotStream({audio:true, video:false})');
+      console.log('Using audio device: ' + audioTracks[0].label);
+      stream.onended = function() {
+        console.log('stream.onended');
+        buttonStart.disabled = false;
+        buttonStop.disabled = true;
+      };
+
+      localStream = stream;
+      var soundMeter = new SoundMeter(audioContext);
+      soundMeter.connectToSource(stream);
+
+      // Set up reporting of the volume every 0.2 seconds.
+      var meter = $('volume');
+      var decaying_meter = $('decaying_volume');
+      var meter_canvas = $('graphic_volume').getContext('2d');
+      var meter_slow = $('graphic_slow').getContext('2d');
+      var meter_clip = $('graphic_clip').getContext('2d');
+      reporter = setInterval(function() {
+         meter.textContent = soundMeter.volume.toFixed(2);
+         decaying_meter.textContent = soundMeter.slow_volume.toFixed(2);
+         paintMeter(meter_canvas, soundMeter.volume);
+         paintMeter(meter_slow, soundMeter.slow_volume);
+         paintMeter(meter_clip, soundMeter.clip);
+      }, 200);
+    } else {
+      alert('The media stream contains an invalid number of tracks:'
+         + audioTracks.length + ' audio ' + videoTracks.length + ' video');
+      stream.stop();
+    }
+  }
+
+  function gotStreamFailed(error) {
+    buttonStart.disabled = false;
+    buttonStop.disabled = true;
+    alert('Failed to get access to local media. Error code: ' + error.code);
+  }
+
+  function onload() {
+    try {
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioContext = new AudioContext();
+    } catch(e) {
+      alert('Web Audio API not found');
+    }
+    buttonStart = $('start');
+    buttonStop = $('stop');
+    buttonStart.enabled = true;
+    buttonStop.disabled = true;
+  }
+
+  function paintMeter(context, number) {
+     context.clearRect(0, 0, 400, 20);
+     context.fillStyle = 'red';
+     context.fillRect(0, 0, number * 400, 20);
+  }
+
+</script>
+<style>
+  button {
+    font: 14px sans-serif;
+    padding: 8px;
+  }
+  canvas {
+    border:1px solid #000000;
+  }
+</style>
+</head>
+
+<body onload="onload()">
+  <h2>Measuring the volume of an audio stream using WebAudio</h2>
+  <p>Demonstrates measuring the volume of a local media stream
+     using WebAudio.<br>
+     Press Start, select a microphone, listen to your own voice in loopback,
+     and see the numbers change as you speak.</p>
+     The "instant" volume changes approximately every 50 ms; the "slow"
+     volume approximates the average volume over about a second.
+  <br>
+     Note that you will NOT hear your own voice; use the
+     <a href="local-audio-rendering.html">local audio rendering demo</a>
+     for that.
+  <p>
+  <button id="start" onclick="start()">Start</button>
+  <button id="stop" onclick="stop()">Stop</button><br><br>
+  Volume (instant): <span id="volume">Not set</span><br>
+  Volume (slow): <span id="decaying_volume">Not set</span><br>
+  <canvas id="graphic_volume" width="400" height="20"></canvas> Volume<br>
+  <canvas id="graphic_slow" width="400" height="20"></canvas> Slow<br>
+  <canvas id="graphic_clip" width="400" height="20"></canvas> Clipping
+
+</body>
+</html>

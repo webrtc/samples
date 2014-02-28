@@ -2,7 +2,7 @@
 <head>
 <title>Constraints and Statistics</title>
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="adapter.js"></script>
+<script src="../../base/adapter.js"></script>
 
 <style type="text/css">
 td { vertical-align: top; }
@@ -27,7 +27,7 @@ function openCamera() {
   if (mystream) {
     mystream.stop();
   }
-  navigator.webkitGetUserMedia(cameraConstraints(), gotStream, function() {
+  navigator.getUserMedia(cameraConstraints(), gotStream, function() {
      log("GetUserMedia failed");
     });
 }
@@ -35,7 +35,7 @@ function openCamera() {
 function gotStream(stream) {
   log("GetUserMedia succeeded");
   mystream = stream;
-  $("local-video").src = webkitURL.createObjectURL(stream);
+  attachMediaStream($("local-video"), stream);
 }
 
 function cameraConstraints() {
@@ -73,8 +73,8 @@ function streamConstraints() {
 }
 
 function connect() {
-  pc1 = new webkitRTCPeerConnection(null);
-  pc2 = new webkitRTCPeerConnection(null);
+  pc1 = new RTCPeerConnection(null);
+  pc2 = new RTCPeerConnection(null);
   pc1.addStream(mystream, streamConstraints());
   log('PC1 creating offer');
   pc1.onnegotiationeeded = function() {
@@ -86,18 +86,20 @@ function connect() {
   pc1.onicecandidate = function(e) {
     log('Candidate PC1');
     if (e.candidate) {
-      pc2.addIceCandidate(new RTCIceCandidate(e.candidate));
+      pc2.addIceCandidate(new RTCIceCandidate(e.candidate),
+                          onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   }
   pc2.onicecandidate = function(e) {
     log('Candidate PC2');
     if (e.candidate) {
-      pc1.addIceCandidate(new RTCIceCandidate(e.candidate));
+      pc1.addIceCandidate(new RTCIceCandidate(e.candidate),
+                          onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   }
   pc2.onaddstream = function(e) {
     log('PC2 got stream');
-    $('remote-video').src = webkitURL.createObjectURL(e.stream);
+    attachMediaStream($('remote-video'), e.stream);
     log('Remote video is ' + $('remote-video').src);
   }
   pc1.createOffer(function(desc) {
@@ -110,6 +112,14 @@ function connect() {
       pc1.setRemoteDescription(desc2);
     });
   });
+}
+
+function onAddIceCandidateSuccess() {
+  trace("AddIceCandidate success.");
+}
+
+function onAddIceCandidateError(error) {
+  trace("Failed to add Ice Candidate: " + error.toString());
 }
 
 // Augumentation of stats entries with utility functions.

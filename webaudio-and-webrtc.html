@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Audio effects with WebAudio in WebRTC</title>
-<script type="text/javascript" src="adapter.js"></script>
+<script type="text/javascript" src="../../base/adapter.js"></script>
 <script>
   var audioElement;
   var buttonStart;
@@ -11,22 +11,22 @@
   var localStream;
   var pc1, pc2;
   var display;
-
+  
   var webAudio;
-
+  
   // WebAudio helper class which takes care of the WebAudio related parts.
-
+  
   function WebAudio() {
     this.context = new webkitAudioContext();
     this.soundBuffer = null;
   }
-
+  
   WebAudio.prototype.start = function() {
     this.filter = this.context.createBiquadFilter();
     this.filter.type = this.filter.HIGHPASS;
     this.filter.frequency.value = 1500;
   }
-
+  
   WebAudio.prototype.applyFilter = function(stream) {
     this.mic = this.context.createMediaStreamSource(stream);
     this.mic.connect(this.filter);
@@ -34,7 +34,7 @@
     this.filter.connect(this.peer);
     return this.peer.stream;
   }
-
+  
   WebAudio.prototype.renderLocally = function(enabled) {
     if (enabled) {
       this.mic.connect(this.context.destination);
@@ -43,14 +43,14 @@
       this.mic.connect(this.filter);
     }
   }
-
+  
   WebAudio.prototype.stop = function() {
     this.mic.disconnect(0);
     this.filter.disconnect(0);
     mic = null;
     peer = null;
   }
-
+  
   WebAudio.prototype.addEffect = function() {
     var effect = this.context.createBufferSource();
     effect.buffer = this.soundBuffer;
@@ -59,11 +59,11 @@
       effect.start(0);
     }
   }
-
+  
   WebAudio.prototype.loadCompleted = function() {
     this.soundBuffer = this.context.createBuffer(this.request.response, true);
   }
-
+  
   WebAudio.prototype.loadSound = function(url) {
     this.request = new XMLHttpRequest();
     this.request.open('GET', url, true);
@@ -71,18 +71,18 @@
     this.request.onload = this.loadCompleted.bind(this);
     this.request.send();
   }
-
+  
   // Global methods.
-
+  
   function trace(txt) {
     display.innerHTML += txt + "<br>";
   }
-
+  
   function logEvent(e) {
     console.log(e.type + ':' + e.target + ':' + e.target.id + ':muted=' +
                 e.target.muted);
   }
-
+  
   $ = function(id) {
     return document.getElementById(id);
   };
@@ -94,10 +94,10 @@
     buttonStart.disabled = true;
     buttonStop.disabled = false;
   }
-
+  
   function stop() {
     webAudio.stop();
-    pc1.close();
+    pc1.close(); 
     pc2.close();
     pc1 = null;
     pc2 = null;
@@ -105,45 +105,45 @@
     buttonStop.enabled = false;
     localStream.stop();
   }
-
+  
   function gotStream(stream) {
     audioTracks = stream.getAudioTracks();
     if (audioTracks.length == 1) {
-      console.log('gotStream({audio:true, video:false})');
-
+      console.log('gotStream({audio:true, video:false})');    
+     
       var filteredStream = webAudio.applyFilter(stream);
-
+      
       var servers = null;
       pc1 = new webkitRTCPeerConnection(servers);
       console.log('Created local peer connection object pc1');
-      pc1.onicecandidate = iceCallback1;
+      pc1.onicecandidate = iceCallback1; 
       pc2 = new webkitRTCPeerConnection(servers);
       console.log('Created remote peer connection object pc2');
       pc2.onicecandidate = iceCallback2;
       pc2.onaddstream = gotRemoteStream;
-
+      
       pc1.addStream(filteredStream);
       pc1.createOffer(gotDescription1);
-
+      
       stream.onended = function() {
         console.log('stream.onended');
         buttonStart.disabled = false;
         buttonStop.disabled = true;
       };
-
+      
       localStream = stream;
     } else {
       alert('The media stream contains an invalid amount of audio tracks.');
       stream.stop();
     }
   }
-
+  
   function gotStreamFailed(error) {
     buttonStart.disabled = false;
     buttonStop.disabled = true;
     alert('Failed to get access to local media. Error code: ' + error.code);
   }
-
+  
   function forceOpus(sdp) {
     // Remove all other codecs (not the video codecs though).
     sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
@@ -167,48 +167,58 @@
     console.log('Answer from pc2 \n' + desc.sdp);
     pc1.setRemoteDescription(desc);
   }
-
+  
   function gotRemoteStream(e){
     attachMediaStream(audioElement, e.stream);
   }
 
   function iceCallback1(event){
     if (event.candidate) {
-      pc2.addIceCandidate(new RTCIceCandidate(event.candidate));
+      pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
+                          onAddIceCandidateSuccess, onAddIceCandidateError);
       console.log('Local ICE candidate: \n' + event.candidate.candidate);
     }
   }
-
+      
   function iceCallback2(event){
     if (event.candidate) {
-      pc1.addIceCandidate(new RTCIceCandidate(event.candidate));
+      pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
+                          onAddIceCandidateSuccess, onAddIceCandidateError);
       console.log('Remote ICE candidate: \n ' + event.candidate.candidate);
     }
+  }
+
+  function onAddIceCandidateSuccess() {
+    trace("AddIceCandidate success.");
+  }
+
+  function onAddIceCandidateError(error) {
+    trace("Failed to add Ice Candidate: " + error.toString());
   }
 
   function handleKeyDown(event) {
     var keyCode = event.keyCode;
     webAudio.addEffect();
   }
-
+  
   function doMix(checkbox) {
     webAudio.renderLocally(checkbox.checked);
   }
-
+  
   function onload() {
     webAudio = new WebAudio();
     webAudio.loadSound('../sounds/Shamisen-C4.wav');
-
+    
     audioElement = $('audio');
     buttonStart = $('start');
     buttonStop = $('stop');
     display = $('display');
-
-    document.addEventListener('keydown', handleKeyDown, false);
-
+    
+    document.addEventListener('keydown', handleKeyDown, false);  
+    
     buttonStart.enabled = true;
     buttonStop.disabled = true;
-  }
+  } 
 </script>
 </head>
 

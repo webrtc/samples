@@ -3,7 +3,7 @@
 <head>
 <title>PeerConnection PRANSWER Demo</title>
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="adapter.js"></script>
+<script src="../../base/adapter.js"></script>
 <style>
 video {
   border:5px solid black;
@@ -28,9 +28,9 @@ btn3.disabled = true;
 var pc1,pc2;
 var localstream;
 var sdpConstraints = {'mandatory': {
-                        'OfferToReceiveAudio':true,
+                        'OfferToReceiveAudio':true, 
                         'OfferToReceiveVideo':true }};
-
+    
 function gotStream(stream) {
   trace("Received local stream");
   // Call the polyfill wrapper to attach the media stream to this element.
@@ -49,24 +49,28 @@ function start() {
   videoTracks = localstream.getVideoTracks();
   audioTracks = localstream.getAudioTracks();
   if (videoTracks.length > 0)
-    trace('Using Video device: ' + videoTracks[0].label);
+    trace('Using Video device: ' + videoTracks[0].label);  
   if (audioTracks.length > 0)
     trace('Using Audio device: ' + audioTracks[0].label);
 
   var servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace("Created local peer connection object pc1");
-  pc1.onicecandidate = iceCallback1;
+  pc1.onicecandidate = iceCallback1; 
   pc2 = new RTCPeerConnection(servers);
   trace("Created remote peer connection object pc2");
   pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
+  pc2.onaddstream = gotRemoteStream; 
 
   pc1.addStream(localstream);
   trace("Adding Local Stream to peer connection");
+ 
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  
+}
 
-  pc1.createOffer(gotDescription1);
-
+function onCreateSessionDescriptionError(error) {
+  trace('Failed to create session description: ' + error.toString());
 }
 
 function gotDescription1(desc) {
@@ -76,7 +80,8 @@ function gotDescription1(desc) {
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(gotDescription2, null, sdpConstraints);
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+                   sdpConstraints);
 }
 
 function gotDescription2(desc) {
@@ -105,7 +110,7 @@ function accept() {
 
 function stop() {
   trace("Ending Call" + "\n\n");
-  pc1.close();
+  pc1.close(); 
   pc2.close();
   pc1=null;
   pc2=null;
@@ -122,16 +127,26 @@ function gotRemoteStream(e) {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate));
+    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace("Local ICE candidate: \n" + event.candidate.candidate);
   }
 }
-
+      
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate));
+    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace("Remote ICE candidate: \n " + event.candidate.candidate);
   }
+}
+
+function onAddIceCandidateSuccess() {
+  trace("AddIceCandidate success.");
+}
+
+function onAddIceCandidateError(error) {
+  trace("Failed to add Ice Candidate: " + error.toString());
 }
     </script>
   </body>

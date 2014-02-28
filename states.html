@@ -3,7 +3,7 @@
 <head>
 <title>RTCPeerState & RTCIceConnectionState Demo 1</title>
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="adapter.js"></script>
+<script src="../../base/adapter.js"></script>
 <style>
 video {
   border:5px solid black;
@@ -129,17 +129,22 @@ function call() {
   pc2.onaddstream = gotRemoteStream;
   pc1.addStream(localstream);
   trace("Adding Local Stream to peer connection");
-  pc1.createOffer(gotDescription1);
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
 }
 
-function gotDescription1(desc){
+function onCreateSessionDescriptionError(error) {
+  trace('Failed to create session description: ' + error.toString());
+}
+
+function gotDescription1(desc) {
   pc1.setLocalDescription(desc);
   trace("Offer from pc1 \n" + desc.sdp);
   pc2.setRemoteDescription(desc);
-  pc2.createAnswer(gotDescription2, null, sdpConstraints);
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+                   sdpConstraints);
 }
 
-function gotDescription2(desc){
+function gotDescription2(desc) {
   pc2.setLocalDescription(desc);
   trace("Answer from pc2 \n" + desc.sdp);
   pc1.setRemoteDescription(desc);
@@ -210,7 +215,8 @@ function iceStateCallback2() {
 
 function iceCallback1(event){
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate));
+    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace("Local ICE candidate: \n" + event.candidate.candidate);
   } else {
     trace("end of candidates1");
@@ -219,11 +225,20 @@ function iceCallback1(event){
 
 function iceCallback2(event){
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate));
+    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace("Remote ICE candidate: \n " + event.candidate.candidate);
   } else {
     trace("end of candidates2");
   }
+}
+
+function onAddIceCandidateSuccess() {
+  trace("AddIceCandidate success.");
+}
+
+function onAddIceCandidateError(error) {
+  trace("Failed to add Ice Candidate: " + error.toString());
 }
 </script>
 </body>

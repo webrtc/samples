@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -53,7 +52,7 @@ h2 {
 <button id="sendButton" disabled>Send Data</button>
 <button id="closeButton" disabled>Stop</button>
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src='adapter.js'></script>
+<script src='../../base/adapter.js'></script>
 <script>
 var pc1, pc2, sendChannel, receiveChannel, pcConstraint, dataConstraint;
 var dataChannelSend = document.getElementById("dataChannelSendId");
@@ -90,9 +89,9 @@ function createConnection() {
   pcConstraint = null;
   dataConstraint = null;
   if (sctp_select.checked &&
-      webrtcDetectedBrowser === 'chrome' &&
-      webrtcDetectedVersion >= 31) {
-    // SCTP is supported from Chrome M31.
+     (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
+      webrtcDetectedBrowser === 'firefox'){
+    // SCTP is supported from Chrome M31 and is supported in FF.
     // No need to pass DTLS constraint as it is on by default in Chrome M31.
     // For SCTP, reliable and ordered is true by default.
     trace('Using SCTP based Data Channels');
@@ -109,32 +108,36 @@ function createConnection() {
   }
   pc1 = new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object pc1');
-
+  
   try {
-    // Data Channel api supported from Chrome M25.
+    // Data Channel api supported from Chrome M25. 
     // You might need to start chrome with  --enable-data-channels flag.
     sendChannel = pc1.createDataChannel("sendDataChannel", dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
           'You need Chrome M25 or later with --enable-data-channels flag');
-    trace('Create Data channel failed with exception: ' + e.message);
+    trace('Create Data channel failed with exception: ' + e.message);  
   }
-  pc1.onicecandidate = iceCallback1;
+  pc1.onicecandidate = iceCallback1; 
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
-
+  
   pc2 = new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object pc2');
-
+  
   pc2.onicecandidate = iceCallback2;
   pc2.ondatachannel = receiveChannelCallback;
-
-  pc1.createOffer(gotDescription1);
+  
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
   startButton.disabled = true;
-  closeButton.disabled = false;
+  closeButton.disabled = false;  
 }
 
+function onCreateSessionDescriptionError(error) {
+  trace('Failed to create session description: ' + error.toString());
+}
+ 
 function sendData() {
   var data = dataChannelSend.value;
   sendChannel.send(data);
@@ -147,7 +150,7 @@ function closeDataChannels() {
   trace('Closed data channel with label: ' + sendChannel.label);
   receiveChannel.close();
   trace('Closed data channel with label: ' + receiveChannel.label);
-  pc1.close();
+  pc1.close(); 
   pc2.close();
   pc1 = null;
   pc2 = null;
@@ -164,7 +167,7 @@ function gotDescription1(desc) {
   pc1.setLocalDescription(desc);
   trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc);
-  pc2.createAnswer(gotDescription2);
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
@@ -173,20 +176,30 @@ function gotDescription2(desc) {
   pc1.setRemoteDescription(desc);
 }
 
-function iceCallback1(event) {
+function iceCallback1(event) { 
   trace('local ice callback');
   if (event.candidate) {
-    pc2.addIceCandidate(event.candidate);
+    pc2.addIceCandidate(event.candidate,
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
-
+      
 function iceCallback2(event) {
   trace('remote ice callback');
   if (event.candidate) {
-    pc1.addIceCandidate(event.candidate);
+    pc1.addIceCandidate(event.candidate,
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
+}
+
+function onAddIceCandidateSuccess() {
+  trace('AddIceCandidate success.');
+}
+
+function onAddIceCandidateError(error) {
+  trace('Failed to add Ice Candidate: ' + error.toString());
 }
 
 function receiveChannelCallback(event) {
@@ -194,7 +207,7 @@ function receiveChannelCallback(event) {
   receiveChannel = event.channel;
   receiveChannel.onmessage = onReceiveMessageCallback;
   receiveChannel.onopen = onReceiveChannelStateChange;
-  receiveChannel.onclose = onReceiveChannelStateChange;
+  receiveChannel.onclose = onReceiveChannelStateChange;  
 }
 
 function onReceiveMessageCallback(event) {

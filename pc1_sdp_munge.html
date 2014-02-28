@@ -3,44 +3,90 @@
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
 <script src='../../base/adapter.js'></script>
 <head>
-<title>Device Switch Demo</title>
+<title>PC1 SDP Munge Demo</title>
 <style>
-h2 {
-  font-size: 1em;
-  font-family: sans-serif;
-  margin: 0 0 0.5em 0;
-  padding: 0;
-}
-video {
-  width:40%;
-}
+  div#left {
+    float: left;
+    margin: 0 2em 2.5em 0;
+  }
+  div#right {
+    float: left;
+    margin: 0 0 1.5em 0;
+  }
+  div#buttons button {
+    margin: 0 1.3em 1em 0;
+    width: 13em;
+  }
+  div#buttons {
+    max-width: 30em;
+  }
+  div#source {
+    clear: both;
+    margin: 0 0 1em 0;
+  }
+  div#select {
+    margin: 0 0 1em 0;
+  }
+  select {
+    margin: 0 1em 0 0;
+  }
+  h2 {
+    font-size: 1em;
+    font-family: sans-serif;
+    margin: 0 0 0.3em 0;
+    padding: 0;
+  }
+  textarea {
+    height: 20em;
+    width: 98%;
+  }
+  video {
+    background: #666;
+    margin: 0 0 1.5em 0;
+    width: 320px;
+    height: 240px;
+  }
 </style>
 </head>
 <body>
+<div id="left">
+<h2>Local Preview</h2>
 <video id="vid1" autoplay muted></video>
+<h2>Offer SDP</h2>
+<textarea id="offerSdp"></textarea><br><br>
+</div>
+<div id="right">
+<h2>Remote Preview</h2>
 <video id="vid2" autoplay></video>
-<div>
-<h2>Select an audio and video source, then click Start.</h2>
-Audio source: <select id="audiosrc"></select>
-Video source: <select id="videosrc"></select><br>
-<button id="btn1">Start</button>
-<button id="btn2">Call</button>
-<button id="btn3">Hang Up</button>
+<h2>Answer SDP</h2>
+<textarea id="answerSdp"></textarea>
+</div>
+<div id="source">
+<label for="audiosrc">Audio source: </label><select id="audiosrc"></select>
+<label for="videosrc">Video source: </label><select id="videosrc"></select>
+</div>
+<div id="select">Select an audio & video source, then click GetUserMedia:</div>
+<div id="buttons">
+<button id="btnMedia" onclick="getMedia()">GetUserMedia</button>
+<button id="btnCreatePC" onclick="createPC()">Create PeerConnection</button>
+<button id="btnOffer" onclick="createOffer()">Create Offer</button>
+<button id="btnSetOffer" onclick="setOffer()">Set Offer</button>
+<button id="btnAnswer" onclick="createAnswer()">Create Answer</button>
+<button id="btnSetAnswer" onclick="setAnswer()">Set Answer</button>
+<button id="btnHangUp" onclick="hangup()">Hang Up</button>
 </div>
 <script>
-var btn1 = document.querySelector('button#btn1');
-var btn2 = document.querySelector('button#btn2');
-var btn3 = document.querySelector('button#btn3');
 var audio_select = document.getElementById("audiosrc");
 var video_select = document.getElementById("videosrc");
+btnMedia.disabled = false;
+btnCreatePC.disabled = true;
+btnOffer.disabled = true;
+btnSetOffer.disabled = true;
+btnAnswer.disabled = true;
+btnSetAnswer.disabled = true;
+btnHangUp.disabled = true;
 //audio_select.onchange = changeDevices;
 //video_select.onchange = changeDevices;
-btn1.onclick = start;
-btn2.onclick = call;
-btn3.onclick = hangup;
-btn1.disabled = false;
-btn2.disabled = true;
-btn3.disabled = true;
 var pc1,pc2;
 var localstream;
 var sdpConstraints = {'mandatory': {
@@ -49,10 +95,10 @@ var sdpConstraints = {'mandatory': {
 refreshSources();
 
 function refreshSources() {
-  if (webrtcDetectedVersion >= 30) {
+  if (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 30) {
     MediaStreamTrack.getSources(gotSources);
   } else {
-    alert('Make sure that you have Chrome M30 to test device enumeration api.');
+    alert('Failed to enumerate devices, you need Chrome version 30 or higher');
   }
 }
 
@@ -85,12 +131,12 @@ function gotSources(sourceInfos) {
   video_select.disabled = false;
 }
 
-function start() {
+function getMedia() {
   changeDevices();
-  btn1.disabled = true;
-  btn2.disabled = false;
   audio_select.disabled = true;
   video_select.disabled = true;
+  btnMedia.disabled = true;
+  btnCreatePC.disabled = false;
 }
 
 function changeDevices() {
@@ -120,11 +166,15 @@ function gotStream(stream) {
   // Call the polyfill wrapper to attach the media stream to this element.
   attachMediaStream(vid1, stream);
   localstream = stream;
- }
+}
 
-function call() {
-  btn2.disabled = true;
-  btn3.disabled = false;
+function createPC() {
+  btnCreatePC.disabled = true;
+  btnOffer.disabled = false;
+  btnAnswer.disabled = false;
+  btnSetOffer.disabled = false;
+  btnSetAnswer.disabled = false;
+  btnHangUp.disabled = false;
   trace("Starting call");
   videoTracks = localstream.getVideoTracks();
   audioTracks = localstream.getAudioTracks();
@@ -145,23 +195,75 @@ function call() {
 
   pc1.addStream(localstream);
   trace("Adding Local Stream to peer connection");
-  pc1.createOffer(gotDescription1);
+}
+
+function onSetSessionDescriptionSuccess() {
+  trace('Set session description success.');
+}
+
+function onSetSessionDescriptionError(error) {
+  trace('Failed to set session description: ' + error.toString());
+}
+
+// Workaround for crbug/322756.
+function maybeAddLineBreakToEnd(sdp) {
+  var endWithLineBreak = new RegExp(/\n$/);
+  if (!endWithLineBreak.test(sdp)) {
+    return sdp + '\n';
+  }
+  return sdp;
+}
+
+function createOffer(){
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+}
+
+function onCreateSessionDescriptionError(error) {
+  trace('Failed to create session description: ' + error.toString());
+}
+
+function setOffer(){
+  var sdp = document.getElementById("offerSdp").value;
+  sdp = maybeAddLineBreakToEnd(sdp);
+  var offer = new RTCSessionDescription({type:'offer',sdp:sdp});
+  pc1.setLocalDescription(offer,
+                          onSetSessionDescriptionSuccess,
+                          onSetSessionDescriptionError);
+  trace("Modified Offer from pc1 \n" + sdp);
+  pc2.setRemoteDescription(offer,
+                           onSetSessionDescriptionSuccess,
+                           onSetSessionDescriptionError);
 }
 
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
-  trace("Offer from pc1 \n" + desc.sdp);
-  pc2.setRemoteDescription(desc);
+  document.getElementById("offerSdp").disabled = false;
+  document.getElementById("offerSdp").value = desc.sdp;
+}
+
+function createAnswer(){
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(gotDescription2, null, sdpConstraints);
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+                   sdpConstraints);
+}
+
+function setAnswer(){
+  var sdp = document.getElementById("answerSdp").value;
+  sdp = maybeAddLineBreakToEnd(sdp);
+  var answer = new RTCSessionDescription({type:'answer',sdp:sdp});
+  pc2.setLocalDescription(answer,
+                          onSetSessionDescriptionSuccess,
+                          onSetSessionDescriptionError);
+  trace("Modified Answer from pc2 \n" + sdp);
+  pc1.setRemoteDescription(answer,
+                           onSetSessionDescriptionSuccess,
+                           onSetSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
-  trace("Answer from pc2 \n" + desc.sdp);
-  pc1.setRemoteDescription(desc);
+  document.getElementById("answerSdp").disabled = false;
+  document.getElementById("answerSdp").value = desc.sdp;
 }
 
 function hangup() {
@@ -171,10 +273,17 @@ function hangup() {
   pc2.close();
   pc1 = null;
   pc2 = null;
-  btn3.disabled = true;
-  btn1.disabled = false;
   audio_select.disabled = false;
   video_select.disabled = false;
+  document.getElementById("offerSdp").disabled = true;
+  document.getElementById("answerSdp").disabled = true;
+  btnMedia.disabled = false;
+  btnCreatePC.disabled = true;
+  btnOffer.disabled = true;
+  btnSetOffer.disabled = true;
+  btnAnswer.disabled = true;
+  btnSetAnswer.disabled = true;
+  btnHangUp.disabled = true;
 }
 
 function gotRemoteStream(e) {

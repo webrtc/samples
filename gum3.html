@@ -2,6 +2,8 @@
 <html>
 <head>
 <title>getUserMedia Demo 3</title>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src="../../base/adapter.js"></script>
 <style>
 video {
     border:5px solid black;
@@ -16,7 +18,7 @@ canvas {
 button {
     font: 18px sans-serif;
     padding: 8px;
-}  
+}
 .grayscale {
   -webkit-filter: grayscale(1);
 }
@@ -44,15 +46,15 @@ findex = 0;
 video = document.getElementById("vid");
 canvas = document.getElementById("cvs");
 canvas.width = 480;
-canvas.height = 360;  
+canvas.height = 360;
 btn2.disabled = true;
 btn3.disabled = true;
 function start() {
-  navigator.webkitGetUserMedia({video:true}, gotStream, function() {}); 
+  navigator.getUserMedia({video:true}, gotStream, function() {});
   btn1.disabled = true;
 }
 function gotStream(stream) {
-  video.src = webkitURL.createObjectURL(stream);
+  attachMediaStream(video, stream);
   btn2.disabled = false;
   btn3.disabled = false;
 }

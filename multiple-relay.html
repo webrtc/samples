@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PeerConnection Demo 1</title>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src="../../base/adapter.js"></script>
+<script src="../js/videopipe.js"></script>
+<style>
+video {
+  border:5px solid black;
+  width:480px;
+  height:360px;
+}
+button {
+  font: 18px sans-serif;
+  padding: 8px;
+}
+textarea {
+  font-family: monospace;
+  margin: 2px;
+  width:480px;
+  height:640px;
+}
+</style>
+</head>
+<body>
+<video id="vid1" autoplay></video>
+<video id="vid2" autoplay></video>
+<br>
+<button id="btn1" onclick="start()">Start</button>
+<button id="btn2" onclick="call()">Call</button>
+<button id="btn3" onclick="addrelay()">Insert relay</button>
+<button id="btn4" onclick="hangup()">Hang Up</button>
+<br>
+<xtextarea id="ta1"></textarea>
+<script>
+btn1.disabled = false;
+btn2.disabled = true;
+btn3.disabled = true;
+btn4.disabled = true;
+var pipes = new Array();
+
+var localstream;
+var remotestream;
+
+function gotStream(stream){
+  trace("Received local stream");
+  attachMediaStream(vid1, stream);
+  localstream = stream;
+  btn2.disabled = false;
+}
+
+function gotRemoteStream(stream){
+  remotestream = stream;
+  attachMediaStream(vid2, stream);
+  trace("Received remote stream");
+  trace(pipes.length + ' elements in chain');
+  ta1.textContent = pipes.length + ' elements in chain';
+  btn3.disabled = false;
+}
+
+function start() {
+  trace("Requesting local stream");
+  btn1.disabled = true;
+  getUserMedia({audio:false, video:true},
+                gotStream,
+                function() {
+                  alert('getUserMedia failed');
+                });
+}
+
+function call() {
+  btn2.disabled = true;
+  btn3.disabled = false;
+  btn4.disabled = false;
+  trace("Starting call");
+  pipes.push(new VideoPipe(localstream, gotRemoteStream));
+}
+
+function addrelay() {
+  pipes.push(new VideoPipe(remotestream, gotRemoteStream));
+  btn3.disabled = true;
+}
+
+function hangup() {
+  trace("Ending call");
+  while (pipes.length > 0) {
+    var pipe = pipes.pop()
+    pipe.close();
+  }
+  btn3.disabled = true;
+  btn4.disabled = true;
+  btn2.disabled = false;
+}
+
+</script>
+</body>
+</html>

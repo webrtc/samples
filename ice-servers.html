@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- This sample demonstrates enumeration of candidates for
+     the specified STUN/TURN server. -->
+<title>ICE Candidate Gathering Demo</title>
+<script src="../../base/adapter.js"></script>
+<style>
+body {
+ font: 14px sans-serif;
+}
+button {
+  font: 18px sans-serif;
+  padding: 8px;
+}
+select {
+  margin: 2px;
+  width:960px;
+  height:80px;
+}
+textarea {
+  font-family: monospace;
+  margin: 2px;
+  width:960px;
+  height:640px;
+}
+</style>
+</head>
+<body>
+<h1>WebRTC Trickle ICE Test Page</h1>
+<p>This page tests the trickle ICE functionality in a WebRTC implementation. It
+  creates a PeerConnection with the specified ICEServers, and then starts
+  candidate gathering for a session with a single audio stream. As candidates
+  are gathered, they are displayed in the text box below, along with an
+  indication when candidate gathering is complete.</p>
+<p>Individual STUN and TURN servers can be added using the Add Server/Remove
+ Server controls below; in addition, the type of candidates released to the
+ application can be controlled via the IceTransports contraint.</p>
+<h3>ICE Servers</h3>
+<select id="servers" size="4">
+<option value="{&quot;url&quot;:&quot;stun:stun.l.google.com:19302&quot;}">
+stun:stun.l.google.com:19302
+</option>
+</select>
+<br>
+STUN or TURN URI:
+<input id="url" size="64"></input>
+<br>
+TURN Username:
+<input id="username" size="16"></input>
+TURN Password:
+<input id="password" size="16"></input>
+<br>
+<button id="add" onclick="addServer()">Add Server</button>
+<button id="remove" onclick="removeServer()">Remove Server</button>
+<h3>ICE Constraints</h3>
+IceTransports value:
+<input type="radio" name="transports" value="all" checked> All
+<input type="radio" name="transports" value="relay"> Relay
+<input type="radio" name="transports" value="none"> None
+<br>
+<br>
+<button id="gather" onclick="start()">Gather Candidates</button>
+<br>
+<textarea id="output"></textarea>
+<script>
+var servers = document.getElementById('servers');
+var url = document.getElementById('url');
+var username = document.getElementById('username');
+var password = document.getElementById('password');
+var output = document.getElementById('output');
+
+var pc;
+var begin;
+
+function addServer() {
+  var scheme = url.value.split(":")[0];
+  if (scheme != "stun" && scheme != "turn" && scheme != "turns") {
+    alert("URI is not valid");
+    return;
+  }
+
+  // Store the ICE server as a stringified JSON object in opt.value.
+  var opt = document.createElement("option");
+  opt.value = JSON.stringify(
+      createIceServer(url.value, username.value, password.value));
+  opt.text = url.value + " ";
+  if (username.value.length || password.value.length) {
+    opt.text += (" [" + username.value + ":" + password.value + "]");
+  }
+  servers.add(opt);
+  url.value = username.value = password.value = "";
+}
+
+function removeServer() {
+  for (var i = servers.options.length - 1; i >= 0; --i) {
+    if (servers.options[i].selected) {
+      servers.remove(i);
+    }
+  }
+}
+
+function start() {
+  // Create a PeerConnection with no streams, but force a m=audio line.
+  // Pass in the STUN/TURN server value from the input boxes.
+
+  output.value = "";
+  var iceServers = [];
+  for (var i = 0; i < servers.length; ++i) {
+     iceServers.push(JSON.parse(servers[i].value));
+  }
+  var transports = document.getElementsByName("transports");
+  var iceTransports;
+  for (var i = 0; i < transports.length; ++i) {
+    if (transports[i].checked) {
+      iceTransports = transports[i].value;
+      break;
+    }
+  }
+  var config = {"iceServers": iceServers };
+  var constraints = {"mandatory": {"IceTransports":iceTransports}};
+  trace("Creating new PeerConnection with config=" + JSON.stringify(config) +
+        ", constraints=" + JSON.stringify(constraints));
+  pc = new RTCPeerConnection(config, constraints);
+  pc.onicecandidate = iceCallback;
+  pc.createOffer(gotDescription, null,
+      {"mandatory": {"OfferToReceiveAudio": true}});
+}
+
+function gotDescription(desc) {
+  begin = performance.now();
+  pc.setLocalDescription(desc);
+}
+
+function iceCallback(event) {
+  var elapsed = ((performance.now() - begin) / 1000).toFixed(3);
+  if (event.candidate) {
+    output.value += (elapsed + ": " + event.candidate.candidate);
+  } else {
+    output.value += (elapsed + ": Done");
+    pc.close();
+    pc = null;
+  }
+}
+</script>
+</body>
+</html>
+
