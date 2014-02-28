@@ -8,6 +8,8 @@ All of these examples use [adapter.js](https://github.com/GoogleChrome/webrtc/bl
 
 For more information about WebRTC, we maintain a list of [WebRTC Resources](https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit). If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O [WebRTC presentation](http://www.youtube.com/watch?v=p2HzZkd2A40).
 
+Patches and issues welcome!
+
 The demos
 =========
 
