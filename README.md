@@ -10,8 +10,8 @@ For more information about WebRTC, we maintain a list of [WebRTC Resources](http
 
 Patches and issues welcome!
 
-The demos
-=========
+The samples
+===========
 
 [Constraints and stats](http://googlechrome.github.io/webrtc/constraints-and-stats.html)
 
