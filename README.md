@@ -13,46 +13,46 @@ Patches and issues welcome!
 The samples
 ===========
 
-[Constraints and stats](http://googlechrome.github.io/webrtc/constraints-and-stats.html)
+[Constraints and stats](http://googlechrome.github.io/webrtc/samples/js/constraints-and-stats.html)
 
-[Display createOffer output](http://googlechrome.github.io/webrtc/create-offer.html)
+[Display createOffer output](http://googlechrome.github.io/webrtc/samples/js/create-offer.html)
 
-[Data channels](http://googlechrome.github.io/webrtc/dc1.html)
+[Data channels](http://googlechrome.github.io/webrtc/samples/js/dc1.html)
 
-[Switch devices](http://googlechrome.github.io/webrtc/device-switch.html)
+[Switch devices](http://googlechrome.github.io/webrtc/samples/js/device-switch.html)
 
-[DTMF](http://googlechrome.github.io/webrtc/dtmf1.html)
+[DTMF](http://googlechrome.github.io/webrtc/samples/js/dtmf1.html)
 
-[Face tracking](http://googlechrome.github.io/webrtc/face.html)
+[Face tracking](http://googlechrome.github.io/webrtc/samples/js/face.html)
 
-[Simple getUserMedia() example](http://googlechrome.github.io/webrtc/gum1.html)
+[Simple getUserMedia() example](http://googlechrome.github.io/webrtc/samples/js/gum1.html)
 
-[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/gum2.html)
+[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/js/gum2.html)
 
-[getUserMedia() + CSS filters + Canvas](http://googlechrome.github.io/webrtc/gum3.html)
+[getUserMedia() + CSS filters + Canvas](http://googlechrome.github.io/webrtc/samples/js/gum3.html)
 
-[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/gum4.html)
+[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/js/gum4.html)
 
-[ICE Candidate gathering](http://googlechrome.github.io/webrtc/ice-servers.html)
+[ICE Candidate gathering](http://googlechrome.github.io/webrtc/samples/js/ice-servers.html)
 
-[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/local-audio-rendering.html)
+[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/js/local-audio-rendering.html)
 
-[Local audio rendering + volume](http://googlechrome.github.io/webrtc/local-audio-volume.html)
+[Local audio rendering + volume](http://googlechrome.github.io/webrtc/samples/js/local-audio-volume.html)
 
-[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/pc1.html)
+[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/samples/js/pc1.html)
 
-[Audio-only peer connection](http://googlechrome.github.io/webrtc/pc1-audio.html)
+[Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/js/pc1-audio.html)
 
-[Multiple peer connections](http://googlechrome.github.io/webrtc/multiple.html)
+[Multiple peer connections](http://googlechrome.github.io/webrtc/samples/js/multiple.html)
 
-[Multiple relay](http://googlechrome.github.io/webrtc/multiple-relay.html)
+[Multiple relay](http://googlechrome.github.io/webrtc/samples/js/multiple-relay.html)
 
-[Munge SDP](http://googlechrome.github.io/webrtc/pc1_sdp_munge.html)
+[Munge SDP](http://googlechrome.github.io/webrtc/samples/js/pc1_sdp_munge.html)
 
-[Accept incoming peer connection](http://googlechrome.github.io/webrtc/pranswer.html)
+[Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/js/pranswer.html)
 
-[Peer connection rehydration](http://googlechrome.github.io/webrtc/rehydrate.html)
+[Peer connection rehydration](http://googlechrome.github.io/webrtc/samples/js/rehydrate.html)
 
-[Peer connection states](http://googlechrome.github.io/webrtc/states.html)
+[Peer connection states](http://googlechrome.github.io/webrtc/samples/js/states.html)
 
-[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/webaudio-and-webrtc.html)
+[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/js/webaudio-and-webrtc.html)
