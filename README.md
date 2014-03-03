@@ -1,4 +1,4 @@
-This is a repository for WebRTC code; the samples/js directory contains a number of client-side HTML/CSS/JavaScript code samples.
+This is a repository for WebRTC code; the [samples/js](https://github.com/GoogleChrome/webrtc/tree/master/samples/js) directory contains a number of client-side HTML/CSS/JavaScript code samples.
 
 Many of these samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
 
