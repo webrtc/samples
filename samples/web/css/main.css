@@ -1,0 +1,163 @@
+a {
+color: #6fa8dc;
+font-weight: 300;
+text-decoration: none;
+}
+
+a:hover {
+color: #3d85c6;
+text-decoration: underline;
+}
+
+a#viewSource {
+display: block;
+margin: 1.3em 0 0 0;
+border-top: 1px solid #999;
+padding: 1em 0 0 0;
+}
+
+div#links a {
+display: block;
+line-height: 1.3em;
+margin: 0 0 1.5em 0;
+}
+
+@media screen and (min-width: 1000px) {
+/* hack! to detect non-touch devices */
+  div#links a {
+		line-height: 0.8em;
+  }
+}
+
+h1 a {
+font-weight: 300;
+margin: 0 13px 0 0;
+}
+
+audio {
+max-width: 100%;
+}
+
+body {
+font-family: 'Roboto', sans-serif;
+margin: 0;
+padding: 1.5em;
+word-break: break-word;
+}
+
+button {
+background-color: #d84a38;
+border: none;
+border-radius: 2px;
+color: white;
+font-family: 'Roboto', sans-serif;
+font-size: 1em;
+}
+
+button:active {
+background-color: #cf402f;
+}
+
+button:hover {
+background-color: #cf402f;
+}
+
+button[disabled] {
+color: white;
+}
+
+button[disabled] {
+color: #aaa;
+}
+
+canvas {
+  background-color: #ccc;
+  max-width: 100%;
+  width: 100%;
+}
+
+code {
+font-family: 'Roboto', sans-serif;
+font-weight: 400;
+}
+
+div#container {
+/* background: #000; */
+margin: 0 auto 0 auto;
+max-width: 40em;
+padding: 1em 1.5em 1.3em 1.5em;
+}
+
+div#links {
+	padding: 0.5em 0 0 0;
+}
+
+h1 {
+border-bottom: 1px solid #aaa;
+font-family: 'Roboto', sans-serif;
+font-weight: 700;
+margin: 0 0 0.8em 0;
+padding: 0 0 0.4em 0;
+}
+
+h2 {
+color: #ccc;
+font-family: Arial, sans-serif;
+margin: 1.8em 0 0.6em 0;
+}
+
+html {
+/* avoid annoying page width change
+when moving from the home page */
+overflow-y: scroll;
+}
+
+img {
+border: none;
+max-width: 100%;
+}
+
+p {
+color: #444;
+font-weight: 300;
+line-height: 1.6em;
+}
+
+p#data {
+border-top: 1px dotted #666;
+font-family: Courier New, monospace;
+line-height: 1.3em;
+max-height: 1000px;
+overflow-y: auto;
+padding: 1em 0 0 0;
+}
+
+p.borderBelow {
+border-bottom: 1px solid #aaa;
+padding: 0 0 20px 0;
+}
+
+video {
+background: #222;
+width: 100%;
+}
+
+@media screen and (max-width: 650px) {
+  h1 {
+    font-size: 24px;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  h1 {
+    font-size: 22px;
+  }
+}
+
+@media screen and (max-width: 450px) {
+  h1 {
+    font-size: 20px;
+  }
+}
+
+
