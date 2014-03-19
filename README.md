@@ -1,8 +1,8 @@
-This is a repository for WebRTC code; the [samples/js](https://github.com/GoogleChrome/webrtc/tree/master/samples/js) directory contains a number of client-side HTML/CSS/JavaScript code samples.
+This is a repository for WebRTC code; the [samples/web/content](https://github.com/GoogleChrome/webrtc/tree/master/samples/web/content/) directory contains a number of client-side HTML/CSS/JavaScript code samples.
 
 Many of these samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
 
-All the samples use [adapter.js](https://github.com/GoogleChrome/webrtc/blob/master/adapter.js), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/interop](http://www.webrtc.org/interop).
+All the samples use [adapter.js](https://github.com/GoogleChrome/webrtc/blob/master/samples/web/js/adapter.js), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/interop](http://www.webrtc.org/interop).
 
 NB: all the samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.
 
