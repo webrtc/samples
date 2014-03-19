@@ -3,6 +3,7 @@
 <head>
 <meta name="keywords" content="WebRTC, HTML5, JavaScript" />
 <meta name="description" content="Client-side WebRTC code samples." />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="chrome=1" />
 <base target="_blank">
@@ -20,12 +21,14 @@ video {
   <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> getUserMedia ⇒ canvas</h1>
 
   <video autoplay></video>
+  <button>Take snapshot</button>
   <canvas></canvas>
-  <button>TAKE SNAPSHOT</button>
 
-  <p>The <code>MediaStream</code> object <code>stream</code> returned by <code>getUserMedia()</code> is in global scope, so you can inspect it from the console.</p>
+  <p>The <code>drawImage()</code> method is used to draw a frame from the video onto the canvas element.</p>
 
-<a href="https://github.com/GoogleChrome/webrtc/samples/gum1/index.html" title="View source for this page on github" id="viewSource">View source on Github</a>
+  <p>The variables <code>canvas</code>, <code>video</code> and <code>stream</code> are in global scope, so you can inspect them from the console.</p>
+
+<a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/canvas" title="View source for this page on github" id="viewSource">View source on Github</a>
 </div>
 
 <script src="js/main.js"></script>

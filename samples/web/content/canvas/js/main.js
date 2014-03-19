@@ -1,3 +1,15 @@
+// variables available to console
+button = document.querySelector("button");
+video = document.querySelector("video");
+canvas = document.querySelector("canvas");
+canvas.width = 480;
+canvas.height = 360;
+
+button.onclick = function snap() {
+  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+}
+
+
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 var constraints = {audio: false, video: true};
@@ -19,12 +31,3 @@ function errorCallback(error){
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
 
-var button = document.querySelector("button");
-var video = document.querySelector("video");
-var canvas = document.querySelector("canvas");
-canvas.width = 480;
-canvas.height = 360;
-
-button.onclick = function snap() {
-  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-}

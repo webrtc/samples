@@ -31,7 +31,7 @@ margin: 0 0 1.5em 0;
 
 h1 a {
 font-weight: 300;
-margin: 0 13px 0 0;
+margin: 0 10px 0 0;
 }
 
 audio {
@@ -52,6 +52,8 @@ border-radius: 2px;
 color: white;
 font-family: 'Roboto', sans-serif;
 font-size: 1em;
+margin: 0 0 1em 0;
+padding: 0.5em 0.7em 0.5em 0.7em;
 }
 
 button:active {
@@ -139,6 +141,7 @@ padding: 0 0 20px 0;
 
 video {
 background: #222;
+margin: 0 0 1em 0;
 width: 100%;
 }
 
