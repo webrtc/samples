@@ -1,14 +1,23 @@
 // variables in global scope so available to console
-button = document.querySelector("button");
+snapshotButton = document.querySelector("button#snapshot");
+filterButton = document.querySelector("button#filter");
 video = document.querySelector("video");
 canvas = document.querySelector("canvas");
 
 canvas.width = 480;
 canvas.height = 360;
 
-button.onclick = function(){
+var filters = ['blur', 'grayscale', 'invert', 'sepia'];
+
+snapshotButton.onclick = function snap(){
   canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 }
+
+filterButton.onclick = function(){
+  var newIndex = (filters.indexOf(canvas.className) + 1) % filters.length;
+  canvas.className = filters[newIndex];
+}
+
 
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
