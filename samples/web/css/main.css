@@ -1,3 +1,7 @@
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
 a {
 color: #6fa8dc;
 font-weight: 300;
@@ -52,9 +56,9 @@ border: none;
 border-radius: 2px;
 color: white;
 font-family: 'Roboto', sans-serif;
-font-size: 1em;
+font-size: 0.8em;
 margin: 0 0 1em 0;
-padding: 0.5em 0.5em 0.5em 0.5em;
+padding: 0.5em 0.7em 0.6em 0.7em;
 }
 
 button:active {
@@ -105,9 +109,9 @@ white-space: nowrap;
 }
 
 h2 {
-color: #ccc;
-font-family: Arial, sans-serif;
-margin: 1.8em 0 0.6em 0;
+color: #444;
+font-size: 1.1em;
+margin: 0 0 1em 0;
 }
 
 html {
@@ -119,6 +123,11 @@ overflow-y: scroll;
 img {
 border: none;
 max-width: 100%;
+}
+
+input[type=radio] {
+position: relative;
+top: -1px;
 }
 
 p {
@@ -139,6 +148,26 @@ padding: 1em 0 0 0;
 p.borderBelow {
 border-bottom: 1px solid #aaa;
 padding: 0 0 20px 0;
+}
+
+section p:last-of-type {
+margin: 0;
+}
+
+section {
+  border-bottom: 1px solid #eee;
+  margin: 0 0 1.5em 0;
+  padding: 0 0 2em 0;
+}
+
+section:last-of-type {
+  border-bottom: none;
+  padding: 0 0 1em 0;
+}
+
+select {
+display: block;
+margin: 0 0 1em 0;
 }
 
 video {
