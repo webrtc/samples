@@ -70,11 +70,11 @@ background-color: #cf402f;
 }
 
 button[disabled] {
-color: white;
+color: #ccc;
 }
 
-button[disabled] {
-color: #aaa;
+button[disabled]:hover {
+background-color: #d84a38;
 }
 
 canvas {

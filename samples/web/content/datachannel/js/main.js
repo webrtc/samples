@@ -1,6 +1,6 @@
 var pc1, pc2, sendChannel, receiveChannel, pcConstraint, dataConstraint;
-var dataChannelSend = document.querySelector('textarea#dataChannelSendId');
-var dataChannelReceive = document.querySelector('textarea#dataChannelReceiveId');
+var dataChannelSend = document.querySelector('textarea#dataChannelSend');
+var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 var sctpSelect = document.querySelector('input#useSctp');
 var rtpSelect = document.querySelector('input#useRtp');
 var startButton = document.querySelector('button#startButton');
@@ -29,7 +29,7 @@ rtpSelect.onclick = sctpSelect.onclick = function() {
 };
 
 function createConnection() {
-  dataChannelSendId.placeholder = '';
+  dataChannelSend.placeholder = '';
   var servers = null;
   pcConstraint = null;
   dataConstraint = null;
@@ -165,7 +165,7 @@ function onSendChannelStateChange() {
   trace('Send channel state is: ' + readyState);
   if (readyState == 'open') {
     dataChannelSend.disabled = false;
-    dataChannelSendId.focus();
+    dataChannelSend.focus();
     sendButton.disabled = false;
     closeButton.disabled = false;
   } else {

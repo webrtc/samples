@@ -12,27 +12,43 @@
 <link rel="stylesheet" href="../../css/main.css" />
   <style>
   button {
-    margin: 0 10px 0 0;
+    margin: 0 1em 1em 0;
     width: 90px;
   }
   div#buttons {
     margin: 0 0 1em 0;
   }
   div#send {
-    float: left;
-    margin: 0 3em 1em 0;
+    margin: 0 20px 1em 0;
   }
   div#sendReceive {
+    border-bottom: 1px solid #eee;
+    margin: 0;
+    padding: 0 0 10px 0;
+  }
+  div#sendReceive > div {
+    display: inline-block;
+    width: calc(50% - 20px);
+  }
+  form {
     margin: 0 0 1em 0;
+    white-space: nowrap;
   }
   h2 {
     margin: 0 0 0.5em 0;
   }
+  form span {
+    font-weight: 300;
+    margin: 0 1em 0 0;
+    white-space: normal;
+  }
   textarea {
     color: #444;
-    font-size: 1em;
+    font-size: 0.9em;
+    font-weight: 300;
     height: 7.0em;
-    padding: 0.5em;
+    padding: 5px;
+    width: calc(100% - 10px);
   }
   </style>
 </head>
@@ -43,18 +59,16 @@
 
   <div id="buttons">
     <button id="startButton">Start</button>
-    <button id="sendButton">Send</button>
-    <button id="closeButton">Stop</button>
+    <button id="sendButton" disabled>Send</button>
+    <button id="closeButton" disabled>Stop</button>
   </div>
 
-  <p>Choose SCTP or RTP for transmitting data.</p>
-
   <form>
-    <p>Choose SCTP or RTP for transmitting data.</p>
+    <span>Choose protocol for transmitting data:</span>
     <input type="radio" id="useSctp" name="transportbtn" checked />
-    <label for="useSctp">Use SCTP</label>
+    <label for="useSctp">SCTP</label>
     <input type="radio" id="useRtp" name="transportbtn" />
-    <label for="useRtp">Use RTP</label>
+    <label for="useRtp">RTP</label>
   </form>
 
   <div id="sendReceive">
@@ -77,6 +91,7 @@
 <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/datachannel" title="View source for this page on github" id="viewSource">View source on Github</a>
 </div>
 
+<script src="../../js/adapter.js"></script>
 <script src="js/main.js"></script>
 
 <script src="../../js/lib/ga.js"></script>
