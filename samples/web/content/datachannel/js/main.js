@@ -1,4 +1,4 @@
-var pc1, pc2, sendChannel, receiveChannel, pcConstraint, dataConstraint;
+var localConnection, remotePeerConnection, sendChannel, receiveChannel, pcConstraint, dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 var sctpSelect = document.querySelector('input#useSctp');
@@ -51,30 +51,30 @@ function createConnection() {
       rtpSelect.checked = true;
     }
   }
-  pc1 = new RTCPeerConnection(servers, pcConstraint);
-  trace('Created local peer connection object pc1');
+  localConnection = new RTCPeerConnection(servers, pcConstraint);
+  trace('Created local peer connection object localConnection');
 
   try {
     // Data Channel api supported from Chrome M25.
     // You might need to start chrome with  --enable-data-channels flag.
-    sendChannel = pc1.createDataChannel('sendDataChannel', dataConstraint);
+    sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
           'You need Chrome M25 or later with --enable-data-channels flag');
     trace('Create Data channel failed with exception: ' + e.message);
   }
-  pc1.onicecandidate = iceCallback1;
+  localConnection.onicecandidate = iceCallback1;
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
-  pc2 = new RTCPeerConnection(servers, pcConstraint);
-  trace('Created remote peer connection object pc2');
+  remotePeerConnection = new RTCPeerConnection(servers, pcConstraint);
+  trace('Created remote peer connection object remotePeerConnection');
 
-  pc2.onicecandidate = iceCallback2;
-  pc2.ondatachannel = receiveChannelCallback;
+  remotePeerConnection.onicecandidate = iceCallback2;
+  remotePeerConnection.ondatachannel = receiveChannelCallback;
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
   startButton.disabled = true;
   closeButton.disabled = false;
 }
@@ -95,10 +95,10 @@ function closeDataChannels() {
   trace('Closed data channel with label: ' + sendChannel.label);
   receiveChannel.close();
   trace('Closed data channel with label: ' + receiveChannel.label);
-  pc1.close();
-  pc2.close();
-  pc1 = null;
-  pc2 = null;
+  localConnection.close();
+  remotePeerConnection.close();
+  localConnection = null;
+  remotePeerConnection = null;
   trace('Closed peer connections');
   startButton.disabled = false;
   sendButton.disabled = true;
@@ -109,22 +109,22 @@ function closeDataChannels() {
 }
 
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
-  trace('Offer from pc1 \n' + desc.sdp);
-  pc2.setRemoteDescription(desc);
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  localConnection.setLocalDescription(desc);
+  trace('Offer from localConnection \n' + desc.sdp);
+  remotePeerConnection.setRemoteDescription(desc);
+  remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
-  trace('Answer from pc2 \n' + desc.sdp);
-  pc1.setRemoteDescription(desc);
+  remotePeerConnection.setLocalDescription(desc);
+  trace('Answer from remotePeerConnection \n' + desc.sdp);
+  localConnection.setRemoteDescription(desc);
 }
 
 function iceCallback1(event) {
   trace('local ice callback');
   if (event.candidate) {
-    pc2.addIceCandidate(event.candidate,
+    remotePeerConnection.addIceCandidate(event.candidate,
                         onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
@@ -133,7 +133,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   trace('remote ice callback');
   if (event.candidate) {
-    pc1.addIceCandidate(event.candidate,
+    localConnection.addIceCandidate(event.candidate,
                         onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }

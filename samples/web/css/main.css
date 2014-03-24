@@ -1,5 +1,10 @@
+.hidden {
+  display: none;
+}
+
 * {
   font-family: 'Roboto', sans-serif;
+  font-weight: 300;
 }
 
 a {
@@ -110,8 +115,9 @@ white-space: nowrap;
 
 h2 {
 color: #444;
-font-size: 1.1em;
-margin: 0 0 1em 0;
+font-size: 1em;
+margin: 0 0 0.5em 0;
+white-space: nowrap;
 }
 
 html {
@@ -166,14 +172,19 @@ section:last-of-type {
 }
 
 select {
-display: block;
-margin: 0 0 1em 0;
+  margin: 0 1em 1em 0;
+  position: relative;
+  top: -1px;
+}
+
+strong {
+  font-weight: 500;
 }
 
 video {
-background: #222;
-margin: 0 0 1em 0;
-width: 100%;
+  background: #222;
+  margin: 0 0 1em 0;
+  width: 100%;
 }
 
 @media screen and (max-width: 650px) {
