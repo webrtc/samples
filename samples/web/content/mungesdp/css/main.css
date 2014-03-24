@@ -77,7 +77,7 @@ video {
   }
 }
 
-@media screen and (max-height: 300px) {
+@media screen and (max-height: 350px) {
   button {
     margin: 0 15px 15px 0;
     width: 155px;
