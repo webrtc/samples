@@ -11,8 +11,7 @@ addButton.onclick = addServer;
 gatherButton.onclick = start;
 removeButton.onclick = removeServer;
 
-var pc;
-var begin;
+var begin, pc;
 
 function addServer() {
   var scheme = urlInput.value.split(':')[0];
@@ -54,7 +53,7 @@ function start() {
   }
   var transports = document.getElementsByName('transports');
   var iceTransports;
-  for (var i = 0; i < transports.length; ++i) {
+  for (i = 0; i < transports.length; ++i) {
     if (transports[i].checked) {
       iceTransports = transports[i].value;
       break;
@@ -71,12 +70,12 @@ function start() {
 }
 
 function gotDescription(desc) {
-  begin = performance.now();
+  begin = window.performance.now();
   pc.setLocalDescription(desc);
 }
 
 function iceCallback(event) {
-  var elapsed = ((performance.now() - begin) / 1000).toFixed(3);
+  var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   if (event.candidate) {
     output.value += (elapsed + ': ' + event.candidate.candidate);
   } else {
