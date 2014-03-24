@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+<meta name="description" content="Client-side WebRTC code samples." />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<base target="_blank">
+<title>RTCDataChannel</title>
+<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="../../css/main.css" />
+  <style>
+  button {
+    margin: 0 10px 0 0;
+    width: 90px;
+  }
+  div#buttons {
+    margin: 0 0 1em 0;
+  }
+  div#send {
+    float: left;
+    margin: 0 3em 1em 0;
+  }
+  div#sendReceive {
+    margin: 0 0 1em 0;
+  }
+  h2 {
+    margin: 0 0 0.5em 0;
+  }
+  textarea {
+    color: #444;
+    font-size: 1em;
+    height: 7.0em;
+    padding: 0.5em;
+  }
+  </style>
+</head>
+<body>
+<div id="container">
+
+  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> RTCDataChannel</h1>
+
+  <div id="buttons">
+    <button id="startButton">Start</button>
+    <button id="sendButton">Send</button>
+    <button id="closeButton">Stop</button>
+  </div>
+
+  <p>Choose SCTP or RTP for transmitting data.</p>
+
+  <form>
+    <p>Choose SCTP or RTP for transmitting data.</p>
+    <input type="radio" id="useSctp" name="transportbtn" checked />
+    <label for="useSctp">Use SCTP</label>
+    <input type="radio" id="useRtp" name="transportbtn" />
+    <label for="useRtp">Use RTP</label>
+  </form>
+
+  <div id="sendReceive">
+    <div id="send">
+      <h2>Send</h2>
+      <textarea id="dataChannelSend" disabled placeholder="Press Start, enter some text, then press Send."></textarea>
+    </div>
+    <div id="receive">
+      <h2>Receive</h2>
+      <textarea id="dataChannelReceive" disabled></textarea>
+    </div>
+  </div>
+
+  <p>View the console to see logging.</p>
+
+  <p>The <code>RTCPeerConnection</code> objects <code>localPeerConnection</code> and <code>remotePeerConnection</code> are in global scope, so you can inspect them in the console as well.</p>
+
+  <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/#toc-rtcdatachannel" title="RTCDataChannel section of HTML5 Rocks article about WebRTC">Getting Started With WebRTC</a>.</p>
+
+<a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/datachannel" title="View source for this page on github" id="viewSource">View source on Github</a>
+</div>
+
+<script src="js/main.js"></script>
+
+<script src="../../js/lib/ga.js"></script>
+</body>
+</html>
