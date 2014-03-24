@@ -1,58 +1,60 @@
-This is a repository for WebRTC code; the [samples/web/content](https://github.com/GoogleChrome/webrtc/tree/master/samples/web/content/) directory contains a number of client-side HTML/CSS/JavaScript code samples.
+This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples.
 
-Many of these samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
+Many of the samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
 
-All the samples use [adapter.js](https://github.com/GoogleChrome/webrtc/blob/master/samples/web/js/adapter.js), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/interop](http://www.webrtc.org/interop).
+All of the samples use [adapter.js](https://github.com/GoogleChrome/webrtc/blob/master/adapter.js), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/interop](http://www.webrtc.org/interop).
 
-NB: all the samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.
+NB: all samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.
 
 For more information about WebRTC, we maintain a list of [WebRTC Resources](https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit). If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O [WebRTC presentation](http://www.youtube.com/watch?v=p2HzZkd2A40).
 
 Patches and issues welcome!
 
-The samples
-===========
+The demos
+=========
 
-[Constraints and stats](http://googlechrome.github.io/webrtc/samples/js/constraints-and-stats.html)
+[Constraints and stats](http://googlechrome.github.io/webrtc/samples/web/content/constraints-and-stats.html)
 
-[Display createOffer output](http://googlechrome.github.io/webrtc/samples/js/create-offer.html)
+[Display createOffer output](http://googlechrome.github.io/webrtc/samples/web/content/create-offer.html)
 
-[Data channels](http://googlechrome.github.io/webrtc/samples/js/dc1.html)
+[Data channels](http://googlechrome.github.io/webrtc/samples/web/content/datachannel)
 
-[Switch devices](http://googlechrome.github.io/webrtc/samples/js/device-switch.html)
+[Switch devices](http://googlechrome.github.io/webrtc/samples/web/content/device-switch.html)
 
-[DTMF](http://googlechrome.github.io/webrtc/samples/js/dtmf1.html)
+[DTMF](http://googlechrome.github.io/webrtc/samples/web/content/dtmf1.html)
 
-[Face tracking](http://googlechrome.github.io/webrtc/samples/js/face.html)
+[Face tracking](http://googlechrome.github.io/webrtc/samples/web/content/face.html)
 
-[Simple getUserMedia() example](http://googlechrome.github.io/webrtc/samples/js/gum1.html)
+[Simple getUserMedia() example](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia)
 
-[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/js/gum2.html)
+[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/web/content/canvas)
 
-[getUserMedia() + CSS filters + Canvas](http://googlechrome.github.io/webrtc/samples/js/gum3.html)
+[getUserMedia() + Canvas + CSS Filters](http://googlechrome.github.io/webrtc/samples/web/content/filter)
 
-[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/js/gum4.html)
+[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/web/content/resolution)
 
-[ICE Candidate gathering](http://googlechrome.github.io/webrtc/samples/js/ice-servers.html)
+[getUserMedia() with camera/mic selection](http://googlechrome.github.io/webrtc/samples/web/content/sources)
 
-[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/js/local-audio-rendering.html)
+[ICE Candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickleice)
 
-[Local audio rendering + volume](http://googlechrome.github.io/webrtc/samples/js/local-audio-volume.html)
+[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/web/content/local-audio-rendering.html)
 
-[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/samples/js/pc1.html)
+[Local audio rendering + volume](http://googlechrome.github.io/webrtc/samples/web/content/local-audio-volume.html)
 
-[Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/js/pc1-audio.html)
+[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection)
 
-[Multiple peer connections](http://googlechrome.github.io/webrtc/samples/js/multiple.html)
+[Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pc1-audio.html)
 
-[Multiple relay](http://googlechrome.github.io/webrtc/samples/js/multiple-relay.html)
+[Multiple peer connections](http://googlechrome.github.io/webrtc/samples/web/content/multiple.html)
 
-[Munge SDP](http://googlechrome.github.io/webrtc/samples/js/pc1_sdp_munge.html)
+[Multiple relay](http://googlechrome.github.io/webrtc/samples/web/content/multiple-relay.html)
 
-[Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/js/pranswer.html)
+[Munge SDP](http://googlechrome.github.io/webrtc/samples/web/content/pc1_sdp_munge.html)
 
-[Peer connection rehydration](http://googlechrome.github.io/webrtc/samples/js/rehydrate.html)
+[Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pranswer.html)
 
-[Peer connection states](http://googlechrome.github.io/webrtc/samples/js/states.html)
+[Peer connection rehydration](http://googlechrome.github.io/webrtc/samples/web/content/rehydrate.html)
 
-[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/js/webaudio-and-webrtc.html)
+[Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/states.html)
+
+[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/webaudio-and-webrtc.html)
