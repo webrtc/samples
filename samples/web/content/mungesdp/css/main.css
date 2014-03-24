@@ -70,11 +70,25 @@ video {
     width: 86px;
   }
   button:nth-child(3n+0) {
-    margin: 0 0 15px 0;  
+    margin: 0 0 15px 0;
   }
   video {
     height: 96px;
   }
 }
 
-
+@media screen and (max-height: 300px) {
+  button {
+    margin: 0 15px 15px 0;
+    width: 155px;
+  }
+  div#selectSource {
+    margin: 0 0 0.5em 0;
+  }
+  div.source {
+    margin: 0 0 .2em 0;
+  }
+  select {
+    margin: 0 1.5em 0 0;
+  }
+}

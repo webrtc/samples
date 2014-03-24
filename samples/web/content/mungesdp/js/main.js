@@ -20,8 +20,7 @@ var answerSdpTextarea = document.querySelector('div#remote textarea');
 var audioSelect = document.querySelector('select#audioSrc');
 var videoSelect = document.querySelector('select#videoSrc');
 
-//audioSelect.onchange = changeDevices;
-//videoSelect.onchange = changeDevices;
+audioSelect.onchange = videoSelect.onchange = getMedia;
 
 var localVideo = document.querySelector('div#local video');
 var remoteVideo = document.querySelector('div#remote video');
@@ -52,10 +51,6 @@ function getSources() {
 function gotSources(sourceInfos) {
   var audioCount = 0;
   var videoCount = 0;
-  audioSelect.disabled = true;
-  videoSelect.disabled = true;
-  audioSelect.innerHTML = '';
-  videoSelect.innerHTML = '';
   for (var i = 0; i < sourceInfos.length; i++) {
     var option = document.createElement('option');
     option.value = sourceInfos[i].id;
@@ -74,42 +69,32 @@ function gotSources(sourceInfos) {
       videoSelect.appendChild(option);
     }
   }
-  audioSelect.disabled = false;
-  videoSelect.disabled = false;
 }
 
 function getMedia() {
-  audioSelect.disabled = true;
-  videoSelect.disabled = true;
   getMediaButton.disabled = true;
   createPeerConnectionButton.disabled = false;
 
-  var constraints = {audio: true; video: true};
+  if (!!localStream) {
+    localVideo.src = null;
+    localStream.stop();
+  }
+  var audioSource = audioSelect.value;
+  trace('Selected audio source: ' + audioSource);
+  var videoSource = videoSelect.value;
+  trace('Selected video source: ' + videoSource);
 
-  if (audioSelect.options.length > 0) {
-    audioSource = audioSelect.value;
-    trace('Selected audioSource :' + audioSource);
-    constraints.audio = {
-      optional: [{
-        sourceId: audioSource
-      }]
+  var constraints = {
+    audio: {
+      optional: [{sourceId: audioSource}]
+    },
+    video: {
+      optional: [{sourceId: videoSource}]
     }
-  }
-
-  if (videoSelect.options.length > 0) {
-    videoSource = videoSelect.value;
-    trace('Selected videoSource :' + videoSource);
-    constraints.video = {
-      optional: [{
-        sourceId: videoSource
-      }]
-    };
-  }
-
-  trace('Requesting local stream');
-  // Call getUserMedia via the polyfill adapter.js.
+  };
+  trace('Requested local stream');
   getUserMedia(constraints, gotStream, function(e){
-    console.log('getUserMedia() error: ', e);
+    console.log("navigator.getUserMedia error: ", e);
   });
 }
 
@@ -232,8 +217,6 @@ function hangup() {
   remotePeerConnection.close();
   localPeerConnection = null;
   remotePeerConnection = null;
-  audioSelect.disabled = false;
-  videoSelect.disabled = false;
   offerSdpTextarea.disabled = true;
   answerSdpTextarea.disabled = true;
   getMediaButton.disabled = false;

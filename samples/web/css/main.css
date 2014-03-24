@@ -41,7 +41,7 @@ margin: 0 0 1.5em 0;
 h1 a {
 font-weight: 300;
 margin: 0 10px 0 0;
-white-space: normal;
+white-space: nowrap;
 }
 
 audio {
@@ -110,7 +110,6 @@ font-family: 'Roboto', sans-serif;
 font-weight: 700;
 margin: 0 0 0.8em 0;
 padding: 0 0 0.4em 0;
-white-space: nowrap;
 }
 
 h2 {
@@ -194,6 +193,9 @@ video {
 }
 
 @media screen and (max-width: 550px) {
+  button:active {
+    background-color: darkRed;
+  }
   h1 {
     font-size: 22px;
   }
