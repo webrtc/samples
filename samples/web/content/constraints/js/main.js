@@ -1,27 +1,48 @@
-<html>
-<head>
-<title>Constraints and Statistics</title>
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="../js/adapter.js"></script>
+var getMediaButton = document.querySelector('button#getMedia');
+var createPeerConnectionButton = document.querySelector('button#createPeerConnection');
+var createOfferButton = document.querySelector('button#createOffer');
+var setOfferButton = document.querySelector('button#setOffer');
+var createAnswerButton = document.querySelector('button#createAnswer');
+var setAnswerButton = document.querySelector('button#setAnswer');
+var hangupButton = document.querySelector('button#hangup');
 
-<style type="text/css">
-td { vertical-align: top; }
-</style>
+getMediaButton.onclick = getMedia;
+createPeerConnectionButton.onclick = createPeerConnection;
+createOfferButton.onclick = createOffer;
+setOfferButton.onclick = setOffer;
+createAnswerButton.onclick = createAnswer;
+setAnswerButton.onclick = setAnswer;
+hangupButton.onclick = hangup;
 
-<script>
+var frameRateInput = document.querySelector('input#frameRate');
+var minHeightInput = document.querySelector('input#minHeight');
+var maxHeightInput = document.querySelector('input#maxHeight');
+var minWidthInput = document.querySelector('input#minWidth');
+var maxWidthInput = document.querySelector('input#maxWidth');
+
+var cameraConstraintsDiv = document.querySelector('div#cameraConstraints');
+
+var offerSdpTextarea = document.querySelector('div#local textarea');
+var answerSdpTextarea = document.querySelector('div#remote textarea');
+
+var audioSelect = document.querySelector('select#audioSrc');
+var videoSelect = document.querySelector('select#videoSrc');
+
+audioSelect.onchange = videoSelect.onchange = getMedia;
+
+var localVideo = document.querySelector('div#local video');
+var remoteVideo = document.querySelector('div#remote video');
+
+var selectSourceDiv = document.querySelector('div#selectSource');
+
+var localPeerConnection, remotePeerConnection;
+var localStream;
+
+
 var mystream;
-var pc1;
-var pc2;
 var bytesPrev = 0;
 var timestampPrev = 0;
 
-$ = function(id) {
-  return document.getElementById(id);
-}
-
-function log(txt) {
-  console.log(txt);
-}
 
 function openCamera() {
   if (mystream) {
@@ -35,30 +56,30 @@ function openCamera() {
 function gotStream(stream) {
   log("GetUserMedia succeeded");
   mystream = stream;
-  attachMediaStream($("local-video"), stream);
+  attachMediaStream(localVideo, stream);
 }
 
 function cameraConstraints() {
   var constraints = {};
   constraints.audio = true;
   constraints.video = { mandatory: {}, optional: [] };
-  if ($("minwidth").value != "0") {
-    constraints.video.mandatory.minWidth = $("minwidth").value;
+  if (minWidthInput.value != "0") {
+    constraints.video.mandatory.minWidth = minWidthInput.value;
   }
-  if ($("maxwidth").value != "0") {
-    constraints.video.mandatory.maxWidth = $("maxwidth").value;
+  if (maxWidthInput.value != "0") {
+    constraints.video.mandatory.maxWidth = maxWidthInput.value;
   }
-  if ($("minheight").value != "0") {
-    constraints.video.mandatory.minHeight = $("minheight").value;
+  if (minHeightInput.value != "0") {
+    constraints.video.mandatory.minHeight = minHeightInput.value;
   }
-  if ($("maxheight").value != "0") {
-    constraints.video.mandatory.maxHeight = $("maxheight").value;
+  if (maxHeightInput.value != "0") {
+    constraints.video.mandatory.maxHeight = maxHeightInput.value;
   }
-  if ($("frameRate").value != "0") {
-    constraints.video.mandatory.minFrameRate = $("frameRate").value;
+  if (frameRateInput.value != "0") {
+    constraints.video.mandatory.minFrameRate = frameRateInput.value;
   }
   log('Camera constraints are ' + JSON.stringify(constraints));
-  $("cameraConstraints").innerHTML = JSON.stringify(constraints, null, ' ');
+  cameraConstraintsDiv.innerHTML = JSON.stringify(constraints, null, ' ');
   return constraints;
 }
 
@@ -73,43 +94,43 @@ function streamConstraints() {
 }
 
 function connect() {
-  pc1 = new RTCPeerConnection(null);
-  pc2 = new RTCPeerConnection(null);
-  pc1.addStream(mystream, streamConstraints());
-  log('PC1 creating offer');
-  pc1.onnegotiationeeded = function() {
-    log('Negotiation needed - PC1');
+  localPeerConnection = new RTCPeerConnection(null);
+  remotePeerConnection = new RTCPeerConnection(null);
+  localPeerConnection.addStream(mystream, streamConstraints());
+  log('localPeerConnection creating offer');
+  localPeerConnection.onnegotiationeeded = function() {
+    log('Negotiation needed - localPeerConnection');
   }
-  pc2.onnegotiationeeded = function() {
-    log('Negotiation needed - PC2');
+  remotePeerConnection.onnegotiationeeded = function() {
+    log('Negotiation needed - remotePeerConnection');
   }
-  pc1.onicecandidate = function(e) {
-    log('Candidate PC1');
+  localPeerConnection.onicecandidate = function(e) {
+    log('Candidate localPeerConnection');
     if (e.candidate) {
-      pc2.addIceCandidate(new RTCIceCandidate(e.candidate),
+      remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
                           onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   }
-  pc2.onicecandidate = function(e) {
-    log('Candidate PC2');
+  remotePeerConnection.onicecandidate = function(e) {
+    log('Candidate remotePeerConnection');
     if (e.candidate) {
-      pc1.addIceCandidate(new RTCIceCandidate(e.candidate),
+      localPeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
                           onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   }
-  pc2.onaddstream = function(e) {
-    log('PC2 got stream');
+  remotePeerConnection.onaddstream = function(e) {
+    log('remotePeerConnection got stream');
     attachMediaStream($('remote-video'), e.stream);
     log('Remote video is ' + $('remote-video').src);
   }
-  pc1.createOffer(function(desc) {
-    log('PC1 offering');
-    pc1.setLocalDescription(desc);
-    pc2.setRemoteDescription(desc);
-    pc2.createAnswer(function(desc2) {
-      log('PC2 answering');
-      pc2.setLocalDescription(desc2);
-      pc1.setRemoteDescription(desc2);
+  localPeerConnection.createOffer(function(desc) {
+    log('localPeerConnection offering');
+    localPeerConnection.setLocalDescription(desc);
+    remotePeerConnection.setRemoteDescription(desc);
+    remotePeerConnection.createAnswer(function(desc2) {
+      log('remotePeerConnection answering');
+      remotePeerConnection.setLocalDescription(desc2);
+      localPeerConnection.setRemoteDescription(desc2);
     });
   });
 }
@@ -161,9 +182,9 @@ var statCollector = setInterval(function() {
   }
 
   display("No stream");
-  if (pc2 && pc2.getRemoteStreams()[0]) {
-    if (pc2.getStats) {
-      pc2.getStats(function(rawStats) {
+  if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
+    if (remotePeerConnection.getStats) {
+      remotePeerConnection.getStats(function(rawStats) {
         stats = new AugumentedStatsResponse(rawStats);
         var statsString = '';
         var results = stats.result();
@@ -198,7 +219,7 @@ var statCollector = setInterval(function() {
         $('receiverstats').innerHTML = statsString;
         display(videoFlowInfo);
       });
-      pc1.getStats(function(stats) {
+      localPeerConnection.getStats(function(stats) {
         var statsString = '';
         var results = stats.result();
         for (var i = 0; i < results.length; ++i) {
@@ -296,82 +317,3 @@ function dumpStats(obj) {
 function showValue(name, value) {
   $(name + 'Display').innerHTML = value;
 }
-</script>
-</head>
-<body>
-<h1>Constraints and Statistics</h1>
-<p>This page is meant to give some hints on how one can use constraints and statistics in WebRTC applications.</p>
-<p>
-The form to the left gives constraints you can set on the getUserMedia call.
-When you hit "open", it will (re)open the camera with these constraints.
-<p>
-The left picture is the local preview. The right picture is the picture
-after being passed through the PeerConnection (locally).
-<p>
-Underneath the picture you will see a running display of how many Kbits/sec
-the video feed uses for transmission.
-<hr>
-<table>
-<tr>
-<td align="top">
-<h2>getUserMedia constraints</h2>
-<table>
-<tr><td><td>Min<td>Max
-<tr><td>Horizontal
-<td><input type="range" id="minwidth" min="0" max="1280" value="300"
-  onchange="showValue(this.id, this.value)">
-<td><input type="range" id="maxwidth" min="0" max="1280" value="640"
-  onchange="showValue(this.id, this.value)">
-<td><span id="minwidthDisplay">300</span>-<span id="maxwidthDisplay">640</span>
-<tr><td>Vertical
-<td><input type="range" id="minheight" min="0" max="1280" value="200"
-  onchange="showValue(this.id, this.value)">
-<td><input type="range" id="maxheight" min="0" max="1280" value="480"
-  onchange="showValue(this.id, this.value)">
-<td><span id="minheightDisplay">200</span>-<span id="maxheightDisplay">480</span>
-<tr><td>
-FrameRate
-<td colspan=2><input type="range" id="frameRate" min="0" max="60" value="30"
-  onchange="showValue(this.id, this.value)">
-<td><span id="frameRateDisplay">30</span>
-</table>
-<input type="submit" name="capture" value="Capture!" onclick="openCamera()">
-</td>
-<td align="top">
-<h2>addStream constraints</h2>
-Maximum bitrate
-<input type="range" id="bandwidth" min="0" max="2000" value="1000"
-  onchange="showValue(this.id, this.value)">
-<span id="bandwidthDisplay">1000</span>
-<br>
-<input type="submit" name="connect" value="Connect!" onclick="connect()">
-</td>
-</tr>
-<tr>
-<td>
-<video id="local-video" autoplay width=400 muted="true"></video>
-</td>
-<td>
-<video id="remote-video" autoplay width=400></video>
-</td>
-<tr>
-<td><span id="local-video-stats"></span>
-<td><span id="remote-video-stats"></span>
-<br>
-<span id="bitrate">Bitrate unknown</span>
-</td>
-</tr>
-<tr>
-<td><pre><span id="cameraConstraints"></span></pre>
-<td><pre><span id="addStreamConstraints"></span></pre>
-</table>
-<h2>Statistics report display</h2>
-<table>
-<tr>
-<th>Sender side<th>Receiver side
-<tr>
-<td align="top"><div id="senderstats">Stats will appear here.</div>
-<td align="top"><div id="receiverstats">Stats will appear here.</div>
-</table>
-</body>
-</html>

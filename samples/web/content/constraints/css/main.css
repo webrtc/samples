@@ -1,0 +1,87 @@
+button {
+  margin: 0 20px 25px 0;
+  vertical-align: top;
+  width: 155px;
+}
+div#getUserMedia {
+  padding: 0 0 8px 0;
+  border-bottom: 1px solid #eee;
+}
+div#statistics {
+  font-family: 'Inconsolata', 'Courier New', monospace;
+}
+section#constraints > div {
+  margin: 0 0 20px 0;
+}
+div.input {
+  display: inline-block;
+  margin: 0 82px 0 0;
+  vertical-align: top;
+}
+div.input > div {
+  margin: 0 0 20px 0;
+  vertical-align: top;
+}
+div.output {
+  background-color: #eee;
+  display: inline-block;
+  font-family: 'Inconsolata', 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 10px 10px 10px 25px;
+  position: relative;
+  top: 10px;
+  white-space: pre;
+  width: calc(50% - 99px);
+}
+section#video > div {
+  display: inline-block;
+  margin: 0 20px 0 0;
+  vertical-align: top;
+  width: calc(50% - 22px);
+}
+h2 {
+  margin: 0 0 1.5em 0;
+}
+section#constraints label {
+  display: inline-block;
+  margin: 0 7px 0 0;
+  width: 154px;
+}
+section#video {
+  width: calc(100% + 20px);
+}
+video {
+  height: 225px;
+}
+
+@media screen and (max-width: 550px) {
+  button {
+    font-weight: 500;
+    height: 56px;
+    line-height: 1.3em;
+    margin: 0 7px 15px 0;
+    width: 86px;
+  }
+  button:nth-child(3n+0) {
+    margin: 0 0 15px 0;
+  }
+  video {
+    height: 96px;
+  }
+}
+
+@media screen and (max-height: 350px) {
+  button {
+    margin: 0 15px 15px 0;
+    width: 155px;
+  }
+  div#selectSource {
+    margin: 0 0 0.5em 0;
+  }
+  div.source {
+    margin: 0 0 .2em 0;
+  }
+  select {
+    margin: 0 1.5em 0 0;
+  }
+}

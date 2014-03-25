@@ -105,17 +105,18 @@ div#links {
 }
 
 h1 {
-border-bottom: 1px solid #aaa;
+border-bottom: 1px solid #ccc;
 font-family: 'Roboto', sans-serif;
-font-weight: 700;
+font-weight: 500;
 margin: 0 0 0.8em 0;
-padding: 0 0 0.4em 0;
+padding: 0 0 0.2em 0;
 }
 
 h2 {
 color: #444;
 font-size: 1em;
-margin: 0 0 0.5em 0;
+font-weight: 500;
+margin: 0 0 0.8em 0;
 white-space: nowrap;
 }
 
@@ -133,6 +134,11 @@ max-width: 100%;
 input[type=radio] {
 position: relative;
 top: -1px;
+}
+
+input[type=range] {
+position: relative;
+top: 2px;
 }
 
 p {
@@ -161,8 +167,8 @@ margin: 0;
 
 section {
   border-bottom: 1px solid #eee;
-  margin: 0 0 1.5em 0;
-  padding: 0 0 2em 0;
+  margin: 0 0 30px 0;
+  padding: 0 0 20px 0;
 }
 
 section:last-of-type {
@@ -182,7 +188,7 @@ strong {
 
 video {
   background: #222;
-  margin: 0 0 1em 0;
+  margin: 0 0 20px 0;
   width: 100%;
 }
 

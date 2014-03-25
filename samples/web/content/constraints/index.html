@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+<meta name="description" content="Client-side WebRTC code samples." />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+
+<base target="_blank">
+
+<title>Constraints and statistics</title>
+
+<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+<link rel="stylesheet" href="../../css/main.css" />
+<link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+<div id="container">
+
+  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> Constraints &amp; statistics</h1>
+
+  <section id="blurb">
+    <p>This demo shows ways to use constraints and statistics in WebRTC applications.</p>
+    <p>Click <strong>Capture</strong> to (re)open the camera with these constraints.</p>
+    <p>The lefthand video shows the output of <code>getUserMedia()</code>; on the right is the video after being passed through the local peer connection.</p>
+    <p>Below the videos is a running display of how many kb/s the video feed uses for transmission.</p>
+  </section>
+
+  <section id="constraints">
+      <div id="getUserMedia">
+        <div class="input">
+          <h2>getUserMedia constraints</h2>
+          <div id="minWidth">
+            <label>Min width <span>300</span>px:</label>
+            <input type="range" min="0" max="1280" value="300">
+          </div>
+          <div id="maxWidth">
+            <label>Max width <span>640</span>px:</label>
+            <input type="range" min="0" max="1280" value="640">
+          </div>
+          <div id="minHeight">
+            <label>Min height <span>200</span>px:</label>
+            <input type="range" min="0" max="1280" value="200">
+          </div>
+          <div id="maxHeight">
+            <label>Max height <span>480</span>px:</label>
+            <input type="range" min="0" max="1280" value="480">
+          </div>
+          <div id="frameRate">
+            <label>Frame rate <span>30</span>fps:</label>
+            <input id="frameRate" type="range" min="0" max="60" value="30">
+          </div>
+        </div>
+        <div id="getUserMediaConstraints" class="output">{
+    audio: true,
+    video: {
+        mandatory: {
+            minWidth: 300,
+            maxWidth: 640,
+            minHeight: 200,
+            maxHeight: 480,
+            minFrameRate: 30
+        },
+        optional: []
+    }
+}
+</div>
+     </div>
+
+      <div id="addStream">
+        <div class="input">
+          <h2>addStream constraints</h2>
+          <div id="maxBitrate">
+            <label>Max bitrate <span>1000</span>kb/s:</label>
+            <input type="range"  min="0" max="2000" value="1000">
+          </div>
+        </div>
+        <div id="addStreamConstraints" class="output">{
+    mandatory: {},
+    optional: [
+        {
+            bandwidth: 1000
+        }
+    ]
+}</div>
+      </div>
+
+  </section>
+
+  <section id="video">
+    <div id="local">
+      <button id="capture">Get media</button>
+      <video autoplay muted></video>
+      <div>Video dimensions: 640x480px</div>
+    </div>
+    <div id="remote">
+      <button id="connect">Create peer connection</button>
+      <video autoplay muted></video>
+      <div>Video dimensions: 640x480px</div>
+    </div>
+  </section>
+
+  <section>
+  <h2>Statistics</h2>
+  <div id="statistics">
+    Statistics report display
+
+    Sender side Receiver side
+    Report 0
+
+    Timestamp:Tue Mar 25 2014 14:15:16 GMT+0000 (GMT)
+    id Channel-audio-1 type googComponent
+    googLocalCertificateId:googCertificate_1B:18:54:3D:A6:32:DC:B3:81:7E:3F:B0:8E:D8:EE:26:E0:61:F4:CF:2D:A9:0B:E9:F1:6B:12:74:41:1F:A0:EF
+    googComponent:1
+    googRemoteCertificateId:googCertificate_1B:18:54:3D:A6:32:DC:B3:81:7E:3F:B0:8E:D8:EE:26:E0:61:F4:CF:2D:A9:0B:E9:F1:6B:12:74:41:1F:A0:EF
+    Report 1
+
+    Timestamp:Tue Mar 25 2014 14:15:16 GMT+0000 (GMT)
+    id Conn-audio-1-0 type googCandidatePair
+    googRemoteAddress:192.168.1.8:64667
+    googWritable:true
+    googReadable:true
+    googLocalAddress:192.168.1.8:60312
+    googLocalCandidateType:local
+    googTransportType:udp
+    googChannelId:Channel-audio-1
+    googActiveConnection:true
+    bytesReceived:2419
+    googRemoteCandidateType:local
+    bytesSent:916954
+    googRtt:0
+    Report 2
+
+    Timestamp:Tue Mar 25 2014 14:15:16 GMT+0000 (GMT)
+    id bweforvideo type VideoBwe
+    googActualEncBitrate:453544
+    googAvailableSendBandwidth:462872
+    googRetransmitBitrate:0
+    googAvailableReceiveBandwidth:0
+    googTargetEncBitrate:462872
+    googBucketDelay:0
+    googTransmitBitrate:453544
+    Report 3
+
+    Timestamp:Tue Mar 25 2014 14:15:16 GMT+0000 (GMT)
+    id googCertificate_1B:18:54:3D:A6:32:DC:B3:81:7E:3F:B0:8E:D8:EE:26:E0:61:F4:CF:2D:A9:0B:E9:F1:6B:12:74:41:1F:A0:EF type googCertificate
+    googFingerprint:1B:18:54:3D:A6:32:DC:B3:81:7E:3F:B0:8E:D8:EE:26:E0:61:F4:CF:2D:A9:0B:E9:F1:6B:12:74:41:1F:A0:EF
+    googDerBase64:MIIBmTCCAQKgAwIBAgIEeNRQsTANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDEwZXZWJSVEMwHhcNMTQwMzIyMTcxOTU0WhcNMTQwNDIxMTcxOTU0WjARMQ8wDQYDVQQDEwZXZWJSVEMwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAL5nLk/3NJVakys/tY1u0RfJNAwVkV8eOuQwGR4sUD5KblVFhOVzbBiMOpkr/I4f3ZmDHyKUqzfj41BxhQjPA+7QTQ2m2pTaFNKBHePm/7nIhB7Pdn5IfdxW+YPpd+fLwqyF+rKRwOcZi/ygm4SwFnH1lVXGqF4ib7DVwXrjmQQNAgMBAAEwDQYJKoZIhvcNAQELBQADgYEAESOnNV7flw/jGJqtQ0kCzmudLllRZNW7cnNb06easqPwyPvPQr28fhPj6EzWi4Z4nTTyW3l/FfY7SxNgfu6BtCWnLF37C23uf26MCHljAnMEsnYXQrvJXW/oY51HRI+wH1Mq4tkHXyzMs8sqp5rSSY1aTYJ+jUwDCs+DKHO6eUs=
+    googFingerprintAlgorithm:sha-256
+  </div>
+  </section>
+
+  <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/constraints" title="View source for this page on Github" id="viewSource">View source on Github</a>
+
+</div>
+
+</div>
+
+<script src="js/main.js"></script>
+
+<script src="../../js/lib/ga.js"></script>
+</body>
+</html>
