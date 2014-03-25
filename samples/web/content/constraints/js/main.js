@@ -1,134 +1,137 @@
 var getMediaButton = document.querySelector('button#getMedia');
 var createPeerConnectionButton = document.querySelector('button#createPeerConnection');
-var createOfferButton = document.querySelector('button#createOffer');
-var setOfferButton = document.querySelector('button#setOffer');
-var createAnswerButton = document.querySelector('button#createAnswer');
-var setAnswerButton = document.querySelector('button#setAnswer');
-var hangupButton = document.querySelector('button#hangup');
 
 getMediaButton.onclick = getMedia;
 createPeerConnectionButton.onclick = createPeerConnection;
-createOfferButton.onclick = createOffer;
-setOfferButton.onclick = setOffer;
-createAnswerButton.onclick = createAnswer;
-setAnswerButton.onclick = setAnswer;
-hangupButton.onclick = hangup;
 
-var frameRateInput = document.querySelector('input#frameRate');
-var minHeightInput = document.querySelector('input#minHeight');
-var maxHeightInput = document.querySelector('input#maxHeight');
-var minWidthInput = document.querySelector('input#minWidth');
-var maxWidthInput = document.querySelector('input#maxWidth');
+var minWidthInput = document.querySelector('div#minWidth input');
+var maxWidthInput = document.querySelector('div#maxWidth input');
+var minHeightInput = document.querySelector('div#minHeight input');
+var maxHeightInput = document.querySelector('div#maxHeight input');
+var framerateInput = document.querySelector('div#framerate input');
+var maxBitrateInput = document.querySelector('div#maxBitrate input');
 
-var cameraConstraintsDiv = document.querySelector('div#cameraConstraints');
+minWidthInput.onchange = maxWidthInput.onchange =
+  minHeightInput.onchange = maxHeightInput.onchange =
+  framerateInput.onchange = maxBitrateInput.onchange =
+  displayRangeValue;
 
-var offerSdpTextarea = document.querySelector('div#local textarea');
-var answerSdpTextarea = document.querySelector('div#remote textarea');
+var getUserMediaConstraintsDiv = document.querySelector('div#getUserMediaConstraints');
+var addStreamConstraintsDiv = document.querySelector('div#addStreamConstraints');
+var bitrateDiv = document.querySelector('div#bitrate');
+var senderStatsDiv = document.querySelector('div#senderStats');
+var receiverStatsDiv = document.querySelector('div#receiverStats');
 
-var audioSelect = document.querySelector('select#audioSrc');
-var videoSelect = document.querySelector('select#videoSrc');
-
-audioSelect.onchange = videoSelect.onchange = getMedia;
-
-var localVideo = document.querySelector('div#local video');
-var remoteVideo = document.querySelector('div#remote video');
-
-var selectSourceDiv = document.querySelector('div#selectSource');
+var localVideo = document.querySelector('div#localVideo video');
+var remoteVideo = document.querySelector('div#remoteVideo video');
+var localVideoStatsDiv = document.querySelector('div#localVideo div');
+var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 
 var localPeerConnection, remotePeerConnection;
 var localStream;
-
-
-var mystream;
 var bytesPrev = 0;
 var timestampPrev = 0;
 
+displayGetUserMediaConstraints();
+displayAddStreamConstraints();
 
-function openCamera() {
-  if (mystream) {
-    mystream.stop();
+function getMedia() {
+  if (localStream) {
+    localStream.stop();
   }
-  getUserMedia(cameraConstraints(), gotStream, function() {
-     log("GetUserMedia failed");
+  getUserMedia(getUserMediaConstraints(), gotStream, function(e) {
+     console.log("GetUserMedia error: ", e);
     });
 }
 
 function gotStream(stream) {
-  log("GetUserMedia succeeded");
-  mystream = stream;
+  console.log("GetUserMedia succeeded");
+  localStream = stream;
   attachMediaStream(localVideo, stream);
 }
 
-function cameraConstraints() {
+function getUserMediaConstraints() {
   var constraints = {};
   constraints.audio = true;
-  constraints.video = { mandatory: {}, optional: [] };
-  if (minWidthInput.value != "0") {
-    constraints.video.mandatory.minWidth = minWidthInput.value;
+  constraints.video = {mandatory: {}, optional: []};
+  var mandatory = constraints.video.mandatory;
+  if (minWidthInput.value !== "0") {
+    mandatory.minWidth = minWidthInput.value;
   }
-  if (maxWidthInput.value != "0") {
-    constraints.video.mandatory.maxWidth = maxWidthInput.value;
+  if (maxWidthInput.value !== "0") {
+    mandatory.maxWidth = maxWidthInput.value;
   }
-  if (minHeightInput.value != "0") {
-    constraints.video.mandatory.minHeight = minHeightInput.value;
+  if (minHeightInput.value !== "0") {
+    mandatory.minHeight = minHeightInput.value;
   }
-  if (maxHeightInput.value != "0") {
-    constraints.video.mandatory.maxHeight = maxHeightInput.value;
+  if (maxHeightInput.value !== "0") {
+    mandatory.maxHeight = maxHeightInput.value;
   }
-  if (frameRateInput.value != "0") {
-    constraints.video.mandatory.minFrameRate = frameRateInput.value;
+  if (framerateInput.value !== "0") {
+    mandatory.minFramerate = framerateInput.value;
   }
-  log('Camera constraints are ' + JSON.stringify(constraints));
-  cameraConstraintsDiv.innerHTML = JSON.stringify(constraints, null, ' ');
   return constraints;
 }
 
-function streamConstraints() {
-  var constraints = { mandatory: {}, optional: [] };
-  if ($("bandwidth").value != "0") {
-    constraints.optional[0] = { 'bandwidth' : $('bandwidth').value };
+function displayGetUserMediaConstraints(){
+  var constraints = getUserMediaConstraints();
+  console.log('getUserMedia constraints', constraints);
+  getUserMediaConstraintsDiv.textContent =
+    JSON.stringify(constraints, null, '    ');
+}
+
+function addStreamConstraints() {
+  var constraints = {mandatory: {}, optional: []};
+  var maxBitrate = maxBitrateInput.value;
+  if (maxBitrate !== "0") {
+    constraints.optional[0] = {'bandwidth': maxBitrate};
   }
-  log('Constraints are ' + JSON.stringify(constraints));
-  $("addStreamConstraints").innerHTML = JSON.stringify(constraints, null, ' ');
   return constraints;
 }
 
-function connect() {
+function displayAddStreamConstraints(){
+  var constraints = addStreamConstraints();
+  console.log('addStream() constraints', constraints);
+  addStreamConstraintsDiv.textContent =
+    JSON.stringify(constraints, null, '    ');
+}
+
+function createPeerConnection() {
   localPeerConnection = new RTCPeerConnection(null);
   remotePeerConnection = new RTCPeerConnection(null);
-  localPeerConnection.addStream(mystream, streamConstraints());
-  log('localPeerConnection creating offer');
+  localPeerConnection.addStream(localStream, addStreamConstraints());
+  console.log('localPeerConnection creating offer');
   localPeerConnection.onnegotiationeeded = function() {
-    log('Negotiation needed - localPeerConnection');
+    console.log('Negotiation needed - localPeerConnection');
   }
   remotePeerConnection.onnegotiationeeded = function() {
-    log('Negotiation needed - remotePeerConnection');
+    console.log('Negotiation needed - remotePeerConnection');
   }
   localPeerConnection.onicecandidate = function(e) {
-    log('Candidate localPeerConnection');
+    console.log('Candidate localPeerConnection');
     if (e.candidate) {
       remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
                           onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   }
   remotePeerConnection.onicecandidate = function(e) {
-    log('Candidate remotePeerConnection');
+    console.log('Candidate remotePeerConnection');
     if (e.candidate) {
-      localPeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
-                          onAddIceCandidateSuccess, onAddIceCandidateError);
+      var newCandidate = new RTCIceCandidate(e.candidate);
+      localPeerConnection.addIceCandidate(newCandidate, onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   }
   remotePeerConnection.onaddstream = function(e) {
-    log('remotePeerConnection got stream');
-    attachMediaStream($('remote-video'), e.stream);
-    log('Remote video is ' + $('remote-video').src);
+    console.log('remotePeerConnection got stream');
+    attachMediaStream(remoteVideo, e.stream);
+    console.log('Remote video is ' + remoteVideo.src);
   }
   localPeerConnection.createOffer(function(desc) {
-    log('localPeerConnection offering');
+    console.log('localPeerConnection offering');
     localPeerConnection.setLocalDescription(desc);
     remotePeerConnection.setRemoteDescription(desc);
     remotePeerConnection.createAnswer(function(desc2) {
-      log('remotePeerConnection answering');
+      console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(desc2);
       localPeerConnection.setRemoteDescription(desc2);
     });
@@ -156,8 +159,8 @@ AugumentedStatsResponse.prototype.collectAddressPairs = function(componentId) {
     this.addressPairMap[componentId] = [];
     for (var i = 0; i < this.response.result().length; ++i) {
       var res = this.response.result()[i];
-      if (res.type == 'googCandidatePair' &&
-          res.stat('googChannelId') == componentId) {
+      if (res.type === 'googCandidatePair' &&
+          res.stat('googChannelId') === componentId) {
         this.addressPairMap[componentId].push(res);
       }
     }
@@ -177,11 +180,11 @@ AugumentedStatsResponse.prototype.get = function(key) {
 
 // Display statistics
 var statCollector = setInterval(function() {
-  var display = function(str) {
-    $('bitrate').innerHTML = str;
+  var display = function(string) {
+    bitrateDiv.textContent = 'Bitrate: ' + string;
   }
 
-  display("No stream");
+//  display("No stream");
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
     if (remotePeerConnection.getStats) {
       remotePeerConnection.getStats(function(rawStats) {
@@ -200,7 +203,7 @@ var statCollector = setInterval(function() {
             // with googFrameHeightReceived defined.
             // Should check for mediatype = video, but this is not
             // implemented yet.
-            if (res.type == 'ssrc' && res.stat('googFrameHeightReceived')) {
+            if (res.type === 'ssrc' && res.stat('googFrameHeightReceived')) {
               // This is the video flow.
               videoFlowInfo = extractVideoFlowInfo(res, stats);
             }
@@ -216,7 +219,8 @@ var statCollector = setInterval(function() {
             }
           }
         }
-        $('receiverstats').innerHTML = statsString;
+        receiverStatsDiv.innerHTML =
+          '<h2>Receiver</h2>' + statsString;
         display(videoFlowInfo);
       });
       localPeerConnection.getStats(function(stats) {
@@ -231,24 +235,22 @@ var statCollector = setInterval(function() {
             statsString += dumpStats(res);
           }
         }
-        $('senderstats').innerHTML = statsString;
+        senderStatsDiv.innerHTML =
+          '<h2>Sender</h2>' + statsString;
       });
     } else {
       display('No stats function. Use at least Chrome 24.0.1285');
     }
   } else {
-    log('Not connected yet');
+    console.log('Not connected yet');
   }
   // Collect some stats from the video tags.
-  local_video = $('local-video');
-  if (local_video) {
-     $('local-video-stats').innerHTML = local_video.videoWidth +
-         'x' + local_video.videoHeight;
+  if (localVideo) {
+     localVideoStatsDiv.innerHTML = 'Video dimensions: '
+       + localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
   }
-  remote_video = $('remote-video');
-  if (remote_video) {
-     $('remote-video-stats').innerHTML = remote_video.videoWidth +
-         'x' + remote_video.videoHeight;
+  if (remoteVideo.src) {
+     remoteVideoStatsDiv.innerHTML = 'Video dimensions: ' + remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight + 'px';
   }
 }, 1000);
 
@@ -256,9 +258,9 @@ function extractVideoFlowInfo(res, allStats) {
   var description = '';
   var bytesNow = res.stat('bytesReceived');
   if (timestampPrev > 0) {
-    var bitRate = Math.round((bytesNow - bytesPrev) * 8 /
+    var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
                              (res.timestamp - timestampPrev));
-    description = bitRate + ' kbits/sec';
+    description = bitrate + ' kbits/sec';
   }
   timestampPrev = res.timestamp;
   bytesPrev = bytesNow;
@@ -314,6 +316,9 @@ function dumpStats(obj) {
 
 
 // Utility to show the value of a field in a span called name+Display
-function showValue(name, value) {
-  $(name + 'Display').innerHTML = value;
+function displayRangeValue(e) {
+  var span = e.target.parentElement.querySelector('span');
+  span.textContent = e.target.value;
+  displayAddStreamConstraints();
+  displayGetUserMediaConstraints();
 }

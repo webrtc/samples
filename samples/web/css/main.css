@@ -120,6 +120,16 @@ margin: 0 0 0.8em 0;
 white-space: nowrap;
 }
 
+h3 {
+border-top: 1px solid #eee;
+color: #666;
+font-size: 0.9em;
+font-weight: 500;
+margin: 20px 0 10px 0;
+padding: 10px 0 0 0;
+white-space: nowrap;
+}
+
 html {
 /* avoid annoying page width change
 when moving from the home page */
@@ -134,11 +144,6 @@ max-width: 100%;
 input[type=radio] {
 position: relative;
 top: -1px;
-}
-
-input[type=range] {
-position: relative;
-top: 2px;
 }
 
 p {
