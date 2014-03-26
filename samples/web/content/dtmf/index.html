@@ -1,0 +1,208 @@
+<html>
+<head>
+<title>PeerConnection DTMF Demo 1</title>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src="../../js/adapter.js"></script>
+<style>
+button {
+  font: 18px sans-serif;
+  padding: 8px;
+}
+#left { position: absolute; left: 20; top: 0; width: 50%; }
+#right { position: absolute; right: 0; top: 0; width: 50%; }
+</style>
+</head>
+<body onload="onload()">
+<div id="left">
+<audio id="audio1" autoplay="autoplay" muted="true"></audio>
+<h3>Send Dtmf Tones</h3>
+<div id="dialingPad"></div>
+<br><br>
+duration:
+<input type="text" id="dtmf-tones-duration" size="10" value="500"/>
+<br><br>
+tone-gap:
+<input type="text" id="dtmf-tones-gap" size="10" value="50"/>
+<br><br>
+tones:
+<input type="text" id="dtmf-tones" size="10"
+  value="1199##9,6633221,9966332,9966332,1199##9,6633221"/>
+<button id="sendTones"
+  onclick="sendTone(document.getElementById('dtmf-tones').value)">Send tones
+  </button>
+<br><br>
+<button id="callBtn" onclick="call()">Call</button>
+<button id="hangBtn" onclick="hangup()">Hang Up</button>
+<br><br>
+</div>
+<div id="right">
+<audio id="audio2" autoplay="autoplay"></audio>
+<h3>Sent Tones</h3>
+<textarea id="dtmfTonesSent" rows="12" cols="40" disabled="true">
+</textarea><br>
+</div>
+<script>
+callBtn.disabled = false;
+hangBtn.disabled = true;
+sendTones.disabled = true;
+var pc1 = null,pc2 = null;
+var localstream = null;
+var dtmfSender = null;
+var sdpConstraints = {'mandatory': {
+                      'OfferToReceiveAudio':true,
+                      'OfferToReceiveVideo':false }};
+
+function gotStream(stream){
+  trace("Received local stream");
+  // Call the polyfill wrapper to attach the media stream to this element.
+  localstream = stream;
+  audioTracks = localstream.getAudioTracks();
+  if (audioTracks.length > 0)
+    trace('Using Audio device: ' + audioTracks[0].label);
+  pc1.addStream(localstream);
+  trace("Adding Local Stream to peer connection");
+
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+}
+
+function onCreateSessionDescriptionError(error) {
+  trace('Failed to create session description: ' + error.toString());
+}
+
+function call() {
+  trace("Starting call");
+  var servers = null;
+  var pc_constraints = {"optional": []};
+  pc1 = new RTCPeerConnection(servers,pc_constraints);
+  trace("Created local peer connection object pc1");
+  pc1.onicecandidate = iceCallback1;
+  pc2 = new RTCPeerConnection(servers,pc_constraints);
+  trace("Created remote peer connection object pc2");
+  pc2.onicecandidate = iceCallback2;
+  pc2.onaddstream = gotRemoteStream;
+
+  trace("Requesting local stream");
+  // Call into getUserMedia via the polyfill (adapter.js).
+  getUserMedia({audio:true, video:false},
+                gotStream, function() {});
+
+  callBtn.disabled = true;
+  hangBtn.disabled = false;
+  sendTones.disabled = false;
+}
+
+function gotDescription1(desc){
+  pc1.setLocalDescription(desc);
+  trace("Offer from pc1 \n" + desc.sdp);
+  pc2.setRemoteDescription(desc);
+  // Since the "remote" side has no media stream we need
+  // to pass in the right constraints in order for it to
+  // accept the incoming offer of audio.
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+                   sdpConstraints);
+}
+
+function gotDescription2(desc){
+  // Setting PCMU as the preferred codec.
+  desc.sdp = desc.sdp.replace(/m=.*\r\n/, "m=audio 1 RTP/SAVPF 0 126\r\n");
+  // Workaround for issue 1603.
+  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, "");
+  pc2.setLocalDescription(desc);
+  trace("Answer from pc2 \n" + desc.sdp);
+  pc1.setRemoteDescription(desc);
+}
+
+function hangup() {
+  trace("Ending call");
+  pc1.close();
+  pc2.close();
+  pc1 = null;
+  pc2 = null;
+  localstream = null;
+  dtmfSender = null;
+  callBtn.disabled = false;
+  hangBtn.disabled = true;
+  sendTones.disabled = true;
+  document.getElementById("dtmfTonesSent").value = "Dtmf de-activated\n";
+}
+
+function gotRemoteStream(e){
+  // Call the polyfill wrapper to attach the media stream to this element.
+  attachMediaStream(audio2, e.stream);
+  trace("Received remote stream");
+  enableDtmfSender();
+}
+
+function iceCallback1(event){
+  if (event.candidate) {
+    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
+    trace("Local ICE candidate: \n" + event.candidate.candidate);
+  }
+}
+
+function iceCallback2(event){
+  if (event.candidate) {
+    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
+    trace("Remote ICE candidate: \n " + event.candidate.candidate);
+  }
+}
+
+function onAddIceCandidateSuccess() {
+  trace("AddIceCandidate success.");
+}
+
+function onAddIceCandidateError(error) {
+  trace("Failed to add Ice Candidate: " + error.toString());
+}
+
+function enableDtmfSender(){
+  document.getElementById("dtmfTonesSent").value = "Dtmf activated\n";
+  if (localstream != null) {
+    var local_audio_track = localstream.getAudioTracks()[0];
+    dtmfSender = pc1.createDTMFSender(local_audio_track);
+    trace("Created DTMF Sender\n");
+    dtmfSender.ontonechange = dtmfOnToneChange;
+  }
+  else {
+    trace("No Local Stream to create DTMF Sender\n");
+  }
+}
+
+function dtmfOnToneChange(tone){
+  if (tone) {
+    trace("Sent Dtmf tone: \t" + tone.tone);
+    document.getElementById("dtmfTonesSent").value += tone.tone + '\t';
+  }
+}
+
+function sendTone(tones){
+  if (dtmfSender) {
+    duration = document.getElementById("dtmf-tones-duration").value;
+    gap = document.getElementById("dtmf-tones-gap").value;
+    dtmfSender.insertDTMF(tones, duration, gap);
+  }
+}
+
+function createDialingPad() {
+  var tones = '1234567890*#ABCD';
+  var dialingPad = document.getElementById('dialingPad');
+  for (var i = 0; i < tones.length; ++i) {
+    var tone = tones.charAt(i);
+    dialingPad.innerHTML += '<button id="' +
+      tone + '" onclick="sendTone(\'' + tone +
+      '\')" style="height:40px; width: 30px">' + tone + '</button>';
+    if ((i + 1) % 4 == 0) {
+      dialingPad.innerHTML += '<br>';
+    }
+  }
+}
+
+function onload() {
+  createDialingPad();
+}
+
+</script>
+</body>
+</html>

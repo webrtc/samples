@@ -1,84 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>PeerConnection Demo 1</title>
+<title>PeerConnection Audio Only Demo 1</title>
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
 <script src="../../js/adapter.js"></script>
 <style>
-video {
-  border:5px solid black;
-  width:480px;
-  height:360px;
-}
 button {
   font: 18px sans-serif;
   padding: 8px;
 }
-textarea {
-  font-family: monospace;
-  margin: 2px;
-  width:480px;
-  height:640px;
-}
 </style>
 </head>
 <body>
-<video id="vid1" autoplay="true" muted="true"></video>
-<video id="vid2" autoplay></video>
-<br>
-<button id="btn1" onclick="start()">Start</button>
-<button id="btn2" onclick="call()">Call</button>
-<button id="btn3" onclick="hangup()">Hang Up</button>
-<br>
-<xtextarea id="ta1"></textarea>
-<xtextarea id="ta2"></textarea>
+<h2>Local-Audio</h2>
+<audio id="audio1" autoplay="autoplay" controls="controls" muted="true"></audio>
+<h2>Remote-Audio</h2>
+<audio id="audio2" autoplay="autoplay" controls="controls"></audio>
+<br><br>
+<button id="btn1" onclick="call()">Call</button>
+<button id="btn2" onclick="hangup()">Hang Up</button>
+<br><br>
 <script>
-//var vid1 = document.getElementById("vid1");
-//var vid2 = document.getElementById("vid2");
 btn1.disabled = false;
 btn2.disabled = true;
-btn3.disabled = true;
 var pc1,pc2;
 var localstream;
 var sdpConstraints = {'mandatory': {
                         'OfferToReceiveAudio':true,
-                        'OfferToReceiveVideo':true }};
+                        'OfferToReceiveVideo':false }};
 
 function gotStream(stream){
   trace("Received local stream");
   // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(vid1, stream);
   localstream = stream;
-  btn2.disabled = false;
-}
-
-function start() {
-  trace("Requesting local stream");
-  btn1.disabled = true;
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({audio:true, video:true},
-                gotStream, function() {});
-}
-
-function call() {
-  btn2.disabled = true;
-  btn3.disabled = false;
-  trace("Starting call");
-  videoTracks = localstream.getVideoTracks();
   audioTracks = localstream.getAudioTracks();
-  if (videoTracks.length > 0)
-    trace('Using Video device: ' + videoTracks[0].label);
   if (audioTracks.length > 0)
     trace('Using Audio device: ' + audioTracks[0].label);
-  var servers = null;
-  pc1 = new RTCPeerConnection(servers);
-  trace("Created local peer connection object pc1");
-  pc1.onicecandidate = iceCallback1;
-  pc2 = new RTCPeerConnection(servers);
-  trace("Created remote peer connection object pc2");
-  pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
-
   pc1.addStream(localstream);
   trace("Adding Local Stream to peer connection");
 
@@ -89,13 +46,32 @@ function onCreateSessionDescriptionError(error) {
   trace('Failed to create session description: ' + error.toString());
 }
 
+function call() {
+  btn1.disabled = true;
+  btn2.disabled = false;
+  trace("Starting call");
+  var servers = null;
+  var pc_constraints = {"optional": []};
+  pc1 = new RTCPeerConnection(servers,pc_constraints);
+  trace("Created local peer connection object pc1");
+  pc1.onicecandidate = iceCallback1;
+  pc2 = new RTCPeerConnection(servers,pc_constraints);
+  trace("Created remote peer connection object pc2");
+  pc2.onicecandidate = iceCallback2;
+  pc2.onaddstream = gotRemoteStream;
+  trace("Requesting local stream");
+  // Call into getUserMedia via the polyfill (adapter.js).
+  getUserMedia({audio:true, video:false},
+                gotStream, function() {});
+}
+
 function gotDescription1(desc){
   pc1.setLocalDescription(desc);
   trace("Offer from pc1 \n" + desc.sdp);
   pc2.setRemoteDescription(desc);
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio and video.
+  // accept the incoming offer of audio.
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
                    sdpConstraints);
 }
@@ -112,13 +88,13 @@ function hangup() {
   pc2.close();
   pc1 = null;
   pc2 = null;
-  btn3.disabled = true;
-  btn2.disabled = false;
+  btn2.disabled = true;
+  btn1.disabled = false;
 }
 
 function gotRemoteStream(e){
   // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(vid2, e.stream);
+  attachMediaStream(audio2, e.stream);
   trace("Received remote stream");
 }
 
@@ -148,5 +124,3 @@ function onAddIceCandidateError(error) {
 </script>
 </body>
 </html>
-
-

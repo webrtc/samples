@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PeerConnection Rehydration Demo</title>
+<style>
+video {
+    border:5px solid black;
+    width:320px;
+    height:240px;
+}
+</style>
+</head>
+<body>
+<video id="vid1" autoplay="true" muted="true"></video>
+<video id="vid2" autoplay></video>
+<br>
+<button id="btn1" onclick="start()">Start</button>  
+<button id="btn2" onclick="call()">Call</button>
+<button id="btn3" onclick="rehydrate()">Rehydrate</button>
+<button id="btn4" onclick="stop()">Hang Up</button>
+<script>
+//var vid1 = document.getElementById("vid1");
+//var vid2 = document.getElementById("vid2");
+btn2.disabled = true;
+btn3.disabled = true;
+btn4.disabled = true;
+var pc1,pc2;
+var localstream;
+
+function trace(txt) {
+  // This function is used for logging.
+  console.log(txt);
+}
+
+function start() {
+  btn1.disabled = true;
+  navigator.webkitGetUserMedia({audio:true, video:true}, gotStream, function() {}); 
+}  
+  
+function gotStream(stream){
+  trace("Received local stream");
+  vid1.src = webkitURL.createObjectURL(stream);
+  localstream = stream;
+  btn2.disabled = false;
+}
+
+function call() {
+  btn2.disabled = true;
+  btn3.disabled = false;
+  btn4.disabled = false;
+  trace("Starting Call");
+  if (localstream.videoTracks.length > 0)
+    trace('Using Video device: ' + localstream.videoTracks[0].label);  // Prints audio & video device names
+  if (localstream.audioTracks.length > 0)
+    trace('Using Audio device: ' + localstream.audioTracks[0].label);
+
+  pc1 = new webkitPeerConnection00(null,iceCallback1);
+  trace("Created local peer connection object pc1"); 
+  pc2 = new webkitPeerConnection00(null,iceCallback2);
+  trace("Created remote peer connection object pc2");
+  pc2.onaddstream = gotRemoteStream; 
+
+  pc1.addStream(localstream);
+  trace("Adding Local Stream to peer connection");
+  var offer = pc1.createOffer(null);
+  trace("Created offer");
+  pc1.setLocalDescription(pc1.SDP_OFFER, offer);
+  trace("SetLocalDesc1");
+  pc2.setRemoteDescription(pc2.SDP_OFFER, offer);
+  trace("SetRemoteDesc2");
+  var answer = pc2.createAnswer(offer.toSdp(), {has_audio:true, has_video:true});;
+  trace("CreatedAnswer");
+  pc2.setLocalDescription(pc2.SDP_ANSWER, answer);
+  trace("SetLocalDesc2");
+  pc1.setRemoteDescription(pc1.SDP_ANSWER, answer);
+  trace("SetRemoteDesc1");
+  pc1.startIce(); // Start finding local ice candidates. Once it finds candidates it will call icecallback
+  pc2.startIce(); //Starts finding remote ice candidates. Once it finds candidates it will call iceCallback2
+  trace("Start ICE for both local & remote");
+}
+
+function rehydrate() {
+  var oldLocal = pc2.localDescription;
+  // need to munge a=crypto
+  pc2 = null;
+  trace("Destroyed remote peer connection object pc2");
+  pc2 = new webkitPeerConnection00(null, iceCallback3);
+  trace("Created new remote peer connection object pc2");
+  pc2.onaddstream = gotRemoteStream;
+  pc2.setLocalDescription(pc2.SDP_OFFER, oldLocal);
+  pc1.setRemoteDescription(pc1.SDP_OFFER, oldLocal);
+  var answer = pc1.createAnswer(oldLocal.toSdp(), {has_audio:true, has_video:true});
+  pc1.setLocalDescription(pc1.SDP_ANSWER, answer);
+  pc2.setRemoteDescription(pc2.SDP_ANSWER, answer);
+  pc2.startIce();
+  trace("Inited new remote peer connection object pc2");
+}
+
+function stop() {
+  trace("Ending Call" + "\n\n");
+  pc1.close(); 
+  pc2.close();
+  pc1=null;
+  pc2=null;
+  btn2.disabled = false;
+  btn3.disabled = true;
+  btn4.disabled = true;
+}
+
+function gotRemoteStream(e){
+  vid2.src = webkitURL.createObjectURL(e.stream);
+  trace("Received Remote Stream");
+}
+
+function iceCallback1(candidate,bMore){
+  if (candidate) {
+    pc2.processIceMessage(candidate);
+    trace("Local ice candidate: " + candidate.toSdp());
+  }
+}
+      
+function iceCallback2(candidate,bMore){
+  if (candidate) {
+    pc1.processIceMessage(candidate);
+    trace("Remote ice candidate: " + candidate.toSdp());
+  }
+}
+      
+function iceCallback3(candidate,bMore){
+  if (candidate) {
+    var str = candidate.toSdp();
+    str = str.replace("generation 0", "generation 1");
+    var mungedCandidate = new IceCandidate(candidate.label, str);
+    trace("Remote ice candidate: " + mungedCandidate.toSdp());
+    pc1.processIceMessage(mungedCandidate);
+  }
+}
+    </script>
+  </body>
+</html>
+
+
