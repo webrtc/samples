@@ -10,7 +10,7 @@
 
 <base target="_blank">
 
-<title>Constraints and stats</title>
+<title>Constraints and statistics</title>
 
 <link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
 <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
@@ -24,41 +24,41 @@
 
 <div id="container">
 
-  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> Constraints &amp; stats</h1>
+  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> Constraints &amp; statistics</h1>
 
   <section id="blurb">
     <p>This demo shows ways to use constraints and statistics in WebRTC applications.</p>
-    <p>Click <strong>Get media</strong> to (re)open the camera with these constraints.</p>
-    <p>The lefthand video shows the output of <code>getUserMedia()</code>; on the right is the video after being passed through the local peer connection.</p>
-    <p>The transmission bitrate is displayed below the righthand video.</p>
+    <p>Set camera constraints, and click <strong>Get media</strong> to (re)open the camera with these included. Click <strong>Connect</strong> to create a (local) peer connection. The RTCPeerConnection objects <code>localPeerConnection</code> and <code>remotePeerConnection</code> can be inspected from the console.</p>
+    <p>Setting a value to zero will remove that constraint. </p>
+    <p>The lefthand video shows the output of <code>getUserMedia()</code>; on the right is the video after being passed through the peer connection. The transmission bitrate is displayed below the righthand video.</p>
   </section>
 
   <button id="getMedia">Get media</button>
-  <button id="createPeerConnection">Connect</button>
+  <button id="connect" disabled>Connect</button>
 
 
   <section id="constraints">
       <div id="getUserMedia">
         <div class="input">
-          <h2>getUserMedia constraints</h2>
+          <h2>Camera constraints</h2>
           <div id="minWidth">
-            <label>Min width <span></span>px:</label>
+            <label>Min width <span>300</span>px:</label>
             <input type="range" min="0" max="1280" value="300">
           </div>
           <div id="maxWidth">
-            <label>Max width <span></span>px:</label>
+            <label>Max width <span>640</span>px:</label>
             <input type="range" min="0" max="1280" value="640">
           </div>
           <div id="minHeight">
-            <label>Min height <span></span>px:</label>
+            <label>Min height <span>200</span>px:</label>
             <input type="range" min="0" max="1280" value="200">
           </div>
           <div id="maxHeight">
-            <label>Max height <span></span>px:</label>
+            <label>Max height <span>480</span>px:</label>
             <input type="range" min="0" max="1280" value="480">
           </div>
           <div id="framerate">
-            <label>Frame rate <span></span>fps:</label>
+            <label>Frame rate <span>30</span>fps:</label>
             <input type="range" min="0" max="60" value="30">
           </div>
         </div>
@@ -67,7 +67,7 @@
 
       <div id="addStream">
         <div class="input">
-          <h2>addStream constraints</h2>
+          <h2>Stream constraints</h2>
           <div id="maxBitrate">
             <label>Max bitrate <span>1000</span>kb/s:</label>
             <input type="range"  min="0" max="2000" value="1000">

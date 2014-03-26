@@ -46,6 +46,11 @@ section#video > div {
   vertical-align: top;
   width: calc(50% - 22px);
 }
+section#video > div div {
+  font-size: 0.9em;
+  margin: 0 0 0.5em 0;
+  width:  320px;
+}
 h2 {
   margin: 0 0 1em 0;
 }
@@ -63,6 +68,7 @@ section#video {
 }
 video {
   height: 225px;
+  margin: 0 0 10px 0;
 }
 
 @media screen and (max-width: 720px) {
