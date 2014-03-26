@@ -110,6 +110,7 @@ font-family: 'Roboto', sans-serif;
 font-weight: 500;
 margin: 0 0 0.8em 0;
 padding: 0 0 0.2em 0;
+white-space: nowrap;
 }
 
 h2 {
