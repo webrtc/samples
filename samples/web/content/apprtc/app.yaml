@@ -1,0 +1,29 @@
+application: apprtc-m
+version: 1
+runtime: python27
+threadsafe: true
+api_version: 1
+
+handlers:
+- url: /html
+  static_dir: html
+
+- url: /images
+  static_dir: images
+
+- url: /js
+  static_dir: js
+
+- url: /css
+  static_dir: css
+
+- url: /.*
+  script: apprtc.app
+  secure: always
+
+inbound_services:
+- channel_presence
+
+libraries:
+- name: jinja2
+  version: latest

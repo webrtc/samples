@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--This is the test page for the message channel.
+To run this test:
+?debug=loopback&unittest=channel
+-->
+
+<html>
+<head>
+<link rel="canonical" href="{{ room_link }}"/>
+<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+<script src="/_ah/channel/jsapi"></script>
+<script type="text/javascript">
+  var channel;
+  var pc;
+  var socket;
+  var expected_message_num = 8;
+  var receive = 0;
+  var test_msg =
+      '01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var msg_larger_than_500 = "";
+
+  function trace(txt) {
+    // This function is used for logging.
+    var elem = document.getElementById("debug");
+    elem.innerHTML += txt + "<br>";
+  }
+
+  function runTest() {
+    trace("Initializing; room={{ room_key }}.");
+    var channel = new goog.appengine.Channel('{{ token }}');
+    var handler = {
+      'onopen': onChannelOpened,
+      'onmessage': onChannelMessage,
+      'onerror': onChannelError,
+      'onclose': onChannelClosed
+    };
+
+    for (i = 0; i < 9; ++i) {
+      msg_larger_than_500 += test_msg;
+    }
+ 
+    for (i = 0; i < 4; ++i) {
+      sendMessage({type: 'test', msgid: i, msg: msg_larger_than_500});
+    }
+    trace('channel.open');
+    socket = channel.open(handler);
+    for (i = 4; i < expected_message_num; ++i) {
+      sendMessage({type: 'test', msgid: i, msg: msg_larger_than_500});
+    }
+  }
+
+  function sendMessage(message) {
+    var msgString = JSON.stringify(message);
+    trace('C->S: ' + msgString);
+    path = '/message?r={{ room_key }}' + '&u={{ me }}';
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', path, true);
+    xhr.send(msgString);
+  }
+
+  function onChannelOpened() {
+    trace('Channel opened.');
+  }
+  function onChannelMessage(message) {
+    if (message.data != JSON.stringify({type: 'test', msgid: receive,
+                                        msg: msg_larger_than_500})) {
+      trace('ERROR: Expect: ' + receive + ' Actual: ' + message.data);
+    } else {
+      trace('S->C: ' + message.data);
+    }
+    ++receive;
+    if (receive == expected_message_num) {
+      trace('Received all the ' + expected_message_num + ' messages.');
+      trace('Test passed!');
+    } else if (receive > expected_message_num) {
+      trace('Received more than expected message');
+      trace('Test failed!');
+    }
+  }
+  function onChannelError() {
+    trace('Channel error.');
+  }
+  function onChannelClosed() {
+    trace('Channel closed.');
+  }
+
+</script>
+</head>
+<body onload="runTest()">
+<pre id="debug"></pre>
+</body>
+</html>

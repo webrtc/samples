@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+<meta name="description" content="WebRTC Reference App" />
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+
+<meta itemprop="name" content="Invitation to video chat">
+<meta itemprop="description" content="Video chat using the reference WebRTC application">
+<meta itemprop="image" content="images/webrtcLogo.png">
+
+<title>apprtc-m</title>
+
+<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
+<link rel="icon" href="images/favicon.ico" type="image/png" />
+<link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+<link rel="apple-touch-icon" href="/touch-icon-ipad.png" />
+<link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="css/main.css" />
+<link rel="canonical" href="{{ room_link }}"/>
+
+</head>
+
+<body>
+
+<header class="hidden">
+  <div id="mute" title="Mute audio"></div>
+  <div id="hangup" title="End this call"></div>
+  <div id="camera" title="Choose a different camera" class="hidden"></div>
+</header>
+
+<div id="videos">
+  <video id="miniVideo" autoplay muted></video>
+  <video id="remoteVideo" autoplay></video>
+  <video id="localVideo" autoplay muted></video>
+</div>
+
+<footer>
+  <div id="sharing">
+    <div id="roomLink">Waiting for someone to join this room: <a href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
+    <div id="googlePlusAndCheckboxes">
+      <div id="googlePlus">
+        <div class="g-plus" data-action="share" data-height="35"></div>
+      </div>
+    </div>
+    <div id="emailDiv">
+      <label for="email">Share link by email:</label>
+      <input id="emailAddress" type="email" autofocus placeholder="Enter email address" />
+      <button id="emailButton">Send</button>
+    </div>
+  </div>
+  <div id="status"></div>
+  <div id="techInfo"></div>
+</footer>
+
+<script src="/_ah/channel/jsapi"></script>
+<script src="/js/adapter.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/ga.js"></script>
+
+<script>
+// values set in apprtc.py
+var audio_send_codec = "{{ audio_send_codec }}";
+var audio_receive_codec = "{{ audio_receive_codec }}";
+var channelToken = "{{ token }}";
+var errorMessages = {{ error_messages }};
+var initiator = {{ initiator }};
+var me = "{{ me }}";
+var mediaConstraints = {{ media_constraints | safe }};
+var offerConstraints = {{ offer_constraints | safe }};
+var pcConfig = {{ pc_config | safe }};
+var pcConstraints = {{ pc_constraints | safe }};
+var roomKey = "{{ room_key }}";
+var roomLink = "{{ room_link }}";
+var stereo = {{ stereo }};
+var turnUrl = "{{ turn_url }}";
+
+setTimeout(initialize, 1);
+</script>
+
+</body>
+</html>
