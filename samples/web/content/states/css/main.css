@@ -1,0 +1,35 @@
+button {
+  margin: 0 20px 20px 0;
+  width: 86.5px;
+}
+div#buttons {
+  border-bottom: 1px solid #eee;
+  margin: 0 0 20px 0;
+}
+div#states {
+  border-bottom: 1px solid #eee;
+}
+div#states > div {
+  margin: 0 0 20px 0;
+}
+div.label {
+  display: inline-block;
+  font-weight: 500;
+  width: 120px;
+}
+div.value {
+  display: inline-block;
+}
+video {
+  margin: 0 0 20px 0;
+  width: calc(50% - 12px);
+}
+video#video1 {
+  margin: 0 20px 20px 0;
+}
+
+@media screen and (min-width: 730px) {
+  video {
+    height: 231px;
+  }
+}

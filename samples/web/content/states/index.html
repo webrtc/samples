@@ -1,246 +1,58 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>RTCPeerState & RTCIceConnectionState Demo 1</title>
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="../../js/adapter.js"></script>
-<style>
-video {
-  border:5px solid black;
-  width:480px;
-  height:360px;
-}
-button {
-  font: 18px sans-serif;
-  padding: 8px;
-}
-label{
-  font: bold 15px/30px Georgia,serif;
-  display:inline-table;
-  width:200px;
-  text-align:left;
-}
-input{
-  font:italic bold 15px/30px Georgia,serif;
-  text-align:center;
-}
-fieldset{
-  border:none;
-  margin:0px auto;
-}
-</style>
+<meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+<meta name="description" content="Client-side WebRTC code samples." />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<base target="_blank">
+<title>RTCPeerConnection</title>
+<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="../../css/main.css" />
+<link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
-<video id="vid1" autoplay></video>
-<video id="vid2" autoplay></video>
-<br>
-<button id="btn1" onclick="start()">Start</button>
-<button id="btn2" onclick="call()">Call</button>
-<button id="btn3" onclick="hangup()">Hang Up</button>
-<br>
-<br>
-<fieldset>
-<label>pc1-state:</label>
-<input type="text" id="pc1-state" size="50" disabled="true">
-<br>
-<label>pc1-ice-connection-state:</label>
-<input type="text" id="pc1-ice-connection-state" size="50" disabled="true">
-<br>
-<label>pc2-state:</label>
-<input type="text" id="pc2-state" size="50" disabled="true">
-<br>
-<label>pc2-ice-connection-state:</label>
-<input type="text" id="pc2-ice-connection-state" size="50" disabled="true">
-</fieldset>
-<script>
-btn1.disabled = false;
-btn2.disabled = true;
-btn3.disabled = true;
-var pc1,pc2;
-var localstream;
-var sdpConstraints = {'mandatory': {
-                        'OfferToReceiveAudio':true,
-                        'OfferToReceiveVideo':true }};
+<div id="container">
 
-function gotStream(stream){
-  trace("Received local stream");
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(vid1, stream);
-  localstream = stream;
-  btn2.disabled = false;
-}
+  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> RTCPeerConnection</h1>
 
-function start() {
-  trace("Requesting local stream");
-  btn1.disabled = true;
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({audio:true, video:true},
-                gotStream, function() {});
-}
+  <video id="video1" autoplay></video>
+  <video id="video2" autoplay></video>
 
-function call() {
-  btn2.disabled = true;
-  btn3.disabled = false;
-  trace("Starting call");
-  videoTracks = localstream.getVideoTracks();
-  audioTracks = localstream.getAudioTracks();
-  if (videoTracks.length > 0)
-    trace('Using Video device: ' + videoTracks[0].label);
-  if (audioTracks.length > 0)
-    trace('Using Audio device: ' + audioTracks[0].label);
-  var servers = null;
-  var pc_constraints = {"optional": []};
+  <div id="buttons">
+    <button id="startButton">Start</button>
+    <button id="callButton">Call</button>
+    <button id="hangupButton">Hang Up</button>
+  </div>
 
-  pc1 = new RTCPeerConnection(servers,pc_constraints);
-  trace("Created local peer connection object pc1");
-  document.getElementById("pc1-state").value = pc1.signalingState ||
-                                               pc1.readyState;
-  if (typeof pc1.onsignalingstatechange !== 'undefined') {
-    pc1.onsignalingstatechange = stateCallback1;
-  } else {
-    pc1.onstatechange = stateCallback1;
-  }
-  document.getElementById("pc1-ice-connection-state").value =
-                                                      pc1.iceConnectionState;
-  if (typeof pc1.oniceconnectionstatechange !== 'undefined') {
-    pc1.oniceconnectionstatechange = iceStateCallback1;
-  } else {
-    pc1.onicechange = iceStateCallback1;
-  }
-  pc1.onicecandidate = iceCallback1;
+  <div id="states">
+    <div>
+      <div class="label">PC1 state:</div><div id="pc1State" class="value"></div>
+    </div>
+    <div>
+      <div class="label">PC1 ICE state:</div><div id="pc1IceState" class="value"></div>
+    </div>
+    <div>
+      <div class="label">PC2 state:</div><div id="pc2State" class="value"></div>
+    </div>
+    <div>
+      <div class="label">PC2 ICE state:</div><div id="pc2IceState" class="value"></div>
+    </div>
+  </div>
 
-  pc2 = new RTCPeerConnection(servers,pc_constraints);
-  trace("Created remote peer connection object pc2");
-  document.getElementById("pc2-state").value = pc2.signalingState ||
-                                               pc2.readyState;
-  if (typeof pc2.onsignalingstatechange !== 'undefined') {
-    pc2.onsignalingstatechange = stateCallback2;
-  } else {
-    pc2.onstatechange = stateCallback2;
-  }
-  document.getElementById("pc2-ice-connection-state").value =
-                                                      pc2.iceConnectionState;
-  if (typeof pc2.oniceconnectionstatechange !== 'undefined') {
-    pc2.oniceconnectionstatechange = iceStateCallback2;
-  } else {
-    pc2.onicechange = iceStateCallback2;
-  }
-  pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
-  pc1.addStream(localstream);
-  trace("Adding Local Stream to peer connection");
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
-}
+  <p>View the console to see logging. The <code>MediaStream</code> object <code>localStream</code>, and the <code>RTCPeerConnection</code> objects <code>localPeerConnection</code> and <code>remotePeerConnection</code> are in global scope, so you can inspect them in the console as well.</p>
 
-function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
-}
+  <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/" title="HTML5 Rocks article about WebRTC by Sam Dutton">Getting Started With WebRTC</a>.</p>
 
-function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
-  trace("Offer from pc1 \n" + desc.sdp);
-  pc2.setRemoteDescription(desc);
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-                   sdpConstraints);
-}
 
-function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
-  trace("Answer from pc2 \n" + desc.sdp);
-  pc1.setRemoteDescription(desc);
-}
+<a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection" title="View source for this page on Github" id="viewSource">View source on Github</a>
 
-function hangup() {
-  trace("Ending call");
-  pc1.close();
-  pc2.close();
-  document.getElementById("pc1-state").value += "->" +
-                                                pc1.signalingState ||
-                                                pc1.readyState;
-  document.getElementById("pc2-state").value += "->" +
-                                                pc2.signalingState ||
-                                                pc2.readyState;
-  document.getElementById("pc1-ice-connection-state").value += "->" +
-                                                        pc1.iceConnectionState;
-  document.getElementById("pc2-ice-connection-state").value += "->" +
-                                                        pc2.iceConnectionState;
-  pc1 = null;
-  pc2 = null;
-  btn3.disabled = true;
-  btn2.disabled = false;
-}
+</div>
 
-function gotRemoteStream(e){
-  attachMediaStream(vid2, e.stream);
-  trace("Received remote stream");
-}
+<script src="../../js/adapter.js"></script>
+<script src="js/main.js"></script>
 
-function stateCallback1() {
-  var state;
-  if (pc1) {
-    state = pc1.signalingState || pc1.readyState;
-    trace("pc1 state change callback, state:" + state);
-    document.getElementById("pc1-state").value += "->" + state;
-  }
-}
-
-function stateCallback2() {
-  var state;
-  if (pc2) {
-    state = pc2.signalingState || pc2.readyState;
-    trace("pc2 state change callback, state:" + state);
-    document.getElementById("pc2-state").value += "->" + state;
-  }
-}
-
-function iceStateCallback1() {
-  var iceState;
-  if (pc1) {
-    iceState = pc1.iceConnectionState;
-    trace("pc1 ICE connection state change callback, state:" + iceState);
-    document.getElementById("pc1-ice-connection-state").value += "->" +
-                                                                 iceState;
-  }
-}
-
-function iceStateCallback2() {
-  var iceState;
-  if (pc2) {
-    iceState = pc2.iceConnectionState;
-    trace("pc2 ICE connection state change callback, state:" + iceState);
-    document.getElementById("pc2-ice-connection-state").value += "->" +
-                                                                 iceState;
-  }
-}
-
-function iceCallback1(event){
-  if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace("Local ICE candidate: \n" + event.candidate.candidate);
-  } else {
-    trace("end of candidates1");
-  }
-}
-
-function iceCallback2(event){
-  if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace("Remote ICE candidate: \n " + event.candidate.candidate);
-  } else {
-    trace("end of candidates2");
-  }
-}
-
-function onAddIceCandidateSuccess() {
-  trace("AddIceCandidate success.");
-}
-
-function onAddIceCandidateError(error) {
-  trace("Failed to add Ice Candidate: " + error.toString());
-}
-</script>
+<script src="../../js/lib/ga.js"></script>
 </body>
 </html>
-
