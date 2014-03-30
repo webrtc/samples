@@ -113,29 +113,29 @@ function createPeerConnection() {
   console.log('localPeerConnection creating offer');
   localPeerConnection.onnegotiationeeded = function() {
     console.log('Negotiation needed - localPeerConnection');
-  }
+  };
   remotePeerConnection.onnegotiationeeded = function() {
     console.log('Negotiation needed - remotePeerConnection');
-  }
+  };
   localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
       remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
                           onAddIceCandidateSuccess, onAddIceCandidateError);
     }
-  }
+  };
   remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
       localPeerConnection.addIceCandidate(newCandidate, onAddIceCandidateSuccess, onAddIceCandidateError);
     }
-  }
+  };
   remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
     attachMediaStream(remoteVideo, e.stream);
     console.log('Remote video is ' + remoteVideo.src);
-  }
+  };
   localPeerConnection.createOffer(function(desc) {
     console.log('localPeerConnection offering');
     localPeerConnection.setLocalDescription(desc);
@@ -176,29 +176,29 @@ AugumentedStatsResponse.prototype.collectAddressPairs = function(componentId) {
     }
   }
   return this.addressPairMap[componentId];
-}
+};
 
 AugumentedStatsResponse.prototype.result = function() {
   return this.response.result();
-}
+};
 
 // The indexed getter isn't easy to prototype.
 AugumentedStatsResponse.prototype.get = function(key) {
   return this.response[key];
-}
+};
 
 
 // Display statistics
-var statCollector = setInterval(function() {
+setInterval(function() {
   var display = function(string) {
     bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + string;
-  }
+  };
 
 //  display('No stream');
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
     if (remotePeerConnection.getStats) {
       remotePeerConnection.getStats(function(rawStats) {
-        stats = new AugumentedStatsResponse(rawStats);
+        var stats = new AugumentedStatsResponse(rawStats);
         var statsString = '';
         var results = stats.result();
         var videoFlowInfo = 'No bitrate stats';
@@ -256,11 +256,12 @@ var statCollector = setInterval(function() {
   }
   // Collect some stats from the video tags.
   if (localVideo.src) {
-     localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> '
-       + localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
+    localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
+      localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
   }
   if (remoteVideo.src) {
-     remoteVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' + remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight + 'px';
+    remoteVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
+      remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight + 'px';
   }
 }, 1000);
 
@@ -275,9 +276,9 @@ function extractVideoFlowInfo(res, allStats) {
   timestampPrev = res.timestamp;
   bytesPrev = bytesNow;
   if (res.stat('transportId')) {
-    component = allStats.get(res.stat('transportId'));
+    var component = allStats.get(res.stat('transportId'));
     if (component) {
-      addresses = allStats.collectAddressPairs(component.id);
+      var addresses = allStats.collectAddressPairs(component.id);
       if (addresses.length > 0) {
         description += ' from IP ';
         description += addresses[0].stat('googRemoteAddress');
@@ -307,7 +308,7 @@ function dumpStats(obj) {
      statsString += obj.type;
   }
   if (obj.names) {
-    names = obj.names();
+    var names = obj.names();
     for (var i = 0; i < names.length; ++i) {
        statsString += '<br>';
        statsString += names[i];
@@ -325,7 +326,7 @@ function dumpStats(obj) {
 }
 
 
-// Utility to show the value of a field in a span called name+Display
+// Utility to show the value of a range in a sibling span element
 function displayRangeValue(e) {
   var span = e.target.parentElement.querySelector('span');
   span.textContent = e.target.value;
