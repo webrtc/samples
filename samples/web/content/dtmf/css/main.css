@@ -1,0 +1,76 @@
+button {
+  margin: 0 20px 20px 0;
+  width: 96px;
+}
+
+div#dialPad button {
+  background-color: #ddd;
+  border: 1px solid #ccc;
+  color: black;
+  font-size: 1em;
+  font-weight: 400;
+  height: 40px;
+  margin: 0 10px 10px 0;
+  width: 40px;
+}
+
+div#dialPad button:hover {
+  background-color: #aaa;
+}
+
+div#dialPad button:active {
+  background-color: #888;
+}
+
+div#dialPad {
+  display: inline-block;
+  margin: 0 20px 20px 0;
+  vertical-align: top;
+}
+
+div#parameters {
+  margin: 0 0 25px 0;
+}
+
+div#parameters > div {
+  margin: 0 0 10px 0;
+}
+
+div#dtmf {
+  background-color: #eee;
+  display: inline-block;
+  height: 180px;
+  margin: 0 0 20px 0;
+  padding: 5px 5px 5px 10px;
+  width: calc(100% - 239px);
+}
+
+div#dtmf div {
+  font-family: 'Inconsolata', 'Courier New', monospace;
+}
+
+div#sentTones {
+  display: inline-block;
+  line-height: 1.2em;
+  width: 270px;
+}
+
+div#dtmfStatus {
+  margin: 0 0 10px 0;
+}
+
+div#parameters input {
+  font-size: 1em;
+  width: 62px;
+}
+
+div#parameters input#tones {
+  width: calc(100% - 78px);
+}
+
+div#parameters label {
+  display: inline-block;
+  font-weight: 400;
+  width: 68px;
+}
+
