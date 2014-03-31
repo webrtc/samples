@@ -120,7 +120,12 @@ function gotRemoteStream(e) {
   // Call the polyfill wrapper to attach the media stream to this element.
   attachMediaStream(audio, e.stream);
   trace('Received remote stream');
-  enableDtmfSender();
+  if (RTCPeerConnection.prototype.createDTMFSender) {
+    enableDtmfSender();
+  } else {
+    alert('This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.');
+  }
+
 }
 
 function iceCallback1(event) {
