@@ -52,7 +52,6 @@ div#dtmf div {
 div#sentTones {
   display: inline-block;
   line-height: 1.2em;
-  width: 270px;
 }
 
 div#dtmfStatus {
