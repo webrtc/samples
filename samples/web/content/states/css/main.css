@@ -11,11 +11,12 @@ div#states {
 }
 div#states > div {
   margin: 0 0 20px 0;
+  min-height: 24px; /* to cope with Unicode character size :^| */
 }
 div.label {
   display: inline-block;
-  font-weight: 500;
-  width: 120px;
+  font-weight: 400;
+  width: 111px;
 }
 div.value {
   display: inline-block;

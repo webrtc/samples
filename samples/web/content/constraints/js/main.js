@@ -34,7 +34,7 @@ var timestampPrev = 0;
 
 main();
 
-function main(){
+function main() {
   displayGetUserMediaConstraints();
   displayAddStreamConstraints();
 }
@@ -45,7 +45,7 @@ function getMedia() {
     localStream.stop();
   }
   getUserMedia(getUserMediaConstraints(), gotStream,
-    function(e){
+    function (e) {
       var message = 'getUserMedia error: ' + e.name + '\n' +
         'PermissionDeniedError may mean invalid constraints.';
       alert(message);
@@ -63,7 +63,10 @@ function gotStream(stream) {
 function getUserMediaConstraints() {
   var constraints = {};
   constraints.audio = true;
-  constraints.video = {mandatory: {}, optional: []};
+  constraints.video = {
+    mandatory: {},
+    optional: []
+  };
   var mandatory = constraints.video.mandatory;
   if (minWidthInput.value !== '0') {
     mandatory.minWidth = minWidthInput.value;
@@ -83,7 +86,7 @@ function getUserMediaConstraints() {
   return constraints;
 }
 
-function displayGetUserMediaConstraints(){
+function displayGetUserMediaConstraints() {
   var constraints = getUserMediaConstraints();
   console.log('getUserMedia constraints', constraints);
   getUserMediaConstraintsDiv.textContent =
@@ -91,15 +94,20 @@ function displayGetUserMediaConstraints(){
 }
 
 function addStreamConstraints() {
-  var constraints = {mandatory: {}, optional: []};
+  var constraints = {
+    mandatory: {},
+    optional: []
+  };
   var maxBitrate = maxBitrateInput.value;
   if (maxBitrate !== '0') {
-    constraints.optional[0] = {'bandwidth': maxBitrate};
+    constraints.optional[0] = {
+      'bandwidth': maxBitrate
+    };
   }
   return constraints;
 }
 
-function displayAddStreamConstraints(){
+function displayAddStreamConstraints() {
   var constraints = addStreamConstraints();
   console.log('addStream() constraints', constraints);
   addStreamConstraintsDiv.textContent =
@@ -111,36 +119,36 @@ function createPeerConnection() {
   remotePeerConnection = new RTCPeerConnection(null);
   localPeerConnection.addStream(localStream, addStreamConstraints());
   console.log('localPeerConnection creating offer');
-  localPeerConnection.onnegotiationeeded = function() {
+  localPeerConnection.onnegotiationeeded = function () {
     console.log('Negotiation needed - localPeerConnection');
   };
-  remotePeerConnection.onnegotiationeeded = function() {
+  remotePeerConnection.onnegotiationeeded = function () {
     console.log('Negotiation needed - remotePeerConnection');
   };
-  localPeerConnection.onicecandidate = function(e) {
+  localPeerConnection.onicecandidate = function (e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
       remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
-                          onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
-  remotePeerConnection.onicecandidate = function(e) {
+  remotePeerConnection.onicecandidate = function (e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
       localPeerConnection.addIceCandidate(newCandidate, onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
-  remotePeerConnection.onaddstream = function(e) {
+  remotePeerConnection.onaddstream = function (e) {
     console.log('remotePeerConnection got stream');
     attachMediaStream(remoteVideo, e.stream);
     console.log('Remote video is ' + remoteVideo.src);
   };
-  localPeerConnection.createOffer(function(desc) {
+  localPeerConnection.createOffer(function (desc) {
     console.log('localPeerConnection offering');
     localPeerConnection.setLocalDescription(desc);
     remotePeerConnection.setRemoteDescription(desc);
-    remotePeerConnection.createAnswer(function(desc2) {
+    remotePeerConnection.createAnswer(function (desc2) {
       console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(desc2);
       localPeerConnection.setRemoteDescription(desc2);
@@ -164,13 +172,13 @@ function AugumentedStatsResponse(response) {
   this.addressPairMap = [];
 }
 
-AugumentedStatsResponse.prototype.collectAddressPairs = function(componentId) {
+AugumentedStatsResponse.prototype.collectAddressPairs = function (componentId) {
   if (!this.addressPairMap[componentId]) {
     this.addressPairMap[componentId] = [];
     for (var i = 0; i < this.response.result().length; ++i) {
       var res = this.response.result()[i];
       if (res.type === 'googCandidatePair' &&
-          res.stat('googChannelId') === componentId) {
+        res.stat('googChannelId') === componentId) {
         this.addressPairMap[componentId].push(res);
       }
     }
@@ -178,26 +186,26 @@ AugumentedStatsResponse.prototype.collectAddressPairs = function(componentId) {
   return this.addressPairMap[componentId];
 };
 
-AugumentedStatsResponse.prototype.result = function() {
+AugumentedStatsResponse.prototype.result = function () {
   return this.response.result();
 };
 
 // The indexed getter isn't easy to prototype.
-AugumentedStatsResponse.prototype.get = function(key) {
+AugumentedStatsResponse.prototype.get = function (key) {
   return this.response[key];
 };
 
 
 // Display statistics
-setInterval(function() {
-  var display = function(string) {
+setInterval(function () {
+  var display = function (string) {
     bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + string;
   };
 
-//  display('No stream');
+  //  display('No stream');
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
     if (remotePeerConnection.getStats) {
-      remotePeerConnection.getStats(function(rawStats) {
+      remotePeerConnection.getStats(function (rawStats) {
         var stats = new AugumentedStatsResponse(rawStats);
         var statsString = '';
         var results = stats.result();
@@ -233,7 +241,7 @@ setInterval(function() {
           '<h2>Receiver stats</h2>' + statsString;
         display(videoFlowInfo);
       });
-      localPeerConnection.getStats(function(stats) {
+      localPeerConnection.getStats(function (stats) {
         var statsString = '';
         var results = stats.result();
         for (var i = 0; i < results.length; ++i) {
@@ -270,7 +278,7 @@ function extractVideoFlowInfo(res, allStats) {
   var bytesNow = res.stat('bytesReceived');
   if (timestampPrev > 0) {
     var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-                             (res.timestamp - timestampPrev));
+      (res.timestamp - timestampPrev));
     description = bitrate + ' kbits/sec';
   }
   timestampPrev = res.timestamp;
@@ -300,20 +308,20 @@ function dumpStats(obj) {
   var statsString = 'Timestamp:';
   statsString += obj.timestamp;
   if (obj.id) {
-     statsString += '<br>id ';
-     statsString += obj.id;
+    statsString += '<br>id ';
+    statsString += obj.id;
   }
   if (obj.type) {
-     statsString += ' type ';
-     statsString += obj.type;
+    statsString += ' type ';
+    statsString += obj.type;
   }
   if (obj.names) {
     var names = obj.names();
     for (var i = 0; i < names.length; ++i) {
-       statsString += '<br>';
-       statsString += names[i];
-       statsString += ':';
-       statsString += obj.stat(names[i]);
+      statsString += '<br>';
+      statsString += names[i];
+      statsString += ':';
+      statsString += obj.stat(names[i]);
     }
   } else {
     if (obj.stat('audioOutputLevel')) {

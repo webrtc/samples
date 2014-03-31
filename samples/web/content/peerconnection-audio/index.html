@@ -1,126 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>PeerConnection Audio Only Demo 1</title>
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="../../js/adapter.js"></script>
-<style>
-button {
-  font: 18px sans-serif;
-  padding: 8px;
-}
-</style>
+
+<meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+<meta name="description" content="Client-side WebRTC code samples." />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+
+<base target="_blank">
+
+<title>Peer connection: audio only</title>
+
+<link href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+
+<link rel="stylesheet" href="../../css/main.css" />
+<link rel="stylesheet" href="css/main.css" />
+
 </head>
+
 <body>
-<h2>Local-Audio</h2>
-<audio id="audio1" autoplay="autoplay" controls="controls" muted="true"></audio>
-<h2>Remote-Audio</h2>
-<audio id="audio2" autoplay="autoplay" controls="controls"></audio>
-<br><br>
-<button id="btn1" onclick="call()">Call</button>
-<button id="btn2" onclick="hangup()">Hang Up</button>
-<br><br>
-<script>
-btn1.disabled = false;
-btn2.disabled = true;
-var pc1,pc2;
-var localstream;
-var sdpConstraints = {'mandatory': {
-                        'OfferToReceiveAudio':true,
-                        'OfferToReceiveVideo':false }};
 
-function gotStream(stream){
-  trace("Received local stream");
-  // Call the polyfill wrapper to attach the media stream to this element.
-  localstream = stream;
-  audioTracks = localstream.getAudioTracks();
-  if (audioTracks.length > 0)
-    trace('Using Audio device: ' + audioTracks[0].label);
-  pc1.addStream(localstream);
-  trace("Adding Local Stream to peer connection");
+<div id="container">
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
-}
+  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: audio only</span></h1>
 
-function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
-}
+  <div id="audio">
+    <div>
+        <div class="label">Local audio:</div><audio id="audio1" autoplay controls muted></audio>
+    </div>
+    <div>
+      <div class="label">Remote audio:</div><audio id="audio2" autoplay controls></audio>
+    </div>
+  </div>
 
-function call() {
-  btn1.disabled = true;
-  btn2.disabled = false;
-  trace("Starting call");
-  var servers = null;
-  var pc_constraints = {"optional": []};
-  pc1 = new RTCPeerConnection(servers,pc_constraints);
-  trace("Created local peer connection object pc1");
-  pc1.onicecandidate = iceCallback1;
-  pc2 = new RTCPeerConnection(servers,pc_constraints);
-  trace("Created remote peer connection object pc2");
-  pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
-  trace("Requesting local stream");
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({audio:true, video:false},
-                gotStream, function() {});
-}
+  <div id="buttons">
+    <button id="callButton">Call</button>
+    <button id="hangupButton">Hang Up</button>
+  </div>
 
-function gotDescription1(desc){
-  pc1.setLocalDescription(desc);
-  trace("Offer from pc1 \n" + desc.sdp);
-  pc2.setRemoteDescription(desc);
-  // Since the "remote" side has no media stream we need
-  // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-                   sdpConstraints);
-}
+  <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection-audio" title="View source for this page on Github" id="viewSource">View source on Github</a>
 
-function gotDescription2(desc){
-  pc2.setLocalDescription(desc);
-  trace("Answer from pc2 \n" + desc.sdp);
-  pc1.setRemoteDescription(desc);
-}
+</div>
 
-function hangup() {
-  trace("Ending call");
-  pc1.close();
-  pc2.close();
-  pc1 = null;
-  pc2 = null;
-  btn2.disabled = true;
-  btn1.disabled = false;
-}
+<script src="../../js/adapter.js"></script>
+<script src="js/main.js"></script>
 
-function gotRemoteStream(e){
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(audio2, e.stream);
-  trace("Received remote stream");
-}
-
-function iceCallback1(event){
-  if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace("Local ICE candidate: \n" + event.candidate.candidate);
-  }
-}
-
-function iceCallback2(event){
-  if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace("Remote ICE candidate: \n " + event.candidate.candidate);
-  }
-}
-
-function onAddIceCandidateSuccess() {
-  trace("AddIceCandidate success.");
-}
-
-function onAddIceCandidateError(error) {
-  trace("Failed to add Ice Candidate: " + error.toString());
-}
-</script>
+<script src="../../js/lib/ga.js"></script>
 </body>
 </html>

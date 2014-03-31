@@ -187,6 +187,10 @@ select {
   top: -1px;
 }
 
+h1 span {
+  white-space: nowrap;
+}
+
 strong {
   font-weight: 500;
 }
