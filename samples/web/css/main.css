@@ -94,7 +94,6 @@ font-weight: 400;
 }
 
 div#container {
-/* background: #000; */
 margin: 0 auto 0 auto;
 max-width: 40em;
 padding: 1em 1.5em 1.3em 1.5em;
@@ -117,7 +116,6 @@ color: #444;
 font-size: 1em;
 font-weight: 500;
 margin: 0 0 0.8em 0;
-white-space: nowrap;
 }
 
 h3 {
