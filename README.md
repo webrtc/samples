@@ -29,7 +29,7 @@ The demos
 
 [Data channels](http://googlechrome.github.io/webrtc/samples/web/content/datachannel)
 
-[Streaming between two RTCPeerConnections on one page](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection)
+[Peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection)
 
 [Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-audio)
 
@@ -39,7 +39,7 @@ The demos
 
 [Munge SDP](http://googlechrome.github.io/webrtc/samples/web/content/munge-sdp)
 
-[ICE Candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickleice)
+[ICE Candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickle-ice)
 
 [Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pr-answer)
 
@@ -47,7 +47,7 @@ The demos
 
 [Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-states)
 
-[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/webaudio-webrtc)
+[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/webaudio-input)
 
 [Adjust constraints, view stats](http://googlechrome.github.io/webrtc/samples/web/content/constraints)
 
