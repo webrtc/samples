@@ -15,13 +15,13 @@ The demos
 
 [getUserMedia()](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia)
 
-[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/web/content/canvas)
+[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-canvas)
 
-[getUserMedia() + Canvas + CSS Filters](http://googlechrome.github.io/webrtc/samples/web/content/filter)
+[getUserMedia() + Canvas + CSS Filters](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-filter)
 
-[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/web/content/resolution)
+[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-resolution)
 
-[getUserMedia() with camera/mic selection](http://googlechrome.github.io/webrtc/samples/web/content/sources)
+[getUserMedia() with camera/mic selection](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-source)
 
 [Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-audio)
 
