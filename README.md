@@ -1,3 +1,4 @@
+
 This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples.
 
 Many of the samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
@@ -42,8 +43,6 @@ The demos
 [ICE candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickle-ice)
 
 [Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pr-answer)
-
-[Peer connection rehydration](http://googlechrome.github.io/webrtc/samples/web/content/rehydrate)
 
 [Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-states)
 

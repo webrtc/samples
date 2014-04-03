@@ -44,8 +44,6 @@ The demos
 
 [Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pr-answer)
 
-[Peer connection rehydration](http://googlechrome.github.io/webrtc/samples/web/content/rehydrate)
-
 [Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-states)
 
 [Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/webaudio-input)
