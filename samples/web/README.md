@@ -39,7 +39,7 @@ The demos
 
 [Munge SDP](http://googlechrome.github.io/webrtc/samples/web/content/munge-sdp)
 
-[ICE Candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickle-ice)
+[ICE candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickle-ice)
 
 [Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pr-answer)
 
