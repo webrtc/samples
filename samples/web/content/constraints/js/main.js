@@ -43,6 +43,10 @@ function getMedia() {
   connectButton.disabled = true;
   if (localStream) {
     localStream.stop();
+    var videoTracks = localStream.getVideoTracks();
+    for (var i = 0; i !== videoTracks.length; ++i) {
+      videoTracks[i].stop();
+    }
   }
   getUserMedia(getUserMediaConstraints(), gotStream,
     function (e) {
