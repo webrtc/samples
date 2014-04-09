@@ -379,22 +379,6 @@ class MainPage(webapp2.RequestHandler):
     if self.request.get('stereo'):
       stereo = self.request.get('stereo')
 
-    # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
-    asbr = ''
-    arbr = ''
-    if self.request.get('asbr'):
-      asbr = self.request.get('asbr')
-    if self.request.get('arbr'):
-      arbr = self.request.get('arbr')
-
-    # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
-    vsbr = ''
-    vrbr = ''
-    if self.request.get('vsbr'):
-      vsbr = self.request.get('vsbr')
-    if self.request.get('vrbr'):
-      vrbr = self.request.get('vrbr')
-
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
     dscp = self.request.get('dscp')
@@ -476,10 +460,6 @@ class MainPage(webapp2.RequestHandler):
                        'media_constraints': json.dumps(media_constraints),
                        'turn_url': turn_url,
                        'stereo': stereo,
-                       'arbr': arbr,
-                       'asbr': asbr,
-                       'vrbr': vrbr,
-                       'vsbr': vsbr,
                        'audio_send_codec': audio_send_codec,
                        'audio_receive_codec': audio_receive_codec
                       }
