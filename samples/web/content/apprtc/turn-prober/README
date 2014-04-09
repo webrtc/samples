@@ -1,0 +1,9 @@
+This script contains a simple prober that verifies that:
+- CEOD vends TURN server URIs with credentials on demand (mimicking apprtc)
+- rfc5766-turn-server vends TURN candidates from the servers vended by CEOD.
+
+To use simply run ./turn-prober.sh
+If it prints "PASS" (and exits 0) then all is well.
+If it prints a mess of logs (and exits non-0) then something has gone sideways
+and apprtc.appspot.com is probably not working well (b/c of missing TURN
+functionality).

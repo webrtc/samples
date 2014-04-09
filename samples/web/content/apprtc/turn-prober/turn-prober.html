@@ -1,0 +1,132 @@
+<html>
+  <head>
+    <script>
+    var CEOD_URL = ("https://computeengineondemand.appspot.com/turn?" +
+                    "username=1234&key=5678");
+    var xmlhttp = null;
+    var turnServers = [];  // Array of {turnUri, username, password}.
+    // The next two arrays' entries correspond 1:1 to turnServers.
+    var gotTurn = [];  // Entries are null (not done), "PASS", or "FAIL"
+    var pcs = [];  // Entries are RTCPeerConnection objects.
+
+    // Test is done; log & replace document body with an appropriate message.
+    function finish(msg) {
+      msg = "DONE: " + msg;
+      console.log(msg);
+      document.body.innerHTML = msg;
+    }
+
+    // Handle created offer SDP.
+    function offerHandler(i, c) {
+      var pc = pcs[i];
+      pc.setLocalDescription(c,
+                             function() {},
+                             function(e) {console.log("sLD error: " + e); });
+      pc = null;
+    }
+
+    // Handle SDP offer creation error.
+    function offerError(i, e) {
+      console.log("createOffer error: " + e);
+      checkForCompletion(i, "FAIL (offerError)");
+    }
+
+    // Register a terminal condition |msg| for the |index|'th server and
+    // terminate the test with an appropriate message if all servers are done.
+    function checkForCompletion(index, msg) {
+      gotTurn[index] = msg;
+      var pass = true;
+      for (var i = 0; i < gotTurn.length; ++i) {
+        if (!gotTurn[i])
+        return;
+        if (gotTurn[i] != "PASS") {
+          pass = false;
+          // Don't "break" because a later still-null gotTurn value should let
+          // us wait more.
+        }
+      }
+      if (pass) {
+        finish("PASS");
+      } else {
+        finish("FAIL: " + JSON.stringify(gotTurn));
+      }
+    }
+
+    // Make sure we don't wait forever for TURN to complete.
+    function nanny(i) {
+      if (!gotTurn[i]) {
+        checkForCompletion(i, "FAIL (TURN server failed to respond)");
+      }
+    }
+
+    // Handle incoming ICE candidate |c| from |turnServers[i]|.
+    function onIceCandidate(i, c) {
+      var pc = pcs[i];
+      if (!c || !c.candidate) {
+        checkForCompletion(
+          i, !gotTurn[i] ? "FAIL (no TURN candidate)" :
+                           (gotTurn[i] == "PASS") ? "PASS" : gotTurn[i]);
+        return;
+      }
+
+      if (c.candidate.candidate.indexOf(" typ relay ") >= 0) {
+        gotTurn[i] = "PASS";
+      }
+    }
+
+    // Kick off the test.
+    function go() {
+      xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = onTurnResult;
+      xmlhttp.open('GET', CEOD_URL, true);
+      xmlhttp.send();
+    }
+
+    // Handle the XMLHttpRequest's response.
+    function onTurnResult() {
+      if (xmlhttp.readyState != 4)
+      return;
+
+      if (xmlhttp.status != 200) {
+        finish("FAIL (no TURN server)");
+        return;
+      }
+
+      var turnServer = JSON.parse(xmlhttp.responseText);
+      for (i = 0; i < turnServer.uris.length; i++) {
+        if (turnServer.uris[i].indexOf(":3479?") >= 0) {
+          // Why does CEOD vend useless port 3479 URIs?
+          continue;
+        }
+        console.log("Adding to test: " +
+                    [turnServer.uris[i], turnServer.username,
+                     turnServer.password]);
+        gotTurn.push(null);
+        pcs.push(new webkitRTCPeerConnection({
+          "iceServers": [{
+            "url": turnServer.uris[i],
+            "username": turnServer.username,
+            "credential": turnServer.password
+          }]
+        }));
+        var index = pcs.length - 1;
+        var pc = pcs[index];
+        if (!pc) {
+          checkForCompletion(index, "FAIL (PeerConnection ctor failed)");
+          continue;
+        }
+        pc.onicecandidate = (
+          function(p) { return function(c) { onIceCandidate(p, c); } })(index);
+        pc.createOffer(
+          (function(p) { return function(o) { offerHandler(p, o); } })(index),
+          (function(p) { return function(e) { offerError(p, e); } })(index),
+          {'mandatory': { 'OfferToReceiveAudio': true } });
+        window.setTimeout(
+          (function(p) { return function() { nanny(p); } })(index), 10000);
+      }
+    }
+    </script>
+  </head>
+  <body onload="go()">
+  </body>
+</html>

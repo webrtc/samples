@@ -1,0 +1,1 @@
+link ../../base/adapter.js

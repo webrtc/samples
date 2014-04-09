@@ -322,10 +322,6 @@ class MainPage(webapp2.RequestHandler):
     # Get the base url without arguments.
     base_url = self.request.path_url
     user_agent = self.request.headers['User-Agent']
-    if 'developers.google.com' in user_agent:
-      # Request is from Google+ Share link
-      logging.info('Request from Google+ Share link')
-      return;
     room_key = sanitize(self.request.get('r'))
     stun_server = self.request.get('ss')
     if not stun_server:
@@ -357,14 +353,12 @@ class MainPage(webapp2.RequestHandler):
     audio = self.request.get('audio')
     video = self.request.get('video')
 
-    # default is now HD
-    if not video:
+    if self.request.get('hd').lower() == 'true':
+      if video:
+        message = 'The "hd" parameter has overridden video=' + str(video)
+        logging.error(message)
+        error_messages.append(message)
       video = 'minWidth=1280,minHeight=720'
-
-    if self.request.get('vga').lower() == 'true':
-      video = 'maxWidth=640,maxHeight=360'
-    elif self.request.get('qvga').lower() == 'true':
-      video = 'maxWidth=320,maxHeight=180'
 
     if self.request.get('minre') or self.request.get('maxre'):
       message = ('The "minre" and "maxre" parameters are no longer supported. '
