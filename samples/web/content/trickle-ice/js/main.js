@@ -1,14 +1,11 @@
 var addButton = document.querySelector('button#add');
-var candidateTBody = document.querySelector('tbody#candidates');
+var candidateTBody = document.querySelector('tbody#candidatesBody');
 var gatherButton = document.querySelector('button#gather');
 var passwordInput = document.querySelector('input#password');
 var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
-// experimental properties that affect candidate gathering
-var bundle = false;
-var ipv6 = true;
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -51,9 +48,8 @@ function start() {
     candidateTable.removeChild(candidateTBody.firstChild);
   }
 
-  // Create a PeerConnection with no streams, but force a m=audio line.
-  // Pass in the STUN/TURN server value from the input boxes.
-
+  
+  // Read the values from the input boxes.
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
      iceServers.push(JSON.parse(servers[i].value));
@@ -66,19 +62,34 @@ function start() {
       break;
     }
   }
-  var config = {'iceServers': iceServers };
-  var constraints = {'mandatory': {'IceTransports':iceTransports}};
-  trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
-        ', constraints=' + JSON.stringify(constraints));
-  pc = new RTCPeerConnection(config, constraints);
+
+  // Control IPv6 address gathering and whether RTCP should be bundled.
+  var ipv6 = document.querySelector('input#ipv6').checked;
+  var bundle = document.querySelector('input#bundle').checked;
+
+  // Create a PeerConnection with no streams, but force a m=audio line.
+  // This will gather candidates for either 1 or 2 ICE components, depending
+  // on the BUNDLE policy selected.
+  var config = {"iceServers": iceServers };
+  var pcConstraints = {"mandatory": {"IceTransports": iceTransports}};
+  var offerConstraints = {"mandatory": {"OfferToReceiveAudio": true}};
+  pcConstraints.optional = [{"googIPv6": ipv6}];
+  offerConstraints.optional = [{"googUseRtpMUX" : bundle}];
+
+  trace("Creating new PeerConnection with config=" + JSON.stringify(config) +
+        ", constraints=" + JSON.stringify(pcConstraints));
+  pc = new RTCPeerConnection(config, pcConstraints);
   pc.onicecandidate = iceCallback;
-  pc.createOffer(gotDescription, null,
-      {'mandatory': {'OfferToReceiveAudio': true}});
+  pc.createOffer(gotDescription, noDescription, offerConstraints);
 }
 
 function gotDescription(desc) {
   begin = window.performance.now();
   pc.setLocalDescription(desc);
+}
+
+function noDescription(error) {
+  console.log("Error creating offer");
 }
 
 function parseCandidate(text) {
