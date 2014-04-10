@@ -1,11 +1,14 @@
 var addButton = document.querySelector('button#add');
+var candidateTBody = document.querySelector('tbody#candidates');
 var gatherButton = document.querySelector('button#gather');
-var output = document.querySelector('textarea#output');
 var passwordInput = document.querySelector('input#password');
 var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
+// experimental properties that affect candidate gathering
+var bundle = false;
+var ipv6 = true;
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -43,10 +46,14 @@ function removeServer() {
 }
 
 function start() {
+  // Clean out the table.
+  while (candidateTBody.firstChild) {
+    candidateTable.removeChild(candidateTBody.firstChild);
+  }
+
   // Create a PeerConnection with no streams, but force a m=audio line.
   // Pass in the STUN/TURN server value from the input boxes.
 
-  output.value = '';
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
      iceServers.push(JSON.parse(servers[i].value));
@@ -74,13 +81,50 @@ function gotDescription(desc) {
   pc.setLocalDescription(desc);
 }
 
+function parseCandidate(text) {
+  var pos = text.indexOf("candidate");
+  var fields = text.substr(pos + 10).split(" ");
+  return {
+    "component": fields[1],
+    "type": fields[7],
+    "foundation": fields[0],
+    "protocol": fields[2],
+    "address": fields[4],
+    "port": fields[5],
+    "priority": fields[3]
+  };
+}
+
+function parsePriority(priority) {
+  return [ priority >> 24, (priority >> 16) & 0xFFFF, priority & 0xFF ];
+}
+
+function appendCell(row, val, span) {
+  var cell = document.createElement("td");
+  cell.innerText = val;
+  if (span) {
+    cell.setAttribute("colspan", span);
+  }
+  row.appendChild(cell);
+}
+
 function iceCallback(event) {
-  var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
+  var elapsed = ((performance.now() - begin) / 1000).toFixed(3);
+  var row = document.createElement("tr");
+  appendCell(row, elapsed);
   if (event.candidate) {
-    output.value += (elapsed + ': ' + event.candidate.candidate);
+    var c = parseCandidate(event.candidate.candidate);
+    appendCell(row, c.component);
+    appendCell(row, c.type);
+    appendCell(row, c.foundation);
+    appendCell(row, c.protocol);
+    appendCell(row, c.address);
+    appendCell(row, c.port);
+    appendCell(row, parsePriority(c.priority));
   } else {
-    output.value += (elapsed + ': Done');
+    appendCell(row, "Done", 7);
     pc.close();
     pc = null;
   }
+  candidateTBody.appendChild(row);
 }
