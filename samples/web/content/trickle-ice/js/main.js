@@ -45,7 +45,7 @@ function removeServer() {
 function start() {
   // Clean out the table.
   while (candidateTBody.firstChild) {
-    candidateTable.removeChild(candidateTBody.firstChild);
+    candidateTBody.removeChild(candidateTBody.firstChild);
   }
 
   
@@ -106,8 +106,14 @@ function parseCandidate(text) {
   };
 }
 
-function parsePriority(priority) {
-  return [ priority >> 24, (priority >> 16) & 0xFFFF, priority & 0xFF ];
+function formatPriority(priority) {
+  var s = "";
+  s += (priority >> 24);
+  s += " | ";
+  s += (priority >> 8) & 0xFFFF;
+  s += " | ";
+  s += priority & 0xFF;
+  return s;  
 }
 
 function appendCell(row, val, span) {
@@ -131,7 +137,7 @@ function iceCallback(event) {
     appendCell(row, c.protocol);
     appendCell(row, c.address);
     appendCell(row, c.port);
-    appendCell(row, parsePriority(c.priority));
+    appendCell(row, formatPriority(c.priority));
   } else {
     appendCell(row, "Done", 7);
     pc.close();

@@ -25,9 +25,33 @@ div#iceTransports span {
   margin: 0 1em 0 0;
 }
 table#candidates {
-  font-size: 0.8em;
+  font-size: 0.7em;
   margin: 1em 0 0.5em 0;
   overflow-y: auto;
-  padding: 5px;
+  padding: 10px;
   width: calc(100% - 10px);
+}
+th:nth-child(1),td:nth-child(1) {
+  text-align: right
+}
+th:nth-child(2),td:nth-child(2) {
+  text-align: right
+}
+th:nth-child(3),td:nth-child(3) {
+  text-align: left
+}
+th:nth-child(4),td:nth-child(4) {
+  text-align: right
+}
+th:nth-child(5),td:nth-child(5) {
+  text-align: right
+}
+th:nth-child(6),td:nth-child(6) {
+  text-align: left
+}
+th:nth-child(7),td:nth-child(7) {
+  text-align: right
+}
+th:nth-child(8),td:nth-child(8) {
+  text-align: right
 }
