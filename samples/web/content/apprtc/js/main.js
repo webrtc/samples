@@ -222,6 +222,8 @@ function mergeConstraints(cons1, cons2) {
 
 function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybePreferAudioReceiveCodec(sessionDescription.sdp);
+  sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp);
+  sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
        onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
   sendMessage(sessionDescription);
@@ -232,6 +234,8 @@ function setRemote(message) {
   if (stereo)
     message.sdp = addStereo(message.sdp);
   message.sdp = maybePreferAudioSendCodec(message.sdp);
+  message.sdp = maybeSetAudioSendBitRate(message.sdp);
+  message.sdp = maybeSetVideoSendBitRate(message.sdp);
   pc.setRemoteDescription(new RTCSessionDescription(message),
        onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
@@ -598,6 +602,74 @@ document.onkeydown = function(event) {
     default:
       return;
   }
+}
+
+function maybeSetAudioSendBitRate(sdp) {
+  if (!audio_send_bitrate) {
+    console.log('No preference on audio send bitrate.');
+	return sdp;
+  }
+  console.log('Prefer audio send bitrate: ' + audio_send_bitrate);
+  return preferAudioBitRate(sdp, audio_send_bitrate);
+}
+
+function maybeSetAudioReceiveBitRate(sdp) {
+  if (!audio_receive_bitrate) {
+    console.log('No preference on audio receive bitrate.');
+	return sdp;
+  }
+  console.log('Prefer audio receive bitrate: ' + audio_receive_bitrate);
+  return preferAudioBitRate(sdp, audio_receive_bitrate);
+}
+
+function maybeSetVideoSendBitRate(sdp) {
+  if (!video_send_bitrate) {
+    console.log('No preference on video send bitrate.');
+	return sdp;
+  }
+  console.log('Prefer video send bitrate: ' + video_send_bitrate);
+  return preferVideoBitRate(sdp, video_send_bitrate);
+}
+
+function maybeSetVideoReceiveBitRate(sdp) {
+  if (!video_receive_bitrate) {
+    console.log('No preference on video receive bitrate.');
+	return sdp;
+  }
+  console.log('Prefer video receive bitrate: ' + video_receive_bitrate);
+  return preferVideoBitRate(sdp, video_receive_bitrate);
+}
+
+function preferAudioBitRate(sdp, audio_bitrate) {
+  var sdpLines = sdp.split('\r\n');
+  // Search for audio mid line.
+  for (var i = 0; i < sdpLines.length; i++) {
+    if (sdpLines[i].search('a=mid:audio') !== -1) {
+	  var midLineIndex = i;
+	  break;
+	}
+  }
+  if (midLineIndex === null)
+    return sdp;
+  newLine = "b=AS:" + audio_bitrate;
+  sdpLines.splice(midLineIndex + 1, 0, newLine);
+  return sdp;  
+}
+
+function preferVideoBitRate(sdp, video_bitrate) {
+  var sdpLines = sdp.split('\r\n');
+  // Search for video mid line.
+  for (var i = 0; i < sdpLines.length; i++) {
+    if (sdpLines[i].search('a=mid:video') !== -1) {
+	  var midLineIndex = i;
+	  break;
+	}
+  }
+  if (midLineIndex === null)
+    return sdp;
+  newLine = "b=AS:" + video_bitrate;
+  sdpLines.splice(midLineIndex + 1, 0, newLine);
+  return sdp;  
 }
 
 function maybePreferAudioSendCodec(sdp) {
