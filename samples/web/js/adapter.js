@@ -13,7 +13,7 @@ function trace(text) {
   console.log((performance.now() / 1000).toFixed(3) + ": " + text);
 }
 function maybeFixConfiguration(pcConfig) {
-  if (pcConfig == null) {
+  if (pcConfig === null) {
     return;
   }
   for (var i = 0; i < pcConfig.iceServers.length; i++) {
