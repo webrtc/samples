@@ -223,7 +223,7 @@ function mergeConstraints(cons1, cons2) {
   for (var name in cons2.mandatory) {
     merged.mandatory[name] = cons2.mandatory[name];
   }
-  merged.optional.concat(cons2.optional);
+  merged.optional = merged.optional.concat(cons2.optional);
   return merged;
 }
 
