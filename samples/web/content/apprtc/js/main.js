@@ -14,9 +14,16 @@ var channelReady = false;
 var signalingReady = false;
 var msgQueue = [];
 // Set up audio and video regardless of what devices are present.
-var sdpConstraints = {'mandatory': {
-                      'OfferToReceiveAudio': true,
-                      'OfferToReceiveVideo': true }};
+// Disable comfort noise for maximum audio quality.
+var sdpConstraints = {
+    'mandatory': {
+        'OfferToReceiveAudio': true,
+        'OfferToReceiveVideo': true 
+     }, 
+     'optional': [
+         {'VoiceActivityDetection': false}
+     ]
+};
 var isVideoMuted = false;
 var isAudioMuted = false;
 // Types of gathered ICE Candidates.
@@ -216,7 +223,7 @@ function mergeConstraints(cons1, cons2) {
   for (var name in cons2.mandatory) {
     merged.mandatory[name] = cons2.mandatory[name];
   }
-  merged.optional.concat(cons2.optional);
+  merged.optional = merged.optional.concat(cons2.optional);
   return merged;
 }
 
@@ -242,7 +249,7 @@ function setRemote(message) {
     if (remoteStream) {
       waitForRemoteVideo();
     } else {
-      console.log("Not receiving any stream.");
+      console.log("No remote video stream; not waiting for media to arrive.");
       transitionToActive();
     }
   }
@@ -282,11 +289,11 @@ function processSignalingMessage(message) {
 }
 
 function onAddIceCandidateSuccess() {
-  console.log('AddIceCandidate success.');
+  console.log('Remote candidate added successfully.');
 }
 
 function onAddIceCandidateError(error) {
-  messageError('Failed to add Ice Candidate: ' + error.toString());
+  messageError('Failed to add remote candidate: ' + error.toString());
 }
 
 function onChannelOpened() {
@@ -652,9 +659,6 @@ function preferAudioCodec(sdp, codec) {
     }
   }
 
-  // Remove CN in m line and sdp.
-  sdpLines = removeCN(sdpLines, mLineIndex);
-
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
@@ -709,27 +713,6 @@ function setDefaultCodec(mLine, payload) {
       newLine[index++] = elements[i];
   }
   return newLine.join(' ');
-}
-
-// Strip CN from sdp before CN constraints is ready.
-function removeCN(sdpLines, mLineIndex) {
-  var mLineElements = sdpLines[mLineIndex].split(' ');
-  // Scan from end for the convenience of removing an item.
-  for (var i = sdpLines.length-1; i >= 0; i--) {
-    var payload = extractSdp(sdpLines[i], /a=rtpmap:(\d+) CN\/\d+/i);
-    if (payload) {
-      var cnPos = mLineElements.indexOf(payload);
-      if (cnPos !== -1) {
-        // Remove CN payload from m line.
-        mLineElements.splice(cnPos, 1);
-      }
-      // Remove CN line in sdp
-      sdpLines.splice(i, 1);
-    }
-  }
-
-  sdpLines[mLineIndex] = mLineElements.join(' ');
-  return sdpLines;
 }
 
 // Send BYE on refreshing(or leaving) a demo page

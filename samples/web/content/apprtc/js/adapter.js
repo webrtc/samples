@@ -1,1 +1,1 @@
-../../base/adapter.js
+../../../js/adapter.js
