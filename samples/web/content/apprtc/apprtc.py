@@ -380,20 +380,12 @@ class MainPage(webapp2.RequestHandler):
       stereo = self.request.get('stereo')
 
     # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
-    asbr = ''
-    arbr = ''
-    if self.request.get('asbr'):
-      asbr = self.request.get('asbr')
-    if self.request.get('arbr'):
-      arbr = self.request.get('arbr')
+    asbr = self.request.get('asbr', default_value = '')
+    arbr = self.request.get('arbr', default_value = '')
 
     # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
-    vsbr = ''
-    vrbr = ''
-    if self.request.get('vsbr'):
-      vsbr = self.request.get('vsbr')
-    if self.request.get('vrbr'):
-      vrbr = self.request.get('vrbr')
+    vsbr = self.request.get('vsbr', default_value = '')
+    vrbr = self.request.get('vrbr', default_value = '')
  
 
     # Options for making pcConstraints
