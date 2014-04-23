@@ -366,18 +366,16 @@ class MainPage(webapp2.RequestHandler):
       logging.error(message)
       error_messages.append(message)
 
-    audio_send_codec = self.request.get('asc')
+    audio_send_codec = self.request.get('asc', default_value = '')
     if not audio_send_codec:
       audio_send_codec = get_preferred_audio_send_codec(user_agent)
 
-    audio_receive_codec = self.request.get('arc')
+    audio_receive_codec = self.request.get('arc', default_value = '')
     if not audio_receive_codec:
       audio_receive_codec = get_preferred_audio_receive_codec()
 
     # Set stereo to false by default.
-    stereo = 'false'
-    if self.request.get('stereo'):
-      stereo = self.request.get('stereo')
+    stereo = self.request.get('stereo', default_value = 'false')
 
     # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
     asbr = self.request.get('asbr', default_value = '')

@@ -606,7 +606,7 @@ document.onkeydown = function(event) {
 
 function maybeSetAudioSendBitRate(sdp) {
   if (!audioSendBitrate) {
-	return sdp;
+    return sdp;
   }
   console.log('Prefer audio send bitrate: ' + audioSendBitrate);
   return preferBitRate(sdp, audioSendBitrate, 'audio');
@@ -614,7 +614,7 @@ function maybeSetAudioSendBitRate(sdp) {
 
 function maybeSetAudioReceiveBitRate(sdp) {
   if (!audioRecvBitrate) {
-	return sdp;
+    return sdp;
   }
   console.log('Prefer audio receive bitrate: ' + audioRecvBitrate);
   return preferBitRate(sdp, audioRecvBitrate, 'audio');
@@ -622,7 +622,7 @@ function maybeSetAudioReceiveBitRate(sdp) {
 
 function maybeSetVideoSendBitRate(sdp) {
   if (!videoSendBitrate) {
-	return sdp;
+    return sdp;
   }
   console.log('Prefer video send bitrate: ' + videoSendBitrate);
   return preferBitRate(sdp, videoSendBitrate, 'video');
@@ -630,7 +630,7 @@ function maybeSetVideoSendBitRate(sdp) {
 
 function maybeSetVideoReceiveBitRate(sdp) {
   if (!videoRecvBitrate) {
-	return sdp;
+    return sdp;
   }
   console.log('Prefer video receive bitrate: ' + videoRecvBitrate);
   return preferBitRate(sdp, videoRecvBitrate, 'video');
@@ -638,13 +638,12 @@ function maybeSetVideoReceiveBitRate(sdp) {
 
 function preferBitRate(sdp, bitrate, mediaType) {
   var mLineIndex = null;
-  var nextMLineIndex = null;
   var cLineIndex = null;
   var sdpLines = sdp.split('\r\n');
   
   // Find m line for the given mediaType.
   for (var i = 0; i < sdpLines.length; ++i) {
-    if (sdpLines[i].search('m=') !== -1) {
+    if (sdpLines[i].search('m=') === 0) {
       if (sdpLines[i].search(mediaType) !== -1) {
         mLineIndex = i;
         break;
@@ -652,34 +651,38 @@ function preferBitRate(sdp, bitrate, mediaType) {
     }
   }  
   // No m-line found, return.
-  if (mLineIndex === null) 
+  if (mLineIndex === null) {
+    messageError('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
+  }
 
-  // Find next m-line, if any.
+  // Find c-line corresponding to the m-line.
   for (i = mLineIndex + 1; i < sdpLines.length; ++i) {
-    if (sdpLines[i].search('m=') !== -1) {
-      nextMLineIndex = i;
-      break;
-    }
-  }
-  if (nextMLineIndex === null){
-    nextMLineIndex = sdpLines.length;
-  }
-  // Find c-line index for the given mediaType.
-  for(i = mLineIndex; i < nextMLineIndex; ++i) {
-    if(sdpLines[i].search('c=IN') !== -1) {
+    if (sdpLines[i].search('c=IN') === 0) {
       cLineIndex = i;
       break;
     }
   }
-  // If no c-line, should still add bandwidth b line after m-line?
-  if(cLineIndex === null) {
-    cLineIndex = mLineIndex;
+
+  // If no c-line, return sdp and throw error.
+  if (cLineIndex === null) {
+    messageError('Failed to add bandwidth line to sdp, as no c-line found');
+    return sdp;
   }
+
+  // Check if the bandwidth line already exists.
+  for (i = cLineIndex + 1; i < sdpLines.length; ++i) {
+    if (sdpLines[i].search('b=AS') === 0) {
+      // Remove the bandwidth line if it already exists.
+      sdpLines.splice(i,1);
+      break;
+    }
+  }  
+
   // Create the b (bandwidth) sdp line.
-  newLine = "b=AS:" + bitrate;
+  var bwLine = "b=AS:" + bitrate;  
   // As per RFC 4566, the b line should follow after c-line.
-  sdpLines.splice(cLineIndex + 1, 0, newLine);
+  sdpLines.splice(cLineIndex + 1, 0, bwLine);
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
