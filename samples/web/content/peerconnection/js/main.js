@@ -187,8 +187,3 @@ function hangup() {
   hangupButton.disabled = true;
   callButton.disabled = false;
 }
-
-
-
-
-
