@@ -1,6 +1,6 @@
 var addButton = document.querySelector('button#add');
-var candidateTBody = document.querySelector('tbody#candidatesBody');
 var gatherButton = document.querySelector('button#gather');
+var output = document.querySelector('textarea#output');
 var passwordInput = document.querySelector('input#password');
 var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
@@ -43,13 +43,10 @@ function removeServer() {
 }
 
 function start() {
-  // Clean out the table.
-  while (candidateTBody.firstChild) {
-    candidateTBody.removeChild(candidateTBody.firstChild);
-  }
+  // Create a PeerConnection with no streams, but force a m=audio line.
+  // Pass in the STUN/TURN server value from the input boxes.
 
-  
-  // Read the values from the input boxes.
+  output.value = '';
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
      iceServers.push(JSON.parse(servers[i].value));
@@ -62,25 +59,14 @@ function start() {
       break;
     }
   }
-
-  // Control IPv6 address gathering and whether RTCP should be bundled.
-  var ipv6 = document.querySelector('input#ipv6').checked;
-  var bundle = document.querySelector('input#bundle').checked;
-
-  // Create a PeerConnection with no streams, but force a m=audio line.
-  // This will gather candidates for either 1 or 2 ICE components, depending
-  // on the BUNDLE policy selected.
-  var config = {"iceServers": iceServers };
-  var pcConstraints = {"mandatory": {"IceTransports": iceTransports}};
-  var offerConstraints = {"mandatory": {"OfferToReceiveAudio": true}};
-  pcConstraints.optional = [{"googIPv6": ipv6}];
-  offerConstraints.optional = [{"googUseRtpMUX" : bundle}];
-
-  trace("Creating new PeerConnection with config=" + JSON.stringify(config) +
-        ", constraints=" + JSON.stringify(pcConstraints));
-  pc = new RTCPeerConnection(config, pcConstraints);
+  var config = {'iceServers': iceServers };
+  var constraints = {'mandatory': {'IceTransports':iceTransports}};
+  trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
+        ', constraints=' + JSON.stringify(constraints));
+  pc = new RTCPeerConnection(config, constraints);
   pc.onicecandidate = iceCallback;
-  pc.createOffer(gotDescription, noDescription, offerConstraints);
+  pc.createOffer(gotDescription, null,
+      {'mandatory': {'OfferToReceiveAudio': true}});
 }
 
 function gotDescription(desc) {
@@ -88,60 +74,13 @@ function gotDescription(desc) {
   pc.setLocalDescription(desc);
 }
 
-function noDescription(error) {
-  console.log("Error creating offer");
-}
-
-function parseCandidate(text) {
-  var pos = text.indexOf("candidate");
-  var fields = text.substr(pos + 10).split(" ");
-  return {
-    "component": fields[1],
-    "type": fields[7],
-    "foundation": fields[0],
-    "protocol": fields[2],
-    "address": fields[4],
-    "port": fields[5],
-    "priority": fields[3]
-  };
-}
-
-function formatPriority(priority) {
-  var s = "";
-  s += (priority >> 24);
-  s += " | ";
-  s += (priority >> 8) & 0xFFFF;
-  s += " | ";
-  s += priority & 0xFF;
-  return s;  
-}
-
-function appendCell(row, val, span) {
-  var cell = document.createElement("td");
-  cell.innerText = val;
-  if (span) {
-    cell.setAttribute("colspan", span);
-  }
-  row.appendChild(cell);
-}
-
 function iceCallback(event) {
-  var elapsed = ((performance.now() - begin) / 1000).toFixed(3);
-  var row = document.createElement("tr");
-  appendCell(row, elapsed);
+  var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   if (event.candidate) {
-    var c = parseCandidate(event.candidate.candidate);
-    appendCell(row, c.component);
-    appendCell(row, c.type);
-    appendCell(row, c.foundation);
-    appendCell(row, c.protocol);
-    appendCell(row, c.address);
-    appendCell(row, c.port);
-    appendCell(row, formatPriority(c.priority));
+    output.value += (elapsed + ': ' + event.candidate.candidate);
   } else {
-    appendCell(row, "Done", 7);
+    output.value += (elapsed + ': Done');
     pc.close();
     pc = null;
   }
-  candidateTBody.appendChild(row);
 }
