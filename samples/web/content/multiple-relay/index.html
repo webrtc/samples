@@ -4,7 +4,7 @@
 <title>PeerConnection Demo 1</title>
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
 <script src="../../js/adapter.js"></script>
-<script src="../js/videopipe.js"></script>
+<script src="../../js/videopipe.js"></script>
 <style>
 video {
   border:5px solid black;
@@ -16,10 +16,12 @@ button {
   padding: 8px;
 }
 textarea {
+  border: none;
+  resize: none;
   font-family: monospace;
   margin: 2px;
   width:480px;
-  height:640px;
+  height:64px;
 }
 </style>
 </head>
@@ -32,7 +34,7 @@ textarea {
 <button id="btn3" onclick="addrelay()">Insert relay</button>
 <button id="btn4" onclick="hangup()">Hang Up</button>
 <br>
-<xtextarea id="ta1"></textarea>
+<textarea id="ta1"></textarea><br>
 <script>
 btn1.disabled = false;
 btn2.disabled = true;
