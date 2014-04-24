@@ -7,8 +7,17 @@ startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
+var startTime;
 var localVideo = document.getElementById('localVideo');
 var remoteVideo = document.getElementById('remoteVideo');
+function trace(text) {
+  // This function is used for logging.
+  if (text[text.length - 1] == '\n') {
+    text = text.substring(0, text.length - 1);
+  }
+  console.log(((performance.now() - startTime) / 1000).toFixed(3) + ": " + text);
+}
+remoteVideo.onresize = function() { trace("Remote video resized to " + remoteVideo.videoWidth  + " x " + remoteVideo.videoHeight);}
 
 localVideo.addEventListener('loadedmetadata', function () {
   trace('Local video currentSrc: ' + this.currentSrc +
@@ -56,6 +65,7 @@ function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   trace('Starting call');
+  startTime = performance.now();
   var videoTracks = localStream.getVideoTracks();
   var audioTracks = localStream.getAudioTracks();
   if (videoTracks.length > 0)
@@ -69,6 +79,8 @@ function call() {
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
   pc2.onicecandidate = iceCallback2;
+  pc1.oniceconnectionstatechange = iceState1;
+  pc2.oniceconnectionstatechange = iceState2;
   pc2.onaddstream = gotRemoteStream;
 
   pc1.addStream(localStream);
@@ -82,9 +94,11 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function gotDescription1(desc) {
+  trace('Offer from pc1 \n');
   pc1.setLocalDescription(desc);
-  trace('Offer from pc1 \n' + desc.sdp);
+  trace('pc1 setLocal complete \n');// + desc.sdp);
   pc2.setRemoteDescription(desc);
+  trace('pc2 setRemote complete \n');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
@@ -93,9 +107,11 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
+  trace('Answer from pc2: \n');
   pc2.setLocalDescription(desc);
-  trace('Answer from pc2: \n' + desc.sdp);
+  trace('pc2 setLocal complete: \n');// + desc.sdp);
   pc1.setRemoteDescription(desc);
+  trace('pc1 setRemote complete: \n');
 }
 
 function hangup() {
@@ -128,6 +144,14 @@ function iceCallback2(event) {
       onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
+}
+
+function iceState1(event) {
+  trace("pc1.iceState=" + pc1.iceConnectionState);
+}
+
+function iceState2(event) {
+  trace("pc2.iceState=" + pc2.iceConnectionState);
 }
 
 function onAddIceCandidateSuccess() {
