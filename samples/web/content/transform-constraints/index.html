@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- This sample demonstrates calling createOffer to get a SDP blob that
+     indicates the capabilities of the PeerConnection. -->
+<title>Show createOffer Output Demo</title>
+<script src="../../js/adapter.js"></script>
+<script src="adaptconstraints.js"></script>
+<style>
+button {
+  font: 18px sans-serif;
+  padding: 8px;
+}
+textarea {
+  font-family: monospace;
+  margin: 2px;
+  width:480px;
+  height:640px;
+}
+</style>
+</head>
+<body>
+<h1>WebRTC Constraints Spec Conversion</h1>
+<p>This page allows you to transform constraints between the "January 2014"
+version and the "April 2014" version.</p>
+Type or paste the constraints in one version into the upper area, and the
+transformed versions will appear in the lower areas.
+<textarea id="inputtext" onchange="inputToOutput()">
+{
+  "advanced": [
+    {
+      "foo": "bar"
+    }
+  ],
+  "required": [
+    "width"
+  ],
+  "width": 25
+}
+</textarea>
+<br>
+<button id="btn1" onclick="inputToOutput()">Transform</button>
+<br>
+<textarea id="outputjan"></textarea>
+<textarea id="outputapril"></textarea>
+<script>
+function inputToOutput() {
+  trace("Transforming " + inputtext.value);
+  var constraint;
+  try {
+    // NOTE: Use of eval is dangerous - this is unchecked access to
+    // everything in this page! - but required to allow unquoted
+    // lefthand sides of fields.
+    eval("constraint = " + inputtext.value);
+  } catch(err) {
+    outputjan.textContent = 'Parse Error:' + err.message;
+    return;
+  }
+  trace("Transformed to " + constraint);
+  if (constraint === undefined) {
+    outputjan.textContent = 'Evaluated to undefined';
+    return;
+  }
+  try {
+    var result = transformToJan(constraint);
+    outputjan.textContent = JSON.stringify(result, undefined, 2);
+  } catch(err) {
+    outputjan.textContent = 'Transform error: ' + err;
+  }
+  try {
+    outputapril.textContent = JSON.stringify(transformToApril(constraint),
+                                             undefined, 2);
+  } catch(err) {
+    outputapril.textContent = 'Transform error: ' + err.message;
+  }
+}
+</script>
+
+</body>
+</html>
+
+
