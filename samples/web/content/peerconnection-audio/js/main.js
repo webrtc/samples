@@ -2,7 +2,7 @@ var callButton = document.querySelector('button#callButton');
 var hangupButton = document.querySelector('button#hangupButton');
 hangupButton.disabled = true;
 callButton.onclick = call;
-hangupButton.disabled = hangup;
+hangupButton.onclick = hangup;
 
 var pc1, pc2;
 var localstream;
