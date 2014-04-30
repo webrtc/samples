@@ -366,18 +366,25 @@ class MainPage(webapp2.RequestHandler):
       logging.error(message)
       error_messages.append(message)
 
-    audio_send_codec = self.request.get('asc')
+    audio_send_codec = self.request.get('asc', default_value = '')
     if not audio_send_codec:
       audio_send_codec = get_preferred_audio_send_codec(user_agent)
 
-    audio_receive_codec = self.request.get('arc')
+    audio_receive_codec = self.request.get('arc', default_value = '')
     if not audio_receive_codec:
       audio_receive_codec = get_preferred_audio_receive_codec()
 
     # Set stereo to false by default.
-    stereo = 'false'
-    if self.request.get('stereo'):
-      stereo = self.request.get('stereo')
+    stereo = self.request.get('stereo', default_value = 'false')
+
+    # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
+    asbr = self.request.get('asbr', default_value = '')
+    arbr = self.request.get('arbr', default_value = '')
+
+    # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
+    vsbr = self.request.get('vsbr', default_value = '')
+    vrbr = self.request.get('vrbr', default_value = '')
+ 
 
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
@@ -460,6 +467,10 @@ class MainPage(webapp2.RequestHandler):
                        'media_constraints': json.dumps(media_constraints),
                        'turn_url': turn_url,
                        'stereo': stereo,
+                       'arbr': arbr,
+                       'asbr': asbr,
+                       'vrbr': vrbr,
+                       'vsbr': vsbr,
                        'audio_send_codec': audio_send_codec,
                        'audio_receive_codec': audio_receive_codec
                       }

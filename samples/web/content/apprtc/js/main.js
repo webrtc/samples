@@ -229,6 +229,8 @@ function mergeConstraints(cons1, cons2) {
 
 function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybePreferAudioReceiveCodec(sessionDescription.sdp);
+  sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp);
+  sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
        onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
   sendMessage(sessionDescription);
@@ -239,6 +241,8 @@ function setRemote(message) {
   if (stereo)
     message.sdp = addStereo(message.sdp);
   message.sdp = maybePreferAudioSendCodec(message.sdp);
+  message.sdp = maybeSetAudioSendBitRate(message.sdp);
+  message.sdp = maybeSetVideoSendBitRate(message.sdp);
   pc.setRemoteDescription(new RTCSessionDescription(message),
        onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
@@ -607,22 +611,118 @@ document.onkeydown = function(event) {
   }
 }
 
+function maybeSetAudioSendBitRate(sdp) {
+  if (!audioSendBitrate) {
+    return sdp;
+  }
+  console.log('Prefer audio send bitrate: ' + audioSendBitrate);
+  return preferBitRate(sdp, audioSendBitrate, 'audio');
+}
+
+function maybeSetAudioReceiveBitRate(sdp) {
+  if (!audioRecvBitrate) {
+    return sdp;
+  }
+  console.log('Prefer audio receive bitrate: ' + audioRecvBitrate);
+  return preferBitRate(sdp, audioRecvBitrate, 'audio');
+}
+
+function maybeSetVideoSendBitRate(sdp) {
+  if (!videoSendBitrate) {
+    return sdp;
+  }
+  console.log('Prefer video send bitrate: ' + videoSendBitrate);
+  return preferBitRate(sdp, videoSendBitrate, 'video');
+}
+
+function maybeSetVideoReceiveBitRate(sdp) {
+  if (!videoRecvBitrate) {
+    return sdp;
+  }
+  console.log('Prefer video receive bitrate: ' + videoRecvBitrate);
+  return preferBitRate(sdp, videoRecvBitrate, 'video');
+}
+
+function preferBitRate(sdp, bitrate, mediaType) {
+  var mLineIndex = null;
+  var nextMLineIndex = null;
+  var cLineIndex = null;
+  var sdpLines = sdp.split('\r\n');
+  
+  // Find m line for the given mediaType.
+  for (var i = 0; i < sdpLines.length; ++i) {
+    if (sdpLines[i].search('m=') === 0) {
+      if (sdpLines[i].search(mediaType) !== -1) {
+        mLineIndex = i;
+        break;
+      }
+    }
+  }  
+  // No m-line found, return.
+  if (mLineIndex === null) {
+    messageError('Failed to add bandwidth line to sdp, as no m-line found');
+    return sdp;
+  }
+  
+  // Find next m-line if any.
+  for (i = mLineIndex + 1; i < sdpLines.length; ++i) {
+    if (sdpLines[i].search('m=') === 0) {
+      nextMLineIndex = i;
+      break;
+    }
+  }  
+  // No next m-line found.
+  if (nextMLineIndex === null) {
+    nextMLineIndex = sdpLines.length;
+  }
+
+  // Find c-line corresponding to the m-line.
+  for (i = mLineIndex + 1; i < nextMLineIndex; ++i) {
+    if (sdpLines[i].search('c=IN') === 0) {
+      cLineIndex = i;
+      break;
+    }
+  }
+
+  // If no c-line, return sdp and throw error.
+  if (cLineIndex === null) {
+    messageError('Failed to add bandwidth line to sdp, as no c-line found');
+    return sdp;
+  }
+
+  // Check if bandwidth line already exists between c-line and next m-line.
+  for (i = cLineIndex + 1; i < nextMLineIndex; ++i) {
+    if (sdpLines[i].search('b=AS') === 0) {
+      // Remove the bandwidth line if it already exists.
+      sdpLines.splice(i,1);
+      break;
+    }
+  }  
+
+  // Create the b (bandwidth) sdp line.
+  var bwLine = "b=AS:" + bitrate;  
+  // As per RFC 4566, the b line should follow after c-line.
+  sdpLines.splice(cLineIndex + 1, 0, bwLine);
+  sdp = sdpLines.join('\r\n');
+  return sdp;
+}
+
 function maybePreferAudioSendCodec(sdp) {
-  if (audio_send_codec == '') {
+  if (audioSendCodec == '') {
     console.log('No preference on audio send codec.');
     return sdp;
   }
-  console.log('Prefer audio send codec: ' + audio_send_codec);
-  return preferAudioCodec(sdp, audio_send_codec);
+  console.log('Prefer audio send codec: ' + audioSendCodec);
+  return preferAudioCodec(sdp, audioSendCodec);
 }
 
 function maybePreferAudioReceiveCodec(sdp) {
-  if (audio_receive_codec == '') {
+  if (audioRecvCodec == '') {
     console.log('No preference on audio receive codec.');
     return sdp;
   }
-  console.log('Prefer audio receive codec: ' + audio_receive_codec);
-  return preferAudioCodec(sdp, audio_receive_codec);
+  console.log('Prefer audio receive codec: ' + audioRecvCodec);
+  return preferAudioCodec(sdp, audioRecvCodec);
 }
 
 // Set |codec| as the default audio codec if it's present.
