@@ -638,6 +638,7 @@ function maybeSetVideoReceiveBitRate(sdp) {
 
 function preferBitRate(sdp, bitrate, mediaType) {
   var mLineIndex = null;
+  var nextMLineIndex = null;
   var cLineIndex = null;
   var sdpLines = sdp.split('\r\n');
   
@@ -655,9 +656,21 @@ function preferBitRate(sdp, bitrate, mediaType) {
     messageError('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
+  
+  // Find next m-line if any.
+  for (i = mLineIndex + 1; i < sdpLines.length; ++i) {
+    if (sdpLines[i].search('m=') === 0) {
+      nextMLineIndex = i;
+      break;
+    }
+  }  
+  // No next m-line found.
+  if (nextMLineIndex === null) {
+    nextMLineIndex = sdpLines.length;
+  }
 
   // Find c-line corresponding to the m-line.
-  for (i = mLineIndex + 1; i < sdpLines.length; ++i) {
+  for (i = mLineIndex; i < nextMLineIndex; ++i) {
     if (sdpLines[i].search('c=IN') === 0) {
       cLineIndex = i;
       break;
@@ -670,8 +683,8 @@ function preferBitRate(sdp, bitrate, mediaType) {
     return sdp;
   }
 
-  // Check if the bandwidth line already exists.
-  for (i = cLineIndex + 1; i < sdpLines.length; ++i) {
+  // Check if bandwidth line already exists between c-line and next m-line.
+  for (i = cLineIndex + 1; i < nextMLineIndex; ++i) {
     if (sdpLines[i].search('b=AS') === 0) {
       // Remove the bandwidth line if it already exists.
       sdpLines.splice(i,1);
