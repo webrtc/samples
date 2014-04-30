@@ -670,7 +670,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
   }
 
   // Find c-line corresponding to the m-line.
-  for (i = mLineIndex; i < nextMLineIndex; ++i) {
+  for (i = mLineIndex + 1; i < nextMLineIndex; ++i) {
     if (sdpLines[i].search('c=IN') === 0) {
       cLineIndex = i;
       break;
