@@ -24,25 +24,31 @@ remoteVideo.addEventListener('loadedmetadata', function () {
 });
 
 remoteVideo.onresize = function() {
-  trace("Remote video size changed to " +
-        remoteVideo.videoWidth  + "x" + remoteVideo.videoHeight);
+  trace('Remote video size changed to ' +
+        remoteVideo.videoWidth  + 'x' + remoteVideo.videoHeight);
   // We'll use the first onsize callback as an indication that video has started
   // playing out.
   if (startTime) {
     var elapsedTime = performance.now() - startTime;
-    trace("Setup time: " + elapsedTime.toFixed(3) + " ms");
+    trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
     startTime = null;
   }
 }
 
 var localStream, pc1, pc2;
-
 var sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,
     'OfferToReceiveVideo': true
   }
 };
+
+function getName(pc) {
+  return (pc == pc1) ? 'pc1' : 'pc2';
+}
+function getOtherPc(pc) {
+  return (pc == pc1) ? pc2 : pc1;
+}
 
 function gotStream(stream) {
   trace('Received local stream');
@@ -79,12 +85,12 @@ function call() {
   var servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = onIceCandidate1;
+  pc1.onicecandidate = function(e) { onIceCandidate(pc1, e) };
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = onIceCandidate2;
-  pc1.oniceconnectionstatechange = onIceStateChange1;
-  pc2.oniceconnectionstatechange = onIceStateChange2;
+  pc2.onicecandidate = function(e) { onIceCandidate(pc2, e) };
+  pc1.oniceconnectionstatechange = function(e) { onIceStateChange(pc1, e) };
+  pc2.oniceconnectionstatechange = function(e) { onIceStateChange(pc2, e) };
   pc2.onaddstream = gotRemoteStream;
 
   pc1.addStream(localStream);
@@ -101,9 +107,9 @@ function onCreateSessionDescriptionError(error) {
 function onCreateOfferSuccess(desc) {
   trace('Offer from pc1\n' + desc.sdp);
   trace('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc, onSetLocalSuccess1);
+  pc1.setLocalDescription(desc, function() { onSetLocalSuccess(pc1); });
   trace('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc, onSetRemoteSuccess2);
+  pc2.setRemoteDescription(desc, function() { onSetRemoteSuccess(pc2); });
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -112,12 +118,12 @@ function onCreateOfferSuccess(desc) {
                    sdpConstraints);
 }
 
-function onSetLocalSuccess1() {
-  trace('pc1 setLocalDescription complete\n');
+function onSetLocalSuccess(pc) {
+  trace(getName(pc) + ' setLocalDescription complete');
 }
 
-function onSetRemoteSuccess2() {
-  trace('pc2 setRemoteDescription complete\n');
+function onSetRemoteSuccess(pc) {
+  trace(getName(pc) + ' setRemoteDescription complete');
 }
 
 function gotRemoteStream(e) {
@@ -129,53 +135,33 @@ function gotRemoteStream(e) {
 function onCreateAnswerSuccess(desc) {
   trace('Answer from pc2:\n' + desc.sdp);
   trace('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc, onSetLocalSuccess2);
+  pc2.setLocalDescription(desc, function() { onSetLocalSuccess(pc2); });
   trace('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc, onSetRemoteSuccess1);
+  pc1.setRemoteDescription(desc, function() { onSetRemoteSuccess(pc1); });
 }
 
-function onSetLocalSuccess2() {
-  trace('pc2 setLocalDescription complete\n');
-}
 
-function onSetRemoteSuccess1() {
-  trace('pc1 setRemoteDescription complete\n');
-}
-
-function onIceCandidate1(event) {
+function onIceCandidate(pc, event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace('pc1 ICE candidate: \n' + event.candidate.candidate);
+    getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
+        function() { onAddIceCandidateSuccess(pc) },
+        function(err) { onAddIceCandidateError(pc, err); });
+    trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
-function onIceCandidate2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace('pc2 ICE candidate: \n ' + event.candidate.candidate);
+function onAddIceCandidateSuccess(pc) {
+  trace(getName(pc) + ' addIceCandidate success');
+}
+
+function onAddIceCandidateError(pc, error) {
+  trace(getName(pc) + ' failed to add ICE Candidate: ' + error.toString());
+}
+
+function onIceStateChange(pc, event) {
+  if (pc) {
+    trace(getName(pc) + ' ICE state: ' + pc.iceConnectionState);
   }
-}
-
-function onIceStateChange1(event) {
-  if (pc1) {
-    trace("pc1 ICE state: " + pc1.iceConnectionState);
-  }
-}
-
-function onIceStateChange2(event) {
-  if (pc2) {
-    trace("pc2 ICE state: " + pc2.iceConnectionState);
-  }
-}
-
-function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
-}
-
-function onAddIceCandidateError(error) {
-  trace('Failed to add ICE Candidate: ' + error.toString());
 }
 
 function hangup() {
