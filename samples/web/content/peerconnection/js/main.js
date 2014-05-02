@@ -30,7 +30,7 @@ remoteVideo.onresize = function() {
   // playing out.
   if (startTime) {
     var elapsedTime = performance.now() - startTime;
-    trace("Setup time: " + elapsedTime.toFixed(3) + "ms");
+    trace('Setup time: '' + elapsedTime.toFixed(3) + 'ms');
     startTime = null;
   }
 }
