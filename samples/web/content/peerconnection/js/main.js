@@ -7,6 +7,7 @@ startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
+var startTime;
 var localVideo = document.getElementById('localVideo');
 var remoteVideo = document.getElementById('remoteVideo');
 
@@ -22,14 +23,32 @@ remoteVideo.addEventListener('loadedmetadata', function () {
     'px,  videoHeight: ' + this.videoHeight + 'px');
 });
 
-var localStream, pc1, pc2;
+remoteVideo.onresize = function() {
+  trace('Remote video size changed to ' +
+        remoteVideo.videoWidth  + 'x' + remoteVideo.videoHeight);
+  // We'll use the first onsize callback as an indication that video has started
+  // playing out.
+  if (startTime) {
+    var elapsedTime = performance.now() - startTime;
+    trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
+    startTime = null;
+  }
+}
 
+var localStream, pc1, pc2;
 var sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,
     'OfferToReceiveVideo': true
   }
 };
+
+function getName(pc) {
+  return (pc == pc1) ? 'pc1' : 'pc2';
+}
+function getOtherPc(pc) {
+  return (pc == pc1) ? pc2 : pc1;
+}
 
 function gotStream(stream) {
   trace('Received local stream');
@@ -56,6 +75,7 @@ function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   trace('Starting call');
+  startTime = performance.now();
   var videoTracks = localStream.getVideoTracks();
   var audioTracks = localStream.getAudioTracks();
   if (videoTracks.length > 0)
@@ -65,37 +85,83 @@ function call() {
   var servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = iceCallback1;
+  pc1.onicecandidate = function(e) { onIceCandidate(pc1, e) };
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = iceCallback2;
+  pc2.onicecandidate = function(e) { onIceCandidate(pc2, e) };
+  pc1.oniceconnectionstatechange = function(e) { onIceStateChange(pc1, e) };
+  pc2.oniceconnectionstatechange = function(e) { onIceStateChange(pc2, e) };
   pc2.onaddstream = gotRemoteStream;
 
   pc1.addStream(localStream);
-  trace('Added local stream to peer connection');
+  trace('Added local stream to pc1');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  trace('pc1 createOffer start');
+  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
   trace('Failed to create session description: ' + error.toString());
 }
 
-function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
-  trace('Offer from pc1 \n' + desc.sdp);
-  pc2.setRemoteDescription(desc);
+function onCreateOfferSuccess(desc) {
+  trace('Offer from pc1\n' + desc.sdp);
+  trace('pc1 setLocalDescription start');
+  pc1.setLocalDescription(desc, function() { onSetLocalSuccess(pc1); });
+  trace('pc2 setRemoteDescription start');
+  pc2.setRemoteDescription(desc, function() { onSetRemoteSuccess(pc2); });
+  trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-    sdpConstraints);
+  pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError,
+                   sdpConstraints);
 }
 
-function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
-  trace('Answer from pc2: \n' + desc.sdp);
-  pc1.setRemoteDescription(desc);
+function onSetLocalSuccess(pc) {
+  trace(getName(pc) + ' setLocalDescription complete');
+}
+
+function onSetRemoteSuccess(pc) {
+  trace(getName(pc) + ' setRemoteDescription complete');
+}
+
+function gotRemoteStream(e) {
+  // Call the polyfill wrapper to attach the media stream to this element.
+  attachMediaStream(remoteVideo, e.stream);
+  trace('pc2 received remote stream');
+}
+
+function onCreateAnswerSuccess(desc) {
+  trace('Answer from pc2:\n' + desc.sdp);
+  trace('pc2 setLocalDescription start');
+  pc2.setLocalDescription(desc, function() { onSetLocalSuccess(pc2); });
+  trace('pc1 setRemoteDescription start');
+  pc1.setRemoteDescription(desc, function() { onSetRemoteSuccess(pc1); });
+}
+
+
+function onIceCandidate(pc, event) {
+  if (event.candidate) {
+    getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
+        function() { onAddIceCandidateSuccess(pc) },
+        function(err) { onAddIceCandidateError(pc, err); });
+    trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
+  }
+}
+
+function onAddIceCandidateSuccess(pc) {
+  trace(getName(pc) + ' addIceCandidate success');
+}
+
+function onAddIceCandidateError(pc, error) {
+  trace(getName(pc) + ' failed to add ICE Candidate: ' + error.toString());
+}
+
+function onIceStateChange(pc, event) {
+  if (pc) {
+    trace(getName(pc) + ' ICE state: ' + pc.iceConnectionState);
+  }
 }
 
 function hangup() {
@@ -106,34 +172,4 @@ function hangup() {
   pc2 = null;
   hangupButton.disabled = true;
   callButton.disabled = false;
-}
-
-function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(remoteVideo, e.stream);
-  trace('Received remote stream');
-}
-
-function iceCallback1(event) {
-  if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
-  }
-}
-
-function iceCallback2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
-}
-
-function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
-}
-
-function onAddIceCandidateError(error) {
-  trace('Failed to add ICE Candidate: ' + error.toString());
 }
