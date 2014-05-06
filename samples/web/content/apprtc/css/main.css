@@ -29,7 +29,7 @@ footer {
   -webkit-perspective: 1000;
 }
 #card {
-  -webkit-transition-duration: 2s;
+  -webkit-transition-duration: 0.8s;
   -webkit-transform-style: preserve-3d;
 }
 #local {
