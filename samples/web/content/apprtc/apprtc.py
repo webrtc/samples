@@ -56,15 +56,25 @@ def get_preferred_audio_send_codec(user_agent):
     preferred_audio_send_codec = 'ISAC/16000'
   return preferred_audio_send_codec
 
-def make_pc_config(stun_server, turn_server, ts_pwd):
+# HD is on by default for desktop Chrome, but not Android or Firefox (yet)
+def get_hd_default(user_agent):
+  if 'Android' in user_agent or not 'Chrome' in user_agent:
+    return 'false'
+  return 'true'
+
+def make_pc_config(stun_server, turn_server, ts_pwd, ice_transports):
+  config = {}
   servers = []
+  if stun_server:
+    stun_config = 'stun:{}'.format(stun_server)
+    servers.append({'urls':stun_config})
   if turn_server:
     turn_config = 'turn:{}'.format(turn_server)
     servers.append({'urls':turn_config, 'credential':ts_pwd})
-  if stun_server:
-    stun_config = 'stun:{}'.format(stun_server)
-  servers.append({'urls':stun_config})
-  return {'iceServers':servers}
+  config['iceServers'] = servers
+  if ice_transports:
+    config['iceTransports'] = ice_transports
+  return config
 
 def create_channel(room, user, duration_minutes):
   client_id = make_client_id(room, user)
@@ -157,6 +167,8 @@ def maybe_add_constraint(constraints, param, constraint):
 
 def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
+  # Force on the new BWE in Chrome 35 and later.
+  constraints['optional'].append({'googImprovedWifiBwe': True})
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
@@ -328,6 +340,7 @@ class MainPage(webapp2.RequestHandler):
       stun_server = get_default_stun_server(user_agent)
     turn_server = self.request.get('ts')
     ts_pwd = self.request.get('tp')
+    ice_transports = self.request.get('it')
 
     # Use "audio" and "video" to set the media stream constraints. Defined here:
     # http://goo.gl/V7cZg
@@ -353,11 +366,16 @@ class MainPage(webapp2.RequestHandler):
     audio = self.request.get('audio')
     video = self.request.get('video')
 
-    if self.request.get('hd').lower() == 'true':
-      if video:
-        message = 'The "hd" parameter has overridden video=' + str(video)
-        logging.error(message)
-        error_messages.append(message)
+    # The hd parameter is a shorthand to determine whether to open the
+    # camera at 720p. If no value is provided, use a platform-specific default.
+    hd = self.request.get('hd').lower()
+    if hd and video:
+      message = 'The "hd" parameter has overridden video=' + video
+      logging.error(message)
+      error_messages.append(message)
+    if not hd:
+      hd = get_hd_default(user_agent)
+    if hd == 'true':
       video = 'minWidth=1280,minHeight=720'
 
     if self.request.get('minre') or self.request.get('maxre'):
@@ -384,7 +402,9 @@ class MainPage(webapp2.RequestHandler):
     # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
     vsbr = self.request.get('vsbr', default_value = '')
     vrbr = self.request.get('vrbr', default_value = '')
- 
+    
+    # Read url params for the initial video send bitrate (vsibr)
+    vsibr = self.request.get('vsibr', default_value = '')
 
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
@@ -451,7 +471,7 @@ class MainPage(webapp2.RequestHandler):
     room_link = base_url + '?r=' + room_key
     room_link = append_url_arguments(self.request, room_link)
     token = create_channel(room, user, token_timeout)
-    pc_config = make_pc_config(stun_server, turn_server, ts_pwd)
+    pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
@@ -471,6 +491,7 @@ class MainPage(webapp2.RequestHandler):
                        'asbr': asbr,
                        'vrbr': vrbr,
                        'vsbr': vsbr,
+                       'vsibr': vsibr,
                        'audio_send_codec': audio_send_codec,
                        'audio_receive_codec': audio_receive_codec
                       }
