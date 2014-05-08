@@ -85,7 +85,7 @@ function getUserMediaConstraints() {
     mandatory.maxHeight = maxHeightInput.value;
   }
   if (framerateInput.value !== '0') {
-    mandatory.minFramerate = framerateInput.value;
+    mandatory.minFrameRate = framerateInput.value;
   }
   return constraints;
 }
