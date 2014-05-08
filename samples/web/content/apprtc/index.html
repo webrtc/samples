@@ -10,6 +10,7 @@
 
 <script type="text/javascript" src="/_ah/channel/jsapi"></script>
 <script src="/js/main.js"></script>
+{{ include_vr_js }}
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
 <script src="/js/adapter.js"></script>
 
@@ -33,6 +34,7 @@
   var videoSendBitrate = '{{ vsbr }}';
   var videoRecvBitrate = '{{ vrbr }}';
   var videoSendInitialBitrate = '{{ vsibr }}';
+  var stereoscopic = '{{ ssr }}';
   var audioSendCodec = '{{ audio_send_codec }}';
   var audioRecvCodec = '{{ audio_receive_codec }}';
   setTimeout(initialize, 1);
@@ -43,6 +45,9 @@
       <video id="localVideo" autoplay="autoplay" muted="true"/>
     </div>
     <div id="remote">
+      <!-- Remote video is displayed in the canvas below when stereoscopic
+           rendering is requested (&ssr=true). -->
+      <canvas id="remoteCanvas" style="display: none;"></canvas>
       <video id="remoteVideo" autoplay="autoplay">
       </video>
       <div id="mini">

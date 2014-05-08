@@ -403,7 +403,7 @@ class MainPage(webapp2.RequestHandler):
     # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
     vsbr = self.request.get('vsbr', default_value = '')
     vrbr = self.request.get('vrbr', default_value = '')
-    
+
     # Read url params for the initial video send bitrate (vsibr)
     vsibr = self.request.get('vsibr', default_value = '')
 
@@ -411,6 +411,16 @@ class MainPage(webapp2.RequestHandler):
     dtls = self.request.get('dtls')
     dscp = self.request.get('dscp')
     ipv6 = self.request.get('ipv6')
+
+    # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
+    # two cameras' captures, which will each be fed to one eye.
+    ssr = self.request.get('ssr')
+    # Avoid pulling down vr.js (>25KB, minified) if not needed.
+    if ssr == 'true':
+      include_vr_js = ('<script src="/js/vr.js"></script>\n' +
+                       '<script src="/js/stereoscopic.js"></script>')
+    else:
+      include_vr_js = ''
 
     debug = self.request.get('debug')
     if debug == 'loopback':
@@ -476,6 +486,7 @@ class MainPage(webapp2.RequestHandler):
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
+
     template_values = {'error_messages': error_messages,
                        'token': token,
                        'me': user,
@@ -493,6 +504,8 @@ class MainPage(webapp2.RequestHandler):
                        'vrbr': vrbr,
                        'vsbr': vsbr,
                        'vsibr': vsibr,
+                       'ssr': ssr,
+                       'include_vr_js': include_vr_js,
                        'audio_send_codec': audio_send_codec,
                        'audio_receive_codec': audio_receive_codec
                       }
