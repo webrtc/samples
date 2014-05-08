@@ -20,8 +20,8 @@ var msgQueue = [];
 var sdpConstraints = {
     'mandatory': {
         'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true 
-     }, 
+        'OfferToReceiveVideo': true
+     },
      'optional': [
          {'VoiceActivityDetection': false}
      ]
@@ -460,7 +460,11 @@ function transitionToActive() {
   trace('Call setup time: ' + endTime - startTime + 'ms.');
   updateInfoDiv();
   // Prepare the remote video and PIP elements.
-  reattachMediaStream(miniVideo, localVideo);
+  if (stereoscopic) {
+    setupStereoscopic(remoteVideo, document.getElementById('remoteCanvas'));
+  } else {
+    reattachMediaStream(miniVideo, localVideo);
+  }
   miniVideo.style.opacity = 1;
   remoteVideo.style.opacity = 1;
   // Spin the card to show remote video (800 ms). Set a timer to detach the
@@ -586,7 +590,7 @@ function toggleAudioMute() {
     return;
   }
 
-  trace('Toggling audio mute state.'); 
+  trace('Toggling audio mute state.');
   if (isAudioMuted) {
     for (i = 0; i < audioTracks.length; i++) {
       audioTracks[i].enabled = true;
@@ -664,14 +668,14 @@ function maybeSetVideoReceiveBitRate(sdp) {
 // Adds a b=AS:bitrate line to the m=mediaType section.
 function preferBitRate(sdp, bitrate, mediaType) {
   var sdpLines = sdp.split('\r\n');
-  
+
   // Find m line for the given mediaType.
   var mLineIndex = findLine(sdpLines, 'm=', mediaType);
   if (mLineIndex === null) {
     messageError('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
-  
+
   // Find next m-line if any.
   var nextMLineIndex = findLineInRange(sdpLines, mLineIndex + 1, -1, 'm=');
   if (nextMLineIndex === null) {
@@ -691,10 +695,10 @@ function preferBitRate(sdp, bitrate, mediaType) {
                                    'b=AS');
   if (bLineIndex) {
     sdpLines.splice(bLineIndex, 1);
-  }  
+  }
 
   // Create the b (bandwidth) sdp line.
-  var bwLine = "b=AS:" + bitrate;  
+  var bwLine = "b=AS:" + bitrate;
   // As per RFC 4566, the b line should follow after c-line.
   sdpLines.splice(cLineIndex + 1, 0, bwLine);
   sdp = sdpLines.join('\r\n');
@@ -713,7 +717,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var maxBitrate = videoSendInitialBitrate;
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
-      messageError("Clamping initial bitrate to max bitrate of " + 
+      messageError("Clamping initial bitrate to max bitrate of " +
           videoSendBitrate + " kbps.")
       videoSendInitialBitrate = videoSendBitrate;
     }
@@ -811,7 +815,7 @@ function addStereo(sdp) {
   return sdp;
 }
 
-// Find the line in sdpLines that starts with |prefix|, and, if specified, 
+// Find the line in sdpLines that starts with |prefix|, and, if specified,
 // contains |substr| (case-insensitive search).
 function findLine(sdpLines, prefix, substr) {
   return findLineInRange(sdpLines, 0, -1, prefix, substr)
@@ -829,7 +833,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
       }
     }
   }
-  return null;  
+  return null;
 }
 
 // Gets the codec payload type from an a=rtpmap:X line.
@@ -862,9 +866,9 @@ window.onbeforeunload = function() {
 // Set the video diplaying in the center of window.
 window.onresize = function(){
   var aspectRatio;
-  if (remoteVideo.style.opacity === '1') {
+  if (remoteVideo && remoteVideo.style.opacity === '1') {
     aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
-  } else if (localVideo.style.opacity === '1') {
+  } else if (localVideo && localVideo.style.opacity === '1') {
     aspectRatio = localVideo.videoWidth/localVideo.videoHeight;
   } else {
     return;

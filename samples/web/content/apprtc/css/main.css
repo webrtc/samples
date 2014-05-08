@@ -93,3 +93,7 @@ footer {
   margin: 2px;
   display: none;
 }
+#remoteCanvas {
+  width: 100%;
+  height: 100%;
+}
