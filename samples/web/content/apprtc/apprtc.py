@@ -168,6 +168,7 @@ def maybe_add_constraint(constraints, param, constraint):
 def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
   # Force on the new BWE in Chrome 35 and later.
+  # TODO(juberti): Remove once Chrome 36 is stable.
   constraints['optional'].append({'googImprovedWifiBwe': True})
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
