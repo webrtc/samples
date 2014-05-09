@@ -458,6 +458,7 @@ function waitForRemoteVideo() {
 function transitionToActive() {
   endTime = performance.now();
   trace('Call setup time: ' + endTime - startTime + 'ms.');
+  updateInfoDiv();
   // Prepare the remote video and PIP elements.
   reattachMediaStream(miniVideo, localVideo);
   miniVideo.style.opacity = 1;
