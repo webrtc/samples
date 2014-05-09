@@ -9,6 +9,7 @@ var pc;
 var socket;
 var xmlhttp;
 var startTime;
+var endTime;
 var started = false;
 var turnDone = false;
 var channelReady = false;
@@ -455,27 +456,32 @@ function waitForRemoteVideo() {
 }
 
 function transitionToActive() {
-  var elapsedTime = performance.now() - startTime;
-  trace('Call setup time: ' + elapsedTime + ' ms.');
+  endTime = performance.now();
+  trace('Call setup time: ' + endTime - startTime + 'ms.');
+  // Prepare the remote video and PIP elements.
   reattachMediaStream(miniVideo, localVideo);
+  miniVideo.style.opacity = 1;
   remoteVideo.style.opacity = 1;
+  // Spin the card to show remote video (800 ms). Set a timer to detach the
+  // local video once the transition completes.
   card.style.webkitTransform = 'rotateY(180deg)';
-  setTimeout(function() { localVideo.src = ''; }, 200);
-  setTimeout(function() { miniVideo.style.opacity = 1; }, 400);
-  // Reset window display according to the asperio of remote video.
+  setTimeout(function() { localVideo.src = ''; }, 800);
+  // Reset window display according to the aspect ratio of remote video.
   window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
             onclick=\'onHangup()\' />');
 }
 
 function transitionToWaiting() {
-  card.style.webkitTransform = 'rotateY(0deg)';
-  setTimeout(function() {
-               localVideo.src = miniVideo.src;
-               miniVideo.src = '';
-               remoteVideo.src = '' }, 200);
+  startTime = endTime = null;
+  // Prepare the local video element.
+  reattachMediaStream(localVideo, miniVideo);
   miniVideo.style.opacity = 0;
   remoteVideo.style.opacity = 0;
+  // Spin the card to show local video (800 ms). Set a timer to detach the
+  // remote and PIP video once the transition completes.
+  card.style.webkitTransform = 'rotateY(0deg)';
+  setTimeout(function() { miniVideo.src = ''; remoteVideo.src = ''}, 800);
   resetStatus();
 }
 
@@ -515,6 +521,10 @@ function updateInfoDiv() {
     contents += "<pre>PC State:\n";
     contents += "Signaling: " + pc.signalingState + "\n";
     contents += "ICE: " + pc.iceConnectionState + "\n";
+    if (endTime) {
+      contents += "Setup time: " + (endTime - startTime).toFixed(0).toString() +
+                  "ms\n";
+    }
   }
   var div = getInfoDiv();
   div.innerHTML = contents + "</pre>";
@@ -650,6 +660,7 @@ function maybeSetVideoReceiveBitRate(sdp) {
   return preferBitRate(sdp, videoRecvBitrate, 'video');
 }
 
+// Adds a b=AS:bitrate line to the m=mediaType section.
 function preferBitRate(sdp, bitrate, mediaType) {
   var sdpLines = sdp.split('\r\n');
   
@@ -689,11 +700,23 @@ function preferBitRate(sdp, bitrate, mediaType) {
   return sdp;
 }
 
-// Add an a=fmtp: x-google-min-bitrate=kbps line. We'll also add a 
-// x-google-min-bitrate value, since the max must be >= the min.
+// Adds an a=fmtp: x-google-min-bitrate=kbps line, if videoSendInitialBitrate
+// is specified. We'll also add a x-google-min-bitrate value, since the max
+// must be >= the min.
 function maybeSetVideoSendInitialBitRate(sdp) {
   if (!videoSendInitialBitrate) {
     return sdp;
+  }
+
+  // Validate the initial bitrate value.
+  var maxBitrate = videoSendInitialBitrate;
+  if (videoSendBitrate) {
+    if (videoSendInitialBitrate > videoSendBitrate) {
+      messageError("Clamping initial bitrate to max bitrate of " + 
+          videoSendBitrate + " kbps.")
+      videoSendInitialBitrate = videoSendBitrate;
+    }
+    maxBitrate = videoSendBitrate;
   }
 
   var sdpLines = sdp.split('\r\n');
@@ -707,8 +730,6 @@ function maybeSetVideoSendInitialBitRate(sdp) {
 
   var vp8RtpmapIndex = findLine(sdpLines, "a=rtpmap", "VP8/90000")
   var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
-  var maxBitrate = videoSendBitrate ?
-      videoSendBitrate : videoSendInitialBitrate;
   var vp8Fmtp = "a=fmtp:" + vp8Payload + " x-google-min-bitrate=" +
      videoSendInitialBitrate.toString() + "; x-google-max-bitrate=" +
      maxBitrate.toString();
@@ -716,6 +737,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   return sdpLines.join('\r\n');
 }
 
+// Promotes |audioSendCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioSendCodec(sdp) {
   if (audioSendCodec == '') {
     trace('No preference on audio send codec.');
@@ -725,6 +747,7 @@ function maybePreferAudioSendCodec(sdp) {
   return preferAudioCodec(sdp, audioSendCodec);
 }
 
+// Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioReceiveCodec(sdp) {
   if (audioRecvCodec == '') {
     trace('No preference on audio receive codec.');
@@ -734,7 +757,7 @@ function maybePreferAudioReceiveCodec(sdp) {
   return preferAudioCodec(sdp, audioRecvCodec);
 }
 
-// Set |codec| as the default audio codec if it's present.
+// Sets |codec| as the default audio codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function preferAudioCodec(sdp, codec) {
   var fields = codec.split('/');
@@ -765,7 +788,7 @@ function preferAudioCodec(sdp, codec) {
   return sdp;
 }
 
-// Set Opus in stereo if stereo is enabled.
+// Sets Opus in stereo if stereo is enabled, by adding the stereo=1 fmtp param.
 function addStereo(sdp) {
   var sdpLines = sdp.split('\r\n');
 
@@ -787,16 +810,20 @@ function addStereo(sdp) {
   return sdp;
 }
 
+// Find the line in sdpLines that starts with |prefix|, and, if specified, 
+// contains |substr| (case-insensitive search).
 function findLine(sdpLines, prefix, substr) {
   return findLineInRange(sdpLines, 0, -1, prefix, substr)
 }
 
-function findLineInRange(sdpLines, startLine, sepLine, prefix, substr) {
-  var realSepLine = (sepLine != -1) ? sepLine : sdpLines.length;
-  var regex = new RegExp(substr, "i");  // ignore case
-  for (var i = startLine; i < realSepLine; ++i) {
+// Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
+// and, if specified, contains |substr| (case-insensitive search).
+function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
+  var realEndLine = (endLine != -1) ? endLine : sdpLines.length;
+  for (var i = startLine; i < realEndLine; ++i) {
     if (sdpLines[i].search(prefix) === 0) {
-      if (sdpLines[i].search(regex) !== -1) {
+      if (!substr ||
+          sdpLines[i].toLowerCase().search(substr.toLowerCase()) !== -1) {
         return i;
       }
     }
@@ -804,13 +831,14 @@ function findLineInRange(sdpLines, startLine, sepLine, prefix, substr) {
   return null;  
 }
 
+// Gets the codec payload type from an a=rtpmap:X line.
 function getCodecPayloadType(sdpLine) {
   var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
   var result = sdpLine.match(pattern);
   return (result && result.length == 2) ? result[1] : null;
 }
 
-// Set the selected codec to the first in m line.
+// Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
   var elements = mLine.split(' ');
   var newLine = new Array();
@@ -824,8 +852,8 @@ function setDefaultCodec(mLine, payload) {
   return newLine.join(' ');
 }
 
-// Send BYE on refreshing(or leaving) a demo page
-// to ensure the room is cleaned for next session.
+// Send a BYE on refreshing or leaving a page
+// to ensure the room is cleaned up for the next session.
 window.onbeforeunload = function() {
   sendMessage({type: 'bye'});
 }
