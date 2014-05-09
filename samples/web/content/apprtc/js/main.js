@@ -14,6 +14,8 @@ var turnDone = false;
 var channelReady = false;
 var signalingReady = false;
 var msgQueue = [];
+var RTT = 0;
+var E2E = 0;
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
@@ -402,6 +404,40 @@ function onRemoteStreamAdded(event) {
   trace('Remote stream added.');
   attachMediaStream(remoteVideo, event.stream);
   remoteStream = event.stream;
+  // Compute round-trip time and end to end delay.
+  setInterval(computeRttAndDelay, 1000);
+}
+
+function computeRttAndDelay() {
+  // We should compute this only for Chrome version 36 and higher?
+  if(pc && webrtcDetectedBrowser === "chrome") {
+    pc.getStats(function(response) {
+      var reports = response.result();
+      var googCaptureStartNtpTimeMs = 0;
+      for (var i = 0; i < reports.length; ++i) {
+        var report = reports[i];
+        if (report.names().indexOf('googRtt') != -1) {
+          RTT = report.stat('googRtt');
+        }
+        //googCaptureStartNtpTimeMs only available Chrome 36 onwards.
+        if(webrtcDetectedVersion >= 36) {
+          if (report.names().indexOf('googCaptureStartNtpTimeMs') != -1) {
+            googCaptureStartNtpTimeMs =
+                                      report.stat('googCaptureStartNtpTimeMs');
+          }
+        }
+      }
+      // Don't compute end to end delay, if googCaptureStartNtpTimeMs is 0.
+      if (googCaptureStartNtpTimeMs !== 0) {
+        // Adding offset to get NTP time.
+        var now_ntp = Date.now() + 2208988800000;
+        // Computing end to end delay (E2E).
+        E2E =
+            now_ntp - googCaptureStartNtpTimeMs - remoteVideo.currentTime*1000;
+      }
+      updateInfoDiv();
+    });
+  }
 }
 
 function onRemoteStreamRemoved(event) {
@@ -514,6 +550,9 @@ function updateInfoDiv() {
     contents += "<pre>PC State:\n";
     contents += "Signaling: " + pc.signalingState + "\n";
     contents += "ICE: " + pc.iceConnectionState + "\n";
+    contents += "<pre>PC Stats:\n";
+    contents += "RTT: " + RTT + "\n";
+    contents += "End to End Delay: " + E2E + "\n";
   }
   var div = getInfoDiv();
   div.innerHTML = contents + "</pre>";
