@@ -822,9 +822,9 @@ function findLine(sdpLines, prefix, substr) {
 function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
   var realEndLine = (endLine != -1) ? endLine : sdpLines.length;
   for (var i = startLine; i < realEndLine; ++i) {
-    if (sdpLines[i].search(prefix) === 0) {
+    if (sdpLines[i].indexOf(prefix) === 0) {
       if (!substr ||
-          sdpLines[i].toLowerCase().search(substr.toLowerCase()) !== -1) {
+          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
         return i;
       }
     }
