@@ -9,6 +9,7 @@ var pc;
 var socket;
 var xmlhttp;
 var startTime;
+var endTime;
 var started = false;
 var turnDone = false;
 var channelReady = false;
@@ -245,6 +246,7 @@ function setRemote(message) {
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendBitRate(message.sdp);
+  message.sdp = maybeSetVideoSendInitialBitRate(message.sdp);
   pc.setRemoteDescription(new RTCSessionDescription(message),
        onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
@@ -454,27 +456,33 @@ function waitForRemoteVideo() {
 }
 
 function transitionToActive() {
-  var elapsedTime = performance.now() - startTime;
-  trace('Call setup time: ' + elapsedTime + ' ms.');
+  endTime = performance.now();
+  trace('Call setup time: ' + endTime - startTime + 'ms.');
+  updateInfoDiv();
+  // Prepare the remote video and PIP elements.
   reattachMediaStream(miniVideo, localVideo);
+  miniVideo.style.opacity = 1;
   remoteVideo.style.opacity = 1;
+  // Spin the card to show remote video (800 ms). Set a timer to detach the
+  // local video once the transition completes.
   card.style.webkitTransform = 'rotateY(180deg)';
-  setTimeout(function() { localVideo.src = ''; }, 500);
-  setTimeout(function() { miniVideo.style.opacity = 1; }, 1000);
-  // Reset window display according to the asperio of remote video.
+  setTimeout(function() { localVideo.src = ''; }, 800);
+  // Reset window display according to the aspect ratio of remote video.
   window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
             onclick=\'onHangup()\' />');
 }
 
 function transitionToWaiting() {
-  card.style.webkitTransform = 'rotateY(0deg)';
-  setTimeout(function() {
-               localVideo.src = miniVideo.src;
-               miniVideo.src = '';
-               remoteVideo.src = '' }, 500);
+  startTime = endTime = null;
+  // Prepare the local video element.
+  reattachMediaStream(localVideo, miniVideo);
   miniVideo.style.opacity = 0;
   remoteVideo.style.opacity = 0;
+  // Spin the card to show local video (800 ms). Set a timer to detach the
+  // remote and PIP video once the transition completes.
+  card.style.webkitTransform = 'rotateY(0deg)';
+  setTimeout(function() { miniVideo.src = ''; remoteVideo.src = ''}, 800);
   resetStatus();
 }
 
@@ -514,6 +522,10 @@ function updateInfoDiv() {
     contents += "<pre>PC State:\n";
     contents += "Signaling: " + pc.signalingState + "\n";
     contents += "ICE: " + pc.iceConnectionState + "\n";
+    if (endTime) {
+      contents += "Setup time: " + (endTime - startTime).toFixed(0).toString() +
+                  "ms\n";
+    }
   }
   var div = getInfoDiv();
   div.innerHTML = contents + "</pre>";
@@ -549,6 +561,7 @@ function toggleVideoMute() {
     return;
   }
 
+  trace('Toggling video mute state.');
   if (isVideoMuted) {
     for (i = 0; i < videoTracks.length; i++) {
       videoTracks[i].enabled = true;
@@ -573,13 +586,14 @@ function toggleAudioMute() {
     return;
   }
 
+  trace('Toggling audio mute state.'); 
   if (isAudioMuted) {
     for (i = 0; i < audioTracks.length; i++) {
       audioTracks[i].enabled = true;
     }
     trace('Audio unmuted.');
   } else {
-    for (i = 0; i < audioTracks.length; i++){
+    for (i = 0; i < audioTracks.length; i++) {
       audioTracks[i].enabled = false;
     }
     trace('Audio muted.');
@@ -619,7 +633,7 @@ function maybeSetAudioSendBitRate(sdp) {
   if (!audioSendBitrate) {
     return sdp;
   }
-  console.log('Prefer audio send bitrate: ' + audioSendBitrate);
+  trace('Prefer audio send bitrate: ' + audioSendBitrate);
   return preferBitRate(sdp, audioSendBitrate, 'audio');
 }
 
@@ -627,7 +641,7 @@ function maybeSetAudioReceiveBitRate(sdp) {
   if (!audioRecvBitrate) {
     return sdp;
   }
-  console.log('Prefer audio receive bitrate: ' + audioRecvBitrate);
+  trace('Prefer audio receive bitrate: ' + audioRecvBitrate);
   return preferBitRate(sdp, audioRecvBitrate, 'audio');
 }
 
@@ -635,7 +649,7 @@ function maybeSetVideoSendBitRate(sdp) {
   if (!videoSendBitrate) {
     return sdp;
   }
-  console.log('Prefer video send bitrate: ' + videoSendBitrate);
+  trace('Prefer video send bitrate: ' + videoSendBitrate);
   return preferBitRate(sdp, videoSendBitrate, 'video');
 }
 
@@ -643,64 +657,40 @@ function maybeSetVideoReceiveBitRate(sdp) {
   if (!videoRecvBitrate) {
     return sdp;
   }
-  console.log('Prefer video receive bitrate: ' + videoRecvBitrate);
+  trace('Prefer video receive bitrate: ' + videoRecvBitrate);
   return preferBitRate(sdp, videoRecvBitrate, 'video');
 }
 
+// Adds a b=AS:bitrate line to the m=mediaType section.
 function preferBitRate(sdp, bitrate, mediaType) {
-  var mLineIndex = null;
-  var nextMLineIndex = null;
-  var cLineIndex = null;
   var sdpLines = sdp.split('\r\n');
   
   // Find m line for the given mediaType.
-  for (var i = 0; i < sdpLines.length; ++i) {
-    if (sdpLines[i].search('m=') === 0) {
-      if (sdpLines[i].search(mediaType) !== -1) {
-        mLineIndex = i;
-        break;
-      }
-    }
-  }  
-  // No m-line found, return.
+  var mLineIndex = findLine(sdpLines, 'm=', mediaType);
   if (mLineIndex === null) {
     messageError('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
   
   // Find next m-line if any.
-  for (i = mLineIndex + 1; i < sdpLines.length; ++i) {
-    if (sdpLines[i].search('m=') === 0) {
-      nextMLineIndex = i;
-      break;
-    }
-  }  
-  // No next m-line found.
+  var nextMLineIndex = findLineInRange(sdpLines, mLineIndex + 1, -1, 'm=');
   if (nextMLineIndex === null) {
     nextMLineIndex = sdpLines.length;
   }
 
   // Find c-line corresponding to the m-line.
-  for (i = mLineIndex + 1; i < nextMLineIndex; ++i) {
-    if (sdpLines[i].search('c=IN') === 0) {
-      cLineIndex = i;
-      break;
-    }
-  }
-
-  // If no c-line, return sdp and throw error.
+  var cLineIndex = findLineInRange(sdpLines, mLineIndex + 1, nextMLineIndex,
+                                   'c=');
   if (cLineIndex === null) {
     messageError('Failed to add bandwidth line to sdp, as no c-line found');
     return sdp;
   }
 
   // Check if bandwidth line already exists between c-line and next m-line.
-  for (i = cLineIndex + 1; i < nextMLineIndex; ++i) {
-    if (sdpLines[i].search('b=AS') === 0) {
-      // Remove the bandwidth line if it already exists.
-      sdpLines.splice(i,1);
-      break;
-    }
+  var bLineIndex = findLineInRange(sdpLines, cLineIndex + 1, nextMLineIndex,
+                                   'b=AS');
+  if (bLineIndex) {
+    sdpLines.splice(bLineIndex, 1);
   }  
 
   // Create the b (bandwidth) sdp line.
@@ -711,6 +701,44 @@ function preferBitRate(sdp, bitrate, mediaType) {
   return sdp;
 }
 
+// Adds an a=fmtp: x-google-min-bitrate=kbps line, if videoSendInitialBitrate
+// is specified. We'll also add a x-google-min-bitrate value, since the max
+// must be >= the min.
+function maybeSetVideoSendInitialBitRate(sdp) {
+  if (!videoSendInitialBitrate) {
+    return sdp;
+  }
+
+  // Validate the initial bitrate value.
+  var maxBitrate = videoSendInitialBitrate;
+  if (videoSendBitrate) {
+    if (videoSendInitialBitrate > videoSendBitrate) {
+      messageError("Clamping initial bitrate to max bitrate of " + 
+          videoSendBitrate + " kbps.")
+      videoSendInitialBitrate = videoSendBitrate;
+    }
+    maxBitrate = videoSendBitrate;
+  }
+
+  var sdpLines = sdp.split('\r\n');
+
+  // Search for m line.
+  var mLineIndex = findLine(sdpLines, 'm=', 'video');
+  if (mLineIndex === null) {
+    messageError('Failed to find video m-line');
+    return sdp;
+  }
+
+  var vp8RtpmapIndex = findLine(sdpLines, "a=rtpmap", "VP8/90000")
+  var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
+  var vp8Fmtp = "a=fmtp:" + vp8Payload + " x-google-min-bitrate=" +
+     videoSendInitialBitrate.toString() + "; x-google-max-bitrate=" +
+     maxBitrate.toString();
+  sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
+  return sdpLines.join('\r\n');
+}
+
+// Promotes |audioSendCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioSendCodec(sdp) {
   if (audioSendCodec == '') {
     trace('No preference on audio send codec.');
@@ -720,6 +748,7 @@ function maybePreferAudioSendCodec(sdp) {
   return preferAudioCodec(sdp, audioSendCodec);
 }
 
+// Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioReceiveCodec(sdp) {
   if (audioRecvCodec == '') {
     trace('No preference on audio receive codec.');
@@ -729,7 +758,7 @@ function maybePreferAudioReceiveCodec(sdp) {
   return preferAudioCodec(sdp, audioRecvCodec);
 }
 
-// Set |codec| as the default audio codec if it's present.
+// Sets |codec| as the default audio codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function preferAudioCodec(sdp, codec) {
   var fields = codec.split('/');
@@ -737,29 +766,22 @@ function preferAudioCodec(sdp, codec) {
     trace('Invalid codec setting: ' + codec);
     return sdp;
   }
+
   var name = fields[0];
   var rate = fields[1];
   var sdpLines = sdp.split('\r\n');
 
   // Search for m line.
-  for (var i = 0; i < sdpLines.length; i++) {
-      if (sdpLines[i].search('m=audio') !== -1) {
-        var mLineIndex = i;
-        break;
-      }
-  }
+  var mLineIndex = findLine(sdpLines, 'm=', 'audio');
   if (mLineIndex === null)
     return sdp;
 
   // If the codec is available, set it as the default in m line.
-  for (var i = 0; i < sdpLines.length; i++) {
-    if (sdpLines[i].search(name + '/' + rate) !== -1) {
-      var regexp = new RegExp(':(\\d+) ' + name + '\\/' + rate, 'i');
-      var payload = extractSdp(sdpLines[i], regexp);
-      if (payload)
-        sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex],
-                                               payload);
-      break;
+  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
+  if (codecIndex) {
+    var payload = getCodecPayloadType(sdpLines[codecIndex]);
+    if (payload) {
+      sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
     }
   }
 
@@ -767,29 +789,18 @@ function preferAudioCodec(sdp, codec) {
   return sdp;
 }
 
-// Set Opus in stereo if stereo is enabled.
+// Sets Opus in stereo if stereo is enabled, by adding the stereo=1 fmtp param.
 function addStereo(sdp) {
   var sdpLines = sdp.split('\r\n');
 
   // Find opus payload.
-  for (var i = 0; i < sdpLines.length; i++) {
-    if (sdpLines[i].search('opus/48000') !== -1) {
-      var opusPayload = extractSdp(sdpLines[i], /:(\d+) opus\/48000/i);
-      break;
-    }
+  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000'), opusPayload;
+  if (opusIndex) {
+    opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
   }
 
   // Find the payload in fmtp line.
-  for (var i = 0; i < sdpLines.length; i++) {
-    if (sdpLines[i].search('a=fmtp') !== -1) {
-      var payload = extractSdp(sdpLines[i], /a=fmtp:(\d+)/ );
-      if (payload === opusPayload) {
-        var fmtpLineIndex = i;
-        break;
-      }
-    }
-  }
-  // No fmtp line found.
+  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
   if (fmtpLineIndex === null)
     return sdp;
 
@@ -800,12 +811,35 @@ function addStereo(sdp) {
   return sdp;
 }
 
-function extractSdp(sdpLine, pattern) {
-  var result = sdpLine.match(pattern);
-  return (result && result.length == 2)? result[1]: null;
+// Find the line in sdpLines that starts with |prefix|, and, if specified, 
+// contains |substr| (case-insensitive search).
+function findLine(sdpLines, prefix, substr) {
+  return findLineInRange(sdpLines, 0, -1, prefix, substr)
 }
 
-// Set the selected codec to the first in m line.
+// Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
+// and, if specified, contains |substr| (case-insensitive search).
+function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
+  var realEndLine = (endLine != -1) ? endLine : sdpLines.length;
+  for (var i = startLine; i < realEndLine; ++i) {
+    if (sdpLines[i].indexOf(prefix) === 0) {
+      if (!substr ||
+          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+        return i;
+      }
+    }
+  }
+  return null;  
+}
+
+// Gets the codec payload type from an a=rtpmap:X line.
+function getCodecPayloadType(sdpLine) {
+  var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
+  var result = sdpLine.match(pattern);
+  return (result && result.length == 2) ? result[1] : null;
+}
+
+// Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
   var elements = mLine.split(' ');
   var newLine = new Array();
@@ -819,8 +853,8 @@ function setDefaultCodec(mLine, payload) {
   return newLine.join(' ');
 }
 
-// Send BYE on refreshing(or leaving) a demo page
-// to ensure the room is cleaned for next session.
+// Send a BYE on refreshing or leaving a page
+// to ensure the room is cleaned up for the next session.
 window.onbeforeunload = function() {
   sendMessage({type: 'bye'});
 }
