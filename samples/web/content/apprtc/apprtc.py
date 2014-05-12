@@ -40,8 +40,10 @@ def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
 
 def get_default_stun_server(user_agent):
-  # others you can try: stun.services.mozilla.com, stunserver.org
-  return 'stun.l.google.com:19302'
+  default_stun_server = 'stun.l.google.com:19302'
+  if 'Firefox' in user_agent:
+    default_stun_server = 'stun.services.mozilla.com'
+  return default_stun_server
 
 def get_preferred_audio_receive_codec():
   return 'opus/48000'
@@ -129,23 +131,25 @@ def on_message(room, user, message):
     new_message.put()
     logging.info('Saved message for user ' + user)
 
+
+
 def add_media_track_constraint(track_constraints, constraint_string):
   tokens = constraint_string.split(':')
   mandatory = True
   if len(tokens) == 2:
     # If specified, e.g. mandatory:minHeight=720, set mandatory appropriately.
-    mandatory = (tokens[0] == 'mandatory')    
+    mandatory = (tokens[0] == 'mandatory')
   else:
-    # Otherwise, default to mandatory, except for goog constraints, which 
+    # Otherwise, default to mandatory, except for goog constraints, which
     # won't work in other browsers.
     mandatory = not tokens[0].startswith('goog')
-  
+
   tokens = tokens[-1].split('=')
   if len(tokens) == 2:
     if mandatory:
       track_constraints['mandatory'][tokens[0]] = tokens[1]
     else:
-      track_constraints['optional'].append({tokens[0]: tokens[1]})      
+      track_constraints['optional'].append({tokens[0]: tokens[1]})
   else:
     logging.error('Ignoring malformed constraint: ' + constraint_string)
 
@@ -158,7 +162,6 @@ def make_media_track_constraints(constraints_string):
     track_constraints = {'mandatory': {}, 'optional': []}
     for constraint_string in constraints_string.split(','):
       add_media_track_constraint(track_constraints, constraint_string)
-      
   return track_constraints
 
 def make_media_stream_constraints(audio, video):
@@ -346,6 +349,10 @@ class MainPage(webapp2.RequestHandler):
     # Get the base url without arguments.
     base_url = self.request.path_url
     user_agent = self.request.headers['User-Agent']
+    if 'developers.google.com' in user_agent:
+      # Request is from Google+ Share link
+      logging.info('Request from Google+ Share link')
+      return;
     room_key = sanitize(self.request.get('r'))
     stun_server = self.request.get('ss')
     if not stun_server:
@@ -372,8 +379,9 @@ class MainPage(webapp2.RequestHandler):
     #
     # Keys starting with "goog" will be added to the "optional" key; all others
     # will be added to the "mandatory" key.
+    #
     # To override this default behavior, add a "mandatory" or "optional" prefix
-    # to each key, e.g. 
+    # to each key, e.g.
     #   "?video=optional:minWidth=1280,optional:minHeight=720,
     #           mandatory:googNoiseReduction=true"
     #   (Try to do 1280x720, but be willing to live with less; enable
@@ -388,15 +396,21 @@ class MainPage(webapp2.RequestHandler):
     # camera at 720p. If no value is provided, use a platform-specific default.
     # When defaulting to HD, use optional constraints, in case the camera
     # doesn't actually support HD modes.
+    #
     hd = self.request.get('hd').lower()
     if hd and video:
       message = 'The "hd" parameter has overridden video=' + video
-      logging.error(message)
       error_messages.append(message)
+
     if hd == 'true':
       video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
     elif not hd and not video and get_hd_default(user_agent) == 'true':
       video = 'optional:minWidth=1280,optional:minHeight=720'
+
+    if self.request.get('vga').lower() == 'true':
+      video = 'maxWidth=640,maxHeight=360'
+    elif self.request.get('qvga').lower() == 'true':
+      video = 'maxWidth=320,maxHeight=180'
 
     if self.request.get('minre') or self.request.get('maxre'):
       message = ('The "minre" and "maxre" parameters are no longer supported. '
@@ -436,8 +450,8 @@ class MainPage(webapp2.RequestHandler):
     ssr = self.request.get('ssr')
     # Avoid pulling down vr.js (>25KB, minified) if not needed.
     if ssr == 'true':
-      include_vr_js = ('<script src="/js/vr.js"></script>\n' +
-                       '<script src="/js/stereoscopic.js"></script>')
+      include_vr_js = ('<script src="/js/lib/vr.js"></script>\n' +
+                       '<script src="/js/lib/stereoscopic.js"></script>')
     else:
       include_vr_js = ''
 
@@ -505,7 +519,6 @@ class MainPage(webapp2.RequestHandler):
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
-
     template_values = {'error_messages': error_messages,
                        'token': token,
                        'me': user,
