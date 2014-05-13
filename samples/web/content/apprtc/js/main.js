@@ -404,17 +404,15 @@ function onRemoteStreamAdded(event) {
   trace('Remote stream added.');
   attachMediaStream(remoteVideo, event.stream);
   remoteStream = event.stream;
-  // Compute round-trip time and end to end delay.
-  setInterval(computeRttAndDelay, 1000);
 }
 
 function computeRttAndDelay() {
-  if(pc) {
+  if (pc) {
     pc.getStats(function(response) {
       var stats = response.result();
       rtt = extractStat(stats, 'googRtt');
       var captureStart = extractStat(stats, 'googCaptureStartNtpTimeMs');
-      if(captureStart !==0)
+      if (captureStart)
         e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
       updateInfoDiv();
     });
@@ -435,7 +433,7 @@ function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
   if (captureStart !== 0) {
     // Adding offset to get NTP time.
     var now_ntp = Date.now() + 2208988800000;
-    e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime*1000;
+    e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
     return e2eDelay;
   }
 }
@@ -551,8 +549,10 @@ function updateInfoDiv() {
     contents += "Signaling: " + pc.signalingState + "\n";
     contents += "ICE: " + pc.iceConnectionState + "\n";
     contents += "<pre>PC Stats:\n";
-    contents += "RTT: " + rtt + "\n";
-    contents += "End to End Delay: " + e2eDelay + "\n";
+    if (rtt)
+      contents += "RTT: " + rtt + "\n";
+    if (e2eDelay)
+      contents += "End to End Delay: " + e2eDelay + "\n";
   }
   var div = getInfoDiv();
   div.innerHTML = contents + "</pre>";
@@ -577,6 +577,8 @@ function toggleInfoDiv() {
 function showInfoDiv() {
   var div = getInfoDiv();
   div.style.display = "block";
+  // Compute round-trip time and end to end delay.
+  setInterval(computeRttAndDelay, 1000);
 }
 
 function toggleVideoMute() {
