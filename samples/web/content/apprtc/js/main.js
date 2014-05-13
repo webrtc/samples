@@ -14,6 +14,8 @@ var turnDone = false;
 var channelReady = false;
 var signalingReady = false;
 var msgQueue = [];
+var rtt;
+var e2eDelay;
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
@@ -402,6 +404,40 @@ function onRemoteStreamAdded(event) {
   trace('Remote stream added.');
   attachMediaStream(remoteVideo, event.stream);
   remoteStream = event.stream;
+  // Compute round-trip time and end to end delay.
+  setInterval(computeRttAndDelay, 1000);
+}
+
+function computeRttAndDelay() {
+  if(pc) {
+    pc.getStats(function(response) {
+      var stats = response.result();
+      rtt = extractStat(stats, 'googRtt');
+      var captureStart = extractStat(stats, 'googCaptureStartNtpTimeMs');
+      if(captureStart !==0)
+        e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
+      updateInfoDiv();
+    });
+  }
+}
+
+function extractStat(stats, statName) {
+  for (var i = 0; i < stats.length; ++i) {
+    var report = stats[i];
+    if (report.names().indexOf(statName) != -1) {
+      return report.stat(statName);
+    }
+  }
+}
+
+function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
+  // Computes end to end Delay.
+  if (captureStart !== 0) {
+    // Adding offset to get NTP time.
+    var now_ntp = Date.now() + 2208988800000;
+    e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime*1000;
+    return e2eDelay;
+  }
 }
 
 function onRemoteStreamRemoved(event) {
@@ -514,6 +550,9 @@ function updateInfoDiv() {
     contents += "<pre>PC State:\n";
     contents += "Signaling: " + pc.signalingState + "\n";
     contents += "ICE: " + pc.iceConnectionState + "\n";
+    contents += "<pre>PC Stats:\n";
+    contents += "RTT: " + rtt + "\n";
+    contents += "End to End Delay: " + e2eDelay + "\n";
   }
   var div = getInfoDiv();
   div.innerHTML = contents + "</pre>";
