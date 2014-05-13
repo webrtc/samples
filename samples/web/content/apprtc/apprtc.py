@@ -155,8 +155,14 @@ def maybe_add_constraint(constraints, param, constraint):
 
   return constraints
 
+def add_constraint(constraints, constraint):
+  constraints['optional'].append({constraint: True})
+  return constraints
+
 def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
+  # Turn experimental bandwidth estimation always on for apprtc.
+  add_constraint(constraints, 'googImprovedWifiBwe')
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
