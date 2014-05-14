@@ -16,6 +16,7 @@ var signalingReady = false;
 var msgQueue = [];
 var rtt;
 var e2eDelay;
+var getStatsTimer;
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
@@ -569,6 +570,7 @@ function toggleInfoDiv() {
   var div = getInfoDiv();
   if (div.style.display == "block") {
     div.style.display = "none";
+    clearInterval(getStatsTimer);
   } else {
     showInfoDiv();
   }
@@ -578,7 +580,7 @@ function showInfoDiv() {
   var div = getInfoDiv();
   div.style.display = "block";
   // Compute round-trip time and end to end delay.
-  setInterval(computeRttAndDelay, 1000);
+  getStatsTimer = setInterval(computeRttAndDelay, 1000);
 }
 
 function toggleVideoMute() {
