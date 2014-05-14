@@ -48,6 +48,9 @@ function initialize() {
     window.onresize();});
   miniVideo = document.getElementById('miniVideo');
   remoteVideo = document.getElementById('remoteVideo');
+  remoteVideo.addEventListener('loadeddata', function(){
+    transitionToActive();
+  });
   resetStatus();
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
@@ -254,9 +257,7 @@ function setRemote(message) {
     trace("Set remote session description success.");
     // By now all addstream events for the setRemoteDescription have fired.
     // So we can know if the peer is sending any stream or is only receiving.
-    if (remoteStream) {
-      waitForRemoteVideo();
-    } else {
+    if (!remoteStream) {
       trace("No remote video stream; not waiting for media to arrive.");
       transitionToActive();
     }
@@ -443,16 +444,6 @@ function stop() {
   pc = null;
   remoteStream = null;
   msgQueue.length = 0;
-}
-
-function waitForRemoteVideo() {
-  // Call the getVideoTracks method via adapter.js.
-  videoTracks = remoteStream.getVideoTracks();
-  if (videoTracks.length === 0 || remoteVideo.currentTime > 0) {
-    transitionToActive();
-  } else {
-    setTimeout(waitForRemoteVideo, 10);
-  }
 }
 
 function transitionToActive() {
