@@ -15,6 +15,9 @@ var turnDone = false;
 var channelReady = false;
 var signalingReady = false;
 var msgQueue = [];
+var rtt;
+var e2eDelay;
+var getStatsTimer;
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
@@ -406,6 +409,38 @@ function onRemoteStreamAdded(event) {
   remoteStream = event.stream;
 }
 
+function computeRttAndDelay() {
+  if (pc) {
+    pc.getStats(function(response) {
+      var stats = response.result();
+      rtt = extractStat(stats, 'googRtt');
+      var captureStart = extractStat(stats, 'googCaptureStartNtpTimeMs');
+      if (captureStart)
+        e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
+      updateInfoDiv();
+    });
+  }
+}
+
+function extractStat(stats, statName) {
+  for (var i = 0; i < stats.length; ++i) {
+    var report = stats[i];
+    if (report.names().indexOf(statName) != -1) {
+      return report.stat(statName);
+    }
+  }
+}
+
+function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
+  // Computes end to end Delay.
+  if (captureStart !== 0) {
+    // Adding offset to get NTP time.
+    var now_ntp = Date.now() + 2208988800000;
+    e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
+    return e2eDelay;
+  }
+}
+
 function onRemoteStreamRemoved(event) {
   trace('Remote stream removed.');
 }
@@ -526,10 +561,14 @@ function updateInfoDiv() {
     contents += "<pre>PC State:\n";
     contents += "Signaling: " + pc.signalingState + "\n";
     contents += "ICE: " + pc.iceConnectionState + "\n";
-    if (endTime) {
+    contents += "<pre>PC Stats:\n";
+    if (endTime) 
       contents += "Setup time: " + (endTime - startTime).toFixed(0).toString() +
                   "ms\n";
-    }
+    if (rtt)
+      contents += "RTT: " + rtt + "ms\n";
+    if (e2eDelay)
+      contents += "End to end delay: " + e2eDelay + "ms\n";
   }
   var div = getInfoDiv();
   div.innerHTML = contents + "</pre>";
@@ -546,6 +585,7 @@ function toggleInfoDiv() {
   var div = getInfoDiv();
   if (div.style.display == "block") {
     div.style.display = "none";
+    clearInterval(getStatsTimer);
   } else {
     showInfoDiv();
   }
@@ -554,6 +594,8 @@ function toggleInfoDiv() {
 function showInfoDiv() {
   var div = getInfoDiv();
   div.style.display = "block";
+  // Compute round-trip time and end to end delay.
+  getStatsTimer = setInterval(computeRttAndDelay, 1000);
 }
 
 function toggleVideoMute() {
