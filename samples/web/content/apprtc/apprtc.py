@@ -131,6 +131,26 @@ def on_message(room, user, message):
     new_message.put()
     logging.info('Saved message for user ' + user)
 
+def add_media_track_constraint(track_constraints, constraint_string):
+  tokens = constraint_string.split(':')
+  mandatory = True
+  if len(tokens) == 2:
+    # If specified, e.g. mandatory:minHeight=720, set mandatory appropriately.
+    mandatory = (tokens[0] == 'mandatory')    
+  else:
+    # Otherwise, default to mandatory, except for goog constraints, which 
+    # won't work in other browsers.
+    mandatory = not tokens[0].startswith('goog')
+  
+  tokens = tokens[-1].split('=')
+  if len(tokens) == 2:
+    if mandatory:
+      track_constraints['mandatory'][tokens[0]] = tokens[1]
+    else:
+      track_constraints['optional'].append({tokens[0]: tokens[1]})      
+  else:
+    logging.error('Ignoring malformed constraint: ' + constraint_string)
+
 def make_media_track_constraints(constraints_string):
   if not constraints_string or constraints_string.lower() == 'true':
     track_constraints = True
@@ -139,15 +159,8 @@ def make_media_track_constraints(constraints_string):
   else:
     track_constraints = {'mandatory': {}, 'optional': []}
     for constraint_string in constraints_string.split(','):
-      constraint = constraint_string.split('=')
-      if len(constraint) != 2:
-        logging.error('Ignoring malformed constraint: ' + constraint_string)
-        continue
-      if constraint[0].startswith('goog'):
-        track_constraints['optional'].append({constraint[0]: constraint[1]})
-      else:
-        track_constraints['mandatory'][constraint[0]] = constraint[1]
-
+      add_media_track_constraint(track_constraints, constraint_string)
+      
   return track_constraints
 
 def make_media_stream_constraints(audio, video):
@@ -369,15 +382,17 @@ class MainPage(webapp2.RequestHandler):
 
     # The hd parameter is a shorthand to determine whether to open the
     # camera at 720p. If no value is provided, use a platform-specific default.
+    # When defaulting to HD, use optional constraints, in case the camera
+    # doesn't actually support HD modes.
     hd = self.request.get('hd').lower()
     if hd and video:
       message = 'The "hd" parameter has overridden video=' + video
       logging.error(message)
       error_messages.append(message)
-    if not hd:
-      hd = get_hd_default(user_agent)
     if hd == 'true':
-      video = 'minWidth=1280,minHeight=720'
+      video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
+    elif not hd and not video and get_hd_default(user_agent) == 'true':
+      video = 'optional:minWidth=1280,optional:minHeight=720'
 
     if self.request.get('minre') or self.request.get('maxre'):
       message = ('The "minre" and "maxre" parameters are no longer supported. '
