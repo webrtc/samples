@@ -253,14 +253,24 @@ function setRemote(message) {
   pc.setRemoteDescription(new RTCSessionDescription(message),
        onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
-  function onSetRemoteDescriptionSuccess() {
-    trace("Set remote session description success.");
-    // By now all addstream events for the setRemoteDescription have fired.
-    // So we can know if the peer is sending any stream or is only receiving.
-    if (remoteStream) {
+function onSetRemoteDescriptionSuccess() {
+  trace('Set remote session description success.');
+  // By now all onaddstream events for the setRemoteDescription have fired,
+  // so we can know if the peer has any remote video streams that we need
+  // to wait for. Otherwise, transition immediately to the active state.
+  // NOTE: Ideally we could just check |remoteStream| here, which is populated
+  // in the onaddstream callback. But as indicated in 
+  // https://code.google.com/p/webrtc/issues/detail?id=3358, sometimes this
+  // callback is dispatched after the setRemoteDescription success callback.
+  // Therefore, we read the remoteStreams array directly from the
+  // PeerConnection, which seems to work reliably.
+  var remoteStreams = pc.getRemoteStreams();
+  if (remoteStreams.length > 0 &&
+      remoteStreams[0].getVideoTracks().length > 0) {    
+      trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
-      trace("No remote video stream; not waiting for media to arrive.");
+      trace('No remote video stream; not waiting for media to arrive.');
       transitionToActive();
     }
   }
@@ -446,10 +456,12 @@ function onRemoteStreamRemoved(event) {
 }
 
 function onSignalingStateChanged(event) {
+  trace('Signaling state changed to: ' + pc.signalingState);
   updateInfoDiv();
 }
 
 function onIceConnectionStateChanged(event) {
+  trace('ICE connection state changed to: ' + pc.iceConnectionState);
   updateInfoDiv();
 }
 
@@ -481,9 +493,9 @@ function stop() {
 }
 
 function waitForRemoteVideo() {
-  // Call the getVideoTracks method via adapter.js.
-  videoTracks = remoteStream.getVideoTracks();
-  if (videoTracks.length === 0 || remoteVideo.currentTime > 0) {
+  // Wait for the actual video to start arriving before moving to the active
+  // call state.
+  if (remoteVideo.currentTime > 0) {
     transitionToActive();
   } else {
     setTimeout(waitForRemoteVideo, 10);
@@ -492,7 +504,7 @@ function waitForRemoteVideo() {
 
 function transitionToActive() {
   endTime = performance.now();
-  trace('Call setup time: ' + endTime - startTime + 'ms.');
+  trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
   // Prepare the remote video and PIP elements.
   if (stereoscopic) {
@@ -600,7 +612,7 @@ function showInfoDiv() {
 
 function toggleVideoMute() {
   // Call the getVideoTracks method via adapter.js.
-  videoTracks = localStream.getVideoTracks();
+  var videoTracks = localStream.getVideoTracks();
 
   if (videoTracks.length === 0) {
     trace('No local video available.');
@@ -625,7 +637,7 @@ function toggleVideoMute() {
 
 function toggleAudioMute() {
   // Call the getAudioTracks method via adapter.js.
-  audioTracks = localStream.getAudioTracks();
+  var audioTracks = localStream.getAudioTracks();
 
   if (audioTracks.length === 0) {
     trace('No local audio available.');
@@ -759,8 +771,8 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var maxBitrate = videoSendInitialBitrate;
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
-      messageError("Clamping initial bitrate to max bitrate of " +
-          videoSendBitrate + " kbps.")
+      messageError('Clamping initial bitrate to max bitrate of ' +
+          videoSendBitrate + ' kbps.')
       videoSendInitialBitrate = videoSendBitrate;
     }
     maxBitrate = videoSendBitrate;
