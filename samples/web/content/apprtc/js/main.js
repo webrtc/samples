@@ -357,6 +357,7 @@ function messageError(msg) {
   trace(msg);
   infoDivErrors.push(msg);
   updateInfoDiv();
+  showInfoDiv();
 }
 
 function onUserMediaSuccess(stream) {
@@ -447,7 +448,7 @@ function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
     // Adding offset to get NTP time.
     var now_ntp = Date.now() + 2208988800000;
     e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
-    return e2eDelay;
+    return e2eDelay.toFixed(0);
   }
 }
 
@@ -561,46 +562,40 @@ function getInfoDiv() {
 }
 
 function updateInfoDiv() {
-  var contents = "<pre>Gathered ICE Candidates\n";
-  for (var endpoint in gatheredIceCandidateTypes) {
-    contents += endpoint + ":\n";
-    for (var type in gatheredIceCandidateTypes[endpoint])
-      contents += "  " + type + "\n";
-  }
+  var contents = "<pre>"
   if (pc != null) {
-    contents += "Gathering: " + pc.iceGatheringState + "\n";
-    contents += "</pre>\n";
-    contents += "<pre>PC State:\n";
-    contents += "Signaling: " + pc.signalingState + "\n";
-    contents += "ICE: " + pc.iceConnectionState + "\n";
-    contents += "<pre>PC Stats:\n";
+    contents += "States:\n";
+    contents += "Signaling:  " + pc.signalingState + "\n";
+    contents += "Gathering:  " + pc.iceGatheringState + "\n";
+    contents += "Connection: " + pc.iceConnectionState + "\n";
+    for (var endpoint in gatheredIceCandidateTypes) {
+      contents += endpoint + ": ";
+      for (var type in gatheredIceCandidateTypes[endpoint])
+        contents += type + " ";
+      contents += "\n";
+    }
+    contents += "\nStats:\n";
     if (endTime) 
       contents += "Setup time: " + (endTime - startTime).toFixed(0).toString() +
                   "ms\n";
     if (rtt)
-      contents += "RTT: " + rtt + "ms\n";
+      contents += "RTT:        " + rtt + "ms\n";
     if (e2eDelay)
-      contents += "End to end delay: " + e2eDelay + "ms\n";
+      contents += "End to end: " + e2eDelay + "ms\n";
   }
+  contents += "</pre>";
+
   var div = getInfoDiv();
-  div.innerHTML = contents + "</pre>";
+  div.innerHTML = contents;
 
   for (var msg in infoDivErrors) {
     div.innerHTML += '<p style="background-color: red; color: yellow;">' +
                      infoDivErrors[msg] + '</p>';
   }
-  if (infoDivErrors.length)
-    showInfoDiv();
 }
 
-function toggleInfoDiv() {
-  var div = getInfoDiv();
-  if (div.style.display == "block") {
-    div.style.display = "none";
-    clearInterval(getStatsTimer);
-  } else {
-    showInfoDiv();
-  }
+function isInfoDivVisible() {
+  return getInfoDiv().style.display === "block";
 }
 
 function showInfoDiv() {
@@ -608,6 +603,20 @@ function showInfoDiv() {
   div.style.display = "block";
   // Compute round-trip time and end to end delay.
   getStatsTimer = setInterval(computeRttAndDelay, 1000);
+}
+
+function hideInfoDiv() {
+  var div = getInfoDiv();
+  div.style.display = "none";
+  clearInterval(getStatsTimer);
+}
+
+function toggleInfoDiv() {
+  if (isInfoDivVisible()) {
+    hideInfoDiv();
+  } else {
+    showInfoDiv();
+  }
 }
 
 function toggleVideoMute() {
