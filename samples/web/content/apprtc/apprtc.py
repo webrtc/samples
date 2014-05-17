@@ -374,6 +374,12 @@ class MainPage(webapp2.RequestHandler):
     #
     # Keys starting with "goog" will be added to the "optional" key; all others
     # will be added to the "mandatory" key.
+    # To override this default behavior, add a "mandatory" or "optional" prefix
+    # to each key, e.g. 
+    #   "?video=optional:minWidth=1280,optional:minHeight=720,
+    #           mandatory:googNoiseReduction=true"
+    #   (Try to do 1280x720, but be willing to live with less; enable
+    #    noise reduction or die trying.)
     #
     # The audio keys are defined here: talk/app/webrtc/localaudiosource.cc
     # The video keys are defined here: talk/app/webrtc/videosource.cc
