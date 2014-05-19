@@ -165,11 +165,13 @@ def maybe_add_constraint(constraints, param, constraint):
 
   return constraints
 
-def make_pc_constraints(dtls, dscp, ipv6):
+def make_pc_constraints(dtls, dscp, ipv6, ice_transports):
   constraints = { 'optional': [] }
   # Force on the new BWE in Chrome 35 and later.
   # TODO(juberti): Remove once Chrome 36 is stable.
   constraints['optional'].append({'googImprovedWifiBwe': True})
+  # Added ice_transports to pcConstraints until Chrome is inline with the spec.
+  constraints['optional'].append({'iceTransports': ice_transports});
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
@@ -341,7 +343,6 @@ class MainPage(webapp2.RequestHandler):
       stun_server = get_default_stun_server(user_agent)
     turn_server = self.request.get('ts')
     ts_pwd = self.request.get('tp')
-    ice_transports = self.request.get('it')
 
     # Use "audio" and "video" to set the media stream constraints. Defined here:
     # http://goo.gl/V7cZg
@@ -406,6 +407,10 @@ class MainPage(webapp2.RequestHandler):
     
     # Read url params for the initial video send bitrate (vsibr)
     vsibr = self.request.get('vsibr', default_value = '')
+    
+    # Reads the ice transport from url param 'it'.
+    # Defaulting to 'all'.
+    ice_transports = self.request.get('it', default_value = 'all')
 
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
@@ -473,7 +478,7 @@ class MainPage(webapp2.RequestHandler):
     room_link = append_url_arguments(self.request, room_link)
     token = create_channel(room, user, token_timeout)
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
+    pc_constraints = make_pc_constraints(dtls, dscp, ipv6, ice_transports)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
     template_values = {'error_messages': error_messages,
@@ -494,7 +499,8 @@ class MainPage(webapp2.RequestHandler):
                        'vsbr': vsbr,
                        'vsibr': vsibr,
                        'audio_send_codec': audio_send_codec,
-                       'audio_receive_codec': audio_receive_codec
+                       'audio_receive_codec': audio_receive_codec,
+                       'ice_transports': ice_transports
                       }
     if unittest:
       target_page = 'test/test_' + unittest + '.html'
