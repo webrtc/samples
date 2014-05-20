@@ -34,13 +34,13 @@ var rtt;
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
-    'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true
-     },
-     'optional': [
-         {'VoiceActivityDetection': false}
-     ]
+  'mandatory': {
+    'OfferToReceiveAudio': true,
+    'OfferToReceiveVideo': true
+   },
+   'optional': [
+     {'VoiceActivityDetection': false}
+   ]
 };
 var setupTime;
 var signalingReady = false;
@@ -534,7 +534,7 @@ function waitForRemoteVideo() {
 
 function transitionToActive() {
   setupTime = ((performance.now() - startTime) / 1000).toFixed(3);
-  trace('Call setup time: ' + setupTime + ' ms.');
+  trace('Call setup time: ' + setupTime + 's.');
   updateInfoDiv();
   // !!!hack: to avoid resetting miniVideo.src when remote side has changed camera
   if (localVideo.src.substring(0, 4) !== 'http') {
@@ -614,22 +614,22 @@ function updateInfoDiv() {
       }
     }
     if (candidateTypes !== '') {
-      contents.push('Gathered ICE Candidates:');
+      contents.push('<strong>Gathered ICE Candidates</strong>');
       contents.push(candidateTypes);
     }
-    contents.push('Gathering: ' + pc.iceGatheringState);
-    contents.push('<br>PC state');
-    contents.push('Signaling: ' + pc.signalingState);
-    contents.push('ICE: ' + pc.iceConnectionState);
-    contents.push('<br>PC stats');
+    contents.push('<strong>Gathering:</strong> ' + pc.iceGatheringState);
+    contents.push('<br><strong>PC state</strong>');
+    contents.push('&nbsp;&nbsp;Signaling: ' + pc.signalingState);
+    contents.push('&nbsp;&nbsp;ICE: ' + pc.iceConnectionState);
+    contents.push('<br><strong>PC stats</strong>');
     if (setupTime) {
-      contents.push('Setup time: ' + setupTime + 'ms');
+      contents.push('&nbsp;&nbsp;Setup time: ' + setupTime + 's');
     }
     if (rtt) {
-      contents.push('RTT: ' + rtt + 's');
+      contents.push('&nbsp;&nbsp;RTT: ' + rtt + 's');
     }
     if (e2eDelay) {
-      contents.push('End to end delay: ' + e2eDelay + 'ms');
+      contents.push('&nbsp;&nbsp;End to end delay: ' + e2eDelay + 'ms');
     }
   }
 
