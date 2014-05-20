@@ -542,11 +542,13 @@ function transitionToActive() {
   }
 
 // Prepare the remote video and PIP elements.
-// if (stereoscopic) {
-//   setupStereoscopic(remoteVideo, remoteCanvas);
-// } else {
-//   reattachMediaStream(miniVideo, localVideo);
-// }
+if (stereoscopic) {
+  miniVideo.classList.remove('active');
+  miniVideo.classList.add('hidden');
+  setupStereoscopic(remoteVideo, remoteCanvas);
+} else {
+  reattachMediaStream(miniVideo, localVideo);
+}
 
   remoteVideo.classList.add('active');
   videosDiv.classList.add('active');
@@ -597,8 +599,11 @@ function noteIceCandidate(location, type) {
 function updateInfoDiv() {
   var contents = [];
 
-  for (var i = 0; i !== errorMessages.length; ++i) {
-    contents.push(errorMessages[i]);
+  if (errorMessages.length) {
+    for (var i = 0; i !== errorMessages.length; ++i) {
+      contents.push(errorMessages[i]);
+    }
+    contents.push(' ');
   }
 
   if (pc !== null) {

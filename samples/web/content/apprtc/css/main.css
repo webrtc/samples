@@ -56,13 +56,14 @@ button#emailButton {
 
 canvas#remoteCanvas {
   display: none;
+  margin: 0 auto 0 auto;
 }
 
 div.active.warning {
-  background-color: red;
+  background-color: #A80202;
   color: black;
-  font-weight: 500;
-  opacity: 1;
+  font-weight: 400;
+  opacity: 0.9;
 }
 
 div#container {
