@@ -4,6 +4,7 @@
 <title>WebRTC Reference App</title>
 
 <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+{{ meta_viewport }}
 
 <link rel="canonical" href="{{ room_link }}"/>
 <link rel="stylesheet" href="css/main.css" />
@@ -39,7 +40,7 @@
   var audioRecvCodec = '{{ audio_receive_codec }}';
   setTimeout(initialize, 1);
 </script>
-<div id="container" ondblclick="enterFullScreen()">
+<div id="container" ondblclick="enterFullScreen()" ontouchend="enterFullScreen()">
   <div id="card">
     <div id="local">
       <video id="localVideo" autoplay="autoplay" muted="true"/>

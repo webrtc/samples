@@ -39,6 +39,9 @@ def sanitize(key):
 def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
 
+def is_android_chrome(user_agent):
+  return 'Android' in user_agent and 'Chrome' in user_agent
+
 def get_default_stun_server(user_agent):
   # others you can try: stun.services.mozilla.com, stunserver.org
   return 'stun.l.google.com:19302'
@@ -50,7 +53,7 @@ def get_preferred_audio_send_codec(user_agent):
   # Empty string means no preference.
   preferred_audio_send_codec = ''
   # Prefer to send ISAC on Chrome for Android.
-  if 'Android' in user_agent and 'Chrome' in user_agent:
+  if is_android_chrome(user_agent):
     preferred_audio_send_codec = 'ISAC/16000'
   return preferred_audio_send_codec
 
@@ -134,18 +137,18 @@ def add_media_track_constraint(track_constraints, constraint_string):
   mandatory = True
   if len(tokens) == 2:
     # If specified, e.g. mandatory:minHeight=720, set mandatory appropriately.
-    mandatory = (tokens[0] == 'mandatory')    
+    mandatory = (tokens[0] == 'mandatory')
   else:
-    # Otherwise, default to mandatory, except for goog constraints, which 
+    # Otherwise, default to mandatory, except for goog constraints, which
     # won't work in other browsers.
     mandatory = not tokens[0].startswith('goog')
-  
+
   tokens = tokens[-1].split('=')
   if len(tokens) == 2:
     if mandatory:
       track_constraints['mandatory'][tokens[0]] = tokens[1]
     else:
-      track_constraints['optional'].append({tokens[0]: tokens[1]})      
+      track_constraints['optional'].append({tokens[0]: tokens[1]})
   else:
     logging.error('Ignoring malformed constraint: ' + constraint_string)
 
@@ -158,7 +161,7 @@ def make_media_track_constraints(constraints_string):
     track_constraints = {'mandatory': {}, 'optional': []}
     for constraint_string in constraints_string.split(','):
       add_media_track_constraint(track_constraints, constraint_string)
-      
+
   return track_constraints
 
 def make_media_stream_constraints(audio, video):
@@ -373,7 +376,7 @@ class MainPage(webapp2.RequestHandler):
     # Keys starting with "goog" will be added to the "optional" key; all others
     # will be added to the "mandatory" key.
     # To override this default behavior, add a "mandatory" or "optional" prefix
-    # to each key, e.g. 
+    # to each key, e.g.
     #   "?video=optional:minWidth=1280,optional:minHeight=720,
     #           mandatory:googNoiseReduction=true"
     #   (Try to do 1280x720, but be willing to live with less; enable
@@ -435,11 +438,15 @@ class MainPage(webapp2.RequestHandler):
     # two cameras' captures, which will each be fed to one eye.
     ssr = self.request.get('ssr')
     # Avoid pulling down vr.js (>25KB, minified) if not needed.
+    include_vr_js = ''
     if ssr == 'true':
       include_vr_js = ('<script src="/js/vr.js"></script>\n' +
                        '<script src="/js/stereoscopic.js"></script>')
-    else:
-      include_vr_js = ''
+
+    meta_viewport = ''
+    if is_android_chrome(user_agent):
+      meta_viewport = ('<meta name="viewport" content="width=device-width, ' +
+                       'user-scalable=no, initial-scale=1, maximum-scale=1">')
 
     debug = self.request.get('debug')
     if debug == 'loopback':
@@ -525,6 +532,7 @@ class MainPage(webapp2.RequestHandler):
                        'vsibr': vsibr,
                        'ssr': ssr,
                        'include_vr_js': include_vr_js,
+                       'meta_viewport': meta_viewport,
                        'audio_send_codec': audio_send_codec,
                        'audio_receive_codec': audio_receive_codec
                       }

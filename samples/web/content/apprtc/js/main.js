@@ -259,14 +259,14 @@ function onSetRemoteDescriptionSuccess() {
   // so we can know if the peer has any remote video streams that we need
   // to wait for. Otherwise, transition immediately to the active state.
   // NOTE: Ideally we could just check |remoteStream| here, which is populated
-  // in the onaddstream callback. But as indicated in 
+  // in the onaddstream callback. But as indicated in
   // https://code.google.com/p/webrtc/issues/detail?id=3358, sometimes this
   // callback is dispatched after the setRemoteDescription success callback.
   // Therefore, we read the remoteStreams array directly from the
   // PeerConnection, which seems to work reliably.
   var remoteStreams = pc.getRemoteStreams();
   if (remoteStreams.length > 0 &&
-      remoteStreams[0].getVideoTracks().length > 0) {    
+      remoteStreams[0].getVideoTracks().length > 0) {
       trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
@@ -574,7 +574,7 @@ function transitionToDone() {
 }
 
 function enterFullScreen() {
-  container.webkitRequestFullScreen();
+  event.target.webkitRequestFullScreen();
 }
 
 function noteIceCandidate(location, type) {
@@ -623,7 +623,7 @@ function updateInfoDiv() {
     }
     contents += buildLine();
     contents += buildLine("Stats");
-    if (endTime != null) 
+    if (endTime != null)
       contents += buildLine("Setup time",
                             (endTime - startTime).toFixed(0).toString() + "ms");
     if (rtt != null)
