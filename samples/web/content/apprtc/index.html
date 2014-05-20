@@ -17,7 +17,7 @@
 <link rel="icon" href="images/favicon.ico" type="image/png" />
 <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
 <link rel="apple-touch-icon" href="/touch-icon-ipad.png" />
-<link href="//fonts.googleapis.com/css?family=Roboto:500,400,300" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Roboto:500,400,300" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="css/main.css" />
 <link rel="canonical" href="{{ room_link }}"/>
 
@@ -29,10 +29,12 @@
   <div id="mute" title="Mute audio"></div>
   <div id="hangup" title="End this call"></div>
   <div id="camera" title="Choose a different camera" class="hidden"></div>
+  <div id="toggleInfo" title="Toggle info display"></div>
 </header>
 
 <div id="videos">
   <video id="miniVideo" autoplay muted></video>
+  <canvas id="remoteCanvas"></canvas>
   <video id="remoteVideo" autoplay></video>
   <video id="localVideo" autoplay muted></video>
 </div>
@@ -51,8 +53,8 @@
       <button id="emailButton">Send</button>
     </div>
   </div>
+  <div id="info"></div>
   <div id="status"></div>
-  <div id="techInfo"></div>
 </footer>
 
 <script src="/_ah/channel/jsapi"></script>
@@ -64,8 +66,6 @@
 // values set in apprtc.py
 var audioSendBitrate = '{{ asbr }}';
 var audioRecvBitrate = '{{ arbr }}';
-var videoSendBitrate = '{{ vsbr }}';
-var videoRecvBitrate = '{{ vrbr }}';
 var audioSendCodec = '{{ audio_send_codec }}';
 var audioRecvCodec = '{{ audio_receive_codec }}';
 var channelToken = "{{ token }}";
@@ -79,8 +79,11 @@ var pcConstraints = {{ pc_constraints | safe }};
 var roomKey = "{{ room_key }}";
 var roomLink = "{{ room_link }}";
 var stereo = {{ stereo }};
+var stereoscopic = '{{ ssr }}';
 var turnUrl = "{{ turn_url }}";
-
+var videoSendBitrate = '{{ vsbr }}';
+var videoSendInitialBitrate = '{{ vsibr }}';
+var videoRecvBitrate = '{{ vrbr }}';
 setTimeout(initialize, 1);
 </script>
 
