@@ -390,6 +390,12 @@ function iceCandidateType(candidateSDP) {
 
 function onIceCandidate(event) {
   if (event.candidate) {
+    if (iceTransports === 'relay') {
+      // Filter out non relay Candidates, if iceTransports is set to relay.
+      if (event.candidate.candidate.search('relay') < 0) {
+        return;
+      }
+    }
     sendMessage({type: 'candidate',
                  label: event.candidate.sdpMLineIndex,
                  id: event.candidate.sdpMid,

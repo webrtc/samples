@@ -341,7 +341,6 @@ class MainPage(webapp2.RequestHandler):
       stun_server = get_default_stun_server(user_agent)
     turn_server = self.request.get('ts')
     ts_pwd = self.request.get('tp')
-    ice_transports = self.request.get('it')
 
     # Use "audio" and "video" to set the media stream constraints. Defined here:
     # http://goo.gl/V7cZg
@@ -406,6 +405,10 @@ class MainPage(webapp2.RequestHandler):
     
     # Read url params for the initial video send bitrate (vsibr)
     vsibr = self.request.get('vsibr', default_value = '')
+    
+    # Reads the ice transport from url param 'it'.
+    # Defaulting to 'all'.
+    ice_transports = self.request.get('it', default_value = 'all')
 
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
@@ -494,7 +497,8 @@ class MainPage(webapp2.RequestHandler):
                        'vsbr': vsbr,
                        'vsibr': vsibr,
                        'audio_send_codec': audio_send_codec,
-                       'audio_receive_codec': audio_receive_codec
+                       'audio_receive_codec': audio_receive_codec,
+                       'ice_transports': ice_transports
                       }
     if unittest:
       target_page = 'test/test_' + unittest + '.html'
