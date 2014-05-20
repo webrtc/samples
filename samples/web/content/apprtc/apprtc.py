@@ -165,13 +165,11 @@ def maybe_add_constraint(constraints, param, constraint):
 
   return constraints
 
-def make_pc_constraints(dtls, dscp, ipv6, ice_transports):
+def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
   # Force on the new BWE in Chrome 35 and later.
   # TODO(juberti): Remove once Chrome 36 is stable.
   constraints['optional'].append({'googImprovedWifiBwe': True})
-  # Added ice_transports to pcConstraints until Chrome is inline with the spec.
-  constraints['optional'].append({'iceTransports': ice_transports});
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
@@ -478,7 +476,7 @@ class MainPage(webapp2.RequestHandler):
     room_link = append_url_arguments(self.request, room_link)
     token = create_channel(room, user, token_timeout)
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6, ice_transports)
+    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
     template_values = {'error_messages': error_messages,

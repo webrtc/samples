@@ -390,27 +390,17 @@ function iceCandidateType(candidateSDP) {
 
 function onIceCandidate(event) {
   if (event.candidate) {
-    if (iceTransports === 'relay'
-        && webrtcDetectedVersion <= 36 
-        && webrtcDetectedBrowser === 'chrome') {
-      // Filter out non-relay candidates for Chrome version upto 36.
-      if (event.candidate.candidate.search('relay') > 0) {
-      
-        sendMessage({type: 'candidate',
-                     label: event.candidate.sdpMLineIndex,
-                     id: event.candidate.sdpMid,
-                     candidate: event.candidate.candidate});
-        noteIceCandidate("Local", iceCandidateType(event.candidate.candidate));
+    if (iceTransports === 'relay') {
+      // Filter out non relay Candidates, if iceTransports is set to relay.
+      if (event.candidate.candidate.search('relay') < 0) {
+        return;
       }
-    } else {
-      // send all candidates by default.
-      sendMessage({type: 'candidate',
-                   label: event.candidate.sdpMLineIndex,
-                   id: event.candidate.sdpMid,
-                   candidate: event.candidate.candidate});
-      noteIceCandidate("Local", iceCandidateType(event.candidate.candidate));
-    
     }
+    sendMessage({type: 'candidate',
+                 label: event.candidate.sdpMLineIndex,
+                 id: event.candidate.sdpMid,
+                 candidate: event.candidate.candidate});
+    noteIceCandidate("Local", iceCandidateType(event.candidate.candidate));
   } else {
     trace('End of candidates.');
   }
