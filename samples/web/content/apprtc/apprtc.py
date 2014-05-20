@@ -131,6 +131,26 @@ def on_message(room, user, message):
     new_message.put()
     logging.info('Saved message for user ' + user)
 
+def add_media_track_constraint(track_constraints, constraint_string):
+  tokens = constraint_string.split(':')
+  mandatory = True
+  if len(tokens) == 2:
+    # If specified, e.g. mandatory:minHeight=720, set mandatory appropriately.
+    mandatory = (tokens[0] == 'mandatory')    
+  else:
+    # Otherwise, default to mandatory, except for goog constraints, which 
+    # won't work in other browsers.
+    mandatory = not tokens[0].startswith('goog')
+  
+  tokens = tokens[-1].split('=')
+  if len(tokens) == 2:
+    if mandatory:
+      track_constraints['mandatory'][tokens[0]] = tokens[1]
+    else:
+      track_constraints['optional'].append({tokens[0]: tokens[1]})      
+  else:
+    logging.error('Ignoring malformed constraint: ' + constraint_string)
+
 def make_media_track_constraints(constraints_string):
   if not constraints_string or constraints_string.lower() == 'true':
     track_constraints = True
@@ -139,15 +159,8 @@ def make_media_track_constraints(constraints_string):
   else:
     track_constraints = {'mandatory': {}, 'optional': []}
     for constraint_string in constraints_string.split(','):
-      constraint = constraint_string.split('=')
-      if len(constraint) != 2:
-        logging.error('Ignoring malformed constraint: ' + constraint_string)
-        continue
-      if constraint[0].startswith('goog'):
-        track_constraints['optional'].append({constraint[0]: constraint[1]})
-      else:
-        track_constraints['mandatory'][constraint[0]] = constraint[1]
-
+      add_media_track_constraint(track_constraints, constraint_string)
+      
   return track_constraints
 
 def make_media_stream_constraints(audio, video):
@@ -361,6 +374,12 @@ class MainPage(webapp2.RequestHandler):
     #
     # Keys starting with "goog" will be added to the "optional" key; all others
     # will be added to the "mandatory" key.
+    # To override this default behavior, add a "mandatory" or "optional" prefix
+    # to each key, e.g. 
+    #   "?video=optional:minWidth=1280,optional:minHeight=720,
+    #           mandatory:googNoiseReduction=true"
+    #   (Try to do 1280x720, but be willing to live with less; enable
+    #    noise reduction or die trying.)
     #
     # The audio keys are defined here: talk/app/webrtc/localaudiosource.cc
     # The video keys are defined here: talk/app/webrtc/videosource.cc
@@ -369,15 +388,17 @@ class MainPage(webapp2.RequestHandler):
 
     # The hd parameter is a shorthand to determine whether to open the
     # camera at 720p. If no value is provided, use a platform-specific default.
+    # When defaulting to HD, use optional constraints, in case the camera
+    # doesn't actually support HD modes.
     hd = self.request.get('hd').lower()
     if hd and video:
       message = 'The "hd" parameter has overridden video=' + video
       logging.error(message)
       error_messages.append(message)
-    if not hd:
-      hd = get_hd_default(user_agent)
     if hd == 'true':
-      video = 'minWidth=1280,minHeight=720'
+      video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
+    elif not hd and not video and get_hd_default(user_agent) == 'true':
+      video = 'optional:minWidth=1280,optional:minHeight=720'
 
     if self.request.get('minre') or self.request.get('maxre'):
       message = ('The "minre" and "maxre" parameters are no longer supported. '
@@ -403,7 +424,7 @@ class MainPage(webapp2.RequestHandler):
     # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
     vsbr = self.request.get('vsbr', default_value = '')
     vrbr = self.request.get('vrbr', default_value = '')
-    
+
     # Read url params for the initial video send bitrate (vsibr)
     vsibr = self.request.get('vsibr', default_value = '')
 
@@ -411,6 +432,16 @@ class MainPage(webapp2.RequestHandler):
     dtls = self.request.get('dtls')
     dscp = self.request.get('dscp')
     ipv6 = self.request.get('ipv6')
+
+    # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
+    # two cameras' captures, which will each be fed to one eye.
+    ssr = self.request.get('ssr')
+    # Avoid pulling down vr.js (>25KB, minified) if not needed.
+    if ssr == 'true':
+      include_vr_js = ('<script src="/js/vr.js"></script>\n' +
+                       '<script src="/js/stereoscopic.js"></script>')
+    else:
+      include_vr_js = ''
 
     debug = self.request.get('debug')
     if debug == 'loopback':
@@ -476,6 +507,7 @@ class MainPage(webapp2.RequestHandler):
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
+
     template_values = {'error_messages': error_messages,
                        'token': token,
                        'me': user,
@@ -493,6 +525,8 @@ class MainPage(webapp2.RequestHandler):
                        'vrbr': vrbr,
                        'vsbr': vsbr,
                        'vsibr': vsibr,
+                       'ssr': ssr,
+                       'include_vr_js': include_vr_js,
                        'audio_send_codec': audio_send_codec,
                        'audio_receive_codec': audio_receive_codec
                       }

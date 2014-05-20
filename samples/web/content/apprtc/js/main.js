@@ -15,13 +15,16 @@ var turnDone = false;
 var channelReady = false;
 var signalingReady = false;
 var msgQueue = [];
+var rtt;
+var e2eDelay;
+var getStatsTimer;
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
     'mandatory': {
         'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true 
-     }, 
+        'OfferToReceiveVideo': true
+     },
      'optional': [
          {'VoiceActivityDetection': false}
      ]
@@ -250,14 +253,25 @@ function setRemote(message) {
   pc.setRemoteDescription(new RTCSessionDescription(message),
        onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
-  function onSetRemoteDescriptionSuccess() {
-    trace("Set remote session description success.");
-    // By now all addstream events for the setRemoteDescription have fired.
-    // So we can know if the peer is sending any stream or is only receiving.
-    if (remoteStream) {
+function onSetRemoteDescriptionSuccess() {
+  trace('Set remote session description success.');
+  // By now all onaddstream events for the setRemoteDescription have fired,
+  // so we can know if the peer has any remote video streams that we need
+  // to wait for. Otherwise, transition immediately to the active state.
+  // NOTE: Ideally we could just check |remoteStream| here, which is populated
+  // in the onaddstream callback. But as indicated in 
+  // https://code.google.com/p/webrtc/issues/detail?id=3358, sometimes this
+  // callback is dispatched after the setRemoteDescription success callback.
+  // Therefore, we read the remoteStreams array directly from the
+  // PeerConnection, which seems to work reliably.
+  var remoteStreams = pc.getRemoteStreams();
+  if (remoteStreams.length > 0 &&
+      remoteStreams[0].getVideoTracks().length > 0) {    
+      trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
-      trace("No remote video stream; not waiting for media to arrive.");
+      // TODO(juberti): Make this wait for ICE connection before transitioning.
+      trace('No remote video stream; not waiting for media to arrive.');
       transitionToActive();
     }
   }
@@ -344,6 +358,7 @@ function messageError(msg) {
   trace(msg);
   infoDivErrors.push(msg);
   updateInfoDiv();
+  showInfoDiv();
 }
 
 function onUserMediaSuccess(stream) {
@@ -406,15 +421,61 @@ function onRemoteStreamAdded(event) {
   remoteStream = event.stream;
 }
 
+function computeRttAndDelay() {
+  if (pc) {
+    pc.getStats(function(response) {
+      var stats = response.result();
+      rtt = extractStatAsInt(stats, 'googRtt');
+      var captureStart = extractStatAsInt(stats, 'googCaptureStartNtpTimeMs');
+      if (captureStart)
+        e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
+      updateInfoDiv();
+    });
+  }
+}
+
+function extractStatAsInt(stats, statName) {
+  // Return null for stats that have a 'nullish' value.
+  // The correct fix is indicated in
+  // https://code.google.com/p/webrtc/issues/detail?id=3377.
+  var val = parseInt(extractStat(stats, statName));
+  return val !== -1 ? val : null;
+}
+
+function extractStat(stats, statName) {
+  for (var i = 0; i < stats.length; ++i) {
+    var report = stats[i];
+    if (report.names().indexOf(statName) != -1) {
+      return report.stat(statName);
+    }
+  }
+}
+
+function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
+  // Computes end to end Delay.
+  if (captureStart) {
+    // Adding offset to get NTP time.
+    var now_ntp = Date.now() + 2208988800000;
+    e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
+    return e2eDelay.toFixed(0);
+  }
+}
+
 function onRemoteStreamRemoved(event) {
   trace('Remote stream removed.');
 }
 
 function onSignalingStateChanged(event) {
+  if (pc) {
+    trace('Signaling state changed to: ' + pc.signalingState);
+  }
   updateInfoDiv();
 }
 
 function onIceConnectionStateChanged(event) {
+  if (pc) {
+    trace('ICE connection state changed to: ' + pc.iceConnectionState);
+  }
   updateInfoDiv();
 }
 
@@ -446,9 +507,9 @@ function stop() {
 }
 
 function waitForRemoteVideo() {
-  // Call the getVideoTracks method via adapter.js.
-  videoTracks = remoteStream.getVideoTracks();
-  if (videoTracks.length === 0 || remoteVideo.currentTime > 0) {
+  // Wait for the actual video to start arriving before moving to the active
+  // call state.
+  if (remoteVideo.currentTime > 0) {
     transitionToActive();
   } else {
     setTimeout(waitForRemoteVideo, 10);
@@ -457,10 +518,14 @@ function waitForRemoteVideo() {
 
 function transitionToActive() {
   endTime = performance.now();
-  trace('Call setup time: ' + endTime - startTime + 'ms.');
+  trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
   // Prepare the remote video and PIP elements.
-  reattachMediaStream(miniVideo, localVideo);
+  if (stereoscopic) {
+    setupStereoscopic(remoteVideo, document.getElementById('remoteCanvas'));
+  } else {
+    reattachMediaStream(miniVideo, localVideo);
+  }
   miniVideo.style.opacity = 1;
   remoteVideo.style.opacity = 1;
   // Spin the card to show remote video (800 ms). Set a timer to detach the
@@ -499,9 +564,12 @@ function enterFullScreen() {
 }
 
 function noteIceCandidate(location, type) {
-  if (gatheredIceCandidateTypes[location][type])
-    return;
-  gatheredIceCandidateTypes[location][type] = 1;
+  var types = gatheredIceCandidateTypes[location];
+  if (!types[type]) {
+    types[type] = 1;
+  } else {
+    ++types[type];
+  }
   updateInfoDiv();
 }
 
@@ -509,52 +577,90 @@ function getInfoDiv() {
   return document.getElementById("infoDiv");
 }
 
-function updateInfoDiv() {
-  var contents = "<pre>Gathered ICE Candidates\n";
-  for (var endpoint in gatheredIceCandidateTypes) {
-    contents += endpoint + ":\n";
-    for (var type in gatheredIceCandidateTypes[endpoint])
-      contents += "  " + type + "\n";
-  }
-  if (pc != null) {
-    contents += "Gathering: " + pc.iceGatheringState + "\n";
-    contents += "</pre>\n";
-    contents += "<pre>PC State:\n";
-    contents += "Signaling: " + pc.signalingState + "\n";
-    contents += "ICE: " + pc.iceConnectionState + "\n";
-    if (endTime) {
-      contents += "Setup time: " + (endTime - startTime).toFixed(0).toString() +
-                  "ms\n";
+function buildLine(label, value) {
+  var columnWidth = 12;
+  var line = "";
+  if (label) {
+    line += label + ":";
+    while (line.length < columnWidth)
+      line += " ";
+
+    if (value) {
+      line += value;
     }
   }
+  line += "\n";
+  return line;
+}
+
+function updateInfoDiv() {
+  var contents = "<pre>";
+  if (pc) {
+    contents += buildLine("States");
+    contents += buildLine("Signaling", pc.signalingState);
+    contents += buildLine("Gathering", pc.iceGatheringState);
+    contents += buildLine("Connection", pc.iceConnectionState);
+    for (var endpoint in gatheredIceCandidateTypes) {
+      var types = [];
+      for (var type in gatheredIceCandidateTypes[endpoint])
+        types.push(type + ":" + gatheredIceCandidateTypes[endpoint][type]);
+      types.sort();
+
+      var str = "";
+      for (var i = 0; i < types.length; ++i) {
+        str += types[i] + " ";
+      }
+      contents += buildLine(endpoint, str);
+    }
+    contents += buildLine();
+    contents += buildLine("Stats");
+    if (endTime != null) 
+      contents += buildLine("Setup time",
+                            (endTime - startTime).toFixed(0).toString() + "ms");
+    if (rtt != null)
+      contents += buildLine("RTT", rtt.toString() + "ms");
+    if (e2eDelay != null)
+      contents += buildLine("End to end", e2eDelay.toString() + "ms");
+  }
+  contents += "</pre>";
+
   var div = getInfoDiv();
-  div.innerHTML = contents + "</pre>";
+  div.innerHTML = contents;
 
   for (var msg in infoDivErrors) {
     div.innerHTML += '<p style="background-color: red; color: yellow;">' +
                      infoDivErrors[msg] + '</p>';
   }
-  if (infoDivErrors.length)
-    showInfoDiv();
 }
 
-function toggleInfoDiv() {
-  var div = getInfoDiv();
-  if (div.style.display == "block") {
-    div.style.display = "none";
-  } else {
-    showInfoDiv();
-  }
+function isInfoDivVisible() {
+  return getInfoDiv().style.display === "block";
 }
 
 function showInfoDiv() {
   var div = getInfoDiv();
   div.style.display = "block";
+  // Compute round-trip time and end to end delay.
+  getStatsTimer = setInterval(computeRttAndDelay, 1000);
+}
+
+function hideInfoDiv() {
+  var div = getInfoDiv();
+  div.style.display = "none";
+  clearInterval(getStatsTimer);
+}
+
+function toggleInfoDiv() {
+  if (isInfoDivVisible()) {
+    hideInfoDiv();
+  } else {
+    showInfoDiv();
+  }
 }
 
 function toggleVideoMute() {
   // Call the getVideoTracks method via adapter.js.
-  videoTracks = localStream.getVideoTracks();
+  var videoTracks = localStream.getVideoTracks();
 
   if (videoTracks.length === 0) {
     trace('No local video available.');
@@ -579,14 +685,14 @@ function toggleVideoMute() {
 
 function toggleAudioMute() {
   // Call the getAudioTracks method via adapter.js.
-  audioTracks = localStream.getAudioTracks();
+  var audioTracks = localStream.getAudioTracks();
 
   if (audioTracks.length === 0) {
     trace('No local audio available.');
     return;
   }
 
-  trace('Toggling audio mute state.'); 
+  trace('Toggling audio mute state.');
   if (isAudioMuted) {
     for (i = 0; i < audioTracks.length; i++) {
       audioTracks[i].enabled = true;
@@ -664,14 +770,14 @@ function maybeSetVideoReceiveBitRate(sdp) {
 // Adds a b=AS:bitrate line to the m=mediaType section.
 function preferBitRate(sdp, bitrate, mediaType) {
   var sdpLines = sdp.split('\r\n');
-  
+
   // Find m line for the given mediaType.
   var mLineIndex = findLine(sdpLines, 'm=', mediaType);
   if (mLineIndex === null) {
     messageError('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
-  
+
   // Find next m-line if any.
   var nextMLineIndex = findLineInRange(sdpLines, mLineIndex + 1, -1, 'm=');
   if (nextMLineIndex === null) {
@@ -691,10 +797,10 @@ function preferBitRate(sdp, bitrate, mediaType) {
                                    'b=AS');
   if (bLineIndex) {
     sdpLines.splice(bLineIndex, 1);
-  }  
+  }
 
   // Create the b (bandwidth) sdp line.
-  var bwLine = "b=AS:" + bitrate;  
+  var bwLine = "b=AS:" + bitrate;
   // As per RFC 4566, the b line should follow after c-line.
   sdpLines.splice(cLineIndex + 1, 0, bwLine);
   sdp = sdpLines.join('\r\n');
@@ -713,8 +819,8 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var maxBitrate = videoSendInitialBitrate;
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
-      messageError("Clamping initial bitrate to max bitrate of " + 
-          videoSendBitrate + " kbps.")
+      messageError('Clamping initial bitrate to max bitrate of ' +
+          videoSendBitrate + ' kbps.')
       videoSendInitialBitrate = videoSendBitrate;
     }
     maxBitrate = videoSendBitrate;
@@ -811,7 +917,7 @@ function addStereo(sdp) {
   return sdp;
 }
 
-// Find the line in sdpLines that starts with |prefix|, and, if specified, 
+// Find the line in sdpLines that starts with |prefix|, and, if specified,
 // contains |substr| (case-insensitive search).
 function findLine(sdpLines, prefix, substr) {
   return findLineInRange(sdpLines, 0, -1, prefix, substr)
@@ -829,7 +935,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
       }
     }
   }
-  return null;  
+  return null;
 }
 
 // Gets the codec payload type from an a=rtpmap:X line.
@@ -862,9 +968,9 @@ window.onbeforeunload = function() {
 // Set the video diplaying in the center of window.
 window.onresize = function(){
   var aspectRatio;
-  if (remoteVideo.style.opacity === '1') {
+  if (remoteVideo && remoteVideo.style.opacity === '1') {
     aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
-  } else if (localVideo.style.opacity === '1') {
+  } else if (localVideo && localVideo.style.opacity === '1') {
     aspectRatio = localVideo.videoWidth/localVideo.videoHeight;
   } else {
     return;
