@@ -425,8 +425,9 @@ function computeRttAndDelay() {
   if (pc) {
     pc.getStats(function(response) {
       var stats = response.result();
-      rtt = extractStatAsInt(stats, 'googRtt');
-      var captureStart = extractStatAsInt(stats, 'googCaptureStartNtpTimeMs');
+      rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
+      var captureStart = extractStatAsInt(stats, 'ssrc',
+                                          'googCaptureStartNtpTimeMs');
       if (captureStart)
         e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
       updateInfoDiv();
@@ -434,18 +435,25 @@ function computeRttAndDelay() {
   }
 }
 
-function extractStatAsInt(stats, statName) {
-  // Return null for stats that have a 'nullish' value.
+// Return the integer stat |statName| from |stats|, or undef if not present.
+function extractStatAsInt(stats, statObj, statName) {
+  // Ignore stats that have a 'nullish' value.
   // The correct fix is indicated in
   // https://code.google.com/p/webrtc/issues/detail?id=3377.
-  var val = parseInt(extractStat(stats, statName));
-  return val !== -1 ? val : null;
+  var str = extractStat(stats, statObj, statName);
+  if (str) {
+    var val = parseInt(str);
+    if (val != -1) {
+      return val;
+    }
+  }
 }
 
-function extractStat(stats, statName) {
+// Return the stat |statName| from |stats| as a string, or undef if not present.
+function extractStat(stats, statObj, statName) {
   for (var i = 0; i < stats.length; ++i) {
     var report = stats[i];
-    if (report.names().indexOf(statName) != -1) {
+    if (report.type == statObj && report.names().indexOf(statName) != -1) {
       return report.stat(statName);
     }
   }
@@ -605,12 +613,7 @@ function updateInfoDiv() {
       for (var type in gatheredIceCandidateTypes[endpoint])
         types.push(type + ":" + gatheredIceCandidateTypes[endpoint][type]);
       types.sort();
-
-      var str = "";
-      for (var i = 0; i < types.length; ++i) {
-        str += types[i] + " ";
-      }
-      contents += buildLine(endpoint, str);
+      contents += buildLine(endpoint, types.join(" "));
     }
     contents += buildLine();
     contents += buildLine("Stats");
@@ -638,6 +641,7 @@ function isInfoDivVisible() {
 }
 
 function showInfoDiv() {
+  if (getStatsTimer) throw "Inconsistent infodiv state";
   var div = getInfoDiv();
   div.style.display = "block";
   // Compute round-trip time and end to end delay.
