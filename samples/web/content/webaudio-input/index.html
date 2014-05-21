@@ -116,11 +116,10 @@
 
       var servers = null;
 
-      window.RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection;
-      pc1 = new RTCPeerConnection(servers);
+      pc1 = new webkitRTCPeerConnection(servers);
       console.log('Created local peer connection object pc1');
       pc1.onicecandidate = iceCallback1;
-      pc2 = new RTCPeerConnection(servers);
+      pc2 = new webkitRTCPeerConnection(servers);
       console.log('Created remote peer connection object pc2');
       pc2.onicecandidate = iceCallback2;
       pc2.onaddstream = gotRemoteStream;
