@@ -370,10 +370,10 @@ function onUserMediaSuccess(stream) {
 }
 
 function onUserMediaError(error) {
-  messageError('Failed to get access to local media. Error code was ' +
-               error.code + '. Continuing without sending a stream.');
-  alert('Failed to get access to local media. Error code was ' +
-        error.code + '. Continuing without sending a stream.');
+  var errorMessage = 'Failed to get access to local media. Error name was ' +
+    error.name + '. Continuing without sending a stream.';
+  messageError(errorMessage);
+  alert(errorMessage);
 
   hasLocalStream = false;
   maybeStart();
