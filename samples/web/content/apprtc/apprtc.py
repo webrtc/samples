@@ -497,8 +497,7 @@ class MainPage(webapp2.RequestHandler):
                        'vsbr': vsbr,
                        'vsibr': vsibr,
                        'audio_send_codec': audio_send_codec,
-                       'audio_receive_codec': audio_receive_codec,
-                       'ice_transports': ice_transports
+                       'audio_receive_codec': audio_receive_codec
                       }
     if unittest:
       target_page = 'test/test_' + unittest + '.html'

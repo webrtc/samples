@@ -390,7 +390,7 @@ function iceCandidateType(candidateSDP) {
 
 function onIceCandidate(event) {
   if (event.candidate) {
-    if (iceTransports === 'relay') {
+    if (pcConfig.iceTransports === 'relay') {
       // Filter out non relay Candidates, if iceTransports is set to relay.
       if (event.candidate.candidate.search('relay') < 0) {
         return;
