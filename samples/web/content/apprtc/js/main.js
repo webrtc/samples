@@ -65,6 +65,21 @@ function initialize() {
   muteIcon.onclick = toggleRemoteVideoElementMuted;
   toggleInfoIcon.onclick = toggleInfoDiv;
 
+
+  document.body.onclick = function(e){
+    try {
+      // TODO: add shim so not Chrome only
+      if (document.webkitIsFullScreen) {
+        document.webkitCancelFullScreen();
+      } else {
+        remoteVideo.webkitRequestFullScreen();
+        remoteCanvas.webkitRequestFullScreen();
+      }
+    } catch (e) {
+      trace(e);
+    }
+  };
+
   setRemoteVideoElementMuted(localStorage.getItem('mute'));
 
   trace('Initializing; room=' + roomKey + '.');
