@@ -270,6 +270,7 @@ function onSetRemoteDescriptionSuccess() {
       trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
+      // TODO(juberti): Make this wait for ICE connection before transitioning.
       trace('No remote video stream; not waiting for media to arrive.');
       transitionToActive();
     }
@@ -357,6 +358,7 @@ function messageError(msg) {
   trace(msg);
   infoDivErrors.push(msg);
   updateInfoDiv();
+  showInfoDiv();
 }
 
 function onUserMediaSuccess(stream) {
@@ -423,8 +425,9 @@ function computeRttAndDelay() {
   if (pc) {
     pc.getStats(function(response) {
       var stats = response.result();
-      rtt = extractStat(stats, 'googRtt');
-      var captureStart = extractStat(stats, 'googCaptureStartNtpTimeMs');
+      rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
+      var captureStart = extractStatAsInt(stats, 'ssrc',
+                                          'googCaptureStartNtpTimeMs');
       if (captureStart)
         e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
       updateInfoDiv();
@@ -432,10 +435,25 @@ function computeRttAndDelay() {
   }
 }
 
-function extractStat(stats, statName) {
+// Return the integer stat |statName| from |stats|, or undef if not present.
+function extractStatAsInt(stats, statObj, statName) {
+  // Ignore stats that have a 'nullish' value.
+  // The correct fix is indicated in
+  // https://code.google.com/p/webrtc/issues/detail?id=3377.
+  var str = extractStat(stats, statObj, statName);
+  if (str) {
+    var val = parseInt(str);
+    if (val != -1) {
+      return val;
+    }
+  }
+}
+
+// Return the stat |statName| from |stats| as a string, or undef if not present.
+function extractStat(stats, statObj, statName) {
   for (var i = 0; i < stats.length; ++i) {
     var report = stats[i];
-    if (report.names().indexOf(statName) != -1) {
+    if (report.type == statObj && report.names().indexOf(statName) != -1) {
       return report.stat(statName);
     }
   }
@@ -443,11 +461,11 @@ function extractStat(stats, statName) {
 
 function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
   // Computes end to end Delay.
-  if (captureStart !== 0) {
+  if (captureStart) {
     // Adding offset to get NTP time.
     var now_ntp = Date.now() + 2208988800000;
     e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
-    return e2eDelay;
+    return e2eDelay.toFixed(0);
   }
 }
 
@@ -456,12 +474,16 @@ function onRemoteStreamRemoved(event) {
 }
 
 function onSignalingStateChanged(event) {
-  trace('Signaling state changed to: ' + pc.signalingState);
+  if (pc) {
+    trace('Signaling state changed to: ' + pc.signalingState);
+  }
   updateInfoDiv();
 }
 
 function onIceConnectionStateChanged(event) {
-  trace('ICE connection state changed to: ' + pc.iceConnectionState);
+  if (pc) {
+    trace('ICE connection state changed to: ' + pc.iceConnectionState);
+  }
   updateInfoDiv();
 }
 
@@ -550,9 +572,12 @@ function enterFullScreen() {
 }
 
 function noteIceCandidate(location, type) {
-  if (gatheredIceCandidateTypes[location][type])
-    return;
-  gatheredIceCandidateTypes[location][type] = 1;
+  var types = gatheredIceCandidateTypes[location];
+  if (!types[type]) {
+    types[type] = 1;
+  } else {
+    ++types[type];
+  }
   updateInfoDiv();
 }
 
@@ -560,54 +585,81 @@ function getInfoDiv() {
   return document.getElementById("infoDiv");
 }
 
+function buildLine(label, value) {
+  var columnWidth = 12;
+  var line = "";
+  if (label) {
+    line += label + ":";
+    while (line.length < columnWidth)
+      line += " ";
+
+    if (value) {
+      line += value;
+    }
+  }
+  line += "\n";
+  return line;
+}
+
 function updateInfoDiv() {
-  var contents = "<pre>Gathered ICE Candidates\n";
-  for (var endpoint in gatheredIceCandidateTypes) {
-    contents += endpoint + ":\n";
-    for (var type in gatheredIceCandidateTypes[endpoint])
-      contents += "  " + type + "\n";
+  var contents = "<pre>";
+  if (pc) {
+    contents += buildLine("States");
+    contents += buildLine("Signaling", pc.signalingState);
+    contents += buildLine("Gathering", pc.iceGatheringState);
+    contents += buildLine("Connection", pc.iceConnectionState);
+    for (var endpoint in gatheredIceCandidateTypes) {
+      var types = [];
+      for (var type in gatheredIceCandidateTypes[endpoint])
+        types.push(type + ":" + gatheredIceCandidateTypes[endpoint][type]);
+      types.sort();
+      contents += buildLine(endpoint, types.join(" "));
+    }
+    contents += buildLine();
+    contents += buildLine("Stats");
+    if (endTime != null) 
+      contents += buildLine("Setup time",
+                            (endTime - startTime).toFixed(0).toString() + "ms");
+    if (rtt != null)
+      contents += buildLine("RTT", rtt.toString() + "ms");
+    if (e2eDelay != null)
+      contents += buildLine("End to end", e2eDelay.toString() + "ms");
   }
-  if (pc != null) {
-    contents += "Gathering: " + pc.iceGatheringState + "\n";
-    contents += "</pre>\n";
-    contents += "<pre>PC State:\n";
-    contents += "Signaling: " + pc.signalingState + "\n";
-    contents += "ICE: " + pc.iceConnectionState + "\n";
-    contents += "<pre>PC Stats:\n";
-    if (endTime) 
-      contents += "Setup time: " + (endTime - startTime).toFixed(0).toString() +
-                  "ms\n";
-    if (rtt)
-      contents += "RTT: " + rtt + "ms\n";
-    if (e2eDelay)
-      contents += "End to end delay: " + e2eDelay + "ms\n";
-  }
+  contents += "</pre>";
+
   var div = getInfoDiv();
-  div.innerHTML = contents + "</pre>";
+  div.innerHTML = contents;
 
   for (var msg in infoDivErrors) {
     div.innerHTML += '<p style="background-color: red; color: yellow;">' +
                      infoDivErrors[msg] + '</p>';
   }
-  if (infoDivErrors.length)
-    showInfoDiv();
 }
 
-function toggleInfoDiv() {
-  var div = getInfoDiv();
-  if (div.style.display == "block") {
-    div.style.display = "none";
-    clearInterval(getStatsTimer);
-  } else {
-    showInfoDiv();
-  }
+function isInfoDivVisible() {
+  return getInfoDiv().style.display === "block";
 }
 
 function showInfoDiv() {
+  if (getStatsTimer) throw "Inconsistent infodiv state";
   var div = getInfoDiv();
   div.style.display = "block";
   // Compute round-trip time and end to end delay.
   getStatsTimer = setInterval(computeRttAndDelay, 1000);
+}
+
+function hideInfoDiv() {
+  var div = getInfoDiv();
+  div.style.display = "none";
+  clearInterval(getStatsTimer);
+}
+
+function toggleInfoDiv() {
+  if (isInfoDivVisible()) {
+    hideInfoDiv();
+  } else {
+    showInfoDiv();
+  }
 }
 
 function toggleVideoMute() {
