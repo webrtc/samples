@@ -66,7 +66,7 @@ function initialize() {
   toggleInfoIcon.onclick = toggleInfoDiv;
 
 
-  document.body.onclick = function(e){
+  document.body.ondblclick = function(e){
     try {
       // TODO: add shim so not Chrome only
       if (document.webkitIsFullScreen) {

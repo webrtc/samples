@@ -56,7 +56,9 @@ button#emailButton {
 
 canvas#remoteCanvas {
   display: none;
+  height: 100%;
   margin: 0 auto 0 auto;
+  width: 100%;
 }
 
 div.active.warning {
