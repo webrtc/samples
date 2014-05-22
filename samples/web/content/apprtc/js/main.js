@@ -392,7 +392,7 @@ function onIceCandidate(event) {
   if (event.candidate) {
     if (pcConfig.iceTransports === 'relay') {
       // Filter out non relay Candidates, if iceTransports is set to relay.
-      if (event.candidate.candidate.search('relay') < 0) {
+      if (event.candidate.candidate.search('relay') === -1) {
         return;
       }
     }

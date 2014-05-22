@@ -407,8 +407,7 @@ class MainPage(webapp2.RequestHandler):
     vsibr = self.request.get('vsibr', default_value = '')
     
     # Reads the ice transport from url param 'it'.
-    # Defaulting to 'all'.
-    ice_transports = self.request.get('it', default_value = 'all')
+    ice_transports = self.request.get('it', default_value = '')
 
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
