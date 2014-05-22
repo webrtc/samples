@@ -40,10 +40,8 @@ def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
 
 def get_default_stun_server(user_agent):
-  default_stun_server = 'stun.l.google.com:19302'
-  if 'Firefox' in user_agent:
-    default_stun_server = 'stun.services.mozilla.com'
-  return default_stun_server
+  # others you can try: stun.services.mozilla.com, stunserver.org
+  return 'stun.l.google.com:19302'
 
 def get_preferred_audio_receive_codec():
   return 'opus/48000'
