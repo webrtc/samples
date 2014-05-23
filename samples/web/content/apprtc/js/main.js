@@ -526,6 +526,9 @@ function waitForRemoteVideo() {
   if (remoteVideo.currentTime > 0) {
     transitionToActive();
   } else {
+    if (!pc || pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'closed') {
+      return;
+    }
     setTimeout(waitForRemoteVideo, 10);
   }
 }
