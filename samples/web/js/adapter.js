@@ -125,9 +125,9 @@ if (navigator.mozGetUserMedia) {
   webrtcDetectedBrowser = "chrome";
   // Temporary fix until crbug/374263 is fixed.
   // Setting Chrome version to 999, if version is unavailable.
-  if (navigator.userAgent.search(/Chrom(e|ium)\/([0-9]+)\./) !== -1) {
-    webrtcDetectedVersion =
-        parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
+  var result = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+  if (result !== null) {
+    webrtcDetectedVersion = parseInt(result[2], 10);
   } else {
     webrtcDetectedVersion = 999;
   }
