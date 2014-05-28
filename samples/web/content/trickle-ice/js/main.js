@@ -6,6 +6,8 @@ var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
+var ipv6Check = document.querySelector('input#ipv6');
+var unbundleCheck = document.querySelector('input#unbundle');
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -63,18 +65,16 @@ function start() {
     }
   }
 
-  // Control IPv6 address gathering and whether RTCP should be bundled.
-  var ipv6 = document.querySelector('input#ipv6').checked;
-  var bundle = document.querySelector('input#bundle').checked;
-
   // Create a PeerConnection with no streams, but force a m=audio line.
   // This will gather candidates for either 1 or 2 ICE components, depending
-  // on the BUNDLE policy selected.
+  // on whether the unbundle RTCP checkbox is checked.
   var config = {"iceServers": iceServers };
   var pcConstraints = {"mandatory": {"IceTransports": iceTransports}};
   var offerConstraints = {"mandatory": {"OfferToReceiveAudio": true}};
-  pcConstraints.optional = [{"googIPv6": ipv6}];
-  offerConstraints.optional = [{"googUseRtpMUX" : bundle}];
+  // Whether we gather IPv6 candidates.
+  pcConstraints.optional = [{"googIPv6": ipv6Check.checked}];
+  // Whether we only gather a single set of candidates for RTP and RTCP.
+  offerConstraints.optional = [{"googUseRtpMUX": !unbundleCheck.checked}];
 
   trace("Creating new PeerConnection with config=" + JSON.stringify(config) +
         ", constraints=" + JSON.stringify(pcConstraints));
@@ -92,9 +92,11 @@ function noDescription(error) {
   console.log("Error creating offer");
 }
 
+// Parse a candidate:foo string into an object, for easier use by other methods.
 function parseCandidate(text) {
-  var pos = text.indexOf("candidate");
-  var fields = text.substr(pos + 10).split(" ");
+  var candidateStr = "candidate:";
+  var pos = text.indexOf(candidateStr) + candidateStr.length;
+  var fields = text.substr(pos).split(" ");
   return {
     "component": fields[1],
     "type": fields[7],
@@ -106,6 +108,9 @@ function parseCandidate(text) {
   };
 }
 
+// Parse the uint32 PRIORITY field into its constituent parts from RFC 5245,
+// type preference, local preference, and (256 - component ID).
+// ex: 126 | 32252 | 255 (126 is host preference, 255 is component ID 1)
 function formatPriority(priority) {
   var s = "";
   s += (priority >> 24);
@@ -118,7 +123,7 @@ function formatPriority(priority) {
 
 function appendCell(row, val, span) {
   var cell = document.createElement("td");
-  cell.innerText = val;
+  cell.textContent = val;
   if (span) {
     cell.setAttribute("colspan", span);
   }
@@ -126,7 +131,7 @@ function appendCell(row, val, span) {
 }
 
 function iceCallback(event) {
-  var elapsed = ((performance.now() - begin) / 1000).toFixed(3);
+  var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   var row = document.createElement("tr");
   appendCell(row, elapsed);
   if (event.candidate) {
