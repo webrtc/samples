@@ -472,7 +472,7 @@ function getStatsReport(stats, statObj, statName, statVal) {
         // If |statVal| is present, ensure the value matches.
         if (statName) {
           var val = report.stat(statName);
-          found = (statVal != null) ? (val == statVal) : val;       
+          found = (statVal !== undefined) ? (val === statVal) : val;       
         }
         if (found) {
           return report;
@@ -882,7 +882,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
     return sdp;
   }
 
-  var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000')
+  var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
   var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
   var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
      videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
