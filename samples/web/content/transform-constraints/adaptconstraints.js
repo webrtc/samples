@@ -3,56 +3,56 @@
 // Constraints.
 //
 
-function transformJanToApril(constraint) {
+function transformJanToApril(constraints) {
   var result = {};
   // The April "advanced" field has the same syntax and semantics
   // as the January "optional" field.
-  if (constraint.optional) {
-    result.advanced = constraint.optional;
+  if (constraints.optional) {
+    result.advanced = constraints.optional;
   }
   // If "mandatory" exists, note the names and set the relevant
   // elements in the top level object.
-  if (constraint.mandatory) {
+  if (constraints.mandatory) {
     result.required = [];
-    for (var field in constraint.mandatory) {
+    for (var field in constraints.mandatory) {
       trace("Mandatory field " + field);
-      if (constraint.mandatory.hasOwnProperty(field)) {
+      if (constraints.mandatory.hasOwnProperty(field)) {
         result.required.push(field);
-        result[field] = constraint.mandatory[field];
+        result[field] = constraints.mandatory[field];
       }
     }
   }
   return result;
 }
 
-function transformAprilToJan(constraint) {
+function transformAprilToJan(constraints) {
   var result = {};
   // If "required" exists, pick those names into the "mandatory" array.
-  if (constraint.required) {
+  if (constraints.required) {
     result.mandatory = {};
-    for (var i = 0; i < constraint.required.length; ++i) {
-      var name = constraint.required[i];
-      if (constraint[name] === undefined) {
+    for (var i = 0; i < constraints.required.length; ++i) {
+      var name = constraints.required[i];
+      if (constraints[name] === undefined) {
         throw "Parse error: Requiring non-present constraint " + name;
       }
-      result.mandatory[name] = constraint[name];
+      result.mandatory[name] = constraints[name];
     }
   }
   // If "advanced" exists, start the "optional" sequence with those.
   // If not, start it empty.
-  if (constraint.advanced) {
-    result.optional = constraint.advanced;
+  if (constraints.advanced) {
+    result.optional = constraints.advanced;
   } else {
     result.optional = [];
   }
   trace('Intermediate: ' + JSON.stringify(result));
   // Append remaining fields to "optional", one per element.
-  for (var field in constraint) {
-    if (constraint.hasOwnProperty(field) && field !== 'advanced'
-        && field !== 'required') {
+  for (var field in constraints) {
+    if (constraints.hasOwnProperty(field) &&
+	field !== 'advanced' && field !== 'required') {
       if (result.mandatory[field] === undefined) {
         var newelement = {};
-        newelement[field] = constraint[field];
+        newelement[field] = constraints[field];
         result.optional.push(newelement);
       }
     }
@@ -60,33 +60,33 @@ function transformAprilToJan(constraint) {
   return result;
 }
 
-function isApril(constraint) {
-  if (constraint.advanced || constraint.required) {
+function isApril(constraints) {
+  if (constraints.advanced || constraints.required) {
     return true;
   }
   return false;
 }
 
-function isJan(constraint) {
-  if (constraint.optional || constraint.mandatory) {
+function isJan(constraints) {
+  if (constraints.optional || constraints.mandatory) {
     return true;
   }
   return false;
 }
 
-function transformToApril(constraint) {
-  if (isJan(constraint)) {
-    return transformJanToApril(constraint);
+function transformToApril(constraints) {
+  if (isJan(constraints)) {
+    return transformJanToApril(constraints);
   } else {
-    return constraint;
+    return constraints;
   }
 }
 
-function transformToJan(constraint) {
-  if (isApril(constraint)) {
-    return transformAprilToJan(constraint);
+function transformToJan(constraints) {
+  if (isApril(constraints)) {
+    return transformAprilToJan(constraints);
   } else {
-    return constraint;
+    return constraints;
   }
 }
 
