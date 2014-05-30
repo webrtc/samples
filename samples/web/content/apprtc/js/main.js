@@ -574,7 +574,8 @@ function transitionToDone() {
 }
 
 function enterFullScreen() {
-  event.target.webkitRequestFullScreen();
+  var element = (event.target.id == "remoteCanvas") ? event.target : container;
+  element.webkitRequestFullScreen();
 }
 
 function noteIceCandidate(location, type) {
@@ -977,6 +978,15 @@ window.onbeforeunload = function() {
 
 // Set the video diplaying in the center of window.
 window.onresize = function(){
+  var containerDiv = document.getElementById('container');
+  console.log("AMI: " + document.webkitIsFullScreen);
+
+  // Don't letterbox while full-screening, by undoing window.onresize above.
+  if (document.webkitIsFullScreen) {
+    containerDiv.style.cssText = "top: 0px; left: 0px;";
+    return;
+  }
+
   var aspectRatio;
   if (remoteVideo && remoteVideo.style.opacity === '1') {
     aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
@@ -992,7 +1002,6 @@ window.onresize = function(){
                    innerWidth : aspectRatio * window.innerHeight;
   var videoHeight = innerHeight < window.innerWidth / aspectRatio ?
                     innerHeight : window.innerWidth / aspectRatio;
-  containerDiv = document.getElementById('container');
   containerDiv.style.width = videoWidth + 'px';
   containerDiv.style.height = videoHeight + 'px';
   containerDiv.style.left = (innerWidth - videoWidth) / 2 + 'px';

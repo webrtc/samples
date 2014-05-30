@@ -64,17 +64,25 @@ function setupStereoscopic(video, canvas) {
                              'vrRenderer': vrRenderer,
                              'vrVertexPosBuffer': vrVertexPosBuffer,
                              'video': video };
-  window.onresize = function() { resizeCanvasDimensions(stereoscopicParams); };
-  video.onresize = function() { resizeCanvasDimensions(stereoscopicParams); };
+  var oldWindowResize = window.onresize || function () {};
+  var oldVideoResize = video.onresize || function () {};
+  window.onresize = function() {
+    oldWindowResize();
+    resizeCanvasDimensions(stereoscopicParams);
+  };
+  video.onresize = function() {
+    oldVideoResize();
+    resizeCanvasDimensions(stereoscopicParams);
+  };
   resizeCanvasDimensions(stereoscopicParams);
 
   renderStereoscopicFrame(stereoscopicParams);
 }
 
+// Adapt canvas dimensions as needed:
+// - internal drawing surface needs to change as the video resolution changes.
+// - external rendering/layout size needs to change as the window changes.
 function resizeCanvasDimensions(stereoscopicParams) {
-  // Undo the work of main.js:window.onresize().
-  document.getElementById('container').style.cssText = "";
-
   var video = stereoscopicParams['video'];
   var canvas = stereoscopicParams['canvas'];
   var vrRenderer = stereoscopicParams['vrRenderer'];

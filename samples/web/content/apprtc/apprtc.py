@@ -39,7 +39,7 @@ def sanitize(key):
 def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
 
-def is_android_chrome(user_agent):
+def is_chrome_for_android(user_agent):
   return 'Android' in user_agent and 'Chrome' in user_agent
 
 def get_default_stun_server(user_agent):
@@ -53,7 +53,7 @@ def get_preferred_audio_send_codec(user_agent):
   # Empty string means no preference.
   preferred_audio_send_codec = ''
   # Prefer to send ISAC on Chrome for Android.
-  if is_android_chrome(user_agent):
+  if is_chrome_for_android(user_agent):
     preferred_audio_send_codec = 'ISAC/16000'
   return preferred_audio_send_codec
 
@@ -443,8 +443,10 @@ class MainPage(webapp2.RequestHandler):
       include_vr_js = ('<script src="/js/vr.js"></script>\n' +
                        '<script src="/js/stereoscopic.js"></script>')
 
+    # Disable pinch-zoom scaling since we manage video real-estate explicitly
+    # (via full-screen) and don't want devicePixelRatios changing dynamically.
     meta_viewport = ''
-    if is_android_chrome(user_agent):
+    if is_chrome_for_android(user_agent):
       meta_viewport = ('<meta name="viewport" content="width=device-width, ' +
                        'user-scalable=no, initial-scale=1, maximum-scale=1">')
 
