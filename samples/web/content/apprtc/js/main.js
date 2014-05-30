@@ -979,7 +979,6 @@ window.onbeforeunload = function() {
 // Set the video diplaying in the center of window.
 window.onresize = function(){
   var containerDiv = document.getElementById('container');
-  console.log("AMI: " + document.webkitIsFullScreen);
 
   // Don't letterbox while full-screening, by undoing window.onresize above.
   if (document.webkitIsFullScreen) {
