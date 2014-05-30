@@ -40,10 +40,8 @@ def make_client_id(room, user):
   return room.key().id_or_name() + '/' + user
 
 def get_default_stun_server(user_agent):
-  default_stun_server = 'stun.l.google.com:19302'
-  if 'Firefox' in user_agent:
-    default_stun_server = 'stun.services.mozilla.com'
-  return default_stun_server
+  # others you can try: stun.services.mozilla.com, stunserver.org
+  return 'stun.l.google.com:19302'
 
 def get_preferred_audio_receive_codec():
   return 'opus/48000'
@@ -130,8 +128,6 @@ def on_message(room, user, message):
     new_message = Message(client_id = client_id, msg = message)
     new_message.put()
     logging.info('Saved message for user ' + user)
-
-
 
 def add_media_track_constraint(track_constraints, constraint_string):
   tokens = constraint_string.split(':')
@@ -379,7 +375,7 @@ class MainPage(webapp2.RequestHandler):
     #
     # Keys starting with "goog" will be added to the "optional" key; all others
     # will be added to the "mandatory" key.
-    #
+
     # To override this default behavior, add a "mandatory" or "optional" prefix
     # to each key, e.g.
     #   "?video=optional:minWidth=1280,optional:minHeight=720,
@@ -396,12 +392,12 @@ class MainPage(webapp2.RequestHandler):
     # camera at 720p. If no value is provided, use a platform-specific default.
     # When defaulting to HD, use optional constraints, in case the camera
     # doesn't actually support HD modes.
-    #
+
     hd = self.request.get('hd').lower()
     if hd and video:
       message = 'The "hd" parameter has overridden video=' + video
+      logging.error(message)
       error_messages.append(message)
-
     if hd == 'true':
       video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
     elif not hd and not video and get_hd_default(user_agent) == 'true':

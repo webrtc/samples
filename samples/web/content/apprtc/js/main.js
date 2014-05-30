@@ -1,3 +1,12 @@
+/* jshint devel: true, globalstrict: true, browser: true */
+
+/* global attachMediaStream, audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, createIceServers, getUserMedia, goog, initiator:true, me, mediaConstraints, MediaStreamTrack, offerConstraints, pcConfig, pcConstraints, performance, reattachMediaStream, roomKey, roomLink, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription, setupStereoscopic, stereo, stereoscopic, trace, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
+
+/* exported initialize */
+
+'use strict';
+
+
 var cameraIcon = document.querySelector('div#camera');
 var emailButton = document.querySelector('#emailButton');
 var emailInput = document.querySelector('input#emailAddress');
@@ -66,7 +75,7 @@ function initialize() {
   toggleInfoIcon.onclick = toggleInfoDiv;
 
 
-  document.body.ondblclick = function(e){
+  document.body.ondblclick = function(){
     try {
       // TODO: add shim so not Chrome only
       if (document.webkitIsFullScreen) {
@@ -75,8 +84,8 @@ function initialize() {
         remoteVideo.webkitRequestFullScreen();
         remoteCanvas.webkitRequestFullScreen();
       }
-    } catch (e) {
-      trace(e);
+    } catch (event) {
+      trace(event);
     }
   };
 
@@ -157,8 +166,11 @@ function onTurnResult() {
       pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
     }
   } else {
+    var subject = encodeURIComponent('apprtc demo TURN server not working');
     displayStatus('No TURN server; unlikely that media will traverse networks. ' +
-      'If this persists please report it to discuss-webrtc@googlegroups.com.');
+      'If this persists please <a href="mailto:discuss-webrtc@googlegroups.com?' +
+      'subject=' + subject + '">' +
+      'report it to discuss-webrtc@googlegroups.com</a>.');
   }
   // If TURN request failed, continue the call with default STUN.
   turnDone = true;
@@ -172,7 +184,7 @@ function doGetUserMedia() {
     trace('Calling getUserMedia()');
     // if changing camera, etc.
     if (typeof localStream !== 'undefined') {
-      localVideo.src = null;
+      localVideo.src = '';
       localStream.stop();
     }
     getUserMedia(mediaConstraints, onUserMediaSuccess, onUserMediaError);
@@ -296,6 +308,7 @@ function onSetRemoteDescriptionSuccess() {
       trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
+      // TODO(juberti): Make this wait for ICE connection before transitioning.
       trace('No remote video stream; not waiting for media to arrive.');
       transitionToActive();
     }
@@ -387,7 +400,7 @@ function onUserMediaSuccess(stream) {
   attachMediaStream(localVideo, stream);
   localStream = stream;
 
-  // if already connected, i.e. re-calling getUserMedia()
+  // if already connected, i.e. re-calling getUserMedia(), e.g. for camera change
   if (started) {
     // display the new stream
     reattachMediaStream(miniVideo, localVideo);
@@ -463,20 +476,35 @@ function computeRttAndDelay() {
   if (pc) {
     pc.getStats(function(response) {
       var stats = response.result();
-      rtt = extractStat(stats, 'googRtt');
-      var captureStart = extractStat(stats, 'googCaptureStartNtpTimeMs');
-      if (captureStart) {
+      rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
+      var captureStart = extractStatAsInt(stats, 'ssrc',
+                                          'googCaptureStartNtpTimeMs');
+      if (captureStart)
         e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
-      }
       updateInfoDiv();
     });
   }
 }
 
-function extractStat(stats, statName) {
+// Return the integer stat |statName| from |stats|, or undef if not present.
+function extractStatAsInt(stats, statObj, statName) {
+  // Ignore stats that have a 'nullish' value.
+  // The correct fix is indicated in
+  // https://code.google.com/p/webrtc/issues/detail?id=3377.
+  var str = extractStat(stats, statObj, statName);
+  if (str) {
+    var val = parseInt(str);
+    if (val != -1) {
+      return val;
+    }
+  }
+}
+
+// Return the stat |statName| from |stats| as a string, or undef if not present.
+function extractStat(stats, statObj, statName) {
   for (var i = 0; i < stats.length; ++i) {
     var report = stats[i];
-    if (report.names().indexOf(statName) != -1) {
+    if (report.type == statObj && report.names().indexOf(statName) != -1) {
       return report.stat(statName);
     }
   }
@@ -484,11 +512,11 @@ function extractStat(stats, statName) {
 
 function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
   // Computes end to end Delay.
-  if (captureStart !== 0) {
+  if (captureStart) {
     // Adding offset to get NTP time.
     var now_ntp = Date.now() + 2208988800000;
     e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
-    return e2eDelay;
+    return e2eDelay.toFixed(0);
   }
 }
 
@@ -568,7 +596,7 @@ if (stereoscopic) {
   remoteVideo.classList.add('active');
   videosDiv.classList.add('active');
   setTimeout(function () {
-    localVideo.src = null;
+    localVideo.src = '';
     localVideo.classList.remove('active');
     localVideo.classList.add('hidden');
   }, 500);
@@ -605,9 +633,12 @@ function transitionToDone() {
 }
 
 function noteIceCandidate(location, type) {
-  if (gatheredIceCandidateTypes[location][type])
-    return;
-  gatheredIceCandidateTypes[location][type] = 1;
+  var types = gatheredIceCandidateTypes[location];
+  if (!types[type]) {
+    types[type] = 1;
+  } else {
+    ++types[type];
+  }
   updateInfoDiv();
 }
 
