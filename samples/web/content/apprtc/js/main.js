@@ -574,6 +574,9 @@ function transitionToDone() {
 }
 
 function enterFullScreen() {
+  // When full-screening the canvas we want to avoid the extra spacing
+  // introduced by the containing div, but when full-screening the rectangular
+  // view we want to keep the full container visible (including e.g. miniVideo).
   var element = (event.target.id == "remoteCanvas") ? event.target : container;
   element.webkitRequestFullScreen();
 }
@@ -977,10 +980,10 @@ window.onbeforeunload = function() {
 }
 
 // Set the video diplaying in the center of window.
-window.onresize = function(){
+window.onresize = function() {
   var containerDiv = document.getElementById('container');
 
-  // Don't letterbox while full-screening, by undoing window.onresize above.
+  // Don't letterbox while full-screening, by undoing the changes below.
   if (document.webkitIsFullScreen) {
     containerDiv.style.cssText = "top: 0px; left: 0px;";
     return;
