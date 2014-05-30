@@ -259,14 +259,14 @@ function onSetRemoteDescriptionSuccess() {
   // so we can know if the peer has any remote video streams that we need
   // to wait for. Otherwise, transition immediately to the active state.
   // NOTE: Ideally we could just check |remoteStream| here, which is populated
-  // in the onaddstream callback. But as indicated in 
+  // in the onaddstream callback. But as indicated in
   // https://code.google.com/p/webrtc/issues/detail?id=3358, sometimes this
   // callback is dispatched after the setRemoteDescription success callback.
   // Therefore, we read the remoteStreams array directly from the
   // PeerConnection, which seems to work reliably.
   var remoteStreams = pc.getRemoteStreams();
   if (remoteStreams.length > 0 &&
-      remoteStreams[0].getVideoTracks().length > 0) {    
+      remoteStreams[0].getVideoTracks().length > 0) {
       trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
@@ -574,7 +574,11 @@ function transitionToDone() {
 }
 
 function enterFullScreen() {
-  container.webkitRequestFullScreen();
+  // When full-screening the canvas we want to avoid the extra spacing
+  // introduced by the containing div, but when full-screening the rectangular
+  // view we want to keep the full container visible (including e.g. miniVideo).
+  var element = (event.target.id == "remoteCanvas") ? event.target : container;
+  element.webkitRequestFullScreen();
 }
 
 function noteIceCandidate(location, type) {
@@ -623,7 +627,7 @@ function updateInfoDiv() {
     }
     contents += buildLine();
     contents += buildLine("Stats");
-    if (endTime != null) 
+    if (endTime != null)
       contents += buildLine("Setup time",
                             (endTime - startTime).toFixed(0).toString() + "ms");
     if (rtt != null)
@@ -976,7 +980,15 @@ window.onbeforeunload = function() {
 }
 
 // Set the video diplaying in the center of window.
-window.onresize = function(){
+window.onresize = function() {
+  var containerDiv = document.getElementById('container');
+
+  // Don't letterbox while full-screening, by undoing the changes below.
+  if (document.webkitIsFullScreen) {
+    containerDiv.style.cssText = "top: 0px; left: 0px;";
+    return;
+  }
+
   var aspectRatio;
   if (remoteVideo && remoteVideo.style.opacity === '1') {
     aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
@@ -992,7 +1004,6 @@ window.onresize = function(){
                    innerWidth : aspectRatio * window.innerHeight;
   var videoHeight = innerHeight < window.innerWidth / aspectRatio ?
                     innerHeight : window.innerWidth / aspectRatio;
-  containerDiv = document.getElementById('container');
   containerDiv.style.width = videoWidth + 'px';
   containerDiv.style.height = videoHeight + 'px';
   containerDiv.style.left = (innerWidth - videoWidth) / 2 + 'px';
