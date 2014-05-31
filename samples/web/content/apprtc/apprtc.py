@@ -350,6 +350,7 @@ class MainPage(webapp2.RequestHandler):
     base_url = self.request.path_url
     user_agent = self.request.headers['User-Agent']
     room_key = sanitize(self.request.get('r'))
+    response_type = self.request.get('t')
     stun_server = self.request.get('ss')
     if not stun_server:
       stun_server = get_default_stun_server(user_agent)
@@ -474,6 +475,7 @@ class MainPage(webapp2.RequestHandler):
       logging.info('Redirecting visitor to base URL to ' + redirect)
       return
 
+    logging.info('Preparing to add user to room ' + room_key)
     user = None
     initiator = 0
     with LOCK:
@@ -500,6 +502,9 @@ class MainPage(webapp2.RequestHandler):
         logging.info('Room ' + room_key + ' is full')
         return
 
+    logging.info('User ' + user + ' added to room ' + room_key)
+    logging.info('Room ' + room_key + ' has state ' + str(room))
+
     if turn_server == 'false':
       turn_server = None
       turn_url = ''
@@ -515,38 +520,42 @@ class MainPage(webapp2.RequestHandler):
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
 
-    template_values = {'error_messages': error_messages,
-                       'token': token,
-                       'me': user,
-                       'room_key': room_key,
-                       'room_link': room_link,
-                       'initiator': initiator,
-                       'pc_config': json.dumps(pc_config),
-                       'pc_constraints': json.dumps(pc_constraints),
-                       'offer_constraints': json.dumps(offer_constraints),
-                       'media_constraints': json.dumps(media_constraints),
-                       'turn_url': turn_url,
-                       'stereo': stereo,
-                       'arbr': arbr,
-                       'asbr': asbr,
-                       'vrbr': vrbr,
-                       'vsbr': vsbr,
-                       'vsibr': vsibr,
-                       'ssr': ssr,
-                       'include_vr_js': include_vr_js,
-                       'meta_viewport': meta_viewport,
-                       'audio_send_codec': audio_send_codec,
-                       'audio_receive_codec': audio_receive_codec
-                      }
-    if unittest:
-      target_page = 'test/test_' + unittest + '.html'
-    else:
-      target_page = 'index.html'
+    params = {
+      'error_messages': error_messages,
+      'token': token,
+      'me': user,
+      'room_key': room_key,
+      'room_link': room_link,
+      'initiator': initiator,
+      'pc_config': json.dumps(pc_config),
+      'pc_constraints': json.dumps(pc_constraints),
+      'offer_constraints': json.dumps(offer_constraints),
+      'media_constraints': json.dumps(media_constraints),
+      'turn_url': turn_url,
+      'stereo': stereo,
+      'arbr': arbr,
+      'asbr': asbr,
+      'vrbr': vrbr,
+      'vsbr': vsbr,
+      'vsibr': vsibr,
+      'audio_send_codec': audio_send_codec,
+      'audio_receive_codec': audio_receive_codec
+      'ssr': ssr,
+      'include_vr_js': include_vr_js,
+      'meta_viewport': meta_viewport,
+    }
 
-    template = jinja_environment.get_template(target_page)
-    self.response.out.write(template.render(template_values))
-    logging.info('User ' + user + ' added to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
+    if response_type == 'json':
+      content = json.dumps(params)
+    else:
+      if unittest:
+        target_page = 'test/test_' + unittest + '.html'
+      else:
+        target_page = 'index.html'
+      template = jinja_environment.get_template(target_page)
+      content = template.render(params)
+
+    self.response.out.write(content)
 
 
 app = webapp2.WSGIApplication([
