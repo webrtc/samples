@@ -539,10 +539,10 @@ class MainPage(webapp2.RequestHandler):
       'vsbr': vsbr,
       'vsibr': vsibr,
       'audio_send_codec': audio_send_codec,
-      'audio_receive_codec': audio_receive_codec
+      'audio_receive_codec': audio_receive_codec,
       'ssr': ssr,
       'include_vr_js': include_vr_js,
-      'meta_viewport': meta_viewport,
+      'meta_viewport': meta_viewport
     }
 
     if response_type == 'json':
