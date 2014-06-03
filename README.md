@@ -1,3 +1,4 @@
+# WebRTC code samples #
 
 This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples.
 
@@ -11,8 +12,7 @@ For more information about WebRTC, we maintain a list of [WebRTC Resources](http
 
 Patches and issues welcome!
 
-The demos
-=========
+## The demos ##
 
 [getUserMedia()](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia)
 

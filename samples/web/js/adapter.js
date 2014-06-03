@@ -123,8 +123,14 @@ if (navigator.mozGetUserMedia) {
   console.log("This appears to be Chrome");
 
   webrtcDetectedBrowser = "chrome";
-  webrtcDetectedVersion =
-         parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
+  // Temporary fix until crbug/374263 is fixed.
+  // Setting Chrome version to 999, if version is unavailable.
+  var result = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+  if (result !== null) {
+    webrtcDetectedVersion = parseInt(result[2], 10);
+  } else {
+    webrtcDetectedVersion = 999;
+  }
 
   // Creates iceServer from the url for Chrome M33 and earlier.
   createIceServer = function(url, username, password) {
