@@ -109,7 +109,6 @@ div#status {
 
 div#videos {
   height: 100%;
-  pointer-events: none;
   position: absolute;
   transition: all 1s;
   width: 100%;

@@ -1,4 +1,4 @@
-/* jshint devel: true, globalstrict: true, browser: true */
+/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
 /* global attachMediaStream, audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, createIceServers, getUserMedia, goog, initiator:true, me, mediaConstraints, MediaStreamTrack, offerConstraints, pcConfig, pcConstraints, reattachMediaStream, roomKey, roomLink, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription, setupStereoscopic, stereo, stereoscopic, trace, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
 /* exported initialize */
 'use strict';
@@ -147,8 +147,9 @@ function maybeRequestTurn() {
 }
 
 function onTurnResult() {
-    if (xmlhttp.readyState !== 4)
+    if (xmlhttp.readyState !== 4) {
         return;
+    }
 
     if (xmlhttp.status === 200) {
         var turnServer = JSON.parse(xmlhttp.responseText);
@@ -225,10 +226,11 @@ function maybeStart() {
         }
         started = true;
 
-        if (initiator)
+        if (initiator) {
             doCall();
-        else
+        } else {
             calleeStart();
+        }
     }
 }
 
@@ -397,10 +399,11 @@ function onUserMediaSuccess(stream) {
         // display the new stream
         reattachMediaStream(miniVideo, localVideo);
         pc.addStream(localStream);
-        if (initiator)
+        if (initiator) {
             doCall();
-        else
+        } else {
             calleeStart();
+        }
     } else {
         displayStatus('');
         if (initiator === 0) {
@@ -491,7 +494,7 @@ function extractStatAsInt(stats, statObj, statName) {
     var str = extractStat(stats, statObj, statName);
     if (str) {
         var val = parseInt(str);
-        if (val != -1) {
+        if (val !== -1) {
             return val;
         }
     }
@@ -534,8 +537,8 @@ function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
     // Computes end to end delay.
     if (captureStart) {
         // Adding offset to get NTP time.
-        var now_ntp = Date.now() + 2208988800000;
-        e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
+        var nowNtp = Date.now() + 2208988800000;
+        e2eDelay = nowNtp - captureStart - remoteVideoCurrentTime * 1000;
         return e2eDelay.toFixed(0);
     }
     return null;
@@ -668,8 +671,9 @@ function buildLine(label, value) {
     var line = '';
     if (label) {
         line += label + ':';
-        while (line.length < columnWidth)
+        while (line.length < columnWidth) {
             line += ' ';
+        }
 
         if (value) {
             line += value;
@@ -701,8 +705,9 @@ function updateInfoDiv() {
         contents += buildLine('Connection', pc.iceConnectionState);
         for (var endpoint in gatheredIceCandidateTypes) {
             var types = [];
-            for (var type in gatheredIceCandidateTypes[endpoint])
+            for (var type in gatheredIceCandidateTypes[endpoint]) {
                 types.push(type + ':' + gatheredIceCandidateTypes[endpoint][type]);
+            }
             types.sort();
             contents += buildLine(endpoint, types.join(' '));
         }
@@ -716,7 +721,7 @@ function updateInfoDiv() {
         contents += buildLine('Stats');
 
         if (setupTime !== null) {
-            contents += buildLine('Setup time', setupTime + "s");
+            contents += buildLine('Setup time', setupTime + 's');
         }
         if (rtt !== null) {
             contents += buildLine('RTT', rtt.toString() + 'ms');
@@ -811,10 +816,12 @@ function toggleAudioMute() {
 // Return false to screen out original Chrome shortcuts.
 document.onkeydown = function(event) {
     var hotkey = event.ctrlKey;
-    if (navigator.appVersion.indexOf('Mac') != -1)
+    if (navigator.appVersion.indexOf('Mac') !== -1) {
         hotkey = event.metaKey;
-    if (!hotkey)
+    }
+    if (!hotkey) {
         return;
+    }
     switch (event.keyCode) {
         case 68:
             showHeader();
@@ -965,7 +972,7 @@ function maybePreferAudioReceiveCodec(sdp) {
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function preferAudioCodec(sdp, codec) {
     var fields = codec.split('/');
-    if (fields.length != 2) {
+    if (fields.length !== 2) {
         trace('Invalid codec setting: ' + codec);
         return sdp;
     }
@@ -976,8 +983,9 @@ function preferAudioCodec(sdp, codec) {
 
     // Search for m line.
     var mLineIndex = findLine(sdpLines, 'm=', 'audio');
-    if (mLineIndex === null)
+    if (mLineIndex === null) {
         return sdp;
+    }
 
     // If the codec is available, set it as the default in m line.
     var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
@@ -1005,8 +1013,9 @@ function addStereo(sdp) {
 
     // Find the payload in fmtp line.
     var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
-    if (fmtpLineIndex === null)
+    if (fmtpLineIndex === null) {
         return sdp;
+    }
 
     // Append stereo=1 to fmtp line.
     sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
@@ -1024,7 +1033,7 @@ function findLine(sdpLines, prefix, substr) {
 // Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
 // and, if specified, contains |substr| (case-insensitive search).
 function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
-    var realEndLine = (endLine != -1) ? endLine : sdpLines.length;
+    var realEndLine = (endLine !== -1) ? endLine : sdpLines.length;
     for (var i = startLine; i < realEndLine; ++i) {
         if (sdpLines[i].indexOf(prefix) === 0) {
             if (!substr ||
@@ -1040,7 +1049,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 function getCodecPayloadType(sdpLine) {
     var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
     var result = sdpLine.match(pattern);
-    return (result && result.length == 2) ? result[1] : null;
+    return (result && result.length === 2) ? result[1] : null;
 }
 
 // Returns a new m= line with the specified codec as the first one.
@@ -1049,10 +1058,12 @@ function setDefaultCodec(mLine, payload) {
     var newLine = [];
     var index = 0;
     for (var i = 0; i < elements.length; i++) {
-        if (index === 3) // Format of media starts from the fourth.
+        if (index === 3) { // Format of media starts from the fourth.
             newLine[index++] = payload; // Put target payload to the first.
-        if (elements[i] !== payload)
+        }
+        if (elements[i] !== payload) {
             newLine[index++] = elements[i];
+        }
     }
     return newLine.join(' ');
 }
@@ -1129,7 +1140,7 @@ try {
 var videoSources = [];
 
 function gotSources(sources) {
-    for (var i = 0; i != sources.length; ++i) {
+    for (var i = 0; i !== sources.length; ++i) {
         var source = sources[i];
         if (source.kind === 'video') {
             videoSources.push(source);
