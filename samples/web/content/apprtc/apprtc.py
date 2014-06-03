@@ -161,7 +161,6 @@ def make_media_track_constraints(constraints_string):
     track_constraints = {'mandatory': {}, 'optional': []}
     for constraint_string in constraints_string.split(','):
       add_media_track_constraint(track_constraints, constraint_string)
-
   return track_constraints
 
 def make_media_stream_constraints(audio, video):
@@ -349,6 +348,10 @@ class MainPage(webapp2.RequestHandler):
     # Get the base url without arguments.
     base_url = self.request.path_url
     user_agent = self.request.headers['User-Agent']
+    if 'developers.google.com' in user_agent:
+      # Request is from Google+ Share link
+      logging.info('Request from Google+ Share link')
+      return;
     room_key = sanitize(self.request.get('r'))
     response_type = self.request.get('t')
     stun_server = self.request.get('ss')
@@ -376,6 +379,7 @@ class MainPage(webapp2.RequestHandler):
     #
     # Keys starting with "goog" will be added to the "optional" key; all others
     # will be added to the "mandatory" key.
+
     # To override this default behavior, add a "mandatory" or "optional" prefix
     # to each key, e.g.
     #   "?video=optional:minWidth=1280,optional:minHeight=720,
@@ -392,6 +396,7 @@ class MainPage(webapp2.RequestHandler):
     # camera at 720p. If no value is provided, use a platform-specific default.
     # When defaulting to HD, use optional constraints, in case the camera
     # doesn't actually support HD modes.
+
     hd = self.request.get('hd').lower()
     if hd and video:
       message = 'The "hd" parameter has overridden video=' + video
@@ -401,6 +406,11 @@ class MainPage(webapp2.RequestHandler):
       video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
     elif not hd and not video and get_hd_default(user_agent) == 'true':
       video = 'optional:minWidth=1280,optional:minHeight=720'
+
+    if self.request.get('vga').lower() == 'true':
+      video = 'maxWidth=640,maxHeight=360'
+    elif self.request.get('qvga').lower() == 'true':
+      video = 'maxWidth=320,maxHeight=180'
 
     if self.request.get('minre') or self.request.get('maxre'):
       message = ('The "minre" and "maxre" parameters are no longer supported. '
@@ -441,8 +451,8 @@ class MainPage(webapp2.RequestHandler):
     # Avoid pulling down vr.js (>25KB, minified) if not needed.
     include_vr_js = ''
     if ssr == 'true':
-      include_vr_js = ('<script src="/js/vr.js"></script>\n' +
-                       '<script src="/js/stereoscopic.js"></script>')
+      include_vr_js = ('<script src="/js/lib/vr.js"></script>\n' +
+                       '<script src="/js/lib/stereoscopic.js"></script>')
 
     # Disable pinch-zoom scaling since we manage video real-estate explicitly
     # (via full-screen) and don't want devicePixelRatios changing dynamically.
