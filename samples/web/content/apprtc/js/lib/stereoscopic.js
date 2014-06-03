@@ -23,8 +23,6 @@ var SIDE_BY_SIDE_FRAGMENT_SHADER = [
 // Setup for renderStereoscopicFrame() to do its thing.
 function setupStereoscopic(video, canvas) {
   canvas.style.display = 'block';
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
   video.style.display = 'none';
   var gl = canvas.getContext('webgl');
   var vrRenderer = new vr.StereoRenderer(gl,
@@ -59,13 +57,46 @@ function setupStereoscopic(video, canvas) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-  var stereoscopicParams = { 'gl': gl,
+  var stereoscopicParams = { 'canvas': canvas,
+                             'gl': gl,
                              'glProgram': glProgram,
                              'glTexture': glTexture,
                              'vrRenderer': vrRenderer,
                              'vrVertexPosBuffer': vrVertexPosBuffer,
                              'video': video };
+  var oldWindowResize = window.onresize || function () {};
+  var oldVideoResize = video.onresize || function () {};
+  window.onresize = function() {
+    oldWindowResize();
+    resizeCanvasDimensions(stereoscopicParams);
+  };
+  video.onresize = function() {
+    oldVideoResize();
+    resizeCanvasDimensions(stereoscopicParams);
+  };
+  resizeCanvasDimensions(stereoscopicParams);
+
   renderStereoscopicFrame(stereoscopicParams);
+}
+
+// Adapt canvas dimensions as needed:
+// - internal drawing surface needs to change as the video resolution changes.
+// - external rendering/layout size needs to change as the window changes.
+function resizeCanvasDimensions(stereoscopicParams) {
+  var video = stereoscopicParams['video'];
+  var canvas = stereoscopicParams['canvas'];
+  var vrRenderer = stereoscopicParams['vrRenderer'];
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+
+  // HACK!  vr.js expects the display device to be a constant resolution and
+  // uses the values set below during each frame's gl.viewport() call.
+  vrRenderer.hmdInfo_.resolutionHorz = canvas.width;
+  vrRenderer.hmdInfo_.resolutionVert = canvas.height;
 }
 
 // Copy video frame into canvas after applying lens corrections.

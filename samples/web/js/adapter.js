@@ -107,18 +107,6 @@ if (navigator.mozGetUserMedia) {
     to.play();
   };
 
-  // Fake get{Video,Audio}Tracks
-  if (!MediaStream.prototype.getVideoTracks) {
-    MediaStream.prototype.getVideoTracks = function() {
-      return [];
-    };
-  }
-
-  if (!MediaStream.prototype.getAudioTracks) {
-    MediaStream.prototype.getAudioTracks = function() {
-      return [];
-    };
-  }
 } else if (navigator.webkitGetUserMedia) {
   console.log("This appears to be Chrome");
 
