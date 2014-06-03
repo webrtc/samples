@@ -120,7 +120,7 @@ function gotRemoteStream(e) {
   // Call the polyfill wrapper to attach the media stream to this element.
   attachMediaStream(audio, e.stream);
   trace('Received remote stream');
-  if (RTCPeerConnection.prototype.createDTMFSender) {
+  if (pc1.createDTMFSender) {
     enableDtmfSender();
   } else {
     alert('This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.');
