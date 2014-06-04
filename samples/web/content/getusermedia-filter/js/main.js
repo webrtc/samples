@@ -1,3 +1,10 @@
+/*
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
 // variables in global scope so available to console
 snapshotButton = document.querySelector("button#snapshot");
 filterButton = document.querySelector("button#filter");
