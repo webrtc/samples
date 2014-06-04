@@ -505,8 +505,12 @@ class MainPage(webapp2.RequestHandler):
         initiator = 1
       else:
         # 2 occupants (full).
-        write_response(self.response, response_type,
-                       'full.html', { 'room_key': room_key })
+        params = {
+          'error': 'full',
+          'error_messages': ['The room is full.'],
+          'room_key': room_key
+        }
+        write_response(self.response, response_type, 'full.html', params)
         logging.info('Room ' + room_key + ' is full')
         return
 
