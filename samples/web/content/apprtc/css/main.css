@@ -146,12 +146,13 @@ header div {
   background-size: 100%;
   background-repeat: no-repeat;
   border-radius: 2px;
-  display: inline-block;
-/* float: left; */
+  display: block;
+  float: left;
   height: 40px;
   margin: 0 10px 0 0;
   opacity: 1;
   width: 40px;
+  z-index: 1000;
 }
 
 header div:last-of-type {
@@ -219,14 +220,16 @@ header div#toggleInfo.active {
 
 header {
   background-color: black;
-  display: block;
+  display: flex;
+  justify-content: center;
   opacity: 0;
-  padding: 20px 10px 10px;
+  padding: 20px 10px 20px 10px;
   position: absolute;
-  text-align: center;
+  -webkit-transform: translate3d(0, 0, 1px);
+  transform: translate3d(0, 0, 1px);
   transition: all 0.7s;
   width: 100%;
-  z-index: 1;
+  z-index: 1000;
 }
 
 header.active {

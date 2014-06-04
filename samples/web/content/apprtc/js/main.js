@@ -731,14 +731,14 @@ function updateInfoDiv() {
         }
     }
 
-    contents += '</pre>';
-
     if (errorMessages.length) {
         infoDiv.className = 'warning active';
         for (var i = 0; i !== errorMessages.length; ++i) {
             contents += errorMessages[i] + '\n';
         }
     }
+
+    contents += '</pre>';
 
     infoDiv.innerHTML = contents;
 }
