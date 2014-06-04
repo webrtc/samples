@@ -201,6 +201,14 @@ def append_url_arguments(request, link):
                 cgi.escape(request.get(argument), True))
   return link
 
+def write_response(response, response_type, target_page, params):
+  if response_type == 'json':
+    content = json.dumps(params)
+  else:
+    template = jinja_environment.get_template(target_page)
+    content = template.render(params)
+  response.out.write(content)
+
 # This database is to store the messages from the sender client when the
 # receiver client is not ready to receive the messages.
 # Use TextProperty instead of StringProperty for msg because
@@ -497,8 +505,12 @@ class MainPage(webapp2.RequestHandler):
         initiator = 1
       else:
         # 2 occupants (full).
-        template = jinja_environment.get_template('full.html')
-        self.response.out.write(template.render({ 'room_key': room_key }))
+        params = {
+          'error': 'full',
+          'error_messages': ['The room is full.'],
+          'room_key': room_key
+        }
+        write_response(self.response, response_type, 'full.html', params)
         logging.info('Room ' + room_key + ' is full')
         return
 
@@ -545,17 +557,11 @@ class MainPage(webapp2.RequestHandler):
       'meta_viewport': meta_viewport
     }
 
-    if response_type == 'json':
-      content = json.dumps(params)
+    if unittest:
+      target_page = 'test/test_' + unittest + '.html'
     else:
-      if unittest:
-        target_page = 'test/test_' + unittest + '.html'
-      else:
-        target_page = 'index.html'
-      template = jinja_environment.get_template(target_page)
-      content = template.render(params)
-
-    self.response.out.write(content)
+      target_page = 'index.html'
+    write_response(self.response, response_type, target_page, params)
 
 
 app = webapp2.WSGIApplication([
