@@ -228,7 +228,7 @@ header {
   -webkit-transform: translate3d(0, 0, 1px);
   transform: translate3d(0, 0, 1px);
   transition: all 0.7s;
-  width: 100%;
+  width: calc(100% - 20px);
   z-index: 1000;
 }
 
