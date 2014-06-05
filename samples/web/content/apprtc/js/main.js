@@ -969,7 +969,7 @@ function addStereo(sdp) {
     return sdp;
 
   // Append stereo=1 to fmtp line.
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(' stereo=1');
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; stereo=1');
 
   sdp = sdpLines.join('\r\n');
   return sdp;
