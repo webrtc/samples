@@ -24,20 +24,23 @@ var msgQueue = [];
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
 var sdpConstraints = {
-    'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true
-     },
-     'optional': [
-         {'VoiceActivityDetection': false}
-     ]
+  'mandatory': {
+    'OfferToReceiveAudio': true,
+    'OfferToReceiveVideo': true
+  },
+  'optional': [{
+    'VoiceActivityDetection': false
+  }]
 };
 var isVideoMuted = false;
 var isAudioMuted = false;
 
 // Stats for info div.
 var startTime, endTime;
-var gatheredIceCandidateTypes = { Local: {}, Remote: {} };
+var gatheredIceCandidateTypes = {
+  Local: {},
+  Remote: {}
+};
 var infoDivErrors = [];
 var stats;
 var getStatsTimer;
@@ -54,8 +57,9 @@ function initialize() {
   card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
   // Reset localVideo display to center.
-  localVideo.addEventListener('loadedmetadata', function(){
-    window.onresize();});
+  localVideo.addEventListener('loadedmetadata', function() {
+    window.onresize();
+  });
   miniVideo = document.getElementById('miniVideo');
   remoteVideo = document.getElementById('remoteVideo');
   resetStatus();
@@ -68,7 +72,7 @@ function initialize() {
   signalingReady = initiator;
 
   if (mediaConstraints.audio === false &&
-      mediaConstraints.video === false) {
+    mediaConstraints.video === false) {
     hasLocalStream = false;
     maybeStart();
   } else {
@@ -105,7 +109,7 @@ function maybeRequestTurn() {
 
   var currentDomain = document.domain;
   if (currentDomain.search('localhost') === -1 &&
-      currentDomain.search('apprtc') === -1) {
+    currentDomain.search('apprtc') === -1) {
     // Not authorized domain. Try with default STUN instead.
     turnDone = true;
     return;
@@ -126,15 +130,14 @@ function onTurnResult() {
     var turnServer = JSON.parse(xmlhttp.responseText);
     // Create turnUris using the polyfill (adapter.js).
     var iceServers = createIceServers(turnServer.uris,
-                                      turnServer.username,
-                                      turnServer.password);
+      turnServer.username,
+      turnServer.password);
     if (iceServers !== null) {
       pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
     }
   } else {
-    messageError('No TURN server; unlikely that media will traverse networks.  '
-                 + 'If this persists please report it to '
-                 + 'discuss-webrtc@googlegroups.com.');
+    messageError('No TURN server; unlikely that media will traverse networks.  ' +
+      'If this persists please report it to ' + 'discuss-webrtc@googlegroups.com.');
   }
   // If TURN request failed, continue the call with default STUN.
   turnDone = true;
@@ -154,9 +157,9 @@ function doGetUserMedia() {
   // Call into getUserMedia via the polyfill (adapter.js).
   try {
     getUserMedia(mediaConstraints, onUserMediaSuccess,
-                 onUserMediaError);
+      onUserMediaError);
     trace('Requested access to local media with mediaConstraints:\n' +
-                '  \'' + JSON.stringify(mediaConstraints) + '\'');
+      '  \'' + JSON.stringify(mediaConstraints) + '\'');
   } catch (e) {
     alert('getUserMedia() failed. Is this a WebRTC capable browser?');
     messageError('getUserMedia failed with exception: ' + e.message);
@@ -169,8 +172,8 @@ function createPeerConnection() {
     pc = new RTCPeerConnection(pcConfig, pcConstraints);
     pc.onicecandidate = onIceCandidate;
     trace('Created RTCPeerConnnection with:\n' +
-                '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
-                '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
+      '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
+      '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
   } catch (e) {
     messageError('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object; \
@@ -213,9 +216,9 @@ function setStatus(state) {
 function doCall() {
   var constraints = mergeConstraints(offerConstraints, sdpConstraints);
   trace('Sending offer to peer, with constraints: \n' +
-              '  \'' + JSON.stringify(constraints) + '\'.')
+    '  \'' + JSON.stringify(constraints) + '\'.')
   pc.createOffer(setLocalAndSendMessage,
-                 onCreateSessionDescriptionError, constraints);
+    onCreateSessionDescriptionError, constraints);
 }
 
 function calleeStart() {
@@ -228,7 +231,7 @@ function calleeStart() {
 function doAnswer() {
   trace('Sending answer to peer.');
   pc.createAnswer(setLocalAndSendMessage,
-                  onCreateSessionDescriptionError, sdpConstraints);
+    onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function mergeConstraints(cons1, cons2) {
@@ -245,7 +248,7 @@ function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp);
   sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
-       onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+    onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
   sendMessage(sessionDescription);
 }
 
@@ -258,21 +261,21 @@ function setRemote(message) {
   message.sdp = maybeSetVideoSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendInitialBitRate(message.sdp);
   pc.setRemoteDescription(new RTCSessionDescription(message),
-       onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
+    onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
-function onSetRemoteDescriptionSuccess() {
-  trace('Set remote session description success.');
-  // By now all onaddstream events for the setRemoteDescription have fired,
-  // so we can know if the peer has any remote video streams that we need
-  // to wait for. Otherwise, transition immediately to the active state.
-  // NOTE: Ideally we could just check |remoteStream| here, which is populated
-  // in the onaddstream callback. But as indicated in
-  // https://code.google.com/p/webrtc/issues/detail?id=3358, sometimes this
-  // callback is dispatched after the setRemoteDescription success callback.
-  // Therefore, we read the remoteStreams array directly from the
-  // PeerConnection, which seems to work reliably.
-  var remoteStreams = pc.getRemoteStreams();
-  if (remoteStreams.length > 0 &&
+  function onSetRemoteDescriptionSuccess() {
+    trace('Set remote session description success.');
+    // By now all onaddstream events for the setRemoteDescription have fired,
+    // so we can know if the peer has any remote video streams that we need
+    // to wait for. Otherwise, transition immediately to the active state.
+    // NOTE: Ideally we could just check |remoteStream| here, which is populated
+    // in the onaddstream callback. But as indicated in
+    // https://code.google.com/p/webrtc/issues/detail?id=3358, sometimes this
+    // callback is dispatched after the setRemoteDescription success callback.
+    // Therefore, we read the remoteStreams array directly from the
+    // PeerConnection, which seems to work reliably.
+    var remoteStreams = pc.getRemoteStreams();
+    if (remoteStreams.length > 0 &&
       remoteStreams[0].getVideoTracks().length > 0) {
       trace('Waiting for remote video.');
       waitForRemoteVideo();
@@ -307,11 +310,13 @@ function processSignalingMessage(message) {
   } else if (message.type === 'answer') {
     setRemote(message);
   } else if (message.type === 'candidate') {
-    var candidate = new RTCIceCandidate({sdpMLineIndex: message.label,
-                                         candidate: message.candidate});
+    var candidate = new RTCIceCandidate({
+      sdpMLineIndex: message.label,
+      candidate: message.candidate
+    });
     noteIceCandidate('Remote', iceCandidateType(message.candidate));
     pc.addIceCandidate(candidate,
-                       onAddIceCandidateSuccess, onAddIceCandidateError);
+      onAddIceCandidateSuccess, onAddIceCandidateError);
   } else if (message.type === 'bye') {
     onRemoteHangup();
   }
@@ -402,10 +407,14 @@ function onSetSessionDescriptionError(error) {
 
 function iceCandidateType(candidateSDP) {
   switch (candidateSDP.split(' ')[7]) {
-    case 'host': return 'HOST';
-    case 'srflx': return 'STUN';
-    case 'relay': return 'TURN';
-    default: return 'UNKNOWN';
+    case 'host':
+      return 'HOST';
+    case 'srflx':
+      return 'STUN';
+    case 'relay':
+      return 'TURN';
+    default:
+      return 'UNKNOWN';
   }
 }
 
@@ -417,10 +426,12 @@ function onIceCandidate(event) {
         return;
       }
     }
-    sendMessage({type: 'candidate',
-                 label: event.candidate.sdpMLineIndex,
-                 id: event.candidate.sdpMid,
-                 candidate: event.candidate.candidate});
+    sendMessage({
+      type: 'candidate',
+      label: event.candidate.sdpMLineIndex,
+      id: event.candidate.sdpMid,
+      candidate: event.candidate.candidate
+    });
     noteIceCandidate('Local', iceCandidateType(event.candidate.candidate));
   } else {
     trace('End of candidates.');
@@ -569,7 +580,9 @@ function transitionToActive() {
   // Spin the card to show remote video (800 ms). Set a timer to detach the
   // local video once the transition completes.
   card.style.webkitTransform = 'rotateY(180deg)';
-  setTimeout(function() { localVideo.src = ''; }, 800);
+  setTimeout(function() {
+    localVideo.src = '';
+  }, 800);
   // Reset window display according to the aspect ratio of remote video.
   window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
@@ -585,7 +598,10 @@ function transitionToWaiting() {
   // Spin the card to show local video (800 ms). Set a timer to detach the
   // remote and PIP video once the transition completes.
   card.style.webkitTransform = 'rotateY(0deg)';
-  setTimeout(function() { miniVideo.src = ''; remoteVideo.src = ''}, 800);
+  setTimeout(function() {
+    miniVideo.src = '';
+    remoteVideo.src = ''
+  }, 800);
   resetStatus();
 }
 
@@ -641,11 +657,11 @@ function updateInfoDiv() {
     // Obtain any needed values from stats.
     var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
     var captureStart = extractStatAsInt(stats, 'ssrc',
-                                        'googCaptureStartNtpTimeMs');
+      'googCaptureStartNtpTimeMs');
     if (captureStart)
       var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
     var activeCandPair = getStatsReport(stats, 'googCandidatePair',
-                                        'googActiveConnection', 'true');
+      'googActiveConnection', 'true');
     if (activeCandPair) {
       var localAddr = activeCandPair.stat('googLocalAddress');
       var remoteAddr = activeCandPair.stat('googRemoteAddress');
@@ -672,7 +688,7 @@ function updateInfoDiv() {
     contents += buildLine('Stats');
     if (endTime != null)
       contents += buildLine('Setup time',
-                            (endTime - startTime).toFixed(0).toString() + 'ms');
+        (endTime - startTime).toFixed(0).toString() + 'ms');
     if (rtt != null)
       contents += buildLine('RTT', rtt.toString() + 'ms');
     if (e2eDelay != null)
@@ -685,7 +701,7 @@ function updateInfoDiv() {
 
   for (var msg in infoDivErrors) {
     div.innerHTML += '<p style="background-color: red; color: yellow;">' +
-                     infoDivErrors[msg] + '</p>';
+      infoDivErrors[msg] + '</p>';
   }
 }
 
@@ -844,7 +860,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
 
   // Find c-line corresponding to the m-line.
   var cLineIndex = findLineInRange(sdpLines, mLineIndex + 1, nextMLineIndex,
-                                   'c=');
+    'c=');
   if (cLineIndex === null) {
     messageError('Failed to add bandwidth line to sdp, as no c-line found');
     return sdp;
@@ -852,7 +868,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
 
   // Check if bandwidth line already exists between c-line and next m-line.
   var bLineIndex = findLineInRange(sdpLines, cLineIndex + 1, nextMLineIndex,
-                                   'b=AS');
+    'b=AS');
   if (bLineIndex) {
     sdpLines.splice(bLineIndex, 1);
   }
@@ -878,7 +894,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
       messageError('Clamping initial bitrate to max bitrate of ' +
-          videoSendBitrate + ' kbps.')
+        videoSendBitrate + ' kbps.')
       videoSendInitialBitrate = videoSendBitrate;
     }
     maxBitrate = videoSendBitrate;
@@ -896,8 +912,8 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
   var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
   var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
-     videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
-     maxBitrate.toString();
+    videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
+    maxBitrate.toString();
   sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
   return sdpLines.join('\r\n');
 }
@@ -958,7 +974,8 @@ function addStereo(sdp) {
   var sdpLines = sdp.split('\r\n');
 
   // Find opus payload.
-  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000'), opusPayload;
+  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000'),
+    opusPayload;
   if (opusIndex) {
     opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
   }
@@ -988,7 +1005,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
   for (var i = startLine; i < realEndLine; ++i) {
     if (sdpLines[i].indexOf(prefix) === 0) {
       if (!substr ||
-          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+        sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
         return i;
       }
     }
@@ -1020,7 +1037,9 @@ function setDefaultCodec(mLine, payload) {
 // Send a BYE on refreshing or leaving a page
 // to ensure the room is cleaned up for the next session.
 window.onbeforeunload = function() {
-  sendMessage({type: 'bye'});
+  sendMessage({
+    type: 'bye'
+  });
 }
 
 // Set the video diplaying in the center of window.
@@ -1035,9 +1054,9 @@ window.onresize = function() {
 
   var aspectRatio;
   if (remoteVideo && remoteVideo.style.opacity === '1') {
-    aspectRatio = remoteVideo.videoWidth/remoteVideo.videoHeight;
+    aspectRatio = remoteVideo.videoWidth / remoteVideo.videoHeight;
   } else if (localVideo && localVideo.style.opacity === '1') {
-    aspectRatio = localVideo.videoWidth/localVideo.videoHeight;
+    aspectRatio = localVideo.videoWidth / localVideo.videoHeight;
   } else {
     return;
   }
@@ -1045,9 +1064,9 @@ window.onresize = function() {
   var innerHeight = this.innerHeight;
   var innerWidth = this.innerWidth;
   var videoWidth = innerWidth < aspectRatio * window.innerHeight ?
-                   innerWidth : aspectRatio * window.innerHeight;
+    innerWidth : aspectRatio * window.innerHeight;
   var videoHeight = innerHeight < window.innerWidth / aspectRatio ?
-                    innerHeight : window.innerWidth / aspectRatio;
+    innerHeight : window.innerWidth / aspectRatio;
   containerDiv.style.width = videoWidth + 'px';
   containerDiv.style.height = videoHeight + 'px';
   containerDiv.style.left = (innerWidth - videoWidth) / 2 + 'px';
