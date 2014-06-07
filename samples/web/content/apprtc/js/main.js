@@ -6,6 +6,11 @@
  *  tree.
  */
 
+/* More information about these options at jshint.com/docs/options */
+/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
+/* global attachMediaStream, audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, createIceServers, errorMessages, getUserMedia, goog, initiator:true, me, mediaConstraints, offerConstraints, pcConfig, pcConstraints, reattachMediaStream, roomKey, roomLink, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription, setupStereoscopic, stereo, stereoscopic, trace, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
+/* exported enterFullScreen, initialize, onHangup */
+
 'use strict';
 
 var localVideo;
@@ -14,7 +19,6 @@ var remoteVideo;
 var hasLocalStream;
 var localStream;
 var remoteStream;
-var channel;
 var pc;
 var socket;
 var xmlhttp;
@@ -23,6 +27,8 @@ var turnDone = false;
 var channelReady = false;
 var signalingReady = false;
 var msgQueue = [];
+var card;
+var containerDiv;
 
 // Set up audio and video regardless of what devices are present.
 // Disable comfort noise for maximum audio quality.
@@ -50,14 +56,15 @@ var getStatsTimer;
 
 function initialize() {
   if (errorMessages.length > 0) {
-    for (i = 0; i < errorMessages.length; ++i) {
+    for (var i = 0; i < errorMessages.length; ++i) {
       window.alert(errorMessages[i]);
     }
     return;
   }
 
   trace('Initializing; room=' + roomKey + '.');
-  var card = document.getElementById('card');
+  card = document.getElementById('card');
+  containerDiv = document.getElementById('container');
   localVideo = document.getElementById('localVideo');
   // Reset localVideo display to center.
   localVideo.addEventListener('loadedmetadata', function() {
@@ -98,7 +105,7 @@ function openChannel() {
 
 function maybeRequestTurn() {
   // Allow to skip turn by passing ts=false to apprtc.
-  if (turnUrl == '') {
+  if (turnUrl === '') {
     turnDone = true;
     return;
   }
@@ -126,8 +133,9 @@ function maybeRequestTurn() {
 }
 
 function onTurnResult() {
-  if (xmlhttp.readyState !== 4)
+  if (xmlhttp.readyState !== 4) {
     return;
+  }
 
   if (xmlhttp.status === 200) {
     var turnServer = JSON.parse(xmlhttp.responseText);
@@ -149,8 +157,7 @@ function onTurnResult() {
 
 function resetStatus() {
   if (!initiator) {
-    setStatus('Waiting for someone to join: \
-              <a href=' + roomLink + '>' + roomLink + '</a>');
+    setStatus('Waiting for someone to join: <a href=' + roomLink + '>' + roomLink + '</a>');
   } else {
     setStatus('Initializing...');
   }
@@ -179,8 +186,8 @@ function createPeerConnection() {
       '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
   } catch (e) {
     messageError('Failed to create PeerConnection, exception: ' + e.message);
-    alert('Cannot create RTCPeerConnection object; \
-          WebRTC is not supported by this browser.');
+    alert('Cannot create RTCPeerConnection object; ' +
+      'WebRTC is not supported by this browser.');
     return;
   }
   pc.onaddstream = onRemoteStreamAdded;
@@ -192,7 +199,7 @@ function createPeerConnection() {
 function maybeStart() {
   if (!started && signalingReady && channelReady && turnDone &&
       (localStream || !hasLocalStream)) {
-    startTime = performance.now();
+    startTime = window.performance.now();
     setStatus('Connecting...');
     trace('Creating PeerConnection.');
     createPeerConnection();
@@ -205,10 +212,12 @@ function maybeStart() {
     }
     started = true;
 
-    if (initiator)
+    if (initiator) {
       doCall();
-    else
+    }
+    else {
       calleeStart();
+    }
   }
 }
 
@@ -219,7 +228,7 @@ function setStatus(state) {
 function doCall() {
   var constraints = mergeConstraints(offerConstraints, sdpConstraints);
   trace('Sending offer to peer, with constraints: \n' +
-    '  \'' + JSON.stringify(constraints) + '\'.')
+    '  \'' + JSON.stringify(constraints) + '\'.');
   pc.createOffer(setLocalAndSendMessage,
     onCreateSessionDescriptionError, constraints);
 }
@@ -257,8 +266,9 @@ function setLocalAndSendMessage(sessionDescription) {
 
 function setRemote(message) {
   // Set Opus in Stereo, if stereo enabled.
-  if (stereo)
+  if (stereo) {
     message.sdp = addStereo(message.sdp);
+  }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendBitRate(message.sdp);
@@ -457,7 +467,7 @@ function refreshStats() {
 }
 
 // Return the integer stat |statName| from the object with type |statObj| in
-// |stats|, or undef if not present.
+// |stats|, or null if not present.
 function extractStatAsInt(stats, statObj, statName) {
   // Ignore stats that have a 'nullish' value.
   // The correct fix is indicated in
@@ -465,10 +475,11 @@ function extractStatAsInt(stats, statObj, statName) {
   var str = extractStat(stats, statObj, statName);
   if (str) {
     var val = parseInt(str);
-    if (val != -1) {
+    if (val !== -1) {
       return val;
     }
   }
+  return null;
 }
 
 // Return the stat |statName| from the object with type |statObj| in |stats|
@@ -493,7 +504,7 @@ function getStatsReport(stats, statObj, statName, statVal) {
         // If |statVal| is present, ensure the value matches.
         if (statName) {
           var val = report.stat(statName);
-          found = (statVal !== undefined) ? (val === statVal) : val;
+          found = statVal !== undefined ? val === statVal : val;
         }
         if (found) {
           return report;
@@ -507,24 +518,25 @@ function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
   // Computes end to end Delay.
   if (captureStart) {
     // Adding offset to get NTP time.
-    var now_ntp = Date.now() + 2208988800000;
-    e2eDelay = now_ntp - captureStart - remoteVideoCurrentTime * 1000;
+    var nowNTP = Date.now() + 2208988800000;
+    var e2eDelay = nowNTP - captureStart - remoteVideoCurrentTime * 1000;
     return e2eDelay.toFixed(0);
   }
+  return null;
 }
 
-function onRemoteStreamRemoved(event) {
+function onRemoteStreamRemoved() {
   trace('Remote stream removed.');
 }
 
-function onSignalingStateChanged(event) {
+function onSignalingStateChanged() {
   if (pc) {
     trace('Signaling state changed to: ' + pc.signalingState);
   }
   updateInfoDiv();
 }
 
-function onIceConnectionStateChanged(event) {
+function onIceConnectionStateChanged() {
   if (pc) {
     trace('ICE connection state changed to: ' + pc.iceConnectionState);
   }
@@ -569,7 +581,7 @@ function waitForRemoteVideo() {
 }
 
 function transitionToActive() {
-  endTime = performance.now();
+  endTime = window.performance.now();
   trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
   // Prepare the remote video and PIP elements.
@@ -588,8 +600,8 @@ function transitionToActive() {
   }, 800);
   // Reset window display according to the aspect ratio of remote video.
   window.onresize();
-  setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' \
-            onclick=\'onHangup()\' />');
+  setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' ' +
+    'onclick=\'onHangup()\' />');
 }
 
 function transitionToWaiting() {
@@ -603,7 +615,7 @@ function transitionToWaiting() {
   card.style.webkitTransform = 'rotateY(0deg)';
   setTimeout(function() {
     miniVideo.src = '';
-    remoteVideo.src = ''
+    remoteVideo.src = '';
   }, 800);
   resetStatus();
 }
@@ -612,15 +624,15 @@ function transitionToDone() {
   localVideo.style.opacity = 0;
   remoteVideo.style.opacity = 0;
   miniVideo.style.opacity = 0;
-  setStatus('You have left the call. <a href=' + roomLink + '>\
-            Click here</a> to rejoin.');
+  setStatus('You have left the call. <a href=' + roomLink +
+    '>Click here</a> to rejoin.');
 }
 
 function enterFullScreen() {
   // When full-screening the canvas we want to avoid the extra spacing
   // introduced by the containing div, but when full-screening the rectangular
   // view we want to keep the full container visible (including e.g. miniVideo).
-  var element = (event.target.id == "remoteCanvas") ? event.target : container;
+  var element = event.target.id === 'remoteCanvas' ? event.target : containerDiv;
   element.webkitRequestFullScreen();
 }
 
@@ -643,9 +655,9 @@ function buildLine(label, value) {
   var line = '';
   if (label) {
     line += label + ':';
-    while (line.length < columnWidth)
+    while (line.length < columnWidth) {
       line += ' ';
-
+    }
     if (value) {
       line += value;
     }
@@ -661,13 +673,13 @@ function updateInfoDiv() {
     var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
     var captureStart = extractStatAsInt(stats, 'ssrc',
       'googCaptureStartNtpTimeMs');
-    if (captureStart)
-      var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
+    var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
     var activeCandPair = getStatsReport(stats, 'googCandidatePair',
       'googActiveConnection', 'true');
+    var localAddr, remoteAddr;
     if (activeCandPair) {
-      var localAddr = activeCandPair.stat('googLocalAddress');
-      var remoteAddr = activeCandPair.stat('googRemoteAddress');
+      localAddr = activeCandPair.stat('googLocalAddress');
+      remoteAddr = activeCandPair.stat('googRemoteAddress');
     }
 
     // Build the display.
@@ -677,8 +689,9 @@ function updateInfoDiv() {
     contents += buildLine('Connection', pc.iceConnectionState);
     for (var endpoint in gatheredIceCandidateTypes) {
       var types = [];
-      for (var type in gatheredIceCandidateTypes[endpoint])
+      for (var type in gatheredIceCandidateTypes[endpoint]) {
         types.push(type + ':' + gatheredIceCandidateTypes[endpoint][type]);
+      }
       types.sort();
       contents += buildLine(endpoint, types.join(' '));
     }
@@ -689,13 +702,16 @@ function updateInfoDiv() {
     contents += buildLine();
 
     contents += buildLine('Stats');
-    if (endTime != null)
+    if (endTime !== null) {
       contents += buildLine('Setup time',
         (endTime - startTime).toFixed(0).toString() + 'ms');
-    if (rtt != null)
+    }
+    if (rtt !== null) {
       contents += buildLine('RTT', rtt.toString() + 'ms');
-    if (e2eDelay != null)
+    }
+    if (e2eDelay !== null) {
       contents += buildLine('End to end', e2eDelay.toString() + 'ms');
+    }
   }
   contents += '</pre>';
 
@@ -713,7 +729,9 @@ function isInfoDivVisible() {
 }
 
 function showInfoDiv() {
-  if (getStatsTimer) throw 'Inconsistent infodiv state';
+  if (getStatsTimer) {
+    throw 'Inconsistent infodiv state';
+  }
   var div = getInfoDiv();
   div.style.display = 'block';
   // Start stat updates.
@@ -745,6 +763,7 @@ function toggleVideoMute() {
   }
 
   trace('Toggling video mute state.');
+  var i;
   if (isVideoMuted) {
     for (i = 0; i < videoTracks.length; i++) {
       videoTracks[i].enabled = true;
@@ -770,6 +789,7 @@ function toggleAudioMute() {
   }
 
   trace('Toggling audio mute state.');
+  var i;
   if (isAudioMuted) {
     for (i = 0; i < audioTracks.length; i++) {
       audioTracks[i].enabled = true;
@@ -793,10 +813,12 @@ function toggleAudioMute() {
 // Return false to screen out original Chrome shortcuts.
 document.onkeydown = function(event) {
   var hotkey = event.ctrlKey;
-  if (navigator.appVersion.indexOf('Mac') != -1)
+  if (navigator.appVersion.indexOf('Mac') !== -1) {
     hotkey = event.metaKey;
-  if (!hotkey)
+  }
+  if (!hotkey) {
     return;
+  }
   switch (event.keyCode) {
     case 68:
       toggleAudioMute();
@@ -810,7 +832,7 @@ document.onkeydown = function(event) {
     default:
       return;
   }
-}
+};
 
 function maybeSetAudioSendBitRate(sdp) {
   if (!audioSendBitrate) {
@@ -897,7 +919,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
       messageError('Clamping initial bitrate to max bitrate of ' +
-        videoSendBitrate + ' kbps.')
+        videoSendBitrate + ' kbps.');
       videoSendInitialBitrate = videoSendBitrate;
     }
     maxBitrate = videoSendBitrate;
@@ -923,7 +945,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
 
 // Promotes |audioSendCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioSendCodec(sdp) {
-  if (audioSendCodec == '') {
+  if (audioSendCodec === '') {
     trace('No preference on audio send codec.');
     return sdp;
   }
@@ -933,7 +955,7 @@ function maybePreferAudioSendCodec(sdp) {
 
 // Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioReceiveCodec(sdp) {
-  if (audioRecvCodec == '') {
+  if (audioRecvCodec === '') {
     trace('No preference on audio receive codec.');
     return sdp;
   }
@@ -945,19 +967,20 @@ function maybePreferAudioReceiveCodec(sdp) {
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function preferAudioCodec(sdp, codec) {
   var fields = codec.split('/');
-  if (fields.length != 2) {
+  if (fields.length !== 2) {
     trace('Invalid codec setting: ' + codec);
     return sdp;
   }
 
-  var name = fields[0];
-  var rate = fields[1];
+  // var name = fields[0];
+  // var rate = fields[1];
   var sdpLines = sdp.split('\r\n');
 
   // Search for m line.
   var mLineIndex = findLine(sdpLines, 'm=', 'audio');
-  if (mLineIndex === null)
+  if (mLineIndex === null) {
     return sdp;
+  }
 
   // If the codec is available, set it as the default in m line.
   var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
@@ -985,8 +1008,9 @@ function addStereo(sdp) {
 
   // Find the payload in fmtp line.
   var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
-  if (fmtpLineIndex === null)
+  if (fmtpLineIndex === null) {
     return sdp;
+  }
 
   // Append stereo=1 to fmtp line.
   sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; stereo=1');
@@ -998,13 +1022,13 @@ function addStereo(sdp) {
 // Find the line in sdpLines that starts with |prefix|, and, if specified,
 // contains |substr| (case-insensitive search).
 function findLine(sdpLines, prefix, substr) {
-  return findLineInRange(sdpLines, 0, -1, prefix, substr)
+  return findLineInRange(sdpLines, 0, -1, prefix, substr);
 }
 
 // Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
 // and, if specified, contains |substr| (case-insensitive search).
 function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
-  var realEndLine = (endLine != -1) ? endLine : sdpLines.length;
+  var realEndLine = endLine !== -1 ? endLine : sdpLines.length;
   for (var i = startLine; i < realEndLine; ++i) {
     if (sdpLines[i].indexOf(prefix) === 0) {
       if (!substr ||
@@ -1020,19 +1044,21 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 function getCodecPayloadType(sdpLine) {
   var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
   var result = sdpLine.match(pattern);
-  return (result && result.length == 2) ? result[1] : null;
+  return result && result.length === 2 ? result[1] : null;
 }
 
 // Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
   var elements = mLine.split(' ');
-  var newLine = new Array();
+  var newLine = [];
   var index = 0;
   for (var i = 0; i < elements.length; i++) {
-    if (index === 3) // Format of media starts from the fourth.
+    if (index === 3) { // Format of media starts from the fourth.
       newLine[index++] = payload; // Put target payload to the first.
-    if (elements[i] !== payload)
+    }
+    if (elements[i] !== payload) {
       newLine[index++] = elements[i];
+    }
   }
   return newLine.join(' ');
 }
@@ -1043,15 +1069,13 @@ window.onbeforeunload = function() {
   sendMessage({
     type: 'bye'
   });
-}
+};
 
 // Set the video diplaying in the center of window.
 window.onresize = function() {
-  var containerDiv = document.getElementById('container');
-
   // Don't letterbox while full-screening, by undoing the changes below.
   if (document.webkitIsFullScreen) {
-    containerDiv.style.cssText = "top: 0px; left: 0px;";
+    containerDiv.style.cssText = 'top: 0px; left: 0px;';
     return;
   }
 
