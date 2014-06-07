@@ -5,6 +5,9 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+'use strict';
+
 var localVideo;
 var miniVideo;
 var remoteVideo;
@@ -54,7 +57,7 @@ function initialize() {
   }
 
   trace('Initializing; room=' + roomKey + '.');
-  card = document.getElementById('card');
+  var card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
   // Reset localVideo display to center.
   localVideo.addEventListener('loadedmetadata', function() {
@@ -292,7 +295,7 @@ function sendMessage(message) {
   trace('C->S: ' + msgString);
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
-  path = '/message?r=' + roomKey + '&u=' + me;
+  var path = '/message?r=' + roomKey + '&u=' + me;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
   xhr.send(msgString);
