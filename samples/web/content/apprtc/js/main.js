@@ -81,8 +81,7 @@ function initialize() {
   // Caller is always ready to create peerConnection.
   signalingReady = initiator;
 
-  if (mediaConstraints.audio === false &&
-    mediaConstraints.video === false) {
+  if (mediaConstraints.audio === false && mediaConstraints.video === false) {
     hasLocalStream = false;
     maybeStart();
   } else {
@@ -119,7 +118,7 @@ function maybeRequestTurn() {
 
   var currentDomain = document.domain;
   if (currentDomain.search('localhost') === -1 &&
-    currentDomain.search('apprtc') === -1) {
+      currentDomain.search('apprtc') === -1) {
     // Not authorized domain. Try with default STUN instead.
     turnDone = true;
     return;
@@ -141,14 +140,14 @@ function onTurnResult() {
     var turnServer = JSON.parse(xmlhttp.responseText);
     // Create turnUris using the polyfill (adapter.js).
     var iceServers = createIceServers(turnServer.uris,
-      turnServer.username,
-      turnServer.password);
+        turnServer.username, turnServer.password);
     if (iceServers !== null) {
       pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
     }
   } else {
-    messageError('No TURN server; unlikely that media will traverse networks.  ' +
-      'If this persists please report it to ' + 'discuss-webrtc@googlegroups.com.');
+    messageError('No TURN server; unlikely that media will traverse networks. ' +
+        'If this persists please report it to ' +
+        'discuss-webrtc@googlegroups.com.');
   }
   // If TURN request failed, continue the call with default STUN.
   turnDone = true;
@@ -157,7 +156,8 @@ function onTurnResult() {
 
 function resetStatus() {
   if (!initiator) {
-    setStatus('Waiting for someone to join: <a href=' + roomLink + '>' + roomLink + '</a>');
+    setStatus('Waiting for someone to join: <a href=' + roomLink + '>' +
+        roomLink + '</a>');
   } else {
     setStatus('Initializing...');
   }
@@ -166,10 +166,9 @@ function resetStatus() {
 function doGetUserMedia() {
   // Call into getUserMedia via the polyfill (adapter.js).
   try {
-    getUserMedia(mediaConstraints, onUserMediaSuccess,
-      onUserMediaError);
+    getUserMedia(mediaConstraints, onUserMediaSuccess, onUserMediaError);
     trace('Requested access to local media with mediaConstraints:\n' +
-      '  \'' + JSON.stringify(mediaConstraints) + '\'');
+        '  \'' + JSON.stringify(mediaConstraints) + '\'');
   } catch (e) {
     alert('getUserMedia() failed. Is this a WebRTC capable browser?');
     messageError('getUserMedia failed with exception: ' + e.message);
@@ -182,12 +181,12 @@ function createPeerConnection() {
     pc = new RTCPeerConnection(pcConfig, pcConstraints);
     pc.onicecandidate = onIceCandidate;
     trace('Created RTCPeerConnnection with:\n' +
-      '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
-      '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
+        '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
+        '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
   } catch (e) {
     messageError('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object; ' +
-      'WebRTC is not supported by this browser.');
+        'WebRTC is not supported by this browser.');
     return;
   }
   pc.onaddstream = onRemoteStreamAdded;
@@ -214,8 +213,7 @@ function maybeStart() {
 
     if (initiator) {
       doCall();
-    }
-    else {
+    } else {
       calleeStart();
     }
   }
@@ -228,7 +226,7 @@ function setStatus(state) {
 function doCall() {
   var constraints = mergeConstraints(offerConstraints, sdpConstraints);
   trace('Sending offer to peer, with constraints: \n' +
-    '  \'' + JSON.stringify(constraints) + '\'.');
+      '  \'' + JSON.stringify(constraints) + '\'.');
   pc.createOffer(setLocalAndSendMessage,
     onCreateSessionDescriptionError, constraints);
 }
@@ -260,7 +258,7 @@ function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp);
   sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
-    onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+      onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
   sendMessage(sessionDescription);
 }
 
@@ -274,7 +272,7 @@ function setRemote(message) {
   message.sdp = maybeSetVideoSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendInitialBitRate(message.sdp);
   pc.setRemoteDescription(new RTCSessionDescription(message),
-    onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
+      onSetRemoteDescriptionSuccess, onSetSessionDescriptionError);
 
   function onSetRemoteDescriptionSuccess() {
     trace('Set remote session description success.');
@@ -289,7 +287,7 @@ function setRemote(message) {
     // PeerConnection, which seems to work reliably.
     var remoteStreams = pc.getRemoteStreams();
     if (remoteStreams.length > 0 &&
-      remoteStreams[0].getVideoTracks().length > 0) {
+        remoteStreams[0].getVideoTracks().length > 0) {
       trace('Waiting for remote video.');
       waitForRemoteVideo();
     } else {
@@ -329,7 +327,7 @@ function processSignalingMessage(message) {
     });
     noteIceCandidate('Remote', iceCandidateType(message.candidate));
     pc.addIceCandidate(candidate,
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
   } else if (message.type === 'bye') {
     onRemoteHangup();
   }
@@ -398,7 +396,7 @@ function onUserMediaSuccess(stream) {
 
 function onUserMediaError(error) {
   var errorMessage = 'Failed to get access to local media. Error name was ' +
-    error.name + '. Continuing without sending a stream.';
+      error.name + '. Continuing without sending a stream.';
   messageError(errorMessage);
   alert(errorMessage);
 
@@ -601,7 +599,7 @@ function transitionToActive() {
   // Reset window display according to the aspect ratio of remote video.
   window.onresize();
   setStatus('<input type=\'button\' id=\'hangup\' value=\'Hang up\' ' +
-    'onclick=\'onHangup()\' />');
+      'onclick=\'onHangup()\' />');
 }
 
 function transitionToWaiting() {
@@ -625,7 +623,7 @@ function transitionToDone() {
   remoteVideo.style.opacity = 0;
   miniVideo.style.opacity = 0;
   setStatus('You have left the call. <a href=' + roomLink +
-    '>Click here</a> to rejoin.');
+      '>Click here</a> to rejoin.');
 }
 
 function enterFullScreen() {
@@ -672,10 +670,10 @@ function updateInfoDiv() {
     // Obtain any needed values from stats.
     var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
     var captureStart = extractStatAsInt(stats, 'ssrc',
-      'googCaptureStartNtpTimeMs');
+        'googCaptureStartNtpTimeMs');
     var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
     var activeCandPair = getStatsReport(stats, 'googCandidatePair',
-      'googActiveConnection', 'true');
+        'googActiveConnection', 'true');
     var localAddr, remoteAddr;
     if (activeCandPair) {
       localAddr = activeCandPair.stat('googLocalAddress');
@@ -704,7 +702,7 @@ function updateInfoDiv() {
     contents += buildLine('Stats');
     if (endTime !== null) {
       contents += buildLine('Setup time',
-        (endTime - startTime).toFixed(0).toString() + 'ms');
+          (endTime - startTime).toFixed(0).toString() + 'ms');
     }
     if (rtt !== null) {
       contents += buildLine('RTT', rtt.toString() + 'ms');
@@ -720,7 +718,7 @@ function updateInfoDiv() {
 
   for (var msg in infoDivErrors) {
     div.innerHTML += '<p style="background-color: red; color: yellow;">' +
-      infoDivErrors[msg] + '</p>';
+        infoDivErrors[msg] + '</p>';
   }
 }
 
@@ -919,7 +917,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
       messageError('Clamping initial bitrate to max bitrate of ' +
-        videoSendBitrate + ' kbps.');
+          videoSendBitrate + ' kbps.');
       videoSendInitialBitrate = videoSendBitrate;
     }
     maxBitrate = videoSendBitrate;
@@ -937,8 +935,8 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
   var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
   var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
-    videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
-    maxBitrate.toString();
+      videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
+      maxBitrate.toString();
   sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
   return sdpLines.join('\r\n');
 }
