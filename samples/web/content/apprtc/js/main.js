@@ -81,7 +81,8 @@ function initialize() {
   // Caller is always ready to create peerConnection.
   signalingReady = initiator;
 
-  if (mediaConstraints.audio === false && mediaConstraints.video === false) {
+  if (mediaConstraints.audio === false &&
+      mediaConstraints.video === false) {
     hasLocalStream = false;
     maybeStart();
   } else {
@@ -228,7 +229,7 @@ function doCall() {
   trace('Sending offer to peer, with constraints: \n' +
       '  \'' + JSON.stringify(constraints) + '\'.');
   pc.createOffer(setLocalAndSendMessage,
-    onCreateSessionDescriptionError, constraints);
+      onCreateSessionDescriptionError, constraints);
 }
 
 function calleeStart() {
@@ -241,7 +242,7 @@ function calleeStart() {
 function doAnswer() {
   trace('Sending answer to peer.');
   pc.createAnswer(setLocalAndSendMessage,
-    onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function mergeConstraints(cons1, cons2) {
@@ -998,8 +999,8 @@ function addStereo(sdp) {
   var sdpLines = sdp.split('\r\n');
 
   // Find opus payload.
-  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000'),
-    opusPayload;
+  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000');
+  var opusPayload;
   if (opusIndex) {
     opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
   }
@@ -1030,7 +1031,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
   for (var i = startLine; i < realEndLine; ++i) {
     if (sdpLines[i].indexOf(prefix) === 0) {
       if (!substr ||
-        sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
         return i;
       }
     }
@@ -1042,7 +1043,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 function getCodecPayloadType(sdpLine) {
   var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
   var result = sdpLine.match(pattern);
-  return result && result.length === 2 ? result[1] : null;
+  return (result && result.length === 2) ? result[1] : null;
 }
 
 // Returns a new m= line with the specified codec as the first one.
