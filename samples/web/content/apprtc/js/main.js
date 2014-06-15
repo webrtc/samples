@@ -533,12 +533,25 @@ function onRemoteHangup() {
   stop();
 }
 
+// Pass this function as a callback to RTCPeerConnection.getStats
+// to store latest BWE. This can be done even after the peer connection
+// is closed.
+function storeBandwidthEstimation(report) {
+  if (!localStorage) return;
+
+  var bweReport = report.namedItem("bweforvideo");
+  if (bweReport) {
+    localStorage.lastAvailableSendBandwidth = bweReport.stat("googAvailableSendBandwidth");
+  }
+}
+
 function stop() {
   started = false;
   signalingReady = false;
   isAudioMuted = false;
   isVideoMuted = false;
   pc.close();
+  pc.getStats(storeBandwidthEstimation);
   pc = null;
   remoteStream = null;
   msgQueue.length = 0;
@@ -865,23 +878,23 @@ function preferBitRate(sdp, bitrate, mediaType) {
   return sdp;
 }
 
-// Adds an a=fmtp: x-google-min-bitrate=kbps line, if videoSendInitialBitrate
-// is specified. We'll also add a x-google-min-bitrate value, since the max
-// must be >= the min.
+// Adds an a=fmtp: x-google-start-bitrate=kbps line, if videoSendInitialBitrate
+// is specified or if there is a value stored from a previous call.
 function maybeSetVideoSendInitialBitRate(sdp) {
-  if (!videoSendInitialBitrate) {
-    return sdp;
+  var initialBitRateKbps = videoSendInitialBitrate;
+
+  // If no initial bitrate specific, use available send bandwidth from last call.
+  if (!initialBitRateKbps && localStorage) {
+    initialBitRateKbps = parseInt(localStorage.lastAvailableSendBandwidth) / 1000;
   }
 
-  // Validate the initial bitrate value.
-  var maxBitrate = videoSendInitialBitrate;
-  if (videoSendBitrate) {
-    if (videoSendInitialBitrate > videoSendBitrate) {
-      messageError('Clamping initial bitrate to max bitrate of ' +
-          videoSendBitrate + ' kbps.')
-      videoSendInitialBitrate = videoSendBitrate;
-    }
-    maxBitrate = videoSendBitrate;
+  if (!initialBitRateKbps || initialBitRateKbps <= 0)
+    return sdp;
+
+  if (videoSendBitrate && initialBitRateKbps > videoSendBitrate) {
+    messageError('Clamping initial bitrate to max bitrate of ' +
+        videoSendBitrate + ' kbps.')
+    initialBitRateKbps = videoSendBitrate;
   }
 
   var sdpLines = sdp.split('\r\n');
@@ -895,9 +908,8 @@ function maybeSetVideoSendInitialBitRate(sdp) {
 
   var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
   var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
-  var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
-     videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
-     maxBitrate.toString();
+  var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-start-bitrate=' +
+     initialBitRateKbps.toString();
   sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
   return sdpLines.join('\r\n');
 }
