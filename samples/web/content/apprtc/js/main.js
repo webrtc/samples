@@ -466,7 +466,7 @@ function refreshStats() {
 }
 
 // Return the integer stat |statName| from the object with type |statObj| in
-// |stats|, or null if not present.
+// |stats|, or undefined if not present.
 function extractStatAsInt(stats, statObj, statName) {
   // Ignore stats that have a 'nullish' value.
   // The correct fix is indicated in
@@ -478,7 +478,6 @@ function extractStatAsInt(stats, statObj, statName) {
       return val;
     }
   }
-  return null;
 }
 
 // Return the stat |statName| from the object with type |statObj| in |stats|
@@ -521,7 +520,6 @@ function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
     var e2eDelay = nowNTP - captureStart - remoteVideoCurrentTime * 1000;
     return e2eDelay.toFixed(0);
   }
-  return null;
 }
 
 function onRemoteStreamRemoved() {
@@ -705,10 +703,10 @@ function updateInfoDiv() {
       contents += buildLine('Setup time',
           (endTime - startTime).toFixed(0).toString() + 'ms');
     }
-    if (rtt !== null) {
+    if (typeof rtt !== 'undefined') {
       contents += buildLine('RTT', rtt.toString() + 'ms');
     }
-    if (e2eDelay !== null) {
+    if (typeof e2eDelay !== 'undefined') {
       contents += buildLine('End to end', e2eDelay.toString() + 'ms');
     }
   }
