@@ -58,11 +58,25 @@ function VideoPipe(stream, handler) {
     handler(e.stream);
   }
   pc1.createOffer(function(desc) {
-    pc1.setLocalDescription(desc);
-    pc2.setRemoteDescription(desc);
+    pc1.setLocalDescription(desc,
+      function() {
+      },
+      console.error
+    );
+    pc2.setRemoteDescription(desc,
+      function() {
+      },
+      console.error);
     pc2.createAnswer(function(desc2) {
-      pc2.setLocalDescription(desc2);
-      pc1.setRemoteDescription(desc2);
+      pc2.setLocalDescription(desc2,
+        function() {
+        },
+        console.error);
+      pc1.setRemoteDescription(desc2,
+        function() {
+        },
+        console.error
+      );
     }, errorHandler('pc2.createAnswer'));
   }, errorHandler('pc1.createOffer'));
   this.pc1 = pc1;
