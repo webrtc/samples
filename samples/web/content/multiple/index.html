@@ -108,9 +108,17 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function gotDescription1Local(desc) {
-  pc1_local.setLocalDescription(desc);
+  pc1_local.setLocalDescription(desc, 
+    function() {
+    },
+    console.error
+  );
   trace("Offer from pc1_local \n" + desc.sdp);
-  pc1_remote.setRemoteDescription(desc);
+  pc1_remote.setRemoteDescription(desc,
+    function() {
+    },
+    console.error
+  );
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
@@ -119,15 +127,31 @@ function gotDescription1Local(desc) {
 }
 
 function gotDescription1Remote(desc) {
-  pc1_remote.setLocalDescription(desc);
+  pc1_remote.setLocalDescription(desc,
+    function() {
+    },
+    console.error
+  );
   trace("Answer from pc1_remote \n" + desc.sdp);
-  pc1_local.setRemoteDescription(desc);
+  pc1_local.setRemoteDescription(desc,
+    function() {
+    },
+    console.error
+  );
 }
 
 function gotDescription2Local(desc) {
-  pc2_local.setLocalDescription(desc);
+  pc2_local.setLocalDescription(desc,
+    function() {
+    },
+    console.error
+  );
   trace("Offer from pc2_local \n" + desc.sdp);
-  pc2_remote.setRemoteDescription(desc);
+  pc2_remote.setRemoteDescription(desc,
+    function() {
+    },
+    console.error
+  );
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
@@ -136,9 +160,17 @@ function gotDescription2Local(desc) {
 }
 
 function gotDescription2Remote(desc) {
-  pc2_remote.setLocalDescription(desc);
+  pc2_remote.setLocalDescription(desc,
+    function() {
+    },
+    console.error
+  );
   trace("Answer from pc2_remote \n" + desc.sdp);
-  pc2_local.setRemoteDescription(desc);
+  pc2_local.setRemoteDescription(desc,
+    function() {
+    },
+    console.error
+  );
 }
 
 function hangup() {

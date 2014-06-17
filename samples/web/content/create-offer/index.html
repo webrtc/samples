@@ -82,7 +82,11 @@ function createOffer() {
 }
 
 function gotDescription(desc) {
-  pc.setLocalDescription(desc);
+  pc.setLocalDescription(desc,
+    function() {
+    },
+    console.error
+  );
   output.value = desc.sdp;
 }
 </script>

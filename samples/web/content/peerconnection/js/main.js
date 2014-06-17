@@ -114,9 +114,19 @@ function onCreateSessionDescriptionError(error) {
 function onCreateOfferSuccess(desc) {
   trace('Offer from pc1\n' + desc.sdp);
   trace('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc, function() { onSetLocalSuccess(pc1); });
+  pc1.setLocalDescription(desc, 
+    function() {
+      onSetLocalSuccess(pc1);
+    },
+    console.error
+  );
   trace('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc, function() { onSetRemoteSuccess(pc2); });
+  pc2.setRemoteDescription(desc, 
+    function() {
+      onSetRemoteSuccess(pc2);
+    },
+    console.error
+  );
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -142,9 +152,19 @@ function gotRemoteStream(e) {
 function onCreateAnswerSuccess(desc) {
   trace('Answer from pc2:\n' + desc.sdp);
   trace('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc, function() { onSetLocalSuccess(pc2); });
+  pc2.setLocalDescription(desc,
+    function() {
+      onSetLocalSuccess(pc2); 
+    },
+    console.error
+  );
   trace('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc, function() { onSetRemoteSuccess(pc1); });
+  pc1.setRemoteDescription(desc,
+    function() {
+      onSetRemoteSuccess(pc1);
+    },
+    console.error
+  );
 }
 
 

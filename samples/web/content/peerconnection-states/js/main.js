@@ -106,17 +106,33 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function gotDescription1(description) {
-  pc1.setLocalDescription(description);
+  pc1.setLocalDescription(description,
+    function() {
+    },
+    console.error
+  );
   trace('Offer from pc1: \n' + description.sdp);
-  pc2.setRemoteDescription(description);
+  pc2.setRemoteDescription(description,
+    function() {
+    },
+    console.error
+  );
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
     sdpConstraints);
 }
 
 function gotDescription2(description) {
-  pc2.setLocalDescription(description);
+  pc2.setLocalDescription(description,
+    function() {
+    },
+    console.error
+  );
   trace('Answer from pc2 \n' + description.sdp);
-  pc1.setRemoteDescription(description);
+  pc1.setRemoteDescription(description,
+    function() {
+    },
+    console.error
+  );
 }
 
 function hangup() {

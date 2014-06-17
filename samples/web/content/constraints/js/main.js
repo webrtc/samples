@@ -157,12 +157,28 @@ function createPeerConnection() {
   };
   localPeerConnection.createOffer(function (desc) {
     console.log('localPeerConnection offering');
-    localPeerConnection.setLocalDescription(desc);
-    remotePeerConnection.setRemoteDescription(desc);
+    localPeerConnection.setLocalDescription(desc, 
+      function() {
+      },
+      console.error
+    );
+    remotePeerConnection.setRemoteDescription(desc,
+      function() {
+      },
+      console.error
+    );
     remotePeerConnection.createAnswer(function (desc2) {
       console.log('remotePeerConnection answering');
-      remotePeerConnection.setLocalDescription(desc2);
-      localPeerConnection.setRemoteDescription(desc2);
+      remotePeerConnection.setLocalDescription(desc2, 
+        function() {
+        },
+        console.error
+      );
+      localPeerConnection.setRemoteDescription(desc2,
+        function() {
+        },
+        console.error
+      );
     });
   });
 }

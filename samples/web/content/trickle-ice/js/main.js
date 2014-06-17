@@ -92,7 +92,11 @@ function start() {
 
 function gotDescription(desc) {
   begin = window.performance.now();
-  pc.setLocalDescription(desc);
+  pc.setLocalDescription(desc,
+    function() {
+    },
+    console.error
+  );
 }
 
 function noDescription(error) {
