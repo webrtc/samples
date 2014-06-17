@@ -533,16 +533,22 @@ function onRemoteHangup() {
   stop();
 }
 
-// Pass this function as a callback to RTCPeerConnection.getStats
-// to store latest BWE. This can be done even after the peer connection
-// is closed.
-function storeBandwidthEstimation(report) {
-  if (!localStorage) return;
+// If feature enabled, stores bandwidth estimation on local storage so it can be
+// used as a start bitrate on next call via getLastAvailableSendBandwidthKbps.
+function storeBandwidthEstimation() {
+  if (startAtLastSendBitrate === "false" || !localStorage) return;
+  pc.getStats(function (report) {
+      var value = extractStatAsInt(report.result(), "VideoBwe",
+          "googAvailableSendBandwidth");
+      trace('Storing available send bandwidth on local storage: ' + value);
+      localStorage.lastAvailableSendBandwidth = value;
+  });
+}
 
-  var bweReport = report.namedItem("bweforvideo");
-  if (bweReport) {
-    localStorage.lastAvailableSendBandwidth = bweReport.stat("googAvailableSendBandwidth");
-  }
+// Returns NaN if feature not enabled or can't get last available send bitrate.
+function getLastAvailableSendBandwidthKbps() {
+  if (startAtLastSendBitrate === "false" || !localStorage) return NaN;
+  return parseInt(localStorage.lastAvailableSendBandwidth) / 1000;
 }
 
 function stop() {
@@ -551,7 +557,7 @@ function stop() {
   isAudioMuted = false;
   isVideoMuted = false;
   pc.close();
-  pc.getStats(storeBandwidthEstimation);
+  storeBandwidthEstimation();
   pc = null;
   remoteStream = null;
   msgQueue.length = 0;
@@ -884,8 +890,8 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var initialBitRateKbps = videoSendInitialBitrate;
 
   // If no initial bitrate specific, use available send bandwidth from last call.
-  if (!initialBitRateKbps && localStorage) {
-    initialBitRateKbps = parseInt(localStorage.lastAvailableSendBandwidth) / 1000;
+  if (!initialBitRateKbps) {
+    initialBitRateKbps = getLastAvailableSendBandwidthKbps();
   }
 
   if (!initialBitRateKbps || initialBitRateKbps <= 0)
