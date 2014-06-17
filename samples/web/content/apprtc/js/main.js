@@ -885,7 +885,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
 
   // Find c-line corresponding to the m-line.
   var cLineIndex = findLineInRange(sdpLines, mLineIndex + 1, nextMLineIndex,
-    'c=');
+      'c=');
   if (cLineIndex === null) {
     messageError('Failed to add bandwidth line to sdp, as no c-line found');
     return sdp;
@@ -893,7 +893,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
 
   // Check if bandwidth line already exists between c-line and next m-line.
   var bLineIndex = findLineInRange(sdpLines, cLineIndex + 1, nextMLineIndex,
-    'b=AS');
+      'b=AS');
   if (bLineIndex) {
     sdpLines.splice(bLineIndex, 1);
   }
@@ -966,14 +966,6 @@ function maybePreferAudioReceiveCodec(sdp) {
 // Sets |codec| as the default audio codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function preferAudioCodec(sdp, codec) {
-  var fields = codec.split('/');
-  if (fields.length !== 2) {
-    trace('Invalid codec setting: ' + codec);
-    return sdp;
-  }
-
-  // var name = fields[0];
-  // var rate = fields[1];
   var sdpLines = sdp.split('\r\n');
 
   // Search for m line.
@@ -1091,9 +1083,9 @@ window.onresize = function() {
   var innerHeight = this.innerHeight;
   var innerWidth = this.innerWidth;
   var videoWidth = innerWidth < aspectRatio * window.innerHeight ?
-    innerWidth : aspectRatio * window.innerHeight;
+      innerWidth : aspectRatio * window.innerHeight;
   var videoHeight = innerHeight < window.innerWidth / aspectRatio ?
-    innerHeight : window.innerWidth / aspectRatio;
+      innerHeight : window.innerWidth / aspectRatio;
   containerDiv.style.width = videoWidth + 'px';
   containerDiv.style.height = videoHeight + 'px';
   containerDiv.style.left = (innerWidth - videoWidth) / 2 + 'px';
