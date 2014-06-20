@@ -109,13 +109,13 @@ function gotDescription1(description) {
   pc1.setLocalDescription(description,
     function() {
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description,
     function() {
     },
-    console.error
+    setRemoteDescriptionFailure
   );
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
     sdpConstraints);
@@ -125,13 +125,13 @@ function gotDescription2(description) {
   pc2.setLocalDescription(description,
     function() {
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('Answer from pc2 \n' + description.sdp);
   pc1.setRemoteDescription(description,
     function() {
     },
-    console.error
+    setRemoteDescriptionFailure
   );
 }
 

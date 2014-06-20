@@ -118,14 +118,14 @@ function onCreateOfferSuccess(desc) {
     function() {
       onSetLocalSuccess(pc1);
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('pc2 setRemoteDescription start');
   pc2.setRemoteDescription(desc, 
     function() {
       onSetRemoteSuccess(pc2);
     },
-    console.error
+    setRemoteDescriptionFailure
   );
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
@@ -156,14 +156,14 @@ function onCreateAnswerSuccess(desc) {
     function() {
       onSetLocalSuccess(pc2); 
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('pc1 setRemoteDescription start');
   pc1.setRemoteDescription(desc,
     function() {
       onSetRemoteSuccess(pc1);
     },
-    console.error
+    setRemoteDescriptionFailure
   );
 }
 

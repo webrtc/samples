@@ -119,13 +119,13 @@ function gotDescription1(desc) {
   localConnection.setLocalDescription(desc,
     function() {
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('Offer from localConnection \n' + desc.sdp);
   remotePeerConnection.setRemoteDescription(desc,
     function() {
     },
-    console.error
+    setRemoteDescriptionFailure
   );
   remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
@@ -134,12 +134,13 @@ function gotDescription2(desc) {
   remotePeerConnection.setLocalDescription(desc,
     function() {
     },
-    console.error);
+    setLocalDescriptionFailure
+  );
   trace('Answer from remotePeerConnection \n' + desc.sdp);
   localConnection.setRemoteDescription(desc,
     function() {
     },
-    console.error
+    setRemoteDescriptionFailure
   );
 }
 

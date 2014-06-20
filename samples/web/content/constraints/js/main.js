@@ -160,24 +160,24 @@ function createPeerConnection() {
     localPeerConnection.setLocalDescription(desc, 
       function() {
       },
-      console.error
+      setLocalDescriptionFailure
     );
     remotePeerConnection.setRemoteDescription(desc,
       function() {
       },
-      console.error
+      setRemoteDescriptionFailure
     );
     remotePeerConnection.createAnswer(function (desc2) {
       console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(desc2, 
         function() {
         },
-        console.error
+        setLocalDescriptionFailure
       );
       localPeerConnection.setRemoteDescription(desc2,
         function() {
         },
-        console.error
+        setRemoteDescriptionFailure
       );
     });
   });

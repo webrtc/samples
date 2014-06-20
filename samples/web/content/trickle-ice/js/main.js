@@ -95,7 +95,7 @@ function gotDescription(desc) {
   pc.setLocalDescription(desc,
     function() {
     },
-    console.error
+    setLocalDescriptionFailure
   );
 }
 

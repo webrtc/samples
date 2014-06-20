@@ -92,13 +92,13 @@ function gotDescription1(desc) {
   pc1.setLocalDescription(desc,
     function() {
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc,
     function() {
     },
-    console.error
+    setRemoteDescriptionFailure
   );
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -115,13 +115,13 @@ function gotDescription2(desc) {
   pc2.setLocalDescription(desc,
     function() {
     },
-    console.error
+    setLocalDescriptionFailure
   );
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc,
     function() {
     },
-    console.error
+    setRemoteDescriptionFailure
   );
 }
 
