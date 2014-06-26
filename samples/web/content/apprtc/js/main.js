@@ -268,6 +268,9 @@ function setRemote(message) {
   if (stereo) {
     message.sdp = addStereo(message.sdp);
   }
+  if (opusfec) {
+    message.sdp = addUseInbandFec(message.sdp);
+  }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendBitRate(message.sdp);
@@ -1006,6 +1009,30 @@ function addStereo(sdp) {
 
   // Append stereo=1 to fmtp line.
   sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; stereo=1');
+
+  sdp = sdpLines.join('\r\n');
+  return sdp;
+}
+
+// Sets Opus Fec if enabled, by adding the useinbandfec=1 fmtp param.
+function addUseInbandFec(sdp) {
+  var sdpLines = sdp.split('\r\n');
+
+  // Find opus payload.
+  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000');
+  var opusPayload;
+  if (opusIndex) {
+    opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
+  }
+
+  // Find the payload in fmtp line.
+  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
+  if (fmtpLineIndex === null) {
+    return sdp;
+  }
+
+  // Append useinbandfec=1 to fmtp line.
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; useinbandfec=1');
 
   sdp = sdpLines.join('\r\n');
   return sdp;
