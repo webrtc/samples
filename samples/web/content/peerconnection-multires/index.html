@@ -1,3 +1,10 @@
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,10 +29,11 @@
 <body>
 
 <div id="container">
-  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection with two video tracks</span></h1>
+  <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> 
+      <span>Peer connection with two video tracks</span></h1>
   This demo requests two MediaStreams where the video resolution is different in each track.
   Both streams are sent on a PeerConnection. </br> 
-  This demo works in Chrome M37 and later.</br> 
+  This demo requires Chrome M37 or later. On M38 and later, the second video track has lower framer rate than the first track. </br> 
   <div id="localVideo">
     <video autoplay muted></video>
     <div></div>
@@ -42,12 +50,17 @@
     <button id="hangupButton">Hang Up</button>
   </div>
 
-  <p>View the console to see logging. The <code>MediaStream</code> objects <code>localStream1</code>, <code>localStream2</code>, <code>remoteStream1</code>, <code>remoteStream2</code>, and the <code>RTCPeerConnection</code> objects <code>localPeerConnection</code> and <code>remotePeerConnection</code> are in global scope, so you can inspect them in the console as well.</p>
+  <p>View the console to see logging. The <code>MediaStream</code> objects <code>localStream1</code>, 
+  <code>localStream2</code>, <code>remoteStream1</code>, <code>remoteStream2</code>, and the
+  <code>RTCPeerConnection</code> objects <code>localPeerConnection</code> and <code>remotePeerConnection</code> 
+  are in global scope, so you can inspect them in the console as well.</p>
 
-  <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/" title="HTML5 Rocks article about WebRTC by Sam Dutton">Getting Started With WebRTC</a>.</p>
+  <p>For more information about RTCPeerConnection, see 
+  <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/" title="HTML5 Rocks article about WebRTC by Sam Dutton">
+      Getting Started With WebRTC</a>.</p>
 
 
-<a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection_multires" title="View source for this page on Github" id="viewSource">View source on Github</a>
+<a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection-multires" title="View source for this page on Github" id="viewSource">View source on Github</a>
 
 </div>
 
