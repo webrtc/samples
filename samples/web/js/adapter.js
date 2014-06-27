@@ -25,8 +25,8 @@ function maybeFixConfiguration(pcConfig) {
   }
   for (var i = 0; i < pcConfig.iceServers.length; i++) {
     if (pcConfig.iceServers[i].hasOwnProperty('urls')){
-      pcConfig.iceServers[i]['url'] = pcConfig.iceServers[i]['urls'];
-      delete pcConfig.iceServers[i]['urls'];
+      pcConfig.iceServers[i].url = pcConfig.iceServers[i].urls;
+      delete pcConfig.iceServers[i].urls;
     }
   }
 }
@@ -44,7 +44,7 @@ if (navigator.mozGetUserMedia) {
     // .urls is not supported in FF yet.
     maybeFixConfiguration(pcConfig);
     return new mozRTCPeerConnection(pcConfig, pcConstraints);
-  }
+  };
 
   // The RTCSessionDescription object.
   RTCSessionDescription = mozRTCSessionDescription;
@@ -99,7 +99,7 @@ if (navigator.mozGetUserMedia) {
       }
     }
     return iceServers;
-  }
+  };
 
   // Attach a media stream to an element.
   attachMediaStream = function(element, stream) {
@@ -171,7 +171,7 @@ if (navigator.mozGetUserMedia) {
       maybeFixConfiguration(pcConfig);
     }
     return new webkitRTCPeerConnection(pcConfig, pcConstraints);
-  }
+  };
 
   // Get UserMedia (only difference is the prefix).
   // Code from Adam Barth.
