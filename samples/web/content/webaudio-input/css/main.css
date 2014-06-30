@@ -5,83 +5,45 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+audio {
+  margin: 0 0 20px 0;
+  width: 50%;
+}
+
 button {
   margin: 0 20px 20px 0;
-  width: 96px;
+  width: 89px;
 }
 
-div#dialPad button {
-  background-color: #ddd;
-  border: 1px solid #ccc;
-  color: black;
-  font-size: 1em;
-  font-weight: 400;
-  height: 40px;
-  margin: 0 10px 10px 0;
-  width: 40px;
-}
-
-div#dialPad button:hover {
-  background-color: #aaa;
-}
-
-div#dialPad button:active {
-  background-color: #888;
-}
-
-div#dialPad {
-  display: inline-block;
-  margin: 0 20px 20px 0;
-  vertical-align: top;
-}
-
-div#parameters {
-  margin: 0 0 25px 0;
-}
-
-div#parameters > div {
-  height: 28px;
-  margin: 0 0 10px 0;
-}
-
-div#dtmf {
-  background-color: #eee;
-  display: inline-block;
-  height: 180px;
+div#options {
   margin: 0 0 20px 0;
-  padding: 5px 5px 5px 10px;
-  width: calc(100% - 239px);
 }
 
-div#dtmf div {
-  font-family: 'Inconsolata', 'Courier New', monospace;
+div#status {
+  background-color: #eee;
+  min-height: 140px;
+  overflow-y: scroll;
+  margin: 0 0 20px 0;
+  padding: 0 0 0 10px;
+  width: 50%;
 }
 
-div#sentTones {
-  display: inline-block;
-  line-height: 1.2em;
+input[type='checkbox'] {
+  margin: 0 10px 0 0;
+  position: relative;
+  top: -2px;
 }
 
-div#dtmfStatus {
+label {
+  font-weight: 400;
+}
+
+li {
   margin: 0 0 10px 0;
 }
 
-div#parameters input {
-  font-size: 1em;
-  width: 62px;
+ul {
+  list-style-type: square;
+  padding: 0 0 0 18px;
 }
-
-div#parameters input#tones {
-  width: calc(100% - 78px);
-}
-
-div#parameters label {
-  display: inline-block;
-  font-weight: 400;
-  height: 28px;
-  position: relative;
-  top: 4px;
-  vertical-align: top;
-  width: 68px;
-}
-

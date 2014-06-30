@@ -5,6 +5,16 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+
+'use strict';
+
+/* jshint browser: true, camelcase: true, curly: true, devel: true,
+eqeqeq: true, forin: false, globalstrict: true, indent:2, quotmark: single,
+undef: true, unused: strict */
+
+/* global attachMediaStream, getUserMedia, MediaStreamTrack, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription, trace */
+
 var getMediaButton = document.querySelector('button#getMedia');
 var createPeerConnectionButton = document.querySelector('button#createPeerConnection');
 var createOfferButton = document.querySelector('button#createOffer');
@@ -47,8 +57,9 @@ var sdpConstraints = {
 getSources();
 
 function getSources() {
-  if (typeof MediaStreamTrack === 'undefined'){
-    alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
+  if (typeof MediaStreamTrack === 'undefined') {
+    alert(
+      'This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
   } else {
     MediaStreamTrack.getSources(gotSources);
     selectSourceDiv.classList.remove('hidden');
@@ -82,7 +93,7 @@ function getMedia() {
   getMediaButton.disabled = true;
   createPeerConnectionButton.disabled = false;
 
-  if (!!localStream) {
+  if ( !! localStream) {
     localVideo.src = null;
     localStream.stop();
   }
@@ -93,15 +104,19 @@ function getMedia() {
 
   var constraints = {
     audio: {
-      optional: [{sourceId: audioSource}]
+      optional: [{
+        sourceId: audioSource
+      }]
     },
     video: {
-      optional: [{sourceId: videoSource}]
+      optional: [{
+        sourceId: videoSource
+      }]
     }
   };
   trace('Requested local stream');
-  getUserMedia(constraints, gotStream, function(e){
-    console.log("navigator.getUserMedia error: ", e);
+  getUserMedia(constraints, gotStream, function(e) {
+    console.log('navigator.getUserMedia error: ', e);
   });
 }
 
@@ -159,7 +174,8 @@ function maybeAddLineBreakToEnd(sdp) {
 }
 
 function createOffer() {
-  localPeerConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localPeerConnection.createOffer(gotDescription1,
+    onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -191,7 +207,8 @@ function createAnswer() {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+  remotePeerConnection.createAnswer(gotDescription2,
+    onCreateSessionDescriptionError,
     sdpConstraints);
 }
 
@@ -219,7 +236,7 @@ function gotDescription2(description) {
 function hangup() {
   remoteVideo.src = '';
   trace('Ending call');
-//  localStream.stop();
+  //  localStream.stop();
   localPeerConnection.close();
   remotePeerConnection.close();
   localPeerConnection = null;
