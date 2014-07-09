@@ -7,44 +7,50 @@
  *  tree.
 -->
 <html>
+
 <head>
-<title>WebRTC Reference App</title>
 
-<meta charset="utf-8">
-<meta name="description" content="WebRTC reference app">
-<meta http-equiv="X-UA-Compatible" content="chrome=1">
-{{ meta_viewport }}
+  <title>WebRTC Reference App</title>
 
-<link rel="canonical" href="{{ room_link }}">
-<link rel="stylesheet" href="css/main.css" >
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC reference app">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  {{ meta_viewport }}
+
+  <link rel="canonical" href="{{ room_link }}">
+  <link rel="stylesheet" href="css/main.css" >
 
 </head>
+
 <body>
+
 <div id="container" ondblclick="enterFullScreen()" ontouchend="enterFullScreen()">
   <div id="card">
     <div id="local">
-      <video id="localVideo" autoplay="autoplay" muted="true"/>
+      <video id="localVideo" autoplay="autoplay" muted="true"></video>
     </div>
     <div id="remote">
       <!-- Remote video is displayed in the canvas below when stereoscopic
-           rendering is requested (&ssr=true). -->
+          rendering is requested (&ssr=true). -->
       <canvas id="remoteCanvas" style="display: none;"></canvas>
-      <video id="remoteVideo" autoplay="autoplay">
-      </video>
+      <video id="remoteVideo" autoplay="autoplay"></video>
       <div id="mini">
-        <video id="miniVideo" autoplay="autoplay" muted="true"/>
+        <video id="miniVideo" autoplay="autoplay" muted="true"></video>
       </div>
     </div>
   </div>
 </div>
-<footer id="status">
-</footer>
+
+<footer id="status"></footer>
+
 <div id="infoDiv"></div>
+
 <script type="text/javascript" src="/_ah/channel/jsapi"></script>
 <script src="/js/main.js"></script>
 {{ include_vr_js }}
 <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
 <script src="/js/adapter.js"></script>
+
 <script type="text/javascript">
   var errorMessages = {{ error_messages }};
   var channelToken = '{{ token }}';
@@ -68,5 +74,6 @@
   var audioRecvCodec = '{{ audio_receive_codec }}';
   setTimeout(initialize, 1);
 </script>
+
 </body>
 </html>
