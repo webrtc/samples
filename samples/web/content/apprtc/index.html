@@ -18,7 +18,7 @@
   {{ meta_viewport }}
 
   <link rel="canonical" href="{{ room_link }}">
-  <link rel="stylesheet" href="css/main.css" >
+  <link rel="stylesheet" href="css/main.css">
 
 </head>
 
@@ -27,7 +27,7 @@
 <div id="container" ondblclick="enterFullScreen()" ontouchend="enterFullScreen()">
   <div id="card">
     <div id="local">
-      <video id="localVideo" autoplay="autoplay" muted="true"></video>
+      <video id="localVideo" autoplay="autoplay" muted></video>
     </div>
     <div id="remote">
       <!-- Remote video is displayed in the canvas below when stereoscopic
@@ -35,7 +35,7 @@
       <canvas id="remoteCanvas" style="display: none;"></canvas>
       <video id="remoteVideo" autoplay="autoplay"></video>
       <div id="mini">
-        <video id="miniVideo" autoplay="autoplay" muted="true"></video>
+        <video id="miniVideo" autoplay="autoplay" muted></video>
       </div>
     </div>
   </div>
