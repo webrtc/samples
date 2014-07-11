@@ -90,14 +90,12 @@ function call() {
 
 function gotDescription1(desc) {
   pc1.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
   // Since the 'remote' side has no media stream we need
@@ -113,14 +111,12 @@ function gotDescription2(desc) {
   // Workaround for issue 1603.
   desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
   pc2.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }

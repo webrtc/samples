@@ -158,20 +158,17 @@ function createPeerConnection() {
   localPeerConnection.createOffer(function (desc) {
     console.log('localPeerConnection offering');
     localPeerConnection.setLocalDescription(desc, 
-      function() {
-      },
+      setLocalDescriptionSuccess,
       setLocalDescriptionFailure
     );
     remotePeerConnection.setRemoteDescription(desc,
-      function() {
-      },
+      setLocalDescriptionSuccess,
       setRemoteDescriptionFailure
     );
     remotePeerConnection.createAnswer(function (desc2) {
       console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(desc2, 
-        function() {
-        },
+        setLocalDescriptionSuccess,
         setLocalDescriptionFailure
       );
       localPeerConnection.setRemoteDescription(desc2,

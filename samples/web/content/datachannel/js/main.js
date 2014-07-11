@@ -117,14 +117,12 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace('Offer from localConnection \n' + desc.sdp);
   remotePeerConnection.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
   remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
@@ -132,14 +130,12 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remotePeerConnection.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace('Answer from remotePeerConnection \n' + desc.sdp);
   localConnection.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }

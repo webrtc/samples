@@ -109,14 +109,12 @@ function onCreateSessionDescriptionError(error) {
 
 function gotDescription1Local(desc) {
   pc1_local.setLocalDescription(desc, 
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Offer from pc1_local \n" + desc.sdp);
   pc1_remote.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
   // Since the "remote" side has no media stream we need
@@ -128,28 +126,24 @@ function gotDescription1Local(desc) {
 
 function gotDescription1Remote(desc) {
   pc1_remote.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Answer from pc1_remote \n" + desc.sdp);
   pc1_local.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }
 
 function gotDescription2Local(desc) {
   pc2_local.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Offer from pc2_local \n" + desc.sdp);
   pc2_remote.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
   // Since the "remote" side has no media stream we need
@@ -161,14 +155,12 @@ function gotDescription2Local(desc) {
 
 function gotDescription2Remote(desc) {
   pc2_remote.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Answer from pc2_remote \n" + desc.sdp);
   pc2_local.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }

@@ -166,14 +166,12 @@
     var modifiedOffer = new RTCSessionDescription({type: 'offer',
                                                    sdp: forceOpus(desc.sdp)});
     pc1.setLocalDescription(modifiedOffer,
-      function() {
-      },
+      setLocalDescriptionSuccess,
       setLocalDescriptionFailure
     );
     console.log('Offer from pc1 \n' + modifiedOffer.sdp);
     pc2.setRemoteDescription(modifiedOffer,
-      function() {
-      },
+      setRemoteDescriptionSuccess,
       setRemoteDescriptionFailure
     );
     pc2.createAnswer(gotDescription2, createAnswerFailure);
@@ -181,14 +179,12 @@
 
   function gotDescription2(desc){
     pc2.setLocalDescription(desc,
-      function() {
-      },
+      setLocalDescriptionSuccess,
       setLocalDescriptionFailure
     );
     console.log('Answer from pc2 \n' + desc.sdp);
     pc1.setRemoteDescription(desc,
-      function() {
-      },
+      setRemoteDescriptionSuccess,
       setRemoteDescriptionFailure
     );
   }

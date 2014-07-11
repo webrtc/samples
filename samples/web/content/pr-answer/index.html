@@ -82,14 +82,12 @@ function onCreateSessionDescriptionError(error) {
 
 function gotDescription1(desc) {
   pc1.setLocalDescription(desc, 
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Offer from pc1 \n" + desc.sdp);
   pc2.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
   // Since the "remote" side has no media stream we need
@@ -104,14 +102,12 @@ function gotDescription2(desc) {
   desc.sdp = desc.sdp.replace(/a=recvonly/g, "a=inactive");
   desc.type = "pranswer";
   pc2.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Pranswer from pc2 \n" + desc.sdp);
   pc1.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }
@@ -121,14 +117,12 @@ function gotDescription3(desc) {
   desc.sdp = desc.sdp.replace(/a=inactive/g, "a=recvonly");
   desc.type = "answer";
   pc2.setLocalDescription(desc,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace("Answer from pc2 \n" + desc.sdp);
   pc1.setRemoteDescription(desc,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }

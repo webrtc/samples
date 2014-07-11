@@ -107,14 +107,12 @@ function onCreateSessionDescriptionError(error) {
 
 function gotDescription1(description) {
   pc1.setLocalDescription(description,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
@@ -123,14 +121,12 @@ function gotDescription1(description) {
 
 function gotDescription2(description) {
   pc2.setLocalDescription(description,
-    function() {
-    },
+    setLocalDescriptionSuccess,
     setLocalDescriptionFailure
   );
   trace('Answer from pc2 \n' + description.sdp);
   pc1.setRemoteDescription(description,
-    function() {
-    },
+    setRemoteDescriptionSuccess,
     setRemoteDescriptionFailure
   );
 }

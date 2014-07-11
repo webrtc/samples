@@ -116,6 +116,7 @@ function onCreateOfferSuccess(desc) {
   trace('pc1 setLocalDescription start');
   pc1.setLocalDescription(desc, 
     function() {
+      setLocalDescriptionSuccess();
       onSetLocalSuccess(pc1);
     },
     setLocalDescriptionFailure
@@ -123,6 +124,7 @@ function onCreateOfferSuccess(desc) {
   trace('pc2 setRemoteDescription start');
   pc2.setRemoteDescription(desc, 
     function() {
+      setRemoteDescriptionSuccess();
       onSetRemoteSuccess(pc2);
     },
     setRemoteDescriptionFailure
@@ -154,6 +156,7 @@ function onCreateAnswerSuccess(desc) {
   trace('pc2 setLocalDescription start');
   pc2.setLocalDescription(desc,
     function() {
+      setLocalDescriptionSuccess();
       onSetLocalSuccess(pc2); 
     },
     setLocalDescriptionFailure
@@ -161,6 +164,7 @@ function onCreateAnswerSuccess(desc) {
   trace('pc1 setRemoteDescription start');
   pc1.setRemoteDescription(desc,
     function() {
+      setRemoteDescriptionSuccess();
       onSetRemoteSuccess(pc1);
     },
     setRemoteDescriptionFailure
