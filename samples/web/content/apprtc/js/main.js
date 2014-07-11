@@ -266,10 +266,10 @@ function setLocalAndSendMessage(sessionDescription) {
 function setRemote(message) {
   // Set Opus in Stereo, if stereo enabled.
   if (stereo) {
-    message.sdp = addStereo(message.sdp);
+    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo=1');
   }
   if (opusfec) {
-    message.sdp = addUseInbandFec(message.sdp);
+    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
   }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
@@ -990,49 +990,24 @@ function preferAudioCodec(sdp, codec) {
   return sdp;
 }
 
-// Sets Opus in stereo if stereo is enabled, by adding the stereo=1 fmtp param.
-function addStereo(sdp) {
+// Adds fmtp param to specified codec in SDP.
+function addCodecParam(sdp, codec, param) {
   var sdpLines = sdp.split('\r\n');
 
   // Find opus payload.
-  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000');
-  var opusPayload;
-  if (opusIndex) {
-    opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
+  var index = findLine(sdpLines, 'a=rtpmap', codec);
+  var payload;
+  if (index) {
+    payload = getCodecPayloadType(sdpLines[index]);
   }
 
   // Find the payload in fmtp line.
-  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
+  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + payload.toString());
   if (fmtpLineIndex === null) {
     return sdp;
   }
 
-  // Append stereo=1 to fmtp line.
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; stereo=1');
-
-  sdp = sdpLines.join('\r\n');
-  return sdp;
-}
-
-// Sets Opus Fec if enabled, by adding the useinbandfec=1 fmtp param.
-function addUseInbandFec(sdp) {
-  var sdpLines = sdp.split('\r\n');
-
-  // Find opus payload.
-  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000');
-  var opusPayload;
-  if (opusIndex) {
-    opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
-  }
-
-  // Find the payload in fmtp line.
-  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
-  if (fmtpLineIndex === null) {
-    return sdp;
-  }
-
-  // Append useinbandfec=1 to fmtp line.
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; useinbandfec=1');
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
 
   sdp = sdpLines.join('\r\n');
   return sdp;
