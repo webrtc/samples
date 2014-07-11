@@ -52,7 +52,7 @@ if (navigator.mozGetUserMedia) {
   webrtcDetectedBrowser = 'firefox';
 
   webrtcDetectedVersion =
-    parseInt(navigator.userAgent.match(/Firefox\/([0-9]+)\./)[1], 10);
+      parseInt(navigator.userAgent.match(/Firefox\/([0-9]+)\./)[1], 10);
 
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
@@ -72,45 +72,30 @@ if (navigator.mozGetUserMedia) {
   getUserMedia = navigator.mozGetUserMedia.bind(navigator);
   navigator.getUserMedia = getUserMedia;
 
-  // Creates ICE server from the URL for FF.
+  // Creates iceServer from the URL for Firefox.
   window.createIceServer = function(url, username, password) {
     var iceServer = null;
     var urlParts = url.split(':');
     if (urlParts[0].indexOf('stun') === 0) {
-      // Create ICE server with STUN URL.
+      // Create iceServer with STUN URL.
       iceServer = {
         'url': url
       };
     } else if (urlParts[0].indexOf('turn') === 0) {
-      if (webrtcDetectedVersion < 27) {
-        // Create iceServer with turn url.
-        // Ignore the transport parameter from TURN url for FF version <=27.
-        var turnUrlParts = url.split('?');
-        // Return null for createIceServer if transport=tcp.
-        if (turnUrlParts.length === 1 ||
-          turnUrlParts[1].indexOf('transport=udp') === 0) {
-          iceServer = {
-            'url': turnUrlParts[0],
-            'credential': password,
-            'username': username
-          };
-        }
-      } else {
-        // FF 27 and above supports transport parameters in TURN url,
-        // So passing in the full url to create iceServer.
+        // Firefox 27 and above supports transport parameters in TURN URL,
+        // So passing in the full URL to create iceServer.
         iceServer = {
           'url': url,
           'credential': password,
           'username': username
         };
-      }
     }
     return iceServer;
   };
 
   window.createIceServers = function(urls, username, password) {
     var iceServers = [];
-    // Use .url for FireFox.
+    // Use .url for Firefox.
     for (var i = 0; i < urls.length; i++) {
       var iceServer =
         window.createIceServer(urls[i], username, password);
@@ -147,7 +132,7 @@ if (navigator.mozGetUserMedia) {
     webrtcDetectedVersion = 999;
   }
 
-  // Creates iceServer from the url for Chrome M33 and earlier.
+  // Creates iceServer from the URL for Chrome 33 and earlier.
   window.createIceServer = function(url, username, password) {
     var iceServer = null;
     var urlParts = url.split(':');
@@ -167,31 +152,21 @@ if (navigator.mozGetUserMedia) {
     return iceServer;
   };
 
-  // Creates iceServers from the urls for Chrome M34 and above.
+  // Create iceServers from the urls for Chrome 34 and above.
   window.createIceServers = function(urls, username, password) {
     var iceServers = [];
-    if (webrtcDetectedVersion >= 34) {
-      // .urls is supported since Chrome M34.
-      iceServers = {
-        'urls': urls,
-        'credential': password,
-        'username': username
-      };
-    } else {
-      for (var i = 0; i < urls.length; i++) {
-        var iceServer =
-          window.createIceServer(urls[i], username, password);
-        if (iceServer !== null) {
-          iceServers.push(iceServer);
-        }
-      }
-    }
+    // .urls is supported since Chrome 34.
+    iceServers = {
+      'urls': urls,
+      'credential': password,
+      'username': username
+    };
     return iceServers;
   };
 
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
-    // .urls is supported since Chrome M34.
+    // .urls is supported since Chrome 34.
     if (webrtcDetectedVersion < 34) {
       maybeFixConfiguration(pcConfig);
     }
