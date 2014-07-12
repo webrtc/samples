@@ -109,13 +109,13 @@ function onCreateSessionDescriptionError(error) {
 
 function gotDescription1Local(desc) {
   pc1_local.setLocalDescription(desc, 
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace("Offer from pc1_local \n" + desc.sdp);
   pc1_remote.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -126,25 +126,25 @@ function gotDescription1Local(desc) {
 
 function gotDescription1Remote(desc) {
   pc1_remote.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace("Answer from pc1_remote \n" + desc.sdp);
   pc1_local.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
 }
 
 function gotDescription2Local(desc) {
   pc2_local.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace("Offer from pc2_local \n" + desc.sdp);
   pc2_remote.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   // Since the "remote" side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -155,13 +155,13 @@ function gotDescription2Local(desc) {
 
 function gotDescription2Remote(desc) {
   pc2_remote.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace("Answer from pc2_remote \n" + desc.sdp);
   pc2_local.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
 }
 

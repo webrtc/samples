@@ -166,26 +166,26 @@
     var modifiedOffer = new RTCSessionDescription({type: 'offer',
                                                    sdp: forceOpus(desc.sdp)});
     pc1.setLocalDescription(modifiedOffer,
-      setLocalDescriptionSuccess,
-      setLocalDescriptionFailure
+      webrtc.noop,
+      webrtc.error
     );
     console.log('Offer from pc1 \n' + modifiedOffer.sdp);
     pc2.setRemoteDescription(modifiedOffer,
-      setRemoteDescriptionSuccess,
-      setRemoteDescriptionFailure
+      webrtc.noop,
+      webrtc.error
     );
-    pc2.createAnswer(gotDescription2, createAnswerFailure);
+    pc2.createAnswer(gotDescription2, webrtc.error);
   }
 
   function gotDescription2(desc){
     pc2.setLocalDescription(desc,
-      setLocalDescriptionSuccess,
-      setLocalDescriptionFailure
+      webrtc.noop,
+      webrtc.error
     );
     console.log('Answer from pc2 \n' + desc.sdp);
     pc1.setRemoteDescription(desc,
-      setRemoteDescriptionSuccess,
-      setRemoteDescriptionFailure
+      webrtc.noop,
+      webrtc.error
     );
   }
 

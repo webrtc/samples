@@ -198,26 +198,10 @@ if (navigator.mozGetUserMedia) {
   console.log("Browser does not appear to be WebRTC-capable");
 }
 
-function setRemoteDescriptionSuccess() {
-  // noop
-}
-
-function setRemoteDescriptionFailure(err) {
-  console.error(err);
-}
-
-function setLocalDescriptionSuccess() {
-  // noop
-}
-
-function setLocalDescriptionFailure(err) {
-  console.error(err);
-}
-
-function createOfferFailure(err) {
-  console.error(err);
-}
-
-function createAnswerFailure(err) {
-  console.error(err);
-}
+var webrtc = {
+  error: function(err) {
+    console.error(err);
+  },
+  noop: function() {
+  }
+};

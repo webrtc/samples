@@ -158,23 +158,22 @@ function createPeerConnection() {
   localPeerConnection.createOffer(function (desc) {
     console.log('localPeerConnection offering');
     localPeerConnection.setLocalDescription(desc, 
-      setLocalDescriptionSuccess,
-      setLocalDescriptionFailure
+      webrtc.noop,
+      webrtc.error
     );
     remotePeerConnection.setRemoteDescription(desc,
-      setLocalDescriptionSuccess,
-      setRemoteDescriptionFailure
+      webrtc.noop,
+      webrtc.error
     );
     remotePeerConnection.createAnswer(function (desc2) {
       console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(desc2, 
-        setLocalDescriptionSuccess,
-        setLocalDescriptionFailure
+        webrtc.noop,
+        webrtc.error
       );
       localPeerConnection.setRemoteDescription(desc2,
-        function() {
-        },
-        setRemoteDescriptionFailure
+        webrtc.noop,
+        webrtc.error
       );
     });
   });

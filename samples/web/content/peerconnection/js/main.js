@@ -116,18 +116,16 @@ function onCreateOfferSuccess(desc) {
   trace('pc1 setLocalDescription start');
   pc1.setLocalDescription(desc, 
     function() {
-      setLocalDescriptionSuccess();
       onSetLocalSuccess(pc1);
     },
-    setLocalDescriptionFailure
+    webrtc.error
   );
   trace('pc2 setRemoteDescription start');
   pc2.setRemoteDescription(desc, 
     function() {
-      setRemoteDescriptionSuccess();
       onSetRemoteSuccess(pc2);
     },
-    setRemoteDescriptionFailure
+    webrtc.error
   );
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
@@ -156,18 +154,16 @@ function onCreateAnswerSuccess(desc) {
   trace('pc2 setLocalDescription start');
   pc2.setLocalDescription(desc,
     function() {
-      setLocalDescriptionSuccess();
       onSetLocalSuccess(pc2); 
     },
-    setLocalDescriptionFailure
+    webrtc.error
   );
   trace('pc1 setRemoteDescription start');
   pc1.setRemoteDescription(desc,
     function() {
-      setRemoteDescriptionSuccess();
       onSetRemoteSuccess(pc1);
     },
-    setRemoteDescriptionFailure
+    webrtc.error
   );
 }
 

@@ -93,8 +93,8 @@ function start() {
 function gotDescription(desc) {
   begin = window.performance.now();
   pc.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
 }
 

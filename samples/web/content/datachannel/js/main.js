@@ -117,26 +117,26 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace('Offer from localConnection \n' + desc.sdp);
   remotePeerConnection.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
   remotePeerConnection.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace('Answer from remotePeerConnection \n' + desc.sdp);
   localConnection.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
 }
 

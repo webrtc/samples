@@ -83,8 +83,8 @@ function createOffer() {
 
 function gotDescription(desc) {
   pc.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   output.value = desc.sdp;
 }

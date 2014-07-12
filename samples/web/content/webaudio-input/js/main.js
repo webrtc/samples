@@ -90,13 +90,13 @@ function call() {
 
 function gotDescription1(desc) {
   pc1.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -111,13 +111,13 @@ function gotDescription2(desc) {
   // Workaround for issue 1603.
   desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
   pc2.setLocalDescription(desc,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
 }
 

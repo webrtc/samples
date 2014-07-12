@@ -107,13 +107,13 @@ function onCreateSessionDescriptionError(error) {
 
 function gotDescription1(description) {
   pc1.setLocalDescription(description,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
     sdpConstraints);
@@ -121,13 +121,13 @@ function gotDescription1(description) {
 
 function gotDescription2(description) {
   pc2.setLocalDescription(description,
-    setLocalDescriptionSuccess,
-    setLocalDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
   trace('Answer from pc2 \n' + description.sdp);
   pc1.setRemoteDescription(description,
-    setRemoteDescriptionSuccess,
-    setRemoteDescriptionFailure
+    webrtc.noop,
+    webrtc.error
   );
 }
 
