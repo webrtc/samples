@@ -77,19 +77,7 @@ function initialize() {
     return;
   }
 
-  document.body.ondblclick = function() {
-    try {
-      // TODO: add shim so not Chrome only
-      if (document.webkitIsFullScreen) {
-        document.webkitCancelFullScreen();
-      } else {
-        remoteVideo.webkitRequestFullScreen();
-        remoteCanvas.webkitRequestFullScreen();
-      }
-    } catch (event) {
-      trace(event);
-    }
-  };
+  document.body.ondblclick = toggleFullScreen;
 
   trace('Initializing; room=' + roomKey + '.');
 
@@ -196,8 +184,8 @@ function createPeerConnection() {
     pc = new RTCPeerConnection(pcConfig, pcConstraints);
     pc.onicecandidate = onIceCandidate;
     trace('Created RTCPeerConnnection with:\n' +
-      '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
-      '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
+        '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
+        '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
   } catch (e) {
     displayError('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object; WebRTC is not supported by this browser.');
@@ -211,7 +199,7 @@ function createPeerConnection() {
 
 function maybeStart() {
   if (!started && signalingReady && channelReady && turnDone &&
-    (localStream || !hasLocalStream)) {
+      (localStream || !hasLocalStream)) {
     startTime = window.performance.now();
     displayStatus('Connecting...');
     trace('Creating PeerConnection.');
@@ -402,10 +390,10 @@ function onUserMediaSuccess(stream) {
 }
 
 function onUserMediaError(error) {
-  displayError('Failed to get access to local media. Error code was ' +
-      error.code + '. Continuing without sending a stream.');
-  alert('Failed to get access to local media. Error code was ' +
-      error.code + '. Continuing without sending a stream.');
+  var errorMessage = 'Failed to get access to local media. Error name was ' +
+      error.name + '. Continuing without sending a stream.';
+  displayError(errorMessage);
+  alert(errorMessage);
 
   hasLocalStream = false;
   maybeStart();
@@ -601,40 +589,39 @@ function transitionToActive() {
     reattachMediaStream(miniVideo, localVideo);
   }
 
+  // Transition opacity from 0 to 1 for the remote and mini videos.
   remoteVideo.classList.add('active');
+  miniVideo.classList.add('active');
+  // Transition opacity from 1 to 0 for the local video.
+  localVideo.classList.remove('active');
+  localVideo.src = '';
+  // Rotate the div containing the videos 180 deg with a CSS transform.
   videosDiv.classList.add('active');
-  setTimeout(function() {
-    localVideo.src = '';
-    localVideo.classList.remove('active');
-    localVideo.classList.add('hidden');
-  }, 500);
-  setTimeout(function() {
-    miniVideo.classList.add('active');
-  }, 1000);
   displayStatus('');
 }
 
 function transitionToWaiting() {
   startTime = null;
+  // Rotate the div containing the videos -180 deg with a CSS transform.
   videosDiv.classList.remove('active');
   setTimeout(function() {
     localVideo.src = miniVideo.src;
     miniVideo.src = '';
     remoteVideo.src = '';
-  }, 500);
-  miniVideo.classList.remove('active');
+  }, 800);
+  // Transition opacity from 0 to 1 for the local video.
   localVideo.classList.add('active');
-  localVideo.classList.remove('hidden');
+  // Transition opacity from 1 to 0 for the remote and mini videos.
   remoteVideo.classList.remove('active');
+  miniVideo.classList.remove('active');
 }
 
 function transitionToDone() {
   localVideo.classList.remove('active');
   remoteVideo.classList.remove('active');
   miniVideo.classList.remove('active');
-  setTimeout(function() {
-    displayStatus('You have left the call. <a href=\'' + roomLink + '\'>Click here</a> to rejoin.');
-  }, 1000);
+  displayStatus('You have left the call. <a href=\'' + roomLink +
+      '\'>Click here</a> to rejoin.');
 }
 
 function noteIceCandidate(location, type) {
@@ -794,6 +781,7 @@ function toggleAudioMute() {
 // Non-Mac: hotkey is Control.
 // <hotkey>-D: toggle audio mute.
 // <hotkey>-E: toggle video mute.
+// <hotkey>-H: hang up.
 // <hotkey>-I: toggle info display.
 // Return false to screen out original Chrome shortcuts.
 document.onkeydown = function(event) {
@@ -908,7 +896,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   if (videoSendBitrate) {
     if (videoSendInitialBitrate > videoSendBitrate) {
       displayError('Clamping initial bitrate to max bitrate of ' +
-        videoSendBitrate + ' kbps.');
+          videoSendBitrate + ' kbps.');
       videoSendInitialBitrate = videoSendBitrate;
     }
     maxBitrate = videoSendBitrate;
@@ -1085,4 +1073,18 @@ function displayError(error) {
   trace(error);
   errorMessages.push(error);
   updateInfoDiv();
+}
+
+function toggleFullScreen() {
+  try {
+    // TODO: add shim so not Chrome only
+    if (document.webkitIsFullScreen) {
+      document.webkitCancelFullScreen();
+    } else {
+      remoteVideo.webkitRequestFullScreen();
+      remoteCanvas.webkitRequestFullScreen();
+    }
+  } catch (event) {
+    trace(event);
+  }
 }
