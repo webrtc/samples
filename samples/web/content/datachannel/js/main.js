@@ -5,7 +5,19 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-var localConnection, remotePeerConnection, sendChannel, receiveChannel, pcConstraint, dataConstraint;
+
+
+'use strict';
+
+/* jshint browser: true, camelcase: true, curly: true, devel: true,
+eqeqeq: true, forin: false, globalstrict: true, indent:2, quotmark: single,
+undef: true, unused: strict */
+
+/* global RTCPeerConnection, trace, webrtcDetectedBrowser, webrtcDetectedVersion */
+
+
+var localConnection, remotePeerConnection, sendChannel, receiveChannel,
+  pcConstraint, dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 var sctpSelect = document.querySelector('input#useSctp');
@@ -41,20 +53,24 @@ function createConnection() {
   pcConstraint = null;
   dataConstraint = null;
   if (sctpSelect.checked &&
-     (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
-      webrtcDetectedBrowser === 'firefox'){
+    (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
+    webrtcDetectedBrowser === 'firefox') {
     // SCTP is supported from Chrome M31 and is supported in FF.
     // No need to pass DTLS constraint as it is on by default in Chrome M31.
     // For SCTP, reliable and ordered is true by default.
     trace('Using SCTP based Data Channels');
   } else {
-    pcConstraint = {optional: [{RtpDataChannels: true}]};
+    pcConstraint = {
+      optional: [{
+        RtpDataChannels: true
+      }]
+    };
     if (!rtpSelect.checked) {
       // Use rtp data channels for chrome versions older than M31.
       trace('Using RTP based Data Channels,' +
-            'as you are on an older version than M31.');
+        'as you are on an older version than M31.');
       alert('Reverting to RTP based data channels,' +
-            'as you are on an older version than M31.');
+        'as you are on an older version than M31.');
       rtpSelect.checked = true;
     }
   }
@@ -64,11 +80,12 @@ function createConnection() {
   try {
     // Data Channel api supported from Chrome M25.
     // You might need to start chrome with  --enable-data-channels flag.
-    sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
+    sendChannel = localConnection.createDataChannel('sendDataChannel',
+      dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
-          'You need Chrome M25 or later with --enable-data-channels flag');
+      'You need Chrome M25 or later with --enable-data-channels flag');
     trace('Create Data channel failed with exception: ' + e.message);
   }
   localConnection.onicecandidate = iceCallback1;
@@ -119,7 +136,8 @@ function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
   trace('Offer from localConnection \n' + desc.sdp);
   remotePeerConnection.setRemoteDescription(desc);
-  remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  remotePeerConnection.createAnswer(gotDescription2,
+    onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
@@ -132,7 +150,7 @@ function iceCallback1(event) {
   trace('local ice callback');
   if (event.candidate) {
     remotePeerConnection.addIceCandidate(event.candidate,
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
+      onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -141,7 +159,7 @@ function iceCallback2(event) {
   trace('remote ice callback');
   if (event.candidate) {
     localConnection.addIceCandidate(event.candidate,
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
+      onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
@@ -170,7 +188,7 @@ function onReceiveMessageCallback(event) {
 function onSendChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
-  if (readyState == 'open') {
+  if (readyState === 'open') {
     dataChannelSend.disabled = false;
     dataChannelSend.focus();
     sendButton.disabled = false;

@@ -5,24 +5,36 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-// variables in global scope so available to console
-button = document.querySelector("button");
-video = document.querySelector("video");
-canvas = document.querySelector("canvas");
 
-canvas.width = 480;
-canvas.height = 360;
 
-button.onclick = function(){
-  canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-}
+'use strict';
 
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+/* jshint browser: true, camelcase: true, curly: true, devel: true,
+eqeqeq: true, forin: false, globalstrict: true, indent:2, quotmark: single,
+undef: true, unused: strict */
 
-var constraints = {audio: false, video: true};
-var video = document.querySelector("video");
+// variables in global scope are available to console
+window.canvas = document.querySelector('canvas');
+window.canvas.width = 480;
+window.canvas.height = 360;
 
-function successCallback(stream){
+var button = document.querySelector('button');
+button.onclick = function() {
+  window.canvas.getContext('2d').
+    drawImage(video, 0, 0, window.canvas.width, window.canvas.height);
+};
+
+var video = document.querySelector('video');
+
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+  navigator.mozGetUserMedia;
+
+var constraints = {
+  audio: false,
+  video: true
+};
+
+function successCallback(stream) {
   window.stream = stream; // stream available to console
   if (window.URL) {
     video.src = window.URL.createObjectURL(stream);
@@ -31,9 +43,8 @@ function successCallback(stream){
   }
 }
 
-function errorCallback(error){
-  console.log("navigator.getUserMedia error: ", error);
+function errorCallback(error) {
+  console.log('navigator.getUserMedia error: ', error);
 }
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
-

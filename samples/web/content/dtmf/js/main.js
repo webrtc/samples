@@ -5,6 +5,15 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+'use strict';
+
+/* jshint browser: true, camelcase: true, curly: true, devel: true,
+eqeqeq: true, forin: false, globalstrict: true, indent:2, quotmark: single,
+undef: true, unused: strict */
+
+/* global attachMediaStream, getUserMedia, RTCIceCandidate, RTCPeerConnection, trace */
+
 var callButton = document.querySelector('button#callButton');
 var sendTonesButton = document.querySelector('button#sendTonesButton');
 var hangupButton = document.querySelector('button#hangupButton');
@@ -48,8 +57,9 @@ function gotStream(stream) {
   // Call the polyfill wrapper to attach the media stream to this element.
   localStream = stream;
   var audioTracks = localStream.getAudioTracks();
-  if (audioTracks.length > 0)
+  if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
+  }
   pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
   pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
@@ -79,7 +89,7 @@ function call() {
       audio: true,
       video: false
     },
-    gotStream, function (e) {
+    gotStream, function(e) {
       alert('getUserMedia() error: ' + e.name);
     });
 
@@ -130,7 +140,9 @@ function gotRemoteStream(e) {
   if (pc1.createDTMFSender) {
     enableDtmfSender();
   } else {
-    alert('This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.');
+    alert(
+      'This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.'
+    );
   }
 
 }
@@ -187,14 +199,14 @@ function sendTones(tones) {
   }
 }
 
-function handleSendTonesClick(){
+function handleSendTonesClick() {
   sendTones(tonesInput.value);
 }
 
 function addDialPadHandlers() {
   var dialPad = document.querySelector('div#dialPad');
   var buttons = dialPad.querySelectorAll('button');
-  for (var i = 0; i != buttons.length; ++i) {
+  for (var i = 0; i !== buttons.length; ++i) {
     buttons[i].onclick = sendDtmfTone;
   }
 }
@@ -202,4 +214,3 @@ function addDialPadHandlers() {
 function sendDtmfTone() {
   sendTones(this.textContent);
 }
-
