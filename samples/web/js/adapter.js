@@ -72,7 +72,7 @@ if (navigator.mozGetUserMedia) {
   getUserMedia = navigator.mozGetUserMedia.bind(navigator);
   navigator.getUserMedia = getUserMedia;
 
-  // Creates iceServer from the URL for Firefox.
+  // Create iceServer from the URL for Firefox.
   window.createIceServer = function(url, username, password) {
     var iceServer = null;
     var urlParts = url.split(':');
@@ -82,8 +82,8 @@ if (navigator.mozGetUserMedia) {
         'url': url
       };
     } else if (urlParts[0].indexOf('turn') === 0) {
-        // Firefox 27 and above supports transport parameters in TURN URL,
-        // So passing in the full URL to create iceServer.
+        // Firefox 27 and above support transport parameters in TURN URL
+        // so pass in the full URL to create iceServer.
         iceServer = {
           'url': url,
           'credential': password,
@@ -124,7 +124,7 @@ if (navigator.mozGetUserMedia) {
 
   webrtcDetectedBrowser = 'chrome';
   // Temporary fix until crbug/374263 is fixed.
-  // Setting Chrome version to 999, if version is unavailable.
+  // Set Chrome version to 999, if version is unavailable.
   var result = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
   if (result !== null) {
     webrtcDetectedVersion = parseInt(result[2], 10);
@@ -132,17 +132,17 @@ if (navigator.mozGetUserMedia) {
     webrtcDetectedVersion = 999;
   }
 
-  // Creates iceServer from the URL for Chrome 33 and earlier.
+  // Create iceServer from a single URL.
   window.createIceServer = function(url, username, password) {
     var iceServer = null;
     var urlParts = url.split(':');
     if (urlParts[0].indexOf('stun') === 0) {
-      // Create iceServer with stun url.
+      // Create iceServer with STUN URL.
       iceServer = {
         'url': url
       };
     } else if (urlParts[0].indexOf('turn') === 0) {
-      // Chrome M28 & above uses below TURN format.
+      // Chrome M28 & above use below TURN format.
       iceServer = {
         'url': url,
         'credential': password,
@@ -152,11 +152,10 @@ if (navigator.mozGetUserMedia) {
     return iceServer;
   };
 
-  // Create iceServers from the urls for Chrome 34 and above.
+  // Create iceServers from the URLs.
   window.createIceServers = function(urls, username, password) {
-    var iceServers = [];
     // .urls is supported since Chrome 34.
-    iceServers = {
+    var iceServers = {
       'urls': urls,
       'credential': password,
       'username': username
@@ -167,9 +166,7 @@ if (navigator.mozGetUserMedia) {
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
     // .urls is supported since Chrome 34.
-    if (webrtcDetectedVersion < 34) {
-      maybeFixConfiguration(pcConfig);
-    }
+    maybeFixConfiguration(pcConfig);
     return new webkitRTCPeerConnection(pcConfig, pcConstraints);
   };
 
