@@ -703,10 +703,12 @@ function updateInfoDiv() {
   }
 
   if (errorMessages.length) {
-    infoDiv.className = 'warning active';
+    infoDiv.classList.add('warning');
     for (var i = 0; i !== errorMessages.length; ++i) {
       contents += errorMessages[i] + '\n';
     }
+  } else {
+    infoDiv.classList.remove('warning');
   }
 
   contents += '</pre>';
@@ -715,14 +717,17 @@ function updateInfoDiv() {
 }
 
 function toggleInfoDiv() {
-  //  toggleInfo.classList.toggle('active');
   if (infoDiv.classList.contains('active')) {
     clearInterval(getStatsTimer);
     infoDiv.classList.remove('active');
   } else {
-    getStatsTimer = setInterval(refreshStats, 1000);
-    infoDiv.classList.add('active');
+    showInfoDiv();
   }
+}
+
+function showInfoDiv() {
+  getStatsTimer = setInterval(refreshStats, 1000);
+  infoDiv.classList.add('active');
 }
 
 function toggleVideoMute() {
@@ -1060,7 +1065,6 @@ function setRemoteVideoElementMuted(mute) {
 }
 
 function displayStatus(status) {
-  statusDiv.classList.remove('warning');
   if (status === '') {
     statusDiv.classList.remove('active');
   } else {
@@ -1073,6 +1077,7 @@ function displayError(error) {
   trace(error);
   errorMessages.push(error);
   updateInfoDiv();
+  showInfoDiv();
 }
 
 function toggleFullScreen() {
