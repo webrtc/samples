@@ -179,7 +179,7 @@ def maybe_add_constraint(constraints, param, constraint):
 
   return constraints
 
-def make_pc_constraints(dtls, dscp, ipv6, opusfec):
+def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
   # Force on the new BWE in Chrome 35 and later.
   # TODO(juberti): Remove once Chrome 36 is stable.
@@ -187,7 +187,6 @@ def make_pc_constraints(dtls, dscp, ipv6, opusfec):
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
-  maybe_add_constraint(constraints, opusfec, 'googOpusFec')
 
   return constraints
 
@@ -428,6 +427,9 @@ class MainPage(webapp2.RequestHandler):
     # Set stereo to false by default.
     stereo = self.request.get('stereo', default_value = 'false')
 
+    # Set opusfec to false by default.
+    opusfec = self.request.get('opusfec', default_value = 'false')
+
     # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
     asbr = self.request.get('asbr', default_value = '')
     arbr = self.request.get('arbr', default_value = '')
@@ -443,7 +445,6 @@ class MainPage(webapp2.RequestHandler):
     dtls = self.request.get('dtls')
     dscp = self.request.get('dscp')
     ipv6 = self.request.get('ipv6')
-    opusfec = self.request.get('opusfec')
 
     # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
     # two cameras' captures, which will each be fed to one eye.
@@ -530,7 +531,7 @@ class MainPage(webapp2.RequestHandler):
     room_link = append_url_arguments(self.request, room_link)
     token = create_channel(room, user, token_timeout)
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6, opusfec)
+    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video)
 
@@ -547,6 +548,7 @@ class MainPage(webapp2.RequestHandler):
       'media_constraints': json.dumps(media_constraints),
       'turn_url': turn_url,
       'stereo': stereo,
+      'opusfec': opusfec,
       'arbr': arbr,
       'asbr': asbr,
       'vrbr': vrbr,
