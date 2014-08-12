@@ -428,7 +428,7 @@ class MainPage(webapp2.RequestHandler):
     stereo = self.request.get('stereo', default_value = 'false')
 
     # Set opusfec to false by default.
-    opusfec = self.request.get('opusfec', default_value = 'false')
+    opusfec = self.request.get('opusfec', default_value = 'true')
 
     # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
     asbr = self.request.get('asbr', default_value = '')
