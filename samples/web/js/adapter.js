@@ -214,10 +214,12 @@ if (navigator.mozGetUserMedia) {
     } else {
       console.log('Error attaching stream to element.');
     }
+    element.play();
   };
 
   reattachMediaStream = function(to, from) {
     to.src = from.src;
+    to.play();
   };
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
