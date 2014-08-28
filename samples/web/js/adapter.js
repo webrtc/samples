@@ -125,13 +125,11 @@ if (navigator.mozGetUserMedia) {
   attachMediaStream = function(element, stream) {
     console.log('Attaching media stream');
     element.mozSrcObject = stream;
-    element.play();
   };
 
   reattachMediaStream = function(to, from) {
     console.log('Reattaching media stream');
     to.mozSrcObject = from.mozSrcObject;
-    to.play();
   };
 
 } else if (navigator.webkitGetUserMedia) {
