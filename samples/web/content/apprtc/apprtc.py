@@ -164,10 +164,12 @@ def make_media_track_constraints(constraints_string):
 
   return track_constraints
 
-def make_media_stream_constraints(audio, video):
+def make_media_stream_constraints(audio, video, firefox_fake_device):
   stream_constraints = (
       {'audio': make_media_track_constraints(audio),
        'video': make_media_track_constraints(video)})
+  if firefox_fake_device:
+    stream_constraints['fake'] = True
   logging.info('Applying media constraints: ' + str(stream_constraints))
   return stream_constraints
 
@@ -396,6 +398,10 @@ class MainPage(webapp2.RequestHandler):
     audio = self.request.get('audio')
     video = self.request.get('video')
 
+    # Pass firefox_fake_device=1 to pass fake: true in the media constraints,
+    # which will make Firefox use its built-in fake device.
+    firefox_fake_device = self.request.get('firefox_fake_device')
+
     # The hd parameter is a shorthand to determine whether to open the
     # camera at 720p. If no value is provided, use a platform-specific default.
     # When defaulting to HD, use optional constraints, in case the camera
@@ -533,7 +539,8 @@ class MainPage(webapp2.RequestHandler):
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video)
+    media_constraints = make_media_stream_constraints(audio, video,
+                                                      firefox_fake_device)
 
     params = {
       'error_messages': error_messages,
