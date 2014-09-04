@@ -1,10 +1,10 @@
 This folder contains the source code for building a websocket-based signalling server in Go.
 
-The websocket implementation is a copy of the go net repository from https://code.google.com/p/go.net/.
-
 To build the signalling server, first install Go tools and setup the workspaces as documented in http://golang.org/doc/install and http://golang.org/doc/code.html. 
 
-Then copy the content of this folder into $GOPATH/src. Build and run the signalling server by running
+Then clone the go net repository from https://code.google.com/p/go.net/ into $GOPATH/src/, so there is a $GOPATH/src/go.net folder.
+
+Then copy the content of this folder into $GOPATH/src/ws. Build and run the signalling server by running
   >cd $GOPATH
   >go install ws
   >$GOPATH/bin/ws
