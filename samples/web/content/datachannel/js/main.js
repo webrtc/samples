@@ -46,14 +46,14 @@ function createConnection() {
     // SCTP is supported from Chrome M31 and is supported in FF.
     // No need to pass DTLS constraint as it is on by default in Chrome M31.
     // For SCTP, reliable and ordered is true by default.
-    trace('Using SCTP based Data Channels');
+    trace('Using SCTP-based data channels');
   } else {
     pcConstraint = {optional: [{RtpDataChannels: true}]};
     if (!rtpSelect.checked) {
-      // Use rtp data channels for chrome versions older than M31.
-      trace('Using RTP based Data Channels,' +
+      // Use RTP data channels for Chrome versions older than M31.
+      trace('Using RTP-based data channels, ' +
             'as you are on an older version than M31.');
-      alert('Reverting to RTP based data channels,' +
+      alert('Reverting to RTP-based data channels, ' +
             'as you are on an older version than M31.');
       rtpSelect.checked = true;
     }
@@ -62,14 +62,14 @@ function createConnection() {
   trace('Created local peer connection object localConnection');
 
   try {
-    // Data Channel api supported from Chrome M25.
-    // You might need to start chrome with  --enable-data-channels flag.
+    // Data Channel API supported from Chrome M25.
+    // You might need to start Chrome with --enable-data-channels flag.
     sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
           'You need Chrome M25 or later with --enable-data-channels flag');
-    trace('Create Data channel failed with exception: ' + e.message);
+    trace('Create data channel failed with exception: ' + e.message);
   }
   localConnection.onicecandidate = iceCallback1;
   sendChannel.onopen = onSendChannelStateChange;
@@ -97,7 +97,7 @@ function sendData() {
 }
 
 function closeDataChannels() {
-  trace('Closing data Channels');
+  trace('Closing data channels');
   sendChannel.close();
   trace('Closed data channel with label: ' + sendChannel.label);
   receiveChannel.close();
