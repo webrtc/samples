@@ -11,12 +11,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://localhost:8000/*"],
+      "matches": ["https://github.com/GoogleChrome/webrtc/*"],
       "js": ["content-script.js"]
     }
   ],
   "permissions": [
     "desktopCapture",
-    "https://localhost:8000/*"
+    "https://github.com/GoogleChrome/webrtc/*"
   ]
 }

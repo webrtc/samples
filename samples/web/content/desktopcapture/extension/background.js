@@ -31,8 +31,6 @@ function requestScreenSharing(port, msg) {
 }
 
 function cancelScreenSharing(msg) {
-  // cancelChooseDesktopMedia crashes on the Mac
-  // See: http://stackoverflow.com/q/23361743/980524
   if (desktopMediaRequestId) {
      chrome.desktopCapture.cancelChooseDesktopMedia(desktopMediaRequestId);
   }
