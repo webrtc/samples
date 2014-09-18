@@ -1,0 +1,71 @@
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC GetUserMedia Constraints Manual Test</title>
+  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script type="text/javascript" src="../../../js/adapter.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+  <link rel="StyleSheet" type="text/css" href="../css/stylesheet.css">
+  <meta charset="utf-8">
+</head>
+<body>
+
+<div id="wrapper">
+  <div id="left">
+    <p>This page can create GetUserMedia <a href="http://goo.gl/qZQjV">
+    MediaStreamConstraints</a> that can be used on the<br/>
+    <a href="../peer2peer/index.html">PeerConnection Manual Test page.</a></p>
+    MediaStreamConstraints:<br/>
+    <textarea id="getusermedia-constraints" rows="10" cols="60"
+        readonly="readonly"/></textarea>
+    <br/>
+
+    Audio<input type="checkbox" id="audio" checked />
+    Video<input type="checkbox" id="video" checked />
+
+    <h2>Video constraints</h2>
+    Only applicable if the video checkbox is checked above.
+    <h3>Mandatory</h3>
+    Min
+    <input type="text" id="mandatory-min-width" size="4"/>x
+    <input type="text" id="mandatory-min-height" size="4"/>
+    FPS: <input type="text" id="mandatory-min-fps" size="2"/>
+    Aspect ratio: <input type="text" id="mandatory-min-ar" size="2"/><br/>
+    Max
+    <input type="text" id="mandatory-max-width" size="4"/>x
+    <input type="text" id="mandatory-max-height" size="4"/>
+    FPS: <input type="text" id="mandatory-max-fps" size="2"/>
+    Aspect ratio: <input type="text" id="mandatory-max-ar" size="2"/>
+
+    <h3>Optional</h3>
+    Min
+    <input type="text" id="optional-min-width" size="4"/>x
+    <input type="text" id="optional-min-height" size="4"/>
+    FPS: <input type="text" id="optional-min-fps" size="2"/>
+    Aspect ratio: <input type="text" id="optional-min-ar" size="2"/><br/>
+    Max
+    <input type="text" id="optional-max-width" size="4"/>x
+    <input type="text" id="optional-max-height" size="4"/>
+    FPS: <input type="text" id="optional-max-fps" size="2"/>
+    Aspect ratio: <input type="text" id="optional-max-ar" size="2"/><br/>
+    <button id="re-request" onclick="doGetUserMedia();">
+      Request GetUserMedia
+    </button>
+    <h2>Messages</h2>
+    <pre id="messages"></pre>
+  </div>
+  <div>
+    <h2>Local Preview</h2>
+    <video width="320" height="240" id="local-view" autoplay="autoplay">
+        </video>
+  </div>
+</div>
+</body>
+</html>
