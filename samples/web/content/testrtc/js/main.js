@@ -11,21 +11,68 @@
 
 'use strict';
 
+// Global WebAudio context that can be shared by all tests.
+// There is a very finite number of WebAudio contexts.
+var audioContext = new AudioContext();
 var output = document.getElementById('output');
+var PREFIX_RUN    = "[ RUN    ]";
+var PREFIX_OK     = "[     OK ]";
+var PREFIX_FAILED = "[ FAILED ]";
+var testSuites = [];
+var nextTestIndex;
+var successes;
+var failures;
 
-function start() {
-  output.value = "";
-  doGetUserMedia({audio:true}, micTest);
+function addTestSuite(name, func) {
+  testSuites.push({"name": name, "func": func});
 }
-
+function start() {
+  nextTestIndex = successes = failures = 0;
+  output.value = "";
+  asyncRunNextTestSuite();
+}
+function reportStart(testName) {
+  reportMessage(PREFIX_RUN, testName);
+}
 function reportSuccess(str) {
-  reportMessage("[  OK  ] ", str);
+  reportMessage(PREFIX_OK, str);
+  ++successes;
 }
 function reportError(str) {
-  reportMessage("[FAILED] ", str);
+  reportMessage(PREFIX_FAILED, str);
+  ++failures;
+}
+function reportFatal(str) {
+  reportError(str);
+  testSuiteFinished();
+  return false;
+}
+function testSuiteFinished() {
+  reportMessage("[ ------ ]", "");
+  asyncRunNextTestSuite();
 }
 function reportMessage(prefix, str) {
-  output.value += prefix + str + '\n';
+  output.value += prefix + " " + str + '\n';
+}
+function asyncRunNextTestSuite() {
+  setTimeout(runNextTestSuite, 0);
+}
+function runNextTestSuite() {
+  var index = nextTestIndex;
+  if (index >= testSuites.length) {
+    onComplete();
+    return;
+  }
+
+  var testSuite = testSuites[nextTestIndex++];
+  reportStart(testSuite.name);
+  testSuite.func();
+}
+function onComplete() {
+  var str = successes + " out of " + (successes + failures) + " tests passed";
+  var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
+  reportMessage("[ ------ ]", "");
+  reportMessage(prefix, str);
 }
 
 function doGetUserMedia(constraints, onSuccess) {
@@ -37,59 +84,13 @@ function doGetUserMedia(constraints, onSuccess) {
   var failFunc = function(error) {
     var errorMessage = 'Failed to get access to local media. Error name was ' +
       error.name;
-    reportError(errorMessage);
+    return reportFatal(errorMessage);
   }
   try {
     getUserMedia(constraints, successFunc, failFunc);
     trace('Requested access to local media with constraints:\n' +
         '  \'' + JSON.stringify(constraints) + '\'');
   } catch (e) {
-    reportError('getUserMedia failed with exception: ' + e.message);
+    return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
 }
-
-function micTest(stream) {
-  reportSuccess("getUserMedia succeeded.");
-  var tracks = stream.getAudioTracks();
-  if (tracks.length < 1) {
-    reportError("No audio track in returned stream.");
-    return;
-  }
-  var audioTrack = tracks[0];
-  reportSuccess("Audio track exists with label=" + audioTrack.label);
-
-  checkAudio(stream);
-}
-
-// Analyze one buffer of audio.
-function checkAudio(stream) {
-  var processFunc = function(event) {
-    var sampleRate = event.sampleRate;
-    var inputBuffer = event.inputBuffer;
-    source.disconnect(scriptNode); 
-    scriptNode.disconnect(audioContext.destination);
-    checkAudioDone(inputBuffer);
-  };
-
-  var audioContext = new AudioContext();
-  var source = audioContext.createMediaStreamSource(stream);
-  var scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
-  scriptNode.onaudioprocess = processFunc;
-  source.connect(scriptNode);
-  scriptNode.connect(audioContext.destination);
-}
-
-function checkAudioDone(buffer) {
-  reportSuccess("Audio num channels=" + buffer.numberOfChannels);
-  reportSuccess("Audio sample rate=" + buffer.sampleRate);
-  var data = buffer.getChannelData(0);
-  var sum = 0;
-  for (var sample = 0; sample < buffer.length; ++sample) {
-    sum += Math.abs(data[sample]);
-  }
-  var rms = Math.sqrt(sum / buffer.length);
-  var db = 20 * Math.log(rms) / Math.log(10);
-  reportSuccess("Audio power=" + db);
-}
-
-
