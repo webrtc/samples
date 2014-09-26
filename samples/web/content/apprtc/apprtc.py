@@ -430,8 +430,8 @@ class MainPage(webapp2.RequestHandler):
     # Set opusfec to false by default.
     opusfec = self.request.get('opusfec', default_value = 'true')
 
-    # Read url param for max_playback_rate
-    max_playback_rate = self.request.get('maxplaybackrate', default_value = '')
+    # Read url param for opusmaxpbr
+    opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
 
     # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
     asbr = self.request.get('asbr', default_value = '')
@@ -552,7 +552,7 @@ class MainPage(webapp2.RequestHandler):
       'turn_url': turn_url,
       'stereo': stereo,
       'opusfec': opusfec,
-      'max_playback_rate': max_playback_rate,
+      'opusmaxpbr': opusmaxpbr,
       'arbr': arbr,
       'asbr': asbr,
       'vrbr': vrbr,

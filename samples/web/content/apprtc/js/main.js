@@ -272,9 +272,9 @@ function setRemote(message) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
   }
   // Set Opus maxplaybackrate, if requested.
-  if (maxPlaybackRate) {
+  if (opusMaxPbr) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate=' +
-        maxPlaybackRate);
+        opusMaxPbr);
   }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
