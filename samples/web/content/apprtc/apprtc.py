@@ -164,10 +164,12 @@ def make_media_track_constraints(constraints_string):
 
   return track_constraints
 
-def make_media_stream_constraints(audio, video):
+def make_media_stream_constraints(audio, video, firefox_fake_device):
   stream_constraints = (
       {'audio': make_media_track_constraints(audio),
        'video': make_media_track_constraints(video)})
+  if firefox_fake_device:
+    stream_constraints['fake'] = True
   logging.info('Applying media constraints: ' + str(stream_constraints))
   return stream_constraints
 
@@ -200,6 +202,14 @@ def append_url_arguments(request, link):
       link += ('&' + cgi.escape(argument, True) + '=' +
                 cgi.escape(request.get(argument), True))
   return link
+
+def write_response(response, response_type, target_page, params):
+  if response_type == 'json':
+    content = json.dumps(params)
+  else:
+    template = jinja_environment.get_template(target_page)
+    content = template.render(params)
+  response.out.write(content)
 
 # This database is to store the messages from the sender client when the
 # receiver client is not ready to receive the messages.
@@ -388,6 +398,10 @@ class MainPage(webapp2.RequestHandler):
     audio = self.request.get('audio')
     video = self.request.get('video')
 
+    # Pass firefox_fake_device=1 to pass fake: true in the media constraints,
+    # which will make Firefox use its built-in fake device.
+    firefox_fake_device = self.request.get('firefox_fake_device')
+
     # The hd parameter is a shorthand to determine whether to open the
     # camera at 720p. If no value is provided, use a platform-specific default.
     # When defaulting to HD, use optional constraints, in case the camera
@@ -418,6 +432,9 @@ class MainPage(webapp2.RequestHandler):
 
     # Set stereo to false by default.
     stereo = self.request.get('stereo', default_value = 'false')
+
+    # Set opusfec to false by default.
+    opusfec = self.request.get('opusfec', default_value = 'true')
 
     # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
     asbr = self.request.get('asbr', default_value = '')
@@ -497,8 +514,12 @@ class MainPage(webapp2.RequestHandler):
         initiator = 1
       else:
         # 2 occupants (full).
-        template = jinja_environment.get_template('full.html')
-        self.response.out.write(template.render({ 'room_key': room_key }))
+        params = {
+          'error': 'full',
+          'error_messages': ['The room is full.'],
+          'room_key': room_key
+        }
+        write_response(self.response, response_type, 'full.html', params)
         logging.info('Room ' + room_key + ' is full')
         return
 
@@ -518,7 +539,8 @@ class MainPage(webapp2.RequestHandler):
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video)
+    media_constraints = make_media_stream_constraints(audio, video,
+                                                      firefox_fake_device)
 
     params = {
       'error_messages': error_messages,
@@ -533,6 +555,7 @@ class MainPage(webapp2.RequestHandler):
       'media_constraints': json.dumps(media_constraints),
       'turn_url': turn_url,
       'stereo': stereo,
+      'opusfec': opusfec,
       'arbr': arbr,
       'asbr': asbr,
       'vrbr': vrbr,
@@ -545,17 +568,11 @@ class MainPage(webapp2.RequestHandler):
       'meta_viewport': meta_viewport
     }
 
-    if response_type == 'json':
-      content = json.dumps(params)
+    if unittest:
+      target_page = 'test/test_' + unittest + '.html'
     else:
-      if unittest:
-        target_page = 'test/test_' + unittest + '.html'
-      else:
-        target_page = 'index.html'
-      template = jinja_environment.get_template(target_page)
-      content = template.render(params)
-
-    self.response.out.write(content)
+      target_page = 'index.html'
+    write_response(self.response, response_type, target_page, params)
 
 
 app = webapp2.WSGIApplication([
