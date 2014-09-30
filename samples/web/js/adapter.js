@@ -25,6 +25,7 @@ var attachMediaStream = null;
 var reattachMediaStream = null;
 var webrtcDetectedBrowser = null;
 var webrtcDetectedVersion = null;
+var webrtcDebug = localStorage.webrtcDebug === 'true';
 
 function trace(text) {
   // This function is used for logging.
@@ -34,7 +35,7 @@ function trace(text) {
   console.log((window.performance.now() / 1000).toFixed(3) + ': ' + text);
 
   // used to make firefox write to stdout for automated tests
-  if (webrtcDetectedBrowser === 'firefox' && typeof(window.dump) === 'function') {
+  if (webrtcDebug && webrtcDetectedBrowser === 'firefox' && typeof(window.dump) === 'function') {
     window.dump(text + '\n');
   }
 }
