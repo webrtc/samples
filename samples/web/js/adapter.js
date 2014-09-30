@@ -33,7 +33,7 @@ function trace(text) {
   }
   console.log((window.performance.now() / 1000).toFixed(3) + ': ' + text);
 
-  // used to make firefox write to stdout for automatted tests
+  // used to make firefox write to stdout for automated tests
   if (webrtcDetectedBrowser === 'firefox' && typeof(window.dump) === 'function') {
     window.dump(text + '\n');
   }
