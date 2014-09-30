@@ -15,7 +15,7 @@ undef: true, unused: strict */
 /* global mozRTCIceCandidate, mozRTCPeerConnection,
 mozRTCSessionDescription, webkitRTCPeerConnection */
 
-/* exported trace */
+/* exported trace, webrtc */
 
 'use strict';
 
@@ -222,8 +222,10 @@ if (navigator.mozGetUserMedia) {
 }
 
 var webrtc = {
+  // common callbacks for setLocalDescription/setRemoteDescription
+  // error and noop-success
   error: function(err) {
-    console.error(err);
+    trace(err.toString());
   },
   noop: function() {
   }
