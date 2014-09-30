@@ -32,6 +32,11 @@ function trace(text) {
     text = text.substring(0, text.length - 1);
   }
   console.log((window.performance.now() / 1000).toFixed(3) + ': ' + text);
+
+  // used to make firefox write to stdout for automatted tests
+  if (webrtcDetectedBrowser === 'firefox' && typeof(window.dump) === 'function') {
+    window.dump(text + '\n');
+  }
 }
 
 function maybeFixConfiguration(pcConfig) {
