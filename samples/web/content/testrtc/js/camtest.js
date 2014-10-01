@@ -62,17 +62,19 @@ CamWorksInVGATest.checkVideoTracks = function(stream) {
     return reportFatal("No video track in returned stream.");
   }
   var videoTrack = tracks[0];
-  reportSuccess("Video track exists with label=" + videoTrack.label);
+  reportSuccess("Video track exists with label = " + videoTrack.label);
   return true;
 }
 
 CamWorksInVGATest.checkVideoStart = function(stream) {
   var videoTrack = stream.getVideoTracks()[0];
   videoTrack.onended = function() {
-    reportFatal("Video track ended, camera stopped working");
+    reportError('Video track ended, camera stopped working');
   }
   videoTrack.onmute = function() {
-    reportError("Your camera reported itself as muted.");
+    reportError('Your camera reported itself as muted.');
+    // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
+    // isMuted local state.
     CamWorksInVGATest.isMuted = true;
   }
   videoTrack.onunmute = function() {
@@ -81,13 +83,13 @@ CamWorksInVGATest.checkVideoStart = function(stream) {
 }
 
 CamWorksInVGATest.checkVideoFinish = function(videoTag) {
-  assertEquals(640, videoTag.videoWidth, 'Expected VGA width');
-  assertEquals(480, videoTag.videoHeight, 'Expected VGA height');
-  if (CamWorksInVGATest.isMuted) {
-    reportFatal("Your camera reported itself as muted! It is probably " +
-                "not delivering frames. Please try another webcam.");
+  assertEquals(640, videoTag.videoWidth, 'Incorrect width', 'Width OK');
+  assertEquals(480, videoTag.videoHeight, 'Incorrect height', 'Height OK');
+  if (CamWorksInVGATest.stream.getVideoTracks()[0].readyState != 'ended'){
+    assertEquals(false, CamWorksInVGATest.isMuted, 'Your camera reported ' +
+                 'itself as muted! It is probably not delivering frames. ' +
+                 'Please try another webcam.', 'Camera is delivering frames');
   }
-  reportSuccess("Camera successfully captured video in VGA");
 
   CamWorksInVGATest.stream.getVideoTracks()[0].onended = null;
   CamWorksInVGATest.stream.stop();

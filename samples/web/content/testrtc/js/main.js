@@ -43,10 +43,14 @@ function reportError(str) {
   reportMessage(PREFIX_FAILED, str);
   ++failures;
 }
-function assertEquals(expected, actual, message) {
-  if (expected != actual)
-    reportFatal('Failed: ' + expected + ' != ' + actual + ': ' + message);
+function assertEquals(expected, actual, failMsg, OkMsg) {
+  if (expected != actual) {
+    reportError('Expected: ' + expected + ' != ' + actual + ': ' + failMsg);
+  } else {
+    reportSuccess('Expected: ' + expected + ' == ' + actual + ': ' + OkMsg);
+  }
 }
+
 function reportFatal(str) {
   reportError(str);
   testSuiteFinished();
