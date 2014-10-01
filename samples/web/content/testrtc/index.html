@@ -19,16 +19,23 @@
 <link rel='stylesheet' href="css/main.css" />
 </head>
 <body>
-	<div id="container">
-		<h1>WebRTC Troubleshooter</h1>
-		<div><textarea id="output" rows="25" cols="80"></textarea></div>
-		<div><button onclick="start()">Start</button></div>
-	</div>
+  <div id="container">
+    <h1>WebRTC Troubleshooter</h1>
+    <div><textarea id="output" rows="25" cols="80"></textarea></div>
+    <div>
+      <button onclick="start()">Start</button>
+      <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
+      <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
+      <button id="bug-button" onclick="reportBug()" disabled>File a bug</button>
+    </div>
+  </div>
 <script src="js/adapter.js"></script>
+<script src="js/bugreport.js"></script>
 <script src="js/main.js"></script>
 <script src="js/call.js"></script>
 <script src="js/mictest.js"></script>
 <script src="js/conntest.js"></script>
+<script src="js/camresolutionstest.js"></script>
 <script src="js/bandwidth_test.js"></script>
 <!-- TODO(juberti): Add analytics script src="js/lib/ga.js" -->
 </body>
