@@ -11,20 +11,34 @@
 
 'use strict';
 
-// 1. Enumerate Cameras
-// 2. Try each camera in VGA
-// 3. Try each camera in HD
-// 4. MediaStreamTrack associated with the camera is fine
-// 4.a Monitor the events on the MediaStreamTrack (onended, onmute, onunmute)
-// 4.b MediaStreamTrack muted property
-var CamTest = {};
-CamTest.isMuted = false;
+// Test spec
+// TODO 1. Enumerate cameras
+// 2. Try camera in VGA
+// TODO 3.Try camera in HD
+// TODO 4.Translate gum failures to user friendly messages
+//   (MediaStreamError.name):
+//   NotSupportedError, PermissionDeniedError, ConstrainNotSatisfiedError,
+//   OverconstrainedError, NotFoundError, AbortError, SourceUnavailableError
+// 4.MediaStreamTrack associated with the camera is fine.
+// 4.a Capture for a couple of secs and monitor the events on the
+//   MediaStreamTrack (onEnded(), onMute(), onUnmute()).
+// 4.b If onEnded() fires reportFatal() is called (e.g. camera is unplugged).
+// 4.c We keep local isMuted state during the capture period (4.a) and it's
+//   checked at the end. (TODO local isMuted will be deprecated once
+  //   mediaStreamTrack.muted property is wired up in Chrome)
+// TODO 5. General tear down method
 
-CamTest.camTest = function () {
-  var constraints = { video: true , audio: false};
+
+var CamWorksInVGATest = {};
+CamWorksInVGATest.isMuted = false;
+CamWorksInVGATest.stream = null;
+
+CamWorksInVGATest.camWorksInVGATest = function () {
+  var constraints = { video: true, audio: false};
   doGetUserMedia(constraints, function(stream) {
-    if (CamTest.checkVideoTracks(stream)) {
-      CamTest.checkVideoStart(stream);
+    CamWorksInVGATest.stream = stream;
+    if (CamWorksInVGATest.checkVideoTracks(stream)) {
+      CamWorksInVGATest.checkVideoStart(stream);
 
       var video = document.getElementById('main-video');
       attachMediaStream(video, stream);
@@ -32,17 +46,15 @@ CamTest.camTest = function () {
       reportInfo("Checking if your camera is delivering frames for five " +
                  "seconds...");
       setTimeout(function() {
-        CamTest.checkVideoFinish(video);
+        CamWorksInVGATest.checkVideoFinish(video);
       }, 5000);
     }
-  }, function(err) {
-    reportFatal("Failed to acquire camera: " + err);
   });
 }
 
-addTestSuite("CameraTestRes", CamTest.camTest);
+addTestSuite("CamWorksInVGATest", CamWorksInVGATest.camWorksInVGATest);
 
-CamTest.checkVideoTracks = function(stream) {
+CamWorksInVGATest.checkVideoTracks = function(stream) {
   reportSuccess("getUserMedia succeeded.");
   var tracks = stream.getVideoTracks();
   if (tracks.length < 1) {
@@ -53,26 +65,29 @@ CamTest.checkVideoTracks = function(stream) {
   return true;
 }
 
-CamTest.checkVideoStart = function(stream) {
+CamWorksInVGATest.checkVideoStart = function(stream) {
   var videoTrack = stream.getVideoTracks()[0];
   videoTrack.onended = function() {
     reportFatal("Video track ended, camera stopped working");
   }
   videoTrack.onmute = function() {
     reportWarning("Your camera reported itself as muted.");
-    CamTest.isMuted = true;
+    CamWorksInVGATest.isMuted = true;
   }
   videoTrack.onunmute = function() {
-    CamTest.isMuted = false;
+    CamWorksInVGATest.isMuted = false;
   }
 }
 
-CamTest.checkVideoFinish = function(videoTag) {
+CamWorksInVGATest.checkVideoFinish = function(videoTag) {
   assertEquals(640, videoTag.videoWidth, 'Expected VGA width');
   assertEquals(480, videoTag.videoHeight, 'Expected VGA height');
-  if (CamTest.isMuted)
+  if (CamWorksInVGATest.isMuted)
     reportFatal("Your camera reported itself as muted! It is probably " +
                 "not delivering frames. Please try another webcam.");
-  reportSuccess("");
+  reportSuccess("Camera successfully capture video in VGA");
+
+  CamWorksInVGATest.stream.getVideoTracks()[0].onended = null;
+  CamWorksInVGATest.stream.stop();
   testSuiteFinished();
 }
