@@ -12,22 +12,23 @@
 'use strict';
 
 // Test spec
-// TODO 1. Enumerate cameras
-// 2. Try camera in VGA
-// TODO 3.Try camera in HD
-// TODO 4.Translate gum failures to user friendly messages
-//   (MediaStreamError.name):
-//   NotSupportedError, PermissionDeniedError, ConstrainNotSatisfiedError,
-//   OverconstrainedError, NotFoundError, AbortError, SourceUnavailableError
-// 4.MediaStreamTrack associated with the camera is fine.
-// 4.a Capture for a couple of secs and monitor the events on the
-//   MediaStreamTrack (onEnded(), onMute(), onUnmute()).
-// 4.b If onEnded() fires reportFatal() is called (e.g. camera is unplugged).
-// 4.c We keep local isMuted state during the capture period (4.a) and it's
-//   checked at the end. (TODO local isMuted will be deprecated once
-  //   mediaStreamTrack.muted property is wired up in Chrome)
-// TODO 5. General tear down method
-
+// 1. TODO: Enumerate cameras.
+// 2. Try opening the (a) camera in VGA.
+// 3. TODO: Try camera in other resolutions, particularly HD.
+// 4. TODO: Translate gum failures to user friendly messages, using
+//   MediaStreamError.name in { NotSupportedError, PermissionDeniedError,
+//   ConstrainNotSatisfiedError, OverconstrainedError, NotFoundError,
+//   AbortError, SourceUnavailableError }.
+// 4.Check that the MediaStreamTrack associated with the camera looks good.
+// 4.a Capture for a couple of seconds and monitor the events on the
+//   MediaStreamTrack: onEnded(), onMute(), onUnmute().
+// 4.b If onEnded() fires, reportFatal() is called (e.g. camera is unplugged).
+// 4.c We keep a local |isMuted| state during the capture period (4.a) to check
+//   it at the end. (TODO: local isMuted can be deprecated once
+//   mediaStreamTrack.muted property is wired up in Chrome).
+// 4.d After the wait period we check that the video tag where the |stream| is
+//   plugged in has the appropriate width and height.
+// 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
 var CamWorksInVGATest = {};
 CamWorksInVGATest.isMuted = false;
@@ -40,7 +41,7 @@ CamWorksInVGATest.camWorksInVGATest = function () {
     if (CamWorksInVGATest.checkVideoTracks(stream)) {
       CamWorksInVGATest.checkVideoStart(stream);
 
-      var video = document.getElementById('main-video');
+    var video = document.getElementById('main-video');
       attachMediaStream(video, stream);
 
       reportInfo("Checking if your camera is delivering frames for five " +
@@ -82,10 +83,11 @@ CamWorksInVGATest.checkVideoStart = function(stream) {
 CamWorksInVGATest.checkVideoFinish = function(videoTag) {
   assertEquals(640, videoTag.videoWidth, 'Expected VGA width');
   assertEquals(480, videoTag.videoHeight, 'Expected VGA height');
-  if (CamWorksInVGATest.isMuted)
+  if (CamWorksInVGATest.isMuted) {
     reportFatal("Your camera reported itself as muted! It is probably " +
                 "not delivering frames. Please try another webcam.");
-  reportSuccess("Camera successfully capture video in VGA");
+  }
+  reportSuccess("Camera successfully captured video in VGA");
 
   CamWorksInVGATest.stream.getVideoTracks()[0].onended = null;
   CamWorksInVGATest.stream.stop();
