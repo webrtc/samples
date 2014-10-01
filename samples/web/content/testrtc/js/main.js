@@ -15,22 +15,22 @@
 // There is a very finite number of WebAudio contexts.
 var audioContext = new AudioContext();
 var output = document.getElementById('output');
-var audioSelect = document.querySelector("select#audioSource");
-var videoSelect = document.querySelector("select#videoSource");
-var PREFIX_RUN    = "[ RUN    ]";
-var PREFIX_OK     = "[     OK ]";
-var PREFIX_FAILED = "[ FAILED ]";
+var audioSelect = document.querySelector('select#audioSource');
+var videoSelect = document.querySelector('select#videoSource');
+var PREFIX_RUN    = '[ RUN    ]';
+var PREFIX_OK     = '[     OK ]';
+var PREFIX_FAILED = '[ FAILED ]';
 var testSuites = [];
 var nextTestIndex;
 var successes;
 var failures;
 
 function addTestSuite(name, func) {
-  testSuites.push({"name": name, "func": func});
+  testSuites.push({'name': name, 'func': func});
 }
 function start() {
   nextTestIndex = successes = failures = 0;
-  output.value = "";
+  output.value = '';
   asyncRunNextTestSuite();
 }
 function reportStart(testName) {
@@ -50,11 +50,11 @@ function reportFatal(str) {
   return false;
 }
 function testSuiteFinished() {
-  reportMessage("[ ------ ]", "");
+  reportMessage('[ ------ ]', '');
   asyncRunNextTestSuite();
 }
 function reportMessage(prefix, str) {
-  output.value += prefix + " " + str + '\n';
+  output.value += prefix + ' ' + str + '\n';
 }
 function asyncRunNextTestSuite() {
   setTimeout(runNextTestSuite, 0);
@@ -71,9 +71,9 @@ function runNextTestSuite() {
   testSuite.func();
 }
 function onComplete() {
-  var str = successes + " out of " + (successes + failures) + " tests passed";
+  var str = successes + ' out of ' + (successes + failures) + ' tests passed';
   var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
-  reportMessage("[ ------ ]", "");
+  reportMessage('[ ------ ]', '');
   reportMessage(prefix, str);
 }
 
@@ -116,7 +116,7 @@ function appendSourceId(id, type, constraints) {
 function gotSources(sourceInfos) {
   for (var i = 0; i != sourceInfos.length; ++i) {
     var sourceInfo = sourceInfos[i];
-    var option = document.createElement("option");
+    var option = document.createElement('option');
     option.value = sourceInfo.id;
     appendOption(sourceInfo, option);
   }
@@ -135,7 +135,7 @@ function appendOption(sourceInfo, option) {
 }
 
 if (typeof MediaStreamTrack === 'undefined') {
-  reportFatal("This browser does not support MediaStreamTrack.\n Try Chrome Canary.");
+  reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
 } else {
   MediaStreamTrack.getSources(gotSources);
 }
