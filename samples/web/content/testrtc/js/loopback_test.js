@@ -30,7 +30,6 @@ function LoopbackTest(
     maxVideoBitrateKbps) {
 
   var pc1StatTracker;
-  var pc2StatTracker;
 
   // In order to study effect of network (e.g. wifi) on peer connection one can
   // establish a loopback call and force it to go via a turn server. This way
@@ -99,22 +98,10 @@ function LoopbackTest(
       constrainOfferToRemoveFec(pc1);
       pc1StatTracker = new StatisticsReport();
       pc1StatTracker.collectStatsFromPeerConnection(pc1);
-      // pc1StatTracker = new StatTracker(pc1, 50);
-      // pc1StatTracker.recordStat("EstimatedSendBitrate",
-      //                           "bweforvideo", "googAvailableSendBandwidth");
-      // pc1StatTracker.recordStat("TransmitBitrate",
-      //                           "bweforvideo", "googTransmitBitrate");
-      // pc1StatTracker.recordStat("TargetEncodeBitrate",
-      //                           "bweforvideo", "googTargetEncBitrate");
-      // pc1StatTracker.recordStat("ActualEncodedBitrate",
-      //                           "bweforvideo", "googActualEncBitrate");
 
       var pc2 = new RTCPeerConnection(pcConfig, pcConstraints);
       constrainTurnCandidates(pc2);
       constrainBitrateAnswer(pc2);
-      // pc2StatTracker = new StatTracker(pc2, 50);
-      // pc2StatTracker.recordStat("REMB",
-      //                           "bweforvideo", "googAvailableReceiveBandwidth");
 
       pc1.addStream(stream);
       var call = new Call(pc1, pc2);
@@ -123,7 +110,6 @@ function LoopbackTest(
       setTimeout(function () {
           call.stop();
           pc1StatTracker.stop();
-          // pc2StatTracker.stop();
           success();
         }, callDurationMs);
     }

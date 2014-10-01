@@ -11,8 +11,6 @@
 
 'use strict';
 
-// mflodman added comment.
-
 addTestSuite("BandwidthTest", bwTest);
 
 function bwTest() {
@@ -47,8 +45,7 @@ function bwTest() {
     test.run(onTestFinished.bind(test));
   }
 
-  function computeStatsAndReport() {
-    var stats = this.getResults();
+  function computeStatsAndReport(stats) {
     var bwe_stats = new StatisticsAggregate(0.75 * maxVideoBitrateKbps * 1000);
     var rtt_stats = new StatisticsAggregate(0);
     for (var block_index in stats) {
@@ -76,7 +73,7 @@ function bwTest() {
     if (autoClose) {
       window.close();
     } else {
-      computeStatsAndReport();
+      computeStatsAndReport(this.getResults());
       testSuiteFinished();
     }
   }
