@@ -11,52 +11,44 @@
 
 'use strict';
 
-function bugreport() {
+function reportBug() {
   // Detect browser and version. Code inspired by http://goo.gl/9dZZqE with
   // added support of modern Internet Explorer versions (Trident).
   var agent = navigator.userAgent;
   var browserName = navigator.appName;
-  var version = ''+parseFloat(navigator.appVersion);
+  var version = '' + parseFloat(navigator.appVersion);
   var offsetName, offsetVersion, ix;
 
-  // Chrome.
-  if ((offsetVersion=agent.indexOf('Chrome')) != -1) {
+  if ((offsetVersion = agent.indexOf('Chrome')) != -1) {
     browserName = 'Chrome';
     version = agent.substring(offsetVersion + 7);
-  }
-  // Microsoft Internet Explorer (older versions).
-  else if ((offsetVersion=agent.indexOf('MSIE')) != -1) {
-    browserName = 'Microsoft Internet Explorer';
+  } else if ((offsetVersion = agent.indexOf('MSIE')) != -1) {
+    browserName = 'Microsoft Internet Explorer'; // Older IE versions.
     version = agent.substring(offsetVersion + 5);
-  }
-  else if ((offsetVersion=agent.indexOf('Trident')) != -1) {
-    browserName = 'Microsoft Internet Explorer';
+  } else if ((offsetVersion = agent.indexOf('Trident')) != -1) {
+    browserName = 'Microsoft Internet Explorer'; // Newer IE versions.
     version = agent.substring(offsetVersion + 8);
-  }
-  // Firefox.
-  else if ((offsetVersion=agent.indexOf('Firefox')) != -1) {
+  } else if ((offsetVersion = agent.indexOf('Firefox')) != -1) {
     browserName = 'Firefox';
-  }
-  // Safari.
-  else if ((offsetVersion=agent.indexOf('Safari')) != -1) {
+  } else if ((offsetVersion = agent.indexOf('Safari')) != -1) {
     browserName = 'Safari';
     version = agent.substring(offsetVersion + 7);
-    if ((offsetVersion=agent.indexOf('Version')) != -1)
+    if ((offsetVersion = agent.indexOf('Version')) != -1) {
       version = agent.substring(offsetVersion + 8);
-  }
-  // For other browsers 'name/version' is at the end of userAgent
-  else if ( (offsetName=agent.lastIndexOf(' ')+1) <
-            (offsetVersion=agent.lastIndexOf('/')) ) {
+    }
+  } else if ( (offsetName = agent.lastIndexOf(' ') + 1) <
+              (offsetVersion = agent.lastIndexOf('/')) ) {
+    // For other browsers 'name/version' is at the end of userAgent
     browserName = agent.substring(offsetName, offsetVersion);
     version = agent.substring(offsetVersion + 1);
-    if (browserName.toLowerCase()==browserName.toUpperCase()) {
+    if (browserName.toLowerCase() == browserName.toUpperCase()) {
       browserName = navigator.appName;
     }
   } // Trim the version string at semicolon/space if present.
-  if ((ix=version.indexOf(';'))!=-1)
-    version=version.substring(0,ix);
-  if ((ix=version.indexOf(' '))!=-1)
-    version=version.substring(0,ix);
+  if ((ix = version.indexOf(';')) != -1)
+    version = version.substring(0, ix);
+  if ((ix = version.indexOf(' ')) != -1)
+    version = version.substring(0, ix);
 
   console.log('Detected browser: ' + browserName + ' ' + version);
 
