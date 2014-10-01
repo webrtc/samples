@@ -15,6 +15,7 @@
 // There is a very finite number of WebAudio contexts.
 var audioContext = new AudioContext();
 var output = document.getElementById('output');
+var bugButton = document.getElementById('bug-button');
 var PREFIX_RUN    = "[ RUN    ]";
 var PREFIX_OK     = "[     OK ]";
 var PREFIX_FAILED = "[ FAILED ]";
@@ -29,6 +30,7 @@ function addTestSuite(name, func) {
 function start() {
   nextTestIndex = successes = failures = 0;
   output.value = "";
+  bugButton.disabled = false;
   asyncRunNextTestSuite();
 }
 function reportStart(testName) {
