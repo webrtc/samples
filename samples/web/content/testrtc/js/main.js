@@ -18,6 +18,7 @@ var output = document.getElementById('output');
 var PREFIX_RUN    = "[ RUN    ]";
 var PREFIX_OK     = "[     OK ]";
 var PREFIX_FAILED = "[ FAILED ]";
+var PREFIX_INFO   = "[ INFO   ]";
 var testSuites = [];
 var nextTestIndex;
 var successes;
@@ -42,10 +43,17 @@ function reportError(str) {
   reportMessage(PREFIX_FAILED, str);
   ++failures;
 }
+function assertEquals(expected, actual, message) {
+  if (expected != actual)
+    reportFatal('Failed: ' + expected + ' != ' + actual + ': ' + message);
+}
 function reportFatal(str) {
   reportError(str);
   testSuiteFinished();
   return false;
+}
+function reportInfo(str) {
+  reportMessage(PREFIX_INFO, str);
 }
 function testSuiteFinished() {
   reportMessage("[ ------ ]", "");
