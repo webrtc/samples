@@ -107,10 +107,10 @@ function appendSourceId(id, type, constraints) {
 
   if (constraints[type] == true)
     constraints[type] = { optional: [{sourceId: id}] };
-  else if (constraints[media].optional == null)
+  else if (constraints[type].optional == null)
     constraints[type].optional = [{sourceId: id}];
   else
-    constraints[media].optional.push( {sourceId: id} );
+    constraints[type].optional.push( {sourceId: id} );
 }
 
 function gotSources(sourceInfos) {
