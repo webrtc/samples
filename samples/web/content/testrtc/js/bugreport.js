@@ -61,21 +61,21 @@ function bugreport() {
   console.log('Detected browser: ' + browserName + ' ' + version);
 
   var output = document.getElementById('output');
-  var bug_description = 'Browser: ' + browserName + ' ' + version + '\n\n' +
+  var bugDescription = 'Browser: ' + browserName + ' ' + version + '\n\n' +
       'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
       output.value;
 
   // Labels.
-  var os_label = 'OS-';
-  if (navigator.platform.indexOf('Win') != -1) os_label += 'Windows';
-  if (navigator.platform.indexOf('Mac') != -1) os_label += 'Mac';
-  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) os_label += 'iOS';
-  if (navigator.platform.indexOf('Linux') != -1) os_label += 'Linux';
-  if (navigator.platform.indexOf('Android') != -1) os_label += 'Android';
+  var osLabel = 'OS-';
+  if (navigator.platform.indexOf('Win') != -1) osLabel += 'Windows';
+  if (navigator.platform.indexOf('Mac') != -1) osLabel += 'Mac';
+  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) osLabel += 'iOS';
+  if (navigator.platform.indexOf('Linux') != -1) osLabel += 'Linux';
+  if (navigator.platform.indexOf('Android') != -1) osLabel += 'Android';
 
-  var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + os_label;
+  var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
   var url = 'https://code.google.com/p/chromium/issues/entry?' +
-      'comment=' + encodeURIComponent(bug_description) +
+      'comment=' + encodeURIComponent(bugDescription) +
       '&labels=' + encodeURIComponent(labels);
   console.log('Navigating to: ' + url);
   window.location.href = url;
