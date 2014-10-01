@@ -25,10 +25,18 @@ CamTest.camTest = function () {
   doGetUserMedia(constraints, function(stream) {
     if (CamTest.checkVideoTracks(stream)) {
       CamTest.checkVideoStart(stream);
+
+      var video = document.getElementById('main-video');
+      attachMediaStream(video, stream);
+
       reportInfo("Checking if your camera is delivering frames for five " +
                  "seconds...");
-      setTimeout(CamTest.checkVideoFinish, 5000);
+      setTimeout(function() {
+        CamTest.checkVideoFinish(video);
+      }, 5000);
     }
+  }, function(err) {
+    reportFatal("Failed to acquire camera: " + err);
   });
 }
 
@@ -60,6 +68,8 @@ CamTest.checkVideoStart = function(stream) {
 }
 
 CamTest.checkVideoFinish = function(videoTag) {
+  assertEquals(640, videoTag.videoWidth, 'Expected VGA width');
+  assertEquals(480, videoTag.videoHeight, 'Expected VGA height');
   if (CamTest.isMuted)
     reportFatal("Your camera reported itself as muted! It is probably " +
                 "not delivering frames. Please try another webcam.");
