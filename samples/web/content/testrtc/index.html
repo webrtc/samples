@@ -27,6 +27,11 @@
       <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
       <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
       <button id="bug-button" onclick="reportBug()" disabled>File a bug</button>
+      <div>
+        <video id="main-video" width="640" height="480" autoplay
+          style="display: none"></video>
+        <canvas id="main-video-canvas" width="640" height="480"></canvas>
+      </div>
     </div>
   </div>
 <script src="js/adapter.js"></script>
@@ -37,6 +42,7 @@
 <script src="js/conntest.js"></script>
 <script src="js/camresolutionstest.js"></script>
 <script src="js/bandwidth_test.js"></script>
+<script src="js/camtest.js"></script>
 <!-- TODO(juberti): Add analytics script src="js/lib/ga.js" -->
 </body>
 </html>
