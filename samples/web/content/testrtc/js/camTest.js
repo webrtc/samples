@@ -71,7 +71,7 @@ CamWorksInVGATest.checkVideoStart = function(stream) {
     reportFatal("Video track ended, camera stopped working");
   }
   videoTrack.onmute = function() {
-    reportWarning("Your camera reported itself as muted.");
+    reportError("Your camera reported itself as muted.");
     CamWorksInVGATest.isMuted = true;
   }
   videoTrack.onunmute = function() {
