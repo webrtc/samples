@@ -30,7 +30,7 @@ CamResolutionsTest.resolutions = [ [ 160, 120],
 
 CamResolutionsTest.camResolutionsTest = function () {
   var constraintsLength = CamResolutionsTest.resolutions.length;
-  trace('Checking ' + constraintsLength + " constraint sets");
+  trace('Checking ' + constraintsLength + ' constraint sets');
 
   for (var i = 0; i < constraintsLength; ++i) {
     var theResolution = CamResolutionsTest.resolutions[i];
@@ -41,13 +41,13 @@ CamResolutionsTest.camResolutionsTest = function () {
           CamResolutionsTest.successFunc,
           CamResolutionsTest.failFunc);
     } catch (e) {
-      trace('gUM failure');
+      reportFatal('GetUserMedia failed.');
     }
   }
   CamResolutionsTest.waitForTestToFinish();
 }
 
-addTestSuite("CamResolutionsTest", CamResolutionsTest.camResolutionsTest);
+addTestSuite('CamResolutionsTest', CamResolutionsTest.camResolutionsTest);
 
 CamResolutionsTest.successFunc = function(stream) {
   CamResolutionsTest.supported++;
@@ -70,15 +70,15 @@ CamResolutionsTest.waitForTestToFinish = function() {
   var constraintsLength = CamResolutionsTest.resolutions.length;
   if (CamResolutionsTest.index == constraintsLength) {
     if (CamResolutionsTest.supported) {
-        reportSuccess(CamResolutionsTest.supported + "/" + constraintsLength +
-                      " resolutions supported.");
+        reportSuccess(CamResolutionsTest.supported + '/' + constraintsLength +
+                      ' resolutions supported.');
     } else {
-        reportError("No camera resolutions supported, most likely the camera" +
-                    " is not accessible or dead.");
+        reportError('No camera resolutions supported, most likely the camera' +
+                    ' is not accessible or dead.');
     }
     testSuiteFinished();
   } else {
-    trace( 'Waiting for test to finish, ' + CamResolutionsTest.index + " ?= " +
+    trace( 'Waiting for test to finish, ' + CamResolutionsTest.index + ' ?= ' +
            (CamResolutionsTest.resolutions.length));
     setTimeout('CamResolutionsTest.waitForTestToFinish()', 1000);
   }
