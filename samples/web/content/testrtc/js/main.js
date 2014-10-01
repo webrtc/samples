@@ -18,6 +18,7 @@ var output = document.getElementById('output');
 var PREFIX_RUN    = "[ RUN    ]";
 var PREFIX_OK     = "[     OK ]";
 var PREFIX_FAILED = "[ FAILED ]";
+var PREFIX_INFO   = "[ INFO   ]";
 var testSuites = [];
 var nextTestIndex;
 var successes;
@@ -46,6 +47,9 @@ function reportFatal(str) {
   reportError(str);
   testSuiteFinished();
   return false;
+}
+function reportInfo(str) {
+  reportMessage(PREFIX_INFO, str);
 }
 function testSuiteFinished() {
   reportMessage("[ ------ ]", "");
