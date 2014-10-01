@@ -12,6 +12,7 @@
 'use strict';
 
 addTestSuite("MicrophoneTest", micTest);
+addTestSuite("AudioTest", audioTest);
 
 function micTest() {
   doGetUserMedia({audio:true}, function(stream) {
@@ -19,6 +20,11 @@ function micTest() {
       checkAudioStart(stream);
     }
   });
+}
+
+function audioTest() {
+  reportSuccess("Hello world! :)");
+  testSuiteFinished();  
 }
 
 function checkTracks(stream) {
