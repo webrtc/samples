@@ -83,15 +83,27 @@ WebRTCTest()
                  noop, createOfferParams);
 })
 
-.helper("createTurnConfig", function(t, success, error) {
+.helper("createTurnConfig", function(t, customCallbacks) {
   var xhr = new XMLHttpRequest();
+
+  var defaultCallbacks = {
+    success:function(config){
+      t.log("Turn config complete", config)
+    },
+    error:function(message){
+      t.fail(message)
+    }
+  }
+
+  // Override with custom callbacks.
+  var callbacks = t.extend( defaultCallbacks , customCallbacks );
 
   xhr.onreadystatechange = function onResult() {
     if (xhr.readyState != 4)
       return;
 
     if (xhr.status != 200) {
-      error("TURN request failed");
+      callbacks.error("TURN request failed");
       return;
     }
 
@@ -102,7 +114,7 @@ WebRTCTest()
       'urls': response.uris
     };
 
-    success({ "iceServers": [ iceServer ] })
+    callbacks.success({ "iceServers": [ iceServer ] })
 
   };
 
