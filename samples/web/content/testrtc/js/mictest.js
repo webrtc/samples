@@ -42,6 +42,7 @@ function checkAudioStart(stream) {
     reportSuccess("Audio num channels=" + inputBuffer.numberOfChannels);
     reportSuccess("Audio sample rate=" + inputBuffer.sampleRate);
     checkAudioMuted(inputBuffer);
+    checkAudioZeros(inputBuffer);
     testSuiteFinished();
   };
 
@@ -64,5 +65,23 @@ function checkAudioMuted(buffer) {
     var rms = Math.sqrt(sum / buffer.length);
     var db = 20 * Math.log(rms) / Math.log(10);
     reportSuccess("Microphone is connected, audio power (dB)=" + db);
+  }
+}
+
+function checkAudioZeros(buffer) {
+  var data = buffer.getChannelData(0);
+  var weight = 0;
+  var zeros = 0;
+  for (var sample = 1; sample < buffer.length; ++sample) {
+    if (data[sample] == 0) {
+      zeros = ++weight;
+    } else {
+      weight = 0;
+    }
+  }
+  if (zeros > buffer.length / 2) {
+    reportError("Zero bursts present!");
+  } else {
+    reportSuccess("No zero burst present!");
   }
 }
