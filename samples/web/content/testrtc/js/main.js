@@ -118,16 +118,16 @@ function gotSources(sourceInfos) {
     var sourceInfo = sourceInfos[i];
     var option = document.createElement("option");
     option.value = sourceInfo.id;
-    appendOption(sourceInfo.kind, sourceInfo.label, option);
+    appendOption(sourceInfo, option);
   }
 }
 
-function appendOption(kind, label, option) {
-  if (kind === 'audio') {
-    option.text = label || 'microphone ' + (audioSelect.length + 1);
+function appendOption(sourceInfo, option) {
+  if (sourceInfo.kind === 'audio') {
+    option.text = sourceInfo.label || 'microphone ' + (audioSelect.length + 1);
     audioSelect.appendChild(option);
-  } else if (kind === 'video') {
-    option.text = label || 'camera ' + (videoSelect.length + 1);
+  } else if (sourceInfo.kind === 'video') {
+    option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
     videoSelect.appendChild(option);
   } else {
     console.log('Some other kind of source');
