@@ -15,12 +15,38 @@
 // 1) We can connect via UDP to a TURN server
 // 2) We can connect via TCP to a TURN server
 // 3) We have IPv6 enabled (TODO: test IPv6 to a destination)
-addTestSuite("UdpTest", udpTest);
-addTestSuite("TcpTest", tcpTest);
-addTestSuite("Ipv6Test", ipv6Test);
+addTestSuite('UdpConnectivityTest', udpConnectivityTest);
+addTestSuite('TcpConnectivityTest', tcpConnectivityTest);
+addTestSuite('HasIpv6Test', hasIpv6Test);
 
-var CEOD_URL = ("https://computeengineondemand.appspot.com/turn?" +
-                "username=1234&key=5678");
+var CEOD_URL = ('https://computeengineondemand.appspot.com/turn?' +
+                'username=1234&key=5678');
+
+// Get a TURN config, and try to get a relay candidate using UDP.
+function udpConnectivityTest() {
+  asyncCreateTurnConfig(
+      function(config) { 
+        filterConfig(config, 'udp');
+        gatherCandidates(config, null, checkRelay);
+      },
+      reportFatal);
+}
+
+// Get a TURN config, and try to get a relay candidate using TCP.
+function tcpConnectivityTest() {
+  asyncCreateTurnConfig(
+      function(config) { 
+        filterConfig(config, 'tcp');
+        gatherCandidates(config, null, checkRelay);
+      },
+      reportFatal);
+}
+
+// Turn on IPv6, and try to get an IPv6 host candidate.
+function hasIpv6Test() {
+  var params = { optional: [ { googIPv6: true } ] };
+  gatherCandidates(null, params, checkIpv6);                        
+}
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
 function asyncCreateTurnConfig(onSuccess, onError) {
@@ -30,7 +56,7 @@ function asyncCreateTurnConfig(onSuccess, onError) {
       return;
 
     if (xhr.status != 200) {
-      onError("TURN request failed");
+      onError('TURN request failed');
       return;
     }
 
@@ -40,7 +66,7 @@ function asyncCreateTurnConfig(onSuccess, onError) {
       'credential': response.password,
       'urls': response.uris
     };
-    onSuccess({ "iceServers": [ iceServer ] });
+    onSuccess({ 'iceServers': [ iceServer ] });
   }
 
   xhr.onreadystatechange = onResult;
@@ -51,7 +77,7 @@ function asyncCreateTurnConfig(onSuccess, onError) {
 // Filter the RTCConfiguration |config| to only contain URLs with the
 // specified transport protocol |protocol|.
 function filterConfig(config, protocol) {
-  var transport = "transport=" + protocol;
+  var transport = 'transport=' + protocol;
   for (var i = 0; i < config.iceServers.length; ++i) {
     var iceServer = config.iceServers[i];
     var newUrls = [];
@@ -65,77 +91,36 @@ function filterConfig(config, protocol) {
 }
 
 function checkRelay(c) {
-  return c.type === "relay";
+  return c.type === 'relay';
 }
 
 function checkIpv6(c) {
   return (c.address.indexOf(':') !== -1);
 }
 
-// Get a TURN config, and try to get a relay candidate using UDP.
-function udpTest() {
-  asyncCreateTurnConfig(
-      function(config) { 
-        filterConfig(config, "udp");
-        gatherCandidates(config, null, checkRelay);
-      },
-      reportFatal);
-}
-
-// Get a TURN config, and try to get a relay candidate using TCP.
-function tcpTest() {
-  asyncCreateTurnConfig(
-      function(config) { 
-        filterConfig(config, "tcp");
-        gatherCandidates(config, null, checkRelay);
-      },
-      reportFatal);
-}
-
-// Turn on IPv6, and try to get an IPv6 host candidate.
-function ipv6Test() {
-  var params = { optional: [ { googIPv6: true } ] };
-  gatherCandidates(null, params, checkIpv6);                        
-}
-
-// Parse a "candidate:" line into a JSON object.
-function parseCandidate(text) {
-  var candidateStr = "candidate:";
-  var pos = text.indexOf(candidateStr) + candidateStr.length;
-  var fields = text.substr(pos).split(" ");
-  return {
-    "type": fields[7],
-    "protocol": fields[2],
-    "address": fields[4],
-  };
-}
-
-function noop() {
-}
-
 // Create a PeerConnection, and gather candidates using RTCConfig |config|
 // and ctor params |params|. Succeed if any candidates pass the |isGood| 
 // check, fail if we complete gathering without any passing.
-function gatherCandidates(config, params, isGood) {
-  var pc = new RTCPeerConnection(config, params);
+function gatherCandidates(opt_config, opt_params, isGood) {
+  var pc = new RTCPeerConnection(opt_config, opt_params);
 
   // In our candidate callback, stop if we get a candidate that passes |isGood|.
   pc.onicecandidate = function(e) {
     // Once we've decided, ignore future callbacks.
-    if (pc.signalingState === "closed")
+    if (pc.signalingState === 'closed')
       return;
 
     if (e.candidate) {
       var parsed = parseCandidate(e.candidate.candidate);
       if (isGood(parsed)) {
-        reportSuccess("Gathered candidate with type: " + parsed.type +
-                      " address: " + parsed.address);
+        reportSuccess('Gathered candidate with type: ' + parsed.type +
+                      ' address: ' + parsed.address);
         pc.close();
         testSuiteFinished();
       }
     } else {
       pc.close();
-      reportFatal("Failed to gather specified candidates");
+      reportFatal('Failed to gather specified candidates');
     }
   };
 
@@ -146,3 +131,17 @@ function gatherCandidates(config, params, isGood) {
                  noop, createOfferParams);
 }
 
+// Parse a 'candidate:' line into a JSON object.
+function parseCandidate(text) {
+  var candidateStr = 'candidate:';
+  var pos = text.indexOf(candidateStr) + candidateStr.length;
+  var fields = text.substr(pos).split(' ');
+  return {
+    'type': fields[7],
+    'protocol': fields[2],
+    'address': fields[4],
+  };
+}
+
+function noop() {
+}
