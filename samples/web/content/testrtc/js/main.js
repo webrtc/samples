@@ -43,6 +43,10 @@ function reportError(str) {
   reportMessage(PREFIX_FAILED, str);
   ++failures;
 }
+function assertEquals(expected, actual, message) {
+  if (expected != actual)
+    reportFatal('Failed: ' + expected + ' != ' + actual + ': ' + message);
+}
 function reportFatal(str) {
   reportError(str);
   testSuiteFinished();
