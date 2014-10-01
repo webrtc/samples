@@ -89,7 +89,5 @@ function checkAudioZeros(buffer) {
   }
   if (zeros > buffer.length / 2) {
     reportError("Zero bursts present!");
-  } else {
-    reportSuccess("No zero burst present!");
   }
 }
