@@ -34,3 +34,39 @@ StatisticsReport.prototype = {
     clearInterval(this.timer_);
   },
 }
+
+StatisticsAggregate = function (ramp_up_threshold) {
+  this.start_time_ = 0;
+  this.sum_ = 0;
+  this.count_ = 0;
+  this.max_ = 0;
+  this.ramp_up_threshold_ = ramp_up_threshold;
+  this.ramp_up_time_ = Infinity;
+}
+
+StatisticsAggregate.prototype = {
+  add: function (time, data_point) {
+    if (this.start_time_ == 0)
+      this.start_time_ = time;
+    this.sum_ += data_point;
+    this.max_ = Math.max(this.max_, data_point);
+    if (this.ramp_up_time_ == Infinity &&
+        data_point > this.ramp_up_threshold_)
+      this.ramp_up_time_ = time;
+    this.count_++;
+  },
+
+  getAverage: function () {
+    if (this.count_ == 0)
+      return 0;
+    return Math.round(this.sum_ / this.count_);
+  },
+
+  getMax: function () {
+    return this.max_;
+  },
+
+  getRampUpTime: function () {
+    return this.ramp_up_time_ - this.start_time_;
+  },
+}

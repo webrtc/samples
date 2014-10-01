@@ -16,9 +16,9 @@
 addTestSuite("BandwidthTest", bwTest);
 
 function bwTest() {
-  var durationMs = 10000;
+  var durationMs = 40000;
   var maxVideoBitrateKbps = 2000;
-  var forceTurn = false;
+  var forceTurn = true;
   var autoClose = false;
   var pcConstraints = null;
 
@@ -40,9 +40,6 @@ function bwTest() {
                  gotStream, function() {});
 
   function gotStream(stream) {
-    reportSuccess("duration: " + durationMs);
-    reportSuccess("forceTurn: " + forceTurn);
-    reportSuccess("maxBitrate: " + maxVideoBitrateKbps);
     var test = new LoopbackTest(stream, durationMs,
                                 forceTurn,
                                 pcConstraints,
@@ -50,14 +47,36 @@ function bwTest() {
     test.run(onTestFinished.bind(test));
   }
 
+  function computeStatsAndReport() {
+    var stats = this.getResults();
+    var bwe_stats = new StatisticsAggregate(0.75 * maxVideoBitrateKbps * 1000);
+    var rtt_stats = new StatisticsAggregate(0);
+    for (var block_index in stats) {
+      for (var report_index in stats[block_index]) {
+        var report = stats[block_index][report_index];
+        if (report.id == "bweforvideo") {
+          bwe_stats.add(Date.parse(report.timestamp),
+            parseInt(report.stat("googAvailableSendBandwidth")));
+        } else if (report.type == "ssrc") {
+          rtt_stats.add(Date.parse(report.timestamp),
+            parseInt(report.stat("googRtt")));
+        }
+      }
+    }
+    var last_block = stats.pop();
+    reportSuccess("RTT average: " + rtt_stats.getAverage() + " ms");
+    reportSuccess("RTT max: " + rtt_stats.getMax() + " ms");
+    reportSuccess("Send bandwidth average: " + bwe_stats.getAverage() + " bps");
+    reportSuccess("Send bandwidth max: " + bwe_stats.getMax() + " bps");
+    reportSuccess("Send bandwidth ramp-up time: " + bwe_stats.getRampUpTime() + " ms");
+  }
+
   function onTestFinished() {
     testFinished = true;
     if (autoClose) {
       window.close();
     } else {
-      var stats = this.getResults();
-      var last_block = stats.pop();
-      reportSuccess("RTT: " + last_block.pop().stat("googRtt") + " ms");
+      computeStatsAndReport();
       testSuiteFinished();
     }
   }
