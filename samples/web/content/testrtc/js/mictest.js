@@ -37,14 +37,22 @@ function checkAudioStart(stream) {
   var processFunc = function(event) {
     var sampleRate = event.sampleRate;
     var inputBuffer = event.inputBuffer;
-    source.disconnect(scriptNode); 
-    scriptNode.disconnect(audioContext.destination);
-    reportSuccess("Audio num channels=" + inputBuffer.numberOfChannels);
-    reportSuccess("Audio sample rate=" + inputBuffer.sampleRate);
-    checkAudioMuted(inputBuffer);
-    testSuiteFinished();
+    var numFrames = 10;
+    if (frameCount == 0) {
+      // Do this only for the first frame.
+      reportSuccess("Audio num channels=" + inputBuffer.numberOfChannels);
+      reportSuccess("Audio sample rate=" + inputBuffer.sampleRate);
+      checkAudioMuted(inputBuffer);
+    }
+    if (++frameCount >= numFrames) {
+      // End the test.
+      source.disconnect(scriptNode); 
+      scriptNode.disconnect(audioContext.destination);
+      testSuiteFinished();
+    }
   };
 
+  var frameCount = 0;
   var source = audioContext.createMediaStreamSource(stream);
   var scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
   scriptNode.onaudioprocess = processFunc;
