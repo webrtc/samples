@@ -39,7 +39,11 @@ function checkAudioStart(stream) {
     var inputBuffer = event.inputBuffer;
     source.disconnect(scriptNode); 
     scriptNode.disconnect(audioContext.destination);
-    checkAudioFinish(inputBuffer);
+    reportSuccess("Audio num channels=" + inputBuffer.numberOfChannels);
+    reportSuccess("Audio sample rate=" + inputBuffer.sampleRate);
+    checkAudioMuted(inputBuffer);
+    checkAudioZeros(inputBuffer);
+    testSuiteFinished();
   };
 
   var source = audioContext.createMediaStreamSource(stream);
@@ -49,16 +53,35 @@ function checkAudioStart(stream) {
   scriptNode.connect(audioContext.destination);
 }
 
-function checkAudioFinish(buffer) {
-  reportSuccess("Audio num channels=" + buffer.numberOfChannels);
-  reportSuccess("Audio sample rate=" + buffer.sampleRate);
+function checkAudioMuted(buffer) {
   var data = buffer.getChannelData(0);
   var sum = 0;
   for (var sample = 0; sample < buffer.length; ++sample) {
     sum += Math.abs(data[sample]);
   }
-  var rms = Math.sqrt(sum / buffer.length);
-  var db = 20 * Math.log(rms) / Math.log(10);
-  reportSuccess("Audio power=" + db);
-  testSuiteFinished();
+  if (sum == 0) {
+    reportError("Microphone not connected, or muted.");
+  } else {
+    var rms = Math.sqrt(sum / buffer.length);
+    var db = 20 * Math.log(rms) / Math.log(10);
+    reportSuccess("Microphone is connected, audio power (dB)=" + db);
+  }
+}
+
+function checkAudioZeros(buffer) {
+  var data = buffer.getChannelData(0);
+  var weight = 0;
+  var zeros = 0;
+  for (var sample = 1; sample < buffer.length; ++sample) {
+    if (data[sample] == 0) {
+      zeros = ++weight;
+    } else {
+      weight = 0;
+    }
+  }
+  if (zeros > buffer.length / 2) {
+    reportError("Zero bursts present!");
+  } else {
+    reportSuccess("No zero burst present!");
+  }
 }
