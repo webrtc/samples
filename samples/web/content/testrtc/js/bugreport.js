@@ -12,7 +12,41 @@
 'use strict';
 
 function reportBug() {
-  // Detect browser and version. Code inspired by http://goo.gl/9dZZqE with
+  // Detect browser and version.
+  var res = getBrowserNameAndVersion();
+  var browserName = res['name']
+  var browserVersion = res['version']
+  console.log('Detected browser: ' + browserName + ' ' + browserVersion);
+
+  var output = document.getElementById('output');
+  var description = 'Browser: ' + browserName + ' ' + browserVersion + '\n\n' +
+      'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
+      output.value;
+
+  // Labels for the bug to be filed.
+  var osLabel = 'OS-';
+  if (navigator.platform.indexOf('Win') != -1) osLabel += 'Windows';
+  if (navigator.platform.indexOf('Mac') != -1) osLabel += 'Mac';
+  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) osLabel += 'iOS';
+  if (navigator.platform.indexOf('Linux') != -1) osLabel += 'Linux';
+  if (navigator.platform.indexOf('Android') != -1) osLabel += 'Android';
+
+  var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
+  var url = 'https://code.google.com/p/chromium/issues/entry?' +
+      'comment=' + encodeURIComponent(description) +
+      '&labels=' + encodeURIComponent(labels);
+  console.log('Navigating to: ' + url);
+  window.location.href = url;
+}
+
+/*
+ * Detects the running browser name and version.
+ *
+ * @return {!Object.<string, string>} Object containing the browser name and
+ *     version (mapped to the keys "name" and "version").
+ */
+function getBrowserNameAndVersion() {
+  // Code inspired by http://goo.gl/9dZZqE with
   // added support of modern Internet Explorer versions (Trident).
   var agent = navigator.userAgent;
   var browserName = navigator.appName;
@@ -50,25 +84,5 @@ function reportBug() {
   if ((ix = version.indexOf(' ')) != -1)
     version = version.substring(0, ix);
 
-  console.log('Detected browser: ' + browserName + ' ' + version);
-
-  var output = document.getElementById('output');
-  var bugDescription = 'Browser: ' + browserName + ' ' + version + '\n\n' +
-      'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
-      output.value;
-
-  // Labels.
-  var osLabel = 'OS-';
-  if (navigator.platform.indexOf('Win') != -1) osLabel += 'Windows';
-  if (navigator.platform.indexOf('Mac') != -1) osLabel += 'Mac';
-  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) osLabel += 'iOS';
-  if (navigator.platform.indexOf('Linux') != -1) osLabel += 'Linux';
-  if (navigator.platform.indexOf('Android') != -1) osLabel += 'Android';
-
-  var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
-  var url = 'https://code.google.com/p/chromium/issues/entry?' +
-      'comment=' + encodeURIComponent(bugDescription) +
-      '&labels=' + encodeURIComponent(labels);
-  console.log('Navigating to: ' + url);
-  window.location.href = url;
+  return { 'name': browserName, 'version': version };
 }
