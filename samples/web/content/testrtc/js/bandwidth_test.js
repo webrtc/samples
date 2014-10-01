@@ -90,3 +90,70 @@ function testDataChannelThroughput(config) {
     }
   }
 }
+
+// Measures video bandwidth estimation performance by doing a loopback call via
+// relay candidates during 40 seconds. Computes rtt and bandwidth estimation
+// average and maximum as well as time to ramp up (defined as reaching 75% of
+// the max bitrate. It reports infinity time to ramp up if never reaches it.
+addTestSuite('Video Bandwidth Test',
+  asyncCreateTurnConfig.bind(null, testVideoBandwidth, reportFatal));
+
+function testVideoBandwidth(config) {
+  var maxVideoBitrateKbps = 2000;
+  var durationMs = 40000;
+  var statStepMs = 100;
+  var bweStats = new StatisticsAggregate(0.75 * maxVideoBitrateKbps * 1000);
+  var rttStats = new StatisticsAggregate();
+
+  var call = new WebRTCCall(config);
+  var startTime;
+  call.isGoodCandidate = checkRelay;
+
+  // FEC makes it hard to study bwe estimation since there seems to be a spike
+  // when it is enabled and disabled. Disable it for now. FEC issue tracked on:
+  // https://code.google.com/p/webrtc/issues/detail?id=3050
+  constrainOfferToRemoveFec(call.pc1);
+
+  constrainBitrateAnswer(call.pc2, maxVideoBitrateKbps);
+
+  doGetUserMedia({audio: false, video: true}, gotStream, reportFatal);
+
+  function gotStream(stream) {
+     call.pc1.addStream(stream);
+     call.establishConnection();
+     startTime = new Date();
+     setTimeout(gatherStats, statStepMs);
+  }
+
+  function gatherStats() {
+     if ((new Date()) - startTime > durationMs)
+       completed();
+     else
+       call.pc1.getStats(gotStats);
+  }
+
+  function gotStats(response) {
+    for (var index in response.result()) {
+      var report = response.result()[index];
+      if (report.id == "bweforvideo") {
+        bweStats.add(Date.parse(report.timestamp),
+          parseInt(report.stat("googAvailableSendBandwidth")));
+      } else if (report.type == "ssrc") {
+        rttStats.add(Date.parse(report.timestamp),
+          parseInt(report.stat("googRtt")));
+      }
+    }
+    setTimeout(gatherStats, statStepMs);
+  }
+
+  function completed() {
+    call.close();
+    reportSuccess("RTT average: " + rttStats.getAverage() + " ms");
+    reportSuccess("RTT max: " + rttStats.getMax() + " ms");
+    reportSuccess("Send bandwidth average: " + bweStats.getAverage() + " bps");
+    reportSuccess("Send bandwidth max: " + bweStats.getMax() + " bps");
+    reportSuccess("Send bandwidth ramp-up time: " + bweStats.getRampUpTime() + " ms");
+    reportSuccess('Test finished');
+    testSuiteFinished();
+  }
+}

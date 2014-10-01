@@ -51,3 +51,35 @@ WebRTCCall.prototype = {
     }
   }
 }
+
+// Constraint max video bitrate by modifying the SDP when creating an answer.
+function constrainBitrateAnswer(pc, maxVideoBitrateKbps) {
+  var origCreateAnswer = pc.createAnswer;
+  pc.createAnswer = function (successCallback, failureCallback, options) {
+    function filteredSuccessCallback(desc) {
+      if (maxVideoBitrateKbps) {
+        desc.sdp = desc.sdp.replace(
+            /a=mid:video\r\n/g,
+            'a=mid:video\r\nb=AS:' + maxVideoBitrateKbps + '\r\n');
+      }
+      successCallback(desc);
+    }
+    origCreateAnswer.call(this, filteredSuccessCallback, failureCallback,
+                          options);
+  }
+}
+
+function constrainOfferToRemoveFec(pc) {
+  var origCreateOffer = pc.createOffer;
+  pc.createOffer = function (successCallback, failureCallback, options) {
+    function filteredSuccessCallback(desc) {
+      desc.sdp = desc.sdp.replace(/(m=video 1 [^\r]+)(116 117)(\r\n)/g,
+                                  '$1\r\n');
+      desc.sdp = desc.sdp.replace(/a=rtpmap:116 red\/90000\r\n/g, '');
+      desc.sdp = desc.sdp.replace(/a=rtpmap:117 ulpfec\/90000\r\n/g, '');
+      successCallback(desc);
+    }
+    origCreateOffer.call(this, filteredSuccessCallback, failureCallback,
+                         options);
+  }
+}
