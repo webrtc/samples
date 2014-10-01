@@ -82,11 +82,16 @@ background-color: #cf402f;
 }
 
 button[disabled] {
+background-color: #900;
 color: #ccc;
 }
 
 button[disabled]:hover {
 background-color: #d84a38;
+}
+
+button#bug-button {
+float: right;
 }
 
 canvas {
