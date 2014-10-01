@@ -89,25 +89,7 @@ function doGetUserMedia(constraints, onSuccess) {
     return reportFatal(errorMessage);
   }
   try {
-    var audioSource = audioSelect.value;
-    var videoSource = videoSelect.value;
-    var getSourceConstraints = {
-      audio: {
-        optional: [{sourceId: audioSource}]
-      },
-      video: {
-        optional: [{sourceId: videoSource}]
-      }
-    };
-      
-    // Extend the constraints with the getSource constraints.
-    for (var media in getSourceConstraints) {
-      if (constraints[media] == true)
-        constraints[media] = getSourceConstraints[media];
-      else if ((typeof constraints[media]) == (typeof {}))
-        angular.extend(constraints[media], getSourceConstraints[media])
-    }
-      
+    appendSourceIdToConstraints(constraints);
     getUserMedia(constraints, successFunc, failFunc);
     trace('Requested access to local media with constraints:\n' +
         '  \'' + JSON.stringify(constraints) + '\'');
@@ -116,26 +98,54 @@ function doGetUserMedia(constraints, onSuccess) {
   }
 }
 
+function appendSourceIdToConstraints(constraints) {
+  var audioSource = audioSelect.value;
+  var videoSource = videoSelect.value;
+  var getSourceConstraints = {
+  audio: {
+  optional: [{sourceId: audioSource}]
+  },
+  video: {
+  optional: [{sourceId: videoSource}]
+  }
+  };
+  
+  // Append the constraints with the getSource constraints.
+  for (var media in getSourceConstraints) {
+    if (constraints[media] == true)
+      constraints[media] = getSourceConstraints[media];
+    else if ((typeof constraints[media]) == (typeof {})) {
+      if ((typeof constraints[media].optional) == (typeof {}))
+        constraints[media].optional.push(getSourceConstraints[media].optional);
+      else
+        constraints[media].optional = getSourceConstraints[media].optional;
+    }
+  }
+}
+
 function gotSources(sourceInfos) {
   for (var i = 0; i != sourceInfos.length; ++i) {
     var sourceInfo = sourceInfos[i];
     var option = document.createElement("option");
     option.value = sourceInfo.id;
-    if (sourceInfo.kind === 'audio') {
-      option.text = sourceInfo.label || 'microphone ' +
-          (audioSelect.length + 1);
-      audioSelect.appendChild(option);
-    } else if (sourceInfo.kind === 'video') {
-      option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
-      videoSelect.appendChild(option);
-    } else {
-      console.log('Some other kind of source: ', sourceInfo);
-    }
+    appendOption(sourceInfo.kind, sourceInfo.label, option);
+  }
+}
+
+function appendOption(kind, label, option) {
+  if (kind === 'audio') {
+    option.text = label || 'microphone ' + (audioSelect.length + 1);
+    audioSelect.appendChild(option);
+  } else if (kind === 'video') {
+    option.text = label || 'camera ' + (videoSelect.length + 1);
+    videoSelect.appendChild(option);
+  } else {
+    console.log('Some other kind of source');
   }
 }
 
 if (typeof MediaStreamTrack === 'undefined') {
-    alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
+    reportFatal("This browser does not support MediaStreamTrack.\n Try Chrome Canary.");
 } else {
     MediaStreamTrack.getSources(gotSources);
 }
