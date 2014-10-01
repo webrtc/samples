@@ -11,10 +11,11 @@
 
 'use strict';
 
-/* This test tries calling getUserMedia() with a resolution out of a list below.
- * Each gUM() call triggers a success or a fail callback, we report ok/nok and
- * schedule another gUM() with the next resolution until the list is exhausted.
- * Some resolutions are mandatory and make the test fail if not supported. 
+/* This test tries calling getUserMedia() with each resolution from the list
+ * below. Each gUM() call triggers a success or a fail callback; we report
+ * ok/nok and schedule another gUM() with the next resolution until the list
+ * is exhausted. Some resolutions are mandatory and make the test fail if not
+ * supported.
  *
  * In generic cameras using Chrome rescaler, all resolutions should be supported
  * up to a given one and none beyond there. Special cameras, such as digitizers,
@@ -25,27 +26,27 @@ var CamResolutionsTest = {};
 CamResolutionsTest.index = 0;
 CamResolutionsTest.supported = 0;
 CamResolutionsTest.unsupported = 0;
-// Each resolution has width, height and mandatory fields.
-CamResolutionsTest.resolutions = [ [ 160, 120 , false],
-                                   [ 320, 180 , false],
-                                   [ 320, 240 ,  true],  // QVGA
-                                   [ 640, 360 , false],
-                                   [ 640, 480 ,  true],  // VGA
-                                   [ 768, 576 , false],  // PAL
-                                   [1024, 576 , false],
-                                   [1280, 720 ,  true],  // HD
-                                   [1280, 768 , false],
-                                   [1280, 800 , false],
-                                   [1920,1080 , false],  // Full HD
-                                   [1920,1200 , false],
-                                   [3840,2160 , false],  // 4K
-                                   [4096,2160 , false] ];
+// Each resolution has width, height and 'mandatory' fields.
+CamResolutionsTest.resolutions = [ [ 160, 120, false],
+                                   [ 320, 180, false],
+                                   [ 320, 240,  true],  // QVGA
+                                   [ 640, 360, false],
+                                   [ 640, 480,  true],  // VGA
+                                   [ 768, 576, false],  // PAL
+                                   [1024, 576, false],
+                                   [1280, 720,  true],  // HD
+                                   [1280, 768, false],
+                                   [1280, 800, false],
+                                   [1920,1080, false],  // Full HD
+                                   [1920,1200, false],
+                                   [3840,2160, false],  // 4K
+                                   [4096,2160, false] ];
 CamResolutionsTest.mandatory_yet_unsupported_resolutions = 0;
 CamResolutionsTest.numResolutions = CamResolutionsTest.resolutions.length;
 
 CamResolutionsTest.camResolutionsTest = function () {
   trace('Checking ' + CamResolutionsTest.numResolutions + ' constraint sets');
-  CamResolutionsTest.TriggerGetUserMedia(CamResolutionsTest.resolutions[0]);
+  CamResolutionsTest.triggerGetUserMedia(CamResolutionsTest.resolutions[0]);
 }
 
 addTestSuite('CamResolutionsTest', CamResolutionsTest.camResolutionsTest);
@@ -89,12 +90,12 @@ CamResolutionsTest.finishTestOrRetrigger = function() {
     }
     testSuiteFinished();
   } else {
-    CamResolutionsTest.TriggerGetUserMedia(
+    CamResolutionsTest.triggerGetUserMedia(
         CamResolutionsTest.resolutions[CamResolutionsTest.index]);
   }
 }
 
-CamResolutionsTest.TriggerGetUserMedia = function(resolution) {
+CamResolutionsTest.triggerGetUserMedia = function(resolution) {
   try {
     getUserMedia({ audio: false, video: { mandatory: {
         minWidth:  resolution[0], minHeight: resolution[1],
