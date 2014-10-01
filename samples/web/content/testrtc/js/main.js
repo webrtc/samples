@@ -16,20 +16,22 @@
 var audioContext = new AudioContext();
 var output = document.getElementById('output');
 var bugButton = document.getElementById('bug-button');
-var PREFIX_RUN    = "[ RUN    ]";
-var PREFIX_OK     = "[     OK ]";
-var PREFIX_FAILED = "[ FAILED ]";
+var audioSelect = document.querySelector('select#audioSource');
+var videoSelect = document.querySelector('select#videoSource');
+var PREFIX_RUN    = '[ RUN    ]';
+var PREFIX_OK     = '[     OK ]';
+var PREFIX_FAILED = '[ FAILED ]';
 var testSuites = [];
 var nextTestIndex;
 var successes;
 var failures;
 
 function addTestSuite(name, func) {
-  testSuites.push({"name": name, "func": func});
+  testSuites.push({'name': name, 'func': func});
 }
 function start() {
   nextTestIndex = successes = failures = 0;
-  output.value = "";
+  output.value = '';
   asyncRunNextTestSuite();
 }
 function reportStart(testName) {
@@ -49,11 +51,11 @@ function reportFatal(str) {
   return false;
 }
 function testSuiteFinished() {
-  reportMessage("[ ------ ]", "");
+  reportMessage('[ ------ ]', '');
   asyncRunNextTestSuite();
 }
 function reportMessage(prefix, str) {
-  output.value += prefix + " " + str + '\n';
+  output.value += prefix + ' ' + str + '\n';
 }
 function asyncRunNextTestSuite() {
   setTimeout(runNextTestSuite, 0);
@@ -70,9 +72,9 @@ function runNextTestSuite() {
   testSuite.func();
 }
 function onComplete() {
-  var str = successes + " out of " + (successes + failures) + " tests passed";
+  var str = successes + ' out of ' + (successes + failures) + ' tests passed';
   var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
-  reportMessage("[ ------ ]", "");
+  reportMessage('[ ------ ]', '');
   reportMessage(prefix, str);
   bugButton.disabled = false;
 }
@@ -89,10 +91,53 @@ function doGetUserMedia(constraints, onSuccess) {
     return reportFatal(errorMessage);
   }
   try {
+    // Append the constraints with the getSource constraints.
+    appendSourceId(audioSelect.value, 'audio', constraints);
+    appendSourceId(videoSelect.value, 'video', constraints);
+
     getUserMedia(constraints, successFunc, failFunc);
     trace('Requested access to local media with constraints:\n' +
         '  \'' + JSON.stringify(constraints) + '\'');
   } catch (e) {
     return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
+}
+
+function appendSourceId(id, type, constraints) {
+  if (constraints[type] == null)
+    return;
+
+  if (constraints[type] == true)
+    constraints[type] = { optional: [{sourceId: id}] };
+  else if (constraints[type].optional == null)
+    constraints[type].optional = [{sourceId: id}];
+  else
+    constraints[type].optional.push( {sourceId: id} );
+}
+
+function gotSources(sourceInfos) {
+  for (var i = 0; i != sourceInfos.length; ++i) {
+    var sourceInfo = sourceInfos[i];
+    var option = document.createElement('option');
+    option.value = sourceInfo.id;
+    appendOption(sourceInfo, option);
+  }
+}
+
+function appendOption(sourceInfo, option) {
+  if (sourceInfo.kind === 'audio') {
+    option.text = sourceInfo.label || 'microphone ' + (audioSelect.length + 1);
+    audioSelect.appendChild(option);
+  } else if (sourceInfo.kind === 'video') {
+    option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
+    videoSelect.appendChild(option);
+  } else {
+    console.log('Some other kind of source');
+  }
+}
+
+if (typeof MediaStreamTrack === 'undefined') {
+  reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
+} else {
+  MediaStreamTrack.getSources(gotSources);
 }
