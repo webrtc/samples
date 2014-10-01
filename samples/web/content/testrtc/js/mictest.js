@@ -12,7 +12,6 @@
 'use strict';
 
 addTestSuite("MicrophoneTest", micTest);
-addTestSuite("AudioTest", audioTest);
 
 function micTest() {
   doGetUserMedia({audio:true}, function(stream) {
@@ -20,11 +19,6 @@ function micTest() {
       checkAudioStart(stream);
     }
   });
-}
-
-function audioTest() {
-  reportSuccess("Hello world! :)");
-  testSuiteFinished();  
 }
 
 function checkTracks(stream) {
@@ -45,7 +39,10 @@ function checkAudioStart(stream) {
     var inputBuffer = event.inputBuffer;
     source.disconnect(scriptNode); 
     scriptNode.disconnect(audioContext.destination);
-    checkAudioFinish(inputBuffer);
+    reportSuccess("Audio num channels=" + inputBuffer.numberOfChannels);
+    reportSuccess("Audio sample rate=" + inputBuffer.sampleRate);
+    checkAudioMuted(inputBuffer);
+    testSuiteFinished();
   };
 
   var source = audioContext.createMediaStreamSource(stream);
@@ -55,16 +52,17 @@ function checkAudioStart(stream) {
   scriptNode.connect(audioContext.destination);
 }
 
-function checkAudioFinish(buffer) {
-  reportSuccess("Audio num channels=" + buffer.numberOfChannels);
-  reportSuccess("Audio sample rate=" + buffer.sampleRate);
+function checkAudioMuted(buffer) {
   var data = buffer.getChannelData(0);
   var sum = 0;
   for (var sample = 0; sample < buffer.length; ++sample) {
     sum += Math.abs(data[sample]);
   }
-  var rms = Math.sqrt(sum / buffer.length);
-  var db = 20 * Math.log(rms) / Math.log(10);
-  reportSuccess("Audio power=" + db);
-  testSuiteFinished();
+  if (sum == 0) {
+    reportError("Microphone Muted!");
+  } else {
+    var rms = Math.sqrt(sum / buffer.length);
+    var db = 20 * Math.log(rms) / Math.log(10);
+    reportSuccess("Audio power=" + db);
+  }
 }
