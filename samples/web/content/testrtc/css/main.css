@@ -201,6 +201,10 @@ strong {
   font-weight: 500;
 }
 
+textarea {
+  font-family: 'Courier New', monospace
+}
+
 video {
   background: #222;
   margin: 0 0 20px 0;
