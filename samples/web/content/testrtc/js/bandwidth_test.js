@@ -11,6 +11,9 @@
 
 'use strict';
 
+// Creates a loopback via relay candidates and tries to send as many packets
+// with 1024 chars as possible while keeping dataChannel bufferedAmmount above
+// zero.
 addTestSuite('Data channel throughput',
   asyncCreateTurnConfig.bind(null, testDataChannelThroughput, reportFatal));
 
@@ -71,17 +74,17 @@ function testDataChannelThroughput(config) {
     if (now - lastBitrateMeasureTime >= 1000) {
       var bitrate = (receivedPayloadBytes - lastReceivedPayloadBytes) /
                     (now - lastBitrateMeasureTime);
-      bitrate = Math.round(bitrate * 1000) / 1000;
-      reportSuccess('Transmitting at ' + bitrate + ' KB/s.');
+      bitrate = Math.round(bitrate * 1000 * 8) / 1000;
+      reportSuccess('Transmitting at ' + bitrate + ' kbps.');
       lastReceivedPayloadBytes = receivedPayloadBytes;
       lastBitrateMeasureTime = now;
     }
     if (stopSending && sentPayloadBytes == receivedPayloadBytes) {
       call.close();
 
-      var elapsedTime = Math.round((now - startTime) * 10) / 10.0;
-      var receivedKBytes = receivedPayloadBytes / 1000;
-      reportSuccess('Total transmited: ' + receivedKBytes + ' kilobytes in ' +
+      var elapsedTime = Math.round((now - startTime) * 10) / 10000.0;
+      var receivedKBits = receivedPayloadBytes * 8 / 1000;
+      reportSuccess('Total transmitted: ' + receivedKBits + ' kilo-bits in ' +
                     elapsedTime + ' seconds.');
       testSuiteFinished();
     }
