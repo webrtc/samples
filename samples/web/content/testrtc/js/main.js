@@ -145,7 +145,7 @@ function appendOption(kind, label, option) {
 }
 
 if (typeof MediaStreamTrack === 'undefined') {
-    reportFatal("This browser does not support MediaStreamTrack.\n Try Chrome Canary.");
+  reportFatal("This browser does not support MediaStreamTrack.\n Try Chrome Canary.");
 } else {
-    MediaStreamTrack.getSources(gotSources);
+  MediaStreamTrack.getSources(gotSources);
 }
