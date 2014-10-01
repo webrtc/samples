@@ -89,7 +89,10 @@ function doGetUserMedia(constraints, onSuccess) {
     return reportFatal(errorMessage);
   }
   try {
-    appendSourceIdToConstraints(constraints);
+    // Append the constraints with the getSource constraints.
+    appendSourceId(audioSelect.value, 'audio', constraints);
+    appendSourceId(videoSelect.value, 'video', constraints);
+
     getUserMedia(constraints, successFunc, failFunc);
     trace('Requested access to local media with constraints:\n' +
         '  \'' + JSON.stringify(constraints) + '\'');
@@ -98,29 +101,16 @@ function doGetUserMedia(constraints, onSuccess) {
   }
 }
 
-function appendSourceIdToConstraints(constraints) {
-  var audioSource = audioSelect.value;
-  var videoSource = videoSelect.value;
-  var getSourceConstraints = {
-  audio: {
-  optional: [{sourceId: audioSource}]
-  },
-  video: {
-  optional: [{sourceId: videoSource}]
-  }
-  };
-  
-  // Append the constraints with the getSource constraints.
-  for (var media in getSourceConstraints) {
-    if (constraints[media] == true)
-      constraints[media] = getSourceConstraints[media];
-    else if ((typeof constraints[media]) == (typeof {})) {
-      if ((typeof constraints[media].optional) == (typeof {}))
-        constraints[media].optional.push(getSourceConstraints[media].optional);
-      else
-        constraints[media].optional = getSourceConstraints[media].optional;
-    }
-  }
+function appendSourceId(id, type, constraints) {
+  if (constraints[type] == null)
+    return;
+
+  if (constraints[type] == true)
+    constraints[type] = { optional: [{sourceId: id}] };
+  else if (constraints[media].optional == null)
+    constraints[type].optional = [{sourceId: id}];
+  else
+    constraints[media].optional.push( {sourceId: id} );
 }
 
 function gotSources(sourceInfos) {
