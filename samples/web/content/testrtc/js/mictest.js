@@ -59,10 +59,10 @@ function checkAudioMuted(buffer) {
     sum += Math.abs(data[sample]);
   }
   if (sum == 0) {
-    reportError("Microphone Muted!");
+    reportError("Microphone not connected, or muted.");
   } else {
     var rms = Math.sqrt(sum / buffer.length);
     var db = 20 * Math.log(rms) / Math.log(10);
-    reportSuccess("Audio power=" + db);
+    reportSuccess("Microphone is connected, audio power (dB)=" + db);
   }
 }
