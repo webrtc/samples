@@ -18,12 +18,16 @@
 // 4.a Monitor the events on the MediaStreamTrack (onended, onmute, onunmute)
 // 4.b MediaStreamTrack muted property
 var CamTest = {};
+CamTest.isMuted = false;
 
 CamTest.camTest = function () {
   var constraints = { video: true , audio: false};
   doGetUserMedia(constraints, function(stream) {
     if (CamTest.checkVideoTracks(stream)) {
       CamTest.checkVideoStart(stream);
+      reportInfo("Checking if your camera is delivering frames for five " +
+                 "seconds...");
+      setTimeout(CamTest.checkVideoFinish, 5000);
     }
   });
 }
@@ -44,17 +48,21 @@ CamTest.checkVideoTracks = function(stream) {
 CamTest.checkVideoStart = function(stream) {
   var videoTrack = stream.getVideoTracks()[0];
   videoTrack.onended = function() {
-    reportError("Video track ended, camera stopped working")
+    reportFatal("Video track ended, camera stopped working");
   }
   videoTrack.onmute = function() {
-    reportError("Camera stopped delivering frames to the track")
+    reportWarning("Your camera reported itself as muted.");
+    CamTest.isMuted = true;
   }
   videoTrack.onunmute = function() {
-    reportError("Camera started delivering frames to the track again")
+    CamTest.isMuted = false;
   }
 }
 
 CamTest.checkVideoFinish = function(videoTag) {
+  if (CamTest.isMuted)
+    reportFatal("Your camera reported itself as muted! It is probably " +
+                "not delivering frames. Please try another webcam.");
   reportSuccess("");
   testSuiteFinished();
 }
