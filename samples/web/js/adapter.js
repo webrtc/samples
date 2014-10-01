@@ -225,7 +225,7 @@ var webrtc = {
   // common callbacks for setLocalDescription/setRemoteDescription
   // error and noop-success
   error: function(err) {
-    trace(err.toString());
+    trace('Error: ' + err.toString());
   },
   noop: function() {
   }
