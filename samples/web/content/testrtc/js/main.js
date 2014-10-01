@@ -30,7 +30,6 @@ function addTestSuite(name, func) {
 function start() {
   nextTestIndex = successes = failures = 0;
   output.value = "";
-  bugButton.disabled = false;
   asyncRunNextTestSuite();
 }
 function reportStart(testName) {
@@ -75,6 +74,7 @@ function onComplete() {
   var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
   reportMessage("[ ------ ]", "");
   reportMessage(prefix, str);
+  bugButton.disabled = false;
 }
 
 function doGetUserMedia(constraints, onSuccess) {
