@@ -69,7 +69,7 @@ CamCaptureTest.checkVideoTracks = function(stream) {
 CamCaptureTest.setupCanvas = function() {
   var video = document.getElementById('main-video');
   var canvas = document.getElementById('main-video-canvas');
-  var context = canvas.getContext("2d")
+  var context = canvas.getContext("2d");
 
   var canvasWidth = Math.floor(canvas.clientWidth / 1);
   var canvasHeight = Math.floor(canvas.clientHeight / 1);
@@ -78,8 +78,8 @@ CamCaptureTest.setupCanvas = function() {
 
   function draw(video,context,width,height) {
     if(video.paused || video.ended) return false;
-    canvas.drawImage(video,0,0,width,height);
-    setTimeout(draw,20,video,canvas,width,height);
+    context.drawImage(video,0,0,canvas.width,canvas.height);
+    setTimeout(draw,20,video,context,width,height);
   }
 
   video.addEventListener('play', function () {
