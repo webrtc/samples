@@ -30,16 +30,16 @@
 //   plugged in has the appropriate width and height.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
-var CamWorksInVGATest = {};
-CamWorksInVGATest.isMuted = false;
-CamWorksInVGATest.stream = null;
+var CamCaptureTest = {};
+CamCaptureTest.isMuted = false;
+CamCaptureTest.stream = null;
 
-CamWorksInVGATest.camWorksInVGATest = function () {
+CamCaptureTest.CamCaptureTest = function () {
   var constraints = { video: true, audio: false};
   doGetUserMedia(constraints, function(stream) {
-    CamWorksInVGATest.stream = stream;
-    if (CamWorksInVGATest.checkVideoTracks(stream)) {
-      CamWorksInVGATest.checkVideoStart(stream);
+    CamCaptureTest.stream = stream;
+    if (CamCaptureTest.checkVideoTracks(stream)) {
+      CamCaptureTest.checkVideoStart(stream);
 
     var video = document.getElementById('main-video');
       attachMediaStream(video, stream);
@@ -47,15 +47,15 @@ CamWorksInVGATest.camWorksInVGATest = function () {
       reportInfo("Checking if your camera is delivering frames for five " +
                  "seconds...");
       setTimeout(function() {
-        CamWorksInVGATest.checkVideoFinish(video);
+        CamCaptureTest.checkVideoFinish(video);
       }, 5000);
     }
   });
 }
 
-addTestSuite("CamWorksInVGATest", CamWorksInVGATest.camWorksInVGATest);
+addTestSuite("CamCaptureTest", CamCaptureTest.CamCaptureTest);
 
-CamWorksInVGATest.checkVideoTracks = function(stream) {
+CamCaptureTest.checkVideoTracks = function(stream) {
   reportSuccess("getUserMedia succeeded.");
   var tracks = stream.getVideoTracks();
   if (tracks.length < 1) {
@@ -66,7 +66,33 @@ CamWorksInVGATest.checkVideoTracks = function(stream) {
   return true;
 }
 
-CamWorksInVGATest.checkVideoStart = function(stream) {
+CamCaptureTest.setupCanvas = function() {
+  var video = document.getElementById('main-video');
+  var canvas = document.getElementById('main-video-canvas');
+  var context = canvas.getContext("2d")
+
+  var canvasWidth = Math.floor(canvas.clientWidth / 1);
+  var canvasHeight = Math.floor(canvas.clientHeight / 1);
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+
+  function draw(video,context,width,height) {
+    if(video.paused || video.ended) return false;
+    canvas.drawImage(video,0,0,width,height);
+    setTimeout(draw,20,video,canvas,width,height);
+  }
+
+  video.addEventListener('play', function () {
+    draw(this, context, canvasWidth, canvasHeight);
+  }, false);
+
+}
+
+
+CamCaptureTest.checkVideoStart = function(stream) {
+  CamCaptureTest.setupCanvas();
+
+
   var videoTrack = stream.getVideoTracks()[0];
   videoTrack.onended = function() {
     reportError('Video track ended, camera stopped working');
@@ -75,23 +101,23 @@ CamWorksInVGATest.checkVideoStart = function(stream) {
     reportError('Your camera reported itself as muted.');
     // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
     // isMuted local state.
-    CamWorksInVGATest.isMuted = true;
+    CamCaptureTest.isMuted = true;
   }
   videoTrack.onunmute = function() {
-    CamWorksInVGATest.isMuted = false;
+    CamCaptureTest.isMuted = false;
   }
 }
 
-CamWorksInVGATest.checkVideoFinish = function(videoTag) {
+CamCaptureTest.checkVideoFinish = function(videoTag) {
   assertEquals(640, videoTag.videoWidth, 'Incorrect width', 'Width OK');
   assertEquals(480, videoTag.videoHeight, 'Incorrect height', 'Height OK');
-  if (CamWorksInVGATest.stream.getVideoTracks()[0].readyState != 'ended'){
-    assertEquals(false, CamWorksInVGATest.isMuted, 'Your camera reported ' +
+  if (CamCaptureTest.stream.getVideoTracks()[0].readyState != 'ended'){
+    assertEquals(false, CamCaptureTest.isMuted, 'Your camera reported ' +
                  'itself as muted! It is probably not delivering frames. ' +
                  'Please try another webcam.', 'Camera is delivering frames');
   }
 
-  CamWorksInVGATest.stream.getVideoTracks()[0].onended = null;
-  CamWorksInVGATest.stream.stop();
+  CamCaptureTest.stream.getVideoTracks()[0].onended = null;
+  // CamCaptureTest.stream.stop();
   testSuiteFinished();
 }
