@@ -28,11 +28,15 @@
 //   mediaStreamTrack.muted property is wired up in Chrome).
 // 4.d After the wait period we check that the video tag where the |stream| is
 //   plugged in has the appropriate width and height.
+// 4.e We also check that all frames were non-near-black.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
 var CamCaptureTest = {};
 CamCaptureTest.isMuted = false;
 CamCaptureTest.stream = null;
+CamCaptureTest.testActive = false;
+CamCaptureTest.numBlackFrames = 0;
+CamCaptureTest.blackFrameThreshold = 3;
 
 CamCaptureTest.CamCaptureTest = function () {
   var constraints = { video: true, audio: false};
@@ -63,6 +67,7 @@ CamCaptureTest.checkVideoTracks = function(stream) {
   }
   var videoTrack = tracks[0];
   reportSuccess("Video track exists with label = " + videoTrack.label);
+  CamCaptureTest.testActive = true;
   return true;
 }
 
@@ -78,8 +83,15 @@ CamCaptureTest.setupCanvas = function() {
 
   function draw(video,context,width,height) {
     if(video.paused || video.ended) return false;
-    context.drawImage(video,0,0,canvas.width,canvas.height);
-    setTimeout(draw,20,video,context,width,height);
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    if (CamCaptureTest.testActive) {
+      setTimeout(draw, 20, video, context, width, height);
+    }
+    // trace('Forwarded a frame from <video> to <canvas>');
+    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    CamCaptureTest.checkForBlackFrame(imageData.data,
+                                      imageData.data.length,
+                                      CamCaptureTest.numBlackFrames);
   }
 
   video.addEventListener('play', function () {
@@ -117,7 +129,36 @@ CamCaptureTest.checkVideoFinish = function(videoTag) {
                  'Please try another webcam.', 'Camera is delivering frames');
   }
 
+  // Check: amount of near-black frames should be 0.
+  assertEquals(CamCaptureTest.numBlackFrames, 0, 'Your camera seems to be ' +
+               'delivering near-black frames. This might be all right or it ' +
+               'could be a symptom of a camera in a bad state; if it\'s a ' +
+               'USB WebCam, try plugging it out and in again.', 'Camera is ' +
+               'sending non-black frames.');
+
   CamCaptureTest.stream.getVideoTracks()[0].onended = null;
-  // CamCaptureTest.stream.stop();
+  CamCaptureTest.testActive = false;
+  CamCaptureTest.stream.getVideoTracks()[0].stop();
   testSuiteFinished();
+}
+
+CamCaptureTest.checkForBlackFrame = function(data, length, numBlackFrames) {
+  // Algorithm is to accumulate over r, g, b channels and average, then compare
+  // against CamCaptureTest.blackFrameThreshold, following this simple algo:
+  //
+  // var accu = 0;
+  // for(var i = 0; i < length; i+=4) {
+  //  var r = data[i],  g = data[i+1], b = data[i+2];
+  //  accu += r + g + b;
+  // }
+  // trace('average pseudo luminance ' + accu / length);
+  //
+  // We expect frames to be non-black, so return if there is any non-near-zero
+  // pixel.
+  var threshold = CamCaptureTest.blackFrameThreshold / length;
+  for (var i = 0; i < length; i += 4) {
+    if (data[i] > threshold || data[i+1] > threshold || data[i+2] > threshold)
+      return
+  }
+  numBlackFrames++;
 }
