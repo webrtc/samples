@@ -18,10 +18,10 @@ function reportBug() {
   var browserVersion = res['version']
   console.log('Detected browser: ' + browserName + ' ' + browserVersion);
 
-  var output = document.getElementById('output');
-  var description = 'Browser: ' + browserName + ' ' + browserVersion + '\n\n' +
+  var description = 'Browser: ' + browserName + ' ' + browserVersion +
+      ' (' + navigator.platform + ')\n\n' +
       'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
-      output.value;
+      'Please replace this text with the copy+pasted output from test page!';
 
   // Labels for the bug to be filed.
   var osLabel = 'OS-';
@@ -36,7 +36,7 @@ function reportBug() {
       'comment=' + encodeURIComponent(description) +
       '&labels=' + encodeURIComponent(labels);
   console.log('Navigating to: ' + url);
-  window.location.href = url;
+  window.open(url);
 }
 
 /*
