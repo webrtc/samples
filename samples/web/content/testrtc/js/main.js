@@ -15,8 +15,8 @@
 // There is a very finite number of WebAudio contexts.
 var audioContext = new AudioContext();
 var output = document.getElementById('output');
-var bugButton = document.getElementById('bug-button');
 var PREFIX_RUN    = "[ RUN    ]";
+var PREFIX_INFO   = "[ INFO   ]";
 var PREFIX_OK     = "[     OK ]";
 var PREFIX_FAILED = "[ FAILED ]";
 var testSuites = [];
@@ -55,6 +55,16 @@ function testSuiteFinished() {
 function reportMessage(prefix, str) {
   output.value += prefix + " " + str + '\n';
 }
+function reportInfo(str) {
+  reportMessage(PREFIX_INFO, str);
+}
+function assertEquals(expected, actual, failMsg, OkMsg) {
+  if (expected != actual) {
+    reportError('Expected: ' + expected + ' != ' + actual + ': ' + failMsg);
+  } else {
+    reportSuccess('Expected: ' + expected + ' == ' + actual + ': ' + OkMsg);
+  }
+}
 function asyncRunNextTestSuite() {
   setTimeout(runNextTestSuite, 0);
 }
@@ -74,7 +84,6 @@ function onComplete() {
   var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
   reportMessage("[ ------ ]", "");
   reportMessage(prefix, str);
-  bugButton.disabled = false;
 }
 
 function doGetUserMedia(constraints, onSuccess) {
