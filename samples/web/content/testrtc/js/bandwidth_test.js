@@ -19,7 +19,7 @@ addTestSuite('Data channel throughput',
 
 function testDataChannelThroughput(config) {
   var call = new WebRTCCall(config);
-  call.isGoodCandidate = checkRelay;
+  call.setIceCandidateFilter(WebRTCCall.isRelay);
   var testDurationSeconds = 5.0;
   var startTime = null;
   var sentPayloadBytes = 0;
@@ -92,9 +92,9 @@ function testDataChannelThroughput(config) {
 }
 
 // Measures video bandwidth estimation performance by doing a loopback call via
-// relay candidates during 40 seconds. Computes rtt and bandwidth estimation
+// relay candidates for 40 seconds. Computes rtt and bandwidth estimation
 // average and maximum as well as time to ramp up (defined as reaching 75% of
-// the max bitrate. It reports infinity time to ramp up if never reaches it.
+// the max bitrate. It reports infinite time to ramp up if never reaches it.
 addTestSuite('Video Bandwidth Test',
   asyncCreateTurnConfig.bind(null, testVideoBandwidth, reportFatal));
 
@@ -104,17 +104,16 @@ function testVideoBandwidth(config) {
   var statStepMs = 100;
   var bweStats = new StatisticsAggregate(0.75 * maxVideoBitrateKbps * 1000);
   var rttStats = new StatisticsAggregate();
+  var startTime;
 
   var call = new WebRTCCall(config);
-  var startTime;
-  call.isGoodCandidate = checkRelay;
+  call.setIceCandidateFilter(WebRTCCall.isRelay);
+  call.constrainVideoBitrate(maxVideoBitrateKbps);
 
-  // FEC makes it hard to study bwe estimation since there seems to be a spike
-  // when it is enabled and disabled. Disable it for now. FEC issue tracked on:
-  // https://code.google.com/p/webrtc/issues/detail?id=3050
-  constrainOfferToRemoveFec(call.pc1);
-
-  constrainBitrateAnswer(call.pc2, maxVideoBitrateKbps);
+  // FEC makes it hard to study bandwidth estimation since there seems to be
+  // a spike when it is enabled and disabled. Disable it for now. FEC issue
+  // tracked on: https://code.google.com/p/webrtc/issues/detail?id=3050
+  call.disableVideoFec();
 
   doGetUserMedia({audio: false, video: true}, gotStream, reportFatal);
 
@@ -150,8 +149,8 @@ function testVideoBandwidth(config) {
     call.close();
     reportSuccess("RTT average: " + rttStats.getAverage() + " ms");
     reportSuccess("RTT max: " + rttStats.getMax() + " ms");
-    reportSuccess("Send bandwidth average: " + bweStats.getAverage() + " bps");
-    reportSuccess("Send bandwidth max: " + bweStats.getMax() + " bps");
+    reportSuccess("Send bandwidth estimate average: " + bweStats.getAverage() + " bps");
+    reportSuccess("Send bandwidth estimate max: " + bweStats.getMax() + " bps");
     reportSuccess("Send bandwidth ramp-up time: " + bweStats.getRampUpTime() + " ms");
     reportSuccess('Test finished');
     testSuiteFinished();
