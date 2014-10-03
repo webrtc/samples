@@ -11,7 +11,7 @@
 
 'use strict';
 
-addTestSuite("MicrophoneTest", micTest);
+addTestSuite('MicrophoneTest', micTest);
 
 function micTest() {
   doGetUserMedia({audio:true}, function(stream) {
@@ -22,13 +22,13 @@ function micTest() {
 }
 
 function checkTracks(stream) {
-  reportSuccess("getUserMedia succeeded.");
+  reportSuccess('getUserMedia succeeded.');
   var tracks = stream.getAudioTracks();
   if (tracks.length < 1) {
-    return reportFatal("No audio track in returned stream.");
+    return reportFatal('No audio track in returned stream.');
   }
   var audioTrack = tracks[0];
-  reportSuccess("Audio track exists with label=" + audioTrack.label);
+  reportSuccess('Audio track exists with label=' + audioTrack.label);
   return true;
 }
 
@@ -39,6 +39,7 @@ function checkAudioStart(stream) {
     var inputBuffer = event.inputBuffer;
     source.disconnect(scriptNode); 
     scriptNode.disconnect(audioContext.destination);
+    stream.getAudioTracks()[0].stop();
     checkAudioFinish(inputBuffer);
   };
 
@@ -50,8 +51,8 @@ function checkAudioStart(stream) {
 }
 
 function checkAudioFinish(buffer) {
-  reportSuccess("Audio num channels=" + buffer.numberOfChannels);
-  reportSuccess("Audio sample rate=" + buffer.sampleRate);
+  reportSuccess('Audio num channels=' + buffer.numberOfChannels);
+  reportSuccess('Audio sample rate=' + buffer.sampleRate);
   var data = buffer.getChannelData(0);
   var sum = 0;
   for (var sample = 0; sample < buffer.length; ++sample) {
@@ -59,6 +60,6 @@ function checkAudioFinish(buffer) {
   }
   var rms = Math.sqrt(sum / buffer.length);
   var db = 20 * Math.log(rms) / Math.log(10);
-  reportSuccess("Audio power=" + db);
+  reportSuccess('Audio power=' + db);
   testSuiteFinished();
 }
