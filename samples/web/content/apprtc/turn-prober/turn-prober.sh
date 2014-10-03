@@ -3,6 +3,27 @@
 function chrome_pids() {
   ps axuwww|grep $D|grep c[h]rome|awk '{print $2}'
 }
+function xvfb_pids() {
+  ps x -o "%p %r %c" | grep Xvfb | grep $$ | awk '{print $1}'
+}
+
+function cleanup() {
+  # Suppress bash's Killed message for the chrome above.
+  exec 3>&2
+  exec 2>/dev/null
+  while [ ! -z "$(chrome_pids)" ]; do
+    kill -9 $(chrome_pids)
+  done
+  while [ ! -z "$(xvfb_pids)" ]; do
+    kill -9 $(xvfb_pids)
+  done
+  exec 2>&3
+  exec 3>&-
+
+  rm -rf $D
+}
+trap cleanup EXIT
+
 
 cd $(dirname $0)
 export D=$(mktemp -d)
@@ -29,15 +50,6 @@ while ! grep -q DONE $CHROME_LOG_FILE && chrome_pids|grep -q .; do
   sleep 0.1
 done
 
-# Suppress bash's Killed message for the chrome above.
-exec 3>&2
-exec 2>/dev/null
-while [ ! -z "$(chrome_pids)" ]; do
-  kill -9 $(chrome_pids)
-done
-exec 2>&3
-exec 3>&-
-
 DONE=$(grep DONE $CHROME_LOG_FILE)
 EXIT_CODE=0
 if ! grep -q "DONE: PASS" $CHROME_LOG_FILE; then
@@ -45,5 +57,4 @@ if ! grep -q "DONE: PASS" $CHROME_LOG_FILE; then
   EXIT_CODE=1
 fi
 
-rm -rf $D
 exit $EXIT_CODE
