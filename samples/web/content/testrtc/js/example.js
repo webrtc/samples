@@ -1,31 +1,47 @@
-WebRTCTest.testsuite("Example", "An example test suite")
+WebRTCTest
+
+.testsuite("Example", "An example test suite")
 
 .test("SamplePassingTest1", function(t){
-  t.assert(true);
+  t.assert(true).assert(true).complete();
 })
 
 .test("SamplePassingTest2", function(t){
-  t.success("Ok");
+  t.success("Ok").complete();
 })
 
 .test("SampleFailingTest1", function(t){
-  t.assert(false)
+  t.assert(false).complete()
 })
 
 .test("SampleFailingTest2", function(t){
-  t.fail("With bells")
+  t.fail("With bells").complete()
 })
 
-.test("IndefiniteTest", function(){
-
+.test("IndefiniteTest", function(t){
+   t.complete()
 })
 
-.helper("calculatePi", function(){
+.helper({
+  first:function(t,h){
+
+  },
+  second:function(t,h){
+
+  }
+})
+
+.test({
+  firstTest:function(t,h) {  t.complete() },
+  secondTest:function(t,h) {  t.complete() }
+})
+
+.helper("calculatePi", function(t,h) {
   return 31415926535 / 10000000000;
 })
 
 .test("CheckPiTest", function(t,h){
-  t.assertEqual( h.calculatePi(), 3.1415926535)
+  t.assertEqual( h.calculatePi(t,h), 3.1415926535).complete()
 })
 
 .test("FatalTest",function(t){

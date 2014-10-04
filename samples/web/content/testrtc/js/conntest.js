@@ -25,7 +25,7 @@ var CEOD_URL = ('https://computeengineondemand.appspot.com/turn?' +
 // Get a TURN config, and try to get a relay candidate using UDP.
 function udpConnectivityTest() {
   asyncCreateTurnConfig(
-      function(config) { 
+      function(config) {
         filterConfig(config, 'udp');
         gatherCandidates(config, null, checkRelay);
       },
@@ -35,7 +35,7 @@ function udpConnectivityTest() {
 // Get a TURN config, and try to get a relay candidate using TCP.
 function tcpConnectivityTest() {
   asyncCreateTurnConfig(
-      function(config) { 
+      function(config) {
         filterConfig(config, 'tcp');
         gatherCandidates(config, null, checkRelay);
       },
@@ -45,7 +45,7 @@ function tcpConnectivityTest() {
 // Turn on IPv6, and try to get an IPv6 host candidate.
 function hasIpv6Test() {
   var params = { optional: [ { googIPv6: true } ] };
-  gatherCandidates(null, params, checkIpv6);                        
+  gatherCandidates(null, params, checkIpv6);
 }
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
@@ -60,8 +60,8 @@ function asyncCreateTurnConfig(onSuccess, onError) {
       return;
     }
 
-    var response = JSON.parse(xhr.responseText); 
-    var iceServer = { 
+    var response = JSON.parse(xhr.responseText);
+    var iceServer = {
       'username': response.username,
       'credential': response.password,
       'urls': response.uris
@@ -99,7 +99,7 @@ function checkIpv6(c) {
 }
 
 // Create a PeerConnection, and gather candidates using RTCConfig |config|
-// and ctor params |params|. Succeed if any candidates pass the |isGood| 
+// and ctor params |params|. Succeed if any candidates pass the |isGood|
 // check, fail if we complete gathering without any passing.
 function gatherCandidates(opt_config, opt_params, isGood) {
   var pc = new RTCPeerConnection(opt_config, opt_params);

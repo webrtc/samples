@@ -26,6 +26,25 @@ var nextTestIndex;
 var successes;
 var failures;
 
+var writer = {
+  log:function(){
+    var args = Array.prototype.slice.call(arguments);
+    output.value += "LOG | " + args.join(" ") + "\n";
+  },
+  error:function(){
+    var args = Array.prototype.slice.call(arguments);
+    output.value += "ERR | " + args.join(" ") + "\n";
+  },
+  info:function(){
+    var args = Array.prototype.slice.call(arguments);
+    output.value += "INF | " + args.join(" ") + "\n";
+  },
+  warn:function(){
+    var args = Array.prototype.slice.call(arguments);
+    output.value += "WRN | " + args.join(" ") + "\n";
+  }
+}
+
 function addTestSuite(name, func) {
   testSuites.push({'name': name, 'func': func});
 }

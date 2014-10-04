@@ -24,6 +24,17 @@ WebRTCCall.prototype = {
     this.pc1.createOffer(this.gotOffer_.bind(this));
   },
 
+  parseCandidate:function(text) {
+    var candidateStr = 'candidate:';
+    var pos = text.indexOf(candidateStr) + candidateStr.length;
+    var fields = text.substr(pos).split(' ');
+    return {
+      'type': fields[7],
+      'protocol': fields[2],
+      'address': fields[4],
+    };
+  },
+
   close: function () {
     this.pc1.close();
     this.pc2.close();
@@ -41,10 +52,10 @@ WebRTCCall.prototype = {
     this.pc2.setLocalDescription(answer);
     this.pc1.setRemoteDescription(answer);
   },
-  
+
   onIceCandidate_: function (otherPeer) {
     if (event.candidate) {
-      var parsed = parseCandidate(event.candidate.candidate);
+      var parsed = this.parseCandidate(event.candidate.candidate);
       if (this.isGoodCandidate(parsed)) {
         otherPeer.addIceCandidate(event.candidate);
       }
