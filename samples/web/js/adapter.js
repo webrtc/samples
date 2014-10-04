@@ -15,7 +15,7 @@ undef: true, unused: strict */
 /* global mozRTCIceCandidate, mozRTCPeerConnection,
 mozRTCSessionDescription, webkitRTCPeerConnection */
 
-/* exported trace */
+/* exported trace, webrtc */
 
 'use strict';
 
@@ -220,3 +220,13 @@ if (navigator.mozGetUserMedia) {
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
 }
+
+var webrtc = {
+  // common callbacks for setLocalDescription/setRemoteDescription
+  // error and noop-success
+  error: function(err) {
+    trace('Error: ' + err.toString());
+  },
+  noop: function() {
+  }
+};

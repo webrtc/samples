@@ -157,12 +157,24 @@ function createPeerConnection() {
   };
   localPeerConnection.createOffer(function (desc) {
     console.log('localPeerConnection offering');
-    localPeerConnection.setLocalDescription(desc);
-    remotePeerConnection.setRemoteDescription(desc);
+    localPeerConnection.setLocalDescription(desc, 
+      webrtc.noop,
+      webrtc.error
+    );
+    remotePeerConnection.setRemoteDescription(desc,
+      webrtc.noop,
+      webrtc.error
+    );
     remotePeerConnection.createAnswer(function (desc2) {
       console.log('remotePeerConnection answering');
-      remotePeerConnection.setLocalDescription(desc2);
-      localPeerConnection.setRemoteDescription(desc2);
+      remotePeerConnection.setLocalDescription(desc2, 
+        webrtc.noop,
+        webrtc.error
+      );
+      localPeerConnection.setRemoteDescription(desc2,
+        webrtc.noop,
+        webrtc.error
+      );
     });
   });
 }

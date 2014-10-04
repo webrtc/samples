@@ -165,16 +165,28 @@
     console.log('Offer from pc1 \n' + desc.sdp);
     var modifiedOffer = new RTCSessionDescription({type: 'offer',
                                                    sdp: forceOpus(desc.sdp)});
-    pc1.setLocalDescription(modifiedOffer);
+    pc1.setLocalDescription(modifiedOffer,
+      webrtc.noop,
+      webrtc.error
+    );
     console.log('Offer from pc1 \n' + modifiedOffer.sdp);
-    pc2.setRemoteDescription(modifiedOffer);
-    pc2.createAnswer(gotDescription2);
+    pc2.setRemoteDescription(modifiedOffer,
+      webrtc.noop,
+      webrtc.error
+    );
+    pc2.createAnswer(gotDescription2, webrtc.error);
   }
 
   function gotDescription2(desc){
-    pc2.setLocalDescription(desc);
+    pc2.setLocalDescription(desc,
+      webrtc.noop,
+      webrtc.error
+    );
     console.log('Answer from pc2 \n' + desc.sdp);
-    pc1.setRemoteDescription(desc);
+    pc1.setRemoteDescription(desc,
+      webrtc.noop,
+      webrtc.error
+    );
   }
 
   function gotRemoteStream(e){

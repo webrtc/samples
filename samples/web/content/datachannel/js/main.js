@@ -116,16 +116,28 @@ function closeDataChannels() {
 }
 
 function gotDescription1(desc) {
-  localConnection.setLocalDescription(desc);
+  localConnection.setLocalDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
   trace('Offer from localConnection \n' + desc.sdp);
-  remotePeerConnection.setRemoteDescription(desc);
+  remotePeerConnection.setRemoteDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
   remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
-  remotePeerConnection.setLocalDescription(desc);
+  remotePeerConnection.setLocalDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
   trace('Answer from remotePeerConnection \n' + desc.sdp);
-  localConnection.setRemoteDescription(desc);
+  localConnection.setRemoteDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
 }
 
 function iceCallback1(event) {

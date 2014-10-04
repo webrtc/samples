@@ -89,9 +89,15 @@ function call() {
 }
 
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
+  pc1.setLocalDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
   trace('Offer from pc1 \n' + desc.sdp);
-  pc2.setRemoteDescription(desc);
+  pc2.setRemoteDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio.
@@ -104,9 +110,15 @@ function gotDescription2(desc) {
   desc.sdp = desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 RTP/SAVPF 0 126\r\n');
   // Workaround for issue 1603.
   desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
-  pc2.setLocalDescription(desc);
+  pc2.setLocalDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
   trace('Answer from pc2: \n' + desc.sdp);
-  pc1.setRemoteDescription(desc);
+  pc1.setRemoteDescription(desc,
+    webrtc.noop,
+    webrtc.error
+  );
 }
 
 function hangup() {
