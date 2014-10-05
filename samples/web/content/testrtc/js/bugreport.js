@@ -18,10 +18,9 @@ function reportBug() {
   var browserVersion = res['version']
   console.log('Detected browser: ' + browserName + ' ' + browserVersion);
 
-  var output = document.getElementById('output');
   var description = 'Browser: ' + browserName + ' ' + browserVersion + '\n\n' +
       'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
-      output.value;
+      writer.output;
 
   // Labels for the bug to be filed.
   var osLabel = 'OS-';

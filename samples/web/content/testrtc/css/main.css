@@ -237,4 +237,26 @@ video {
   }
 }
 
+#output {
+  font:0.8em Courier New;
+  border:1px solid #ddd;
+  padding:5px;
+  width:100%;
+  height:20em;
+  overflow:auto;
+}
+#output span {
+  font:0.8em Courier New;
+}
 
+#output span.err {
+  color:red;
+}
+
+#output span.inf {
+  color:green;
+}
+
+#output span.wrn {
+  color:orange;
+}

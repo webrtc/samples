@@ -1,5 +1,12 @@
 var WebRTCTest = (function() {
 
+  var PREFIX_RUN    =   '[ RUN      ]';
+  var PREFIX_RUNNING=   '[ RUNNING  ]';
+  var PREFIX_OK     =   '[       OK ]';
+  var PREFIX_FAILED =   '[   FAILED ]';
+  var PREFIX_INFO =     '[ INFO     ]';
+  var PREFIX_COMPLETE = '[ COMPLETE ]';
+  var INTERFIX = "|"
   var output = console;
 
   // Creates a test suite.
@@ -108,14 +115,14 @@ var WebRTCTest = (function() {
 
           if (Object.keys(suite._meta.running).length > 0 ) {
             if (infoTimeout < 0) {
-              output.log(suite._meta.name, "[STILL RUNNING TESTS]", Object.keys(suite._meta.running))
+              output.log(PREFIX_RUNNING, suite._meta.name, Object.keys(suite._meta.running))
               infoTimeout = suite._meta.infoIntervalMs
             }
           } else {
             var passed =  Object.keys(suite._meta.passed).length;
             var failed =  Object.keys(suite._meta.failed).length;
             var total = Object.keys(suite._meta.tests).length;
-            output.log(suite._meta.name, "[TEST SUITE COMPLETE]","Passed:", passed, "out of", total)
+            output.log(PREFIX_COMPLETE, suite._meta.name, "Passed:", passed, "out of", total)
             suite._meta.complete = true;
             clearInterval(waitId);
           }
@@ -177,7 +184,7 @@ var WebRTCTest = (function() {
 
         test.suite._meta.running[ test.name ] = true;
 
-        output.log(test.suite._meta.name, test.name, "[RUNNING]");
+        output.log(PREFIX_RUN,test.suite._meta.name, test.name);
 
         // Execute the test fixture.
         test.fixture( createContext(test), helpers );
@@ -208,7 +215,7 @@ var WebRTCTest = (function() {
       assert:function(condition, message) {
         if (!condition) {
 
-          output.error(test.suite._meta.name, test.name, "ASSERT FAILED");
+          output.error(PREFIX_FAILED, test.suite._meta.name, test.name, INTERFIX, "ASSERT FAILED");
 
           if (message)
             output.error(message)
@@ -225,6 +232,7 @@ var WebRTCTest = (function() {
       assertEqual:function(expected, actual, message) {
         if ( expected != actual ) {
           output.error(
+            PREFIX_FAILED,
             test.suite._meta.name,
             test.name,
             "Failed assert",
@@ -248,7 +256,7 @@ var WebRTCTest = (function() {
         test.passed = true;
         test.suite._meta.passed[ test.name ] = true;
         if (message)
-          output.info(test.suite._meta.name, test.name, "[SUCCESS]", message);
+          output.info(PREFIX_OK, test.suite._meta.name, test.name, INTERFIX, message);
         return context;
       },
 
@@ -256,7 +264,7 @@ var WebRTCTest = (function() {
         test.passed = false;
         test.suite._meta.failed[ test.name ] = true;
         if (message)
-          output.error(test.suite._meta.name, test.name, "[FAILED]", message);
+          output.error(PREFIX_FAILED, test.suite._meta.name, test.name, INTERFIX, message);
         return context;
       },
 
@@ -272,9 +280,9 @@ var WebRTCTest = (function() {
         test.complete = true;
 
         if (test.passed) {
-          output.info(test.suite._meta.name, test.name, "[PASSED]");
+          output.info(PREFIX_OK, test.suite._meta.name, INTERFIX, test.name);
         } else {
-          output.error(test.suite._meta.name, test.name, "[FAILED]");
+          output.error(PREFIX_FAILED, test.suite._meta.name, test.name);
         }
 
         delete test.suite._meta.running[ test.name ];
@@ -294,12 +302,12 @@ var WebRTCTest = (function() {
       },
 
       error:function(message) {
-        output.error(test.suite._meta.name, test.name, message);
+        output.error(test.suite._meta.name, test.name, INTERFIX, message);
         return context;
       },
 
       log:function(message) {
-        output.log(test.suite._meta.name, test.name, message);
+        output.log(PREFIX_INFO, test.suite._meta.name, test.name, INTERFIX, message);
         return context;
       },
 
@@ -344,7 +352,12 @@ var WebRTCTest = (function() {
 
         if (testSuiteNames.length == 0 && testSuite._meta.complete) {
           clearInterval(runnerId);
-          output.log("[ALL TEST SUITES COMPLETE]");
+
+          // trigger all complete callbacks.
+          for (var i in framework._completeCallbacks)
+            framework._completeCallbacks[i]();
+
+          output.log(PREFIX_COMPLETE, "All test suites complete");
           return;
         }
 
@@ -359,10 +372,18 @@ var WebRTCTest = (function() {
       return Object.keys(framework._testsuites);
     },
 
+    complete:function(callback) {
+      framework._completeCallbacks.push(callback);
+      return framework;
+    },
+
     // |framework| Private members.
-    _testsuites:{}
+    _testsuites:{},
+    _completeCallbacks:[]
+
   }
 
   return framework;
 })();
+
 

@@ -21,7 +21,7 @@
 <body>
   <div id="container">
     <h1>WebRTC Troubleshooter</h1>
-    <div><textarea id="output" rows="25" cols="80"></textarea></div>
+    <div><pre id="output" ondblclick="selectText(this)"></pre></div>
     <div>
       <button onclick="WebRTCTest.run(writer)">Start</button>
       <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>

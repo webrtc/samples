@@ -27,76 +27,38 @@ var successes;
 var failures;
 
 var writer = {
+  output:"",
   log:function(){
     var args = Array.prototype.slice.call(arguments);
-    output.value += "LOG | " + args.join(" ") + "\n";
+    output.innerHTML += "<span class='log'>" + args.join(" ") + "</span>\n";
+    output.scrollTop = output.scrollHeight;
+    writer.output += args.join(" ");
   },
   error:function(){
     var args = Array.prototype.slice.call(arguments);
-    output.value += "ERR | " + args.join(" ") + "\n";
+    output.innerHTML += "<span class='err'>" + args.join(" ") + "</span>\n";
+    output.scrollTop = output.scrollHeight;
+    writer.output += args.join(" ");
   },
   info:function(){
     var args = Array.prototype.slice.call(arguments);
-    output.value += "INF | " + args.join(" ") + "\n";
+    output.innerHTML += "<span class='inf'>" + args.join(" ") + "</span>\n";
+    output.scrollTop = output.scrollHeight;
+    writer.output += args.join(" ");
   },
   warn:function(){
     var args = Array.prototype.slice.call(arguments);
-    output.value += "WRN | " + args.join(" ") + "\n";
+    output.innerHTML += "<span class='wrn'>" + args.join(" ") + "</span>\n";
+    output.scrollTop = output.scrollHeight;
+    writer.output += args.join(" ");
   }
 }
 
-function addTestSuite(name, func) {
-  testSuites.push({'name': name, 'func': func});
-}
-function start() {
-  nextTestIndex = successes = failures = 0;
-  output.value = '';
-  asyncRunNextTestSuite();
-}
-function reportStart(testName) {
-  reportMessage(PREFIX_RUN, testName);
-}
-function reportSuccess(str) {
-  reportMessage(PREFIX_OK, str);
-  ++successes;
-}
-function reportError(str) {
-  reportMessage(PREFIX_FAILED, str);
-  ++failures;
-}
-function reportFatal(str) {
-  reportError(str);
-  testSuiteFinished();
-  return false;
-}
-function testSuiteFinished() {
-  reportMessage('[ ------ ]', '');
-  asyncRunNextTestSuite();
-}
-function reportMessage(prefix, str) {
-  output.value += prefix + ' ' + str + '\n';
-}
-function asyncRunNextTestSuite() {
-  setTimeout(runNextTestSuite, 0);
-}
-function runNextTestSuite() {
-  var index = nextTestIndex;
-  if (index >= testSuites.length) {
-    onComplete();
-    return;
-  }
 
-  var testSuite = testSuites[nextTestIndex++];
-  reportStart(testSuite.name);
-  testSuite.func();
-}
-function onComplete() {
-  var str = successes + ' out of ' + (successes + failures) + ' tests passed';
-  var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
-  reportMessage('[ ------ ]', '');
-  reportMessage(prefix, str);
+WebRTCTest.complete(function(){
   bugButton.disabled = false;
-}
+});
+
 
 function doGetUserMedia(constraints, onSuccess) {
   // Call into getUserMedia via the polyfill (adapter.js).
@@ -159,4 +121,16 @@ if (typeof MediaStreamTrack === 'undefined') {
   reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
 } else {
   MediaStreamTrack.getSources(gotSources);
+}
+
+function selectText(el) {
+  if (document.selection) {
+    var range = document.body.cateTextRange();
+    range.moveToElementText(el);
+    range.select();
+  } else if (window.getSelection) {
+    var range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().addRange(range);
+  }
 }

@@ -15,7 +15,7 @@ WebRTCTest
 
 .testsuite('Microphone', "Checks if microphone works")
 
-.test('Mic',function(t, h) {
+.test('MicTest',function(t, h) {
    getUserMedia({audio:true}, function(stream) {
       t.success('getUserMedia succeeded.');
       h.checkTracks(t, h, stream);
