@@ -129,6 +129,7 @@ var WebRTCTest = (function() {
 
         }, suite._meta.checkIntervalMs);
 
+        return suite;
       },
 
       // Returns list of tests in the test suite.
@@ -336,7 +337,7 @@ var WebRTCTest = (function() {
       return suite;
     },
 
-    run:function( writer ) {
+    run:function( writer ) {  
       output = writer || output;
 
       // Run all defined testsuites
@@ -366,6 +367,7 @@ var WebRTCTest = (function() {
 
       }, 10);
 
+      return framework;
     },
 
     enumerate:function() {
