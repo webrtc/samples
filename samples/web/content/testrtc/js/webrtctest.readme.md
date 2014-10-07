@@ -14,31 +14,31 @@ WebRTCTest
 .testsuite('FibonnacciGenerator','Tests a function that returns n-th fibonacci number')
 
 .test('FirstNumberIs1', function(t, h) { 
-var num = fib(1);
-t.assertEqual(1, num, "First number is not 1!");
+  var num = fib(1);
+  t.assertEqual(1, num, "First number is not 1!");
 })
 
 .test('SecondNumber is 1', function(t, h) { 
-var num = fib(2);
-t.assertEqual(2, num, "Second number is not 1!");
+  var num = fib(2);
+  t.assertEqual(2, num, "Second number is not 1!");
 })
 
 // helper extension
 .extend("generateSequence", function(start, end) {
-var seq = [];
-for (var i = start; i <= end; ++i)
-    seq.push( fib(i) );
-return seq;
+  var seq = [];
+  for (var i = start; i <= end; ++i)
+      seq.push( fib(i) );
+  return seq;
 })
 
 .test('CheckLowSequence', function(t, h) { 
-// use helper extension
-t.assertEqual( [1, 1, 2, 3, 5, 8], h.generateSequence(1, 6) );
+  // use helper extension
+  t.assertEqual( [1, 1, 2, 3, 5, 8], h.generateSequence(1, 6) );
 })
 
 .test('CheckHighSequence', function(t, h) { 
-// use helper extension
-t.assertEqual( [13, 21, 34, 55], h.generateSequence(7, 10) );
+  // use helper extension
+  t.assertEqual( [13, 21, 34, 55], h.generateSequence(7, 10) );
 })
 
 .run();
