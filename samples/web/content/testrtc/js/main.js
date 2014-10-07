@@ -18,48 +18,74 @@ var output = document.getElementById('output');
 var bugButton = document.getElementById('bug-button');
 var audioSelect = document.querySelector('select#audioSource');
 var videoSelect = document.querySelector('select#videoSource');
-var PREFIX_RUN    = '[ RUN    ]';
-var PREFIX_OK     = '[     OK ]';
-var PREFIX_FAILED = '[ FAILED ]';
+var PREFIX_RUN     = '[ RUN    ]';
+var PREFIX_SKIPPED = '[   SKIP ]';
+var PREFIX_OK      = '[     OK ]';
+var PREFIX_FAILED  = '[ FAILED ]';
 var testSuites = [];
+var testFilters = [];
 var nextTestIndex;
 var successes;
 var failures;
 
+function testIsDisabled(testName) {
+  if (testFilters.length == 0)
+    return false;
+
+  for (var i = 0; i != testFilters.length; ++i) {
+    if (testFilters[i] == testName)
+      return false;
+  }
+  return true;
+}
+
 function addTestSuite(name, func) {
   testSuites.push({'name': name, 'func': func});
 }
+
 function start() {
   nextTestIndex = successes = failures = 0;
   output.value = '';
   asyncRunNextTestSuite();
 }
+
+function reportSkipped(testName) {
+  reportMessage(PREFIX_SKIPPED, testName);
+}
+
 function reportStart(testName) {
   reportMessage(PREFIX_RUN, testName);
 }
+
 function reportSuccess(str) {
   reportMessage(PREFIX_OK, str);
   ++successes;
 }
+
 function reportError(str) {
   reportMessage(PREFIX_FAILED, str);
   ++failures;
 }
+
 function reportFatal(str) {
   reportError(str);
   testSuiteFinished();
   return false;
 }
+
 function testSuiteFinished() {
   reportMessage('[ ------ ]', '');
   asyncRunNextTestSuite();
 }
+
 function reportMessage(prefix, str) {
   output.value += prefix + ' ' + str + '\n';
 }
+
 function asyncRunNextTestSuite() {
   setTimeout(runNextTestSuite, 0);
 }
+
 function runNextTestSuite() {
   var index = nextTestIndex;
   if (index >= testSuites.length) {
@@ -68,9 +94,16 @@ function runNextTestSuite() {
   }
 
   var testSuite = testSuites[nextTestIndex++];
-  reportStart(testSuite.name);
-  testSuite.func();
+
+  if (testIsDisabled(testSuite.name)) {
+    reportSkipped(testSuite.name);
+    asyncRunNextTestSuite();
+  } else {
+    reportStart(testSuite.name);
+    testSuite.func();
+  }
 }
+
 function onComplete() {
   var str = successes + ' out of ' + (successes + failures) + ' tests passed';
   var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
@@ -140,4 +173,23 @@ if (typeof MediaStreamTrack === 'undefined') {
   reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
 } else {
   MediaStreamTrack.getSources(gotSources);
+}
+
+// Parse URL parameters and configure test filters.
+{
+  var parseUrlParameters = function () {
+    var output = {};
+    // python SimpleHTTPServer always adds a / on the end of the request.
+    // Remove it so developers can easily run testrtc on their machines.
+    // Note that an actual / is still sent in most cases as %2F.
+    var args = window.location.search.replace(/\//g, '').substr(1).split("&");
+    for (var i = 0; i != args.length; ++i) {
+      var split = args[i].split("=");
+      output[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
+    }
+    return output;
+  };
+
+  var parameters = parseUrlParameters();
+  testFilters = parameters['test_filter'].split(',');
 }
