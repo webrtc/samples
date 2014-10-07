@@ -191,5 +191,7 @@ if (typeof MediaStreamTrack === 'undefined') {
   };
 
   var parameters = parseUrlParameters();
-  testFilters = parameters['test_filter'].split(',');
+  if ('test_filter' in parameters) {
+    testFilters = parameters['test_filter'].split(',');
+  }
 }
