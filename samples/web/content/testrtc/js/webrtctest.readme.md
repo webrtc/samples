@@ -11,7 +11,7 @@ var fib = function(n) {
 
 // The test suite
 WebRTCTest
-.testsuite('FibonnacciGenerator','Tests a function that create the sequence of fibonacci numbers')
+.testsuite('FibonnacciGenerator','Tests a function that returns n-th fibonacci number')
 
 .test('FirstNumberIs1', function(t, h) { 
 var num = fib(1);
