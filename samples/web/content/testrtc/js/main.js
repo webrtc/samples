@@ -29,7 +29,7 @@ var successes;
 var failures;
 
 function testIsDisabled(testName) {
-  if (!testFilters.length)
+  if (testFilters.length == 0)
     return false;
 
   for (var i = 0; i != testFilters.length; ++i) {
@@ -169,6 +169,9 @@ if (typeof MediaStreamTrack === 'undefined') {
 {
   var parseUrlParameters = function () {
     var output = {};
+    // python SimpleHTTPServer always adds a / on the end of the request.
+    // Remove it so developers can easily run testrtc on their machines.
+    // Note that an actual / is still sent in most cases as %2F.
     var args = window.location.search.replace(/\//g, '').substr(1).split("&");
     for (var i = 0; i != args.length; ++i) {
       var split = args[i].split("=");
