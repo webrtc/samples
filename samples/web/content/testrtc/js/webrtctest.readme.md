@@ -3,11 +3,49 @@ WebRTC Test
 
 *Simple framework for WebRTC related tests*
 
+```javascript
 
-    WebRTCTest
-      .testsuite('')
+var fib = function(n) { 
+    return (n < 3) ? 1 : (fib(n-2) + fib(n-1)) ;  
+}
 
-- - -
+// The test suite
+WebRTCTest
+.testsuite('FibonnacciGenerator','Tests a function that create the sequence of fibonacci numbers')
+
+.test('FirstNumberIs1', function(t, h) { 
+var num = fib(1);
+t.assertEqual(1, num, "First number is not 1!");
+})
+
+.test('SecondNumber is 1', function(t, h) { 
+var num = fib(2);
+t.assertEqual(2, num, "Second number is not 1!");
+})
+
+// helper extension
+.extend("generateSequence", function(start, end) {
+var seq = [];
+for (var i = start; i <= end; ++i)
+    seq.push( fib(i) );
+return seq;
+})
+
+.test('CheckLowSequence', function(t, h) { 
+// use helper extension
+t.assertEqual( [1, 1, 2, 3, 5, 8], h.generateSequence(1, 6) );
+})
+
+.test('CheckHighSequence', function(t, h) { 
+// use helper extension
+t.assertEqual( [13, 21, 34, 55], h.generateSequence(7, 10) );
+})
+
+.run();
+
+```
+
+---
 
 ### WebRTCTest *members* ###
 
@@ -29,7 +67,7 @@ testsuite( suiteName, suiteDescription )
 > If a test suite identified by `suiteName` already exists, returns it.
 > Otherwise creates a new testsuite, stores it in internally and returns it.  
 
-- - -
+
 
 ```
 enumerate()
@@ -43,7 +81,7 @@ enumerate()
 > *`array`* **`suites`**  
 > Returns array of strings: the names of existing test suites.
 
-- - -
+
 
 ```
 complete( completeCallback ) 
@@ -60,7 +98,7 @@ complete( completeCallback )
 > *`WebRTCTest`* **`framework`**  
 > Chains by returning the global framework object.
 
-- - -
+
 
 ```
 run( outputWriter ) 
@@ -80,7 +118,7 @@ in sequence, not in parallel. Write all output using the outputWriter.
 > *`WebRTCTest`* **`framework`**  
 > Chains by returning the global framework object.
 
-- - -
+
 
 ### TestSuite *members* ###
 
@@ -108,7 +146,7 @@ Use `suiteExtensions` to access any extension defined in the test suite.
 > *`TestSuite`* **`suite`**  
 > Chains by returning the test suite on which it was called.
 
-- - -
+
 
 ```
 extend( extensionName, extensionValue ) 
@@ -134,8 +172,6 @@ attached to a test suite instead of living in the global namespace.
 > Chains by returning the test suite on which it was called.
 
 
-- - -
-
 ```
 extend( extensionMap ) 
 ```
@@ -155,8 +191,6 @@ for `extend` above.
 > *`TestSuite`* **`suite`**  
 > Chains by returning the test suite on which it was called.
 
-
-- - -
 
 ```
 extend( [ suiteName, extensionName ] ) 
@@ -181,8 +215,6 @@ dependencies inline as new extensions for the current test suite.
 > Chains by returning the test suite on which it was called.
 
 
-- - -
-
 ```
 enumerate()
 ```
@@ -194,8 +226,6 @@ enumerate()
 > **Return value**  
 > *`array`* **`tests`**  
 > Returns array of strings: the names of existing tests.
-
-- - -
 
 ```
 run()
@@ -211,8 +241,8 @@ run()
 > *`TestSuite`* **`suite`**  
 > Chains by returning the test suite on which it was called.
 
-
 - - -
+
 
 ### TestContext *members* ###
 
@@ -226,7 +256,7 @@ assert( boolExpression, failMessage )
 
 > **Return value**
 
-- - -
+
 
 ```
 assertEqual( expectedValue, actualValue, failMessage )
@@ -238,7 +268,7 @@ assertEqual( expectedValue, actualValue, failMessage )
 
 > **Return value**
 
-- - -
+
 
 ```
 success( message )
@@ -250,7 +280,6 @@ success( message )
 
 > **Return value**
 
-- - -
 
 ```
 fail( message )
@@ -262,7 +291,6 @@ fail( message )
 
 > **Return value**
 
-- - -
 
 ```
 complete( message )
@@ -274,7 +302,6 @@ complete( message )
 
 > **Return value**
 
-- - -
 
 ```
 fatal( message )
@@ -287,8 +314,6 @@ fatal( message )
 > **Return value**
 
 
-- - -
-
 ```
 error( message )
 ```
@@ -300,8 +325,6 @@ error( message )
 > **Return value**
 
 
-- - -
-
 ```
 log( message )
 ```
@@ -312,5 +335,3 @@ log( message )
 
 > **Return value**
 
-
-- - -
