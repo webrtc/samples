@@ -3,6 +3,8 @@ WebRTC Test
 
 *Simple framework for WebRTC related tests*
 
+### Example test suite ###
+
 ```javascript
 
 var fib = function(n) { 
@@ -44,6 +46,38 @@ WebRTCTest
 .run();
 
 ```
+
+### High-level overview of the framework  ###
+
+> #### Framework ####
+- test suites
+
+
+> #### Test Suite ####
+- tests
+- extensions
+
+
+> #### Test ####
+- name
+- fixture
+
+
+> #### Test Context ####
+- assert
+- assertEqual
+- success
+- fail
+- fatal
+- error
+- log
+- complete
+
+
+> #### Test Fixture ####
+- test context
+- suite extensions
+
 
 ---
 
@@ -177,7 +211,7 @@ extend( extensionMap )
 ```
 
 > **Description**: Adds new extensions to the current test suite. 
-Usefull for inlne definition of multiple or all the extensions being used
+Useful for inlne definition of multiple or all the extensions being used
 in a test suite. Applies same behaviour to each key-value pair as described
 for `extend` above.
 
