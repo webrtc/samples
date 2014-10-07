@@ -18,10 +18,10 @@ WebRTCTest
 
 .testsuite('BandWidth', "Tests Data Channel Throughput")
 
-// Import the helper
-.helper(["Connectivity","asyncCreateTurnConfig"])
-.helper(["Connectivity","CEOD_URL"])
-.helper(["Connectivity","checkRelay"])
+// Import the extend
+.extend(["Connectivity","asyncCreateTurnConfig"])
+.extend(["Connectivity","CEOD_URL"])
+.extend(["Connectivity","checkRelay"])
 
 .test('DataChannelThroughputTest', function(t, h) {
 

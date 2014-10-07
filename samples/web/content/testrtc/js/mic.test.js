@@ -25,7 +25,7 @@ WebRTCTest
   });
 })
 
-.helper('checkTracks', function(t, h, stream) {
+.extend('checkTracks', function(t, h, stream) {
 
   var tracks = stream.getAudioTracks();
   if (tracks.length < 1) {
@@ -38,7 +38,7 @@ WebRTCTest
   return true;
 })
 
-.helper('checkAudioStart', function(t, h, stream, callback){
+.extend('checkAudioStart', function(t, h, stream, callback){
   var processFunc = function(event) {
     var sampleRate = event.sampleRate;
     var inputBuffer = event.inputBuffer;
@@ -55,7 +55,7 @@ WebRTCTest
   scriptNode.connect(audioContext.destination);
 })
 
-.helper('checkAudioFinish', function(t, h, buffer) {
+.extend('checkAudioFinish', function(t, h, buffer) {
   t.success('Audio num channels=' + buffer.numberOfChannels);
   t.success('Audio sample rate=' + buffer.sampleRate);
   var data = buffer.getChannelData(0);

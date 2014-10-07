@@ -13,7 +13,7 @@ WebRTCTest
   'Tests TCP and UDP connectivity to TURN'
 )
 
-.helper({
+.extend({
   CEOD_URL:('https://computeengineondemand.appspot.com/turn?' +
                 'username=1234&key=5678')
 })
@@ -45,7 +45,7 @@ WebRTCTest
 
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
-.helper('asyncCreateTurnConfig', function (t, h, url, onSuccess, onError) {
+.extend('asyncCreateTurnConfig', function (t, h, url, onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   function onResult() {
     if (xhr.readyState != 4)
@@ -70,7 +70,7 @@ WebRTCTest
   xhr.send();
 })
 
-.helper('filterConfig', function(config, protocol) {
+.extend('filterConfig', function(config, protocol) {
   var transport = 'transport=' + protocol;
   for (var i = 0; i < config.iceServers.length; ++i) {
     var iceServer = config.iceServers[i];
@@ -84,15 +84,15 @@ WebRTCTest
   }
 })
 
-.helper('checkRelay', function(c) {
+.extend('checkRelay', function(c) {
   return c.type === 'relay';
 })
 
-.helper('checkIpv6', function(c) {
+.extend('checkIpv6', function(c) {
   return (c.address.indexOf(':') !== -1);
 })
 
-.helper('gatherCandidates', function (t, h, opt_config, opt_params, isGood) {
+.extend('gatherCandidates', function (t, h, opt_config, opt_params, isGood) {
   var pc = new RTCPeerConnection(opt_config, opt_params);
 
   // In our candidate callback, stop if we get a candidate that passes |isGood|.

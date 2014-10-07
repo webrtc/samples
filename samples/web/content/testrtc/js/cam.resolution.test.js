@@ -34,7 +34,7 @@
   h.triggerGetUserMedia(t, h, h.resolutions[0]);
 })
 
-.helper({
+.extend({
   index:0,
   supported:0,
   unsupported:0,
@@ -55,7 +55,7 @@
   mandatory_yet_unsupported_resolutions:0
 })
 
-.helper('successFunc', function(t, h, stream) {
+.extend('successFunc', function(t, h, stream) {
   h.supported++;
   var theResolution = h.resolutions[h.index++];
   t.log('Supported resolution: (' +
@@ -64,7 +64,7 @@
   h.finishTestOrRetrigger(t, h);
 })
 
-.helper('failFunc', function(t, h, error) {
+.extend('failFunc', function(t, h, error) {
   h.unsupported++;
   var theResolution =
       h.resolutions[h.index++];
@@ -79,7 +79,7 @@
   h.finishTestOrRetrigger(t, h);
 })
 
-.helper('finishTestOrRetrigger',function(t, h) {
+.extend('finishTestOrRetrigger',function(t, h) {
   var numResolutions = h.resolutions.length;
   if (h.index == numResolutions) {
     if (h.mandatory_yet_unsupported_resolutions == 0) {
@@ -97,7 +97,7 @@
   }
 })
 
-.helper('triggerGetUserMedia', function(t, h, resolution) {
+.extend('triggerGetUserMedia', function(t, h, resolution) {
   try {
     getUserMedia({ audio: false, video: { mandatory: {
         minWidth:  resolution[0], minHeight: resolution[1],

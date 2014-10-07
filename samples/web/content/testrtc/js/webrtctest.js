@@ -35,47 +35,47 @@ var WebRTCTest = (function() {
 
         // Add test to map of tests.
         suite._meta.tests[ name ] =
-            createTest(suite, name, fixture, suite._meta.helpers);
+            createTest(suite, name, fixture, suite._meta.extensions);
 
         // Chain.
         return suite;
       },
 
-      helper:function(mixed, member) {
+      extend:function(mixed, member) {
 
-        // Import helper from another suite.
+        // Import extension from another suite.
         if (mixed instanceof Array) {
           var suiteName = mixed[0];
-          var helperName = mixed[1];
+          var extensionName = mixed[1];
 
           var suites = framework._testsuites
           if (! (suiteName in suites))
-            throw ["Missing suite for imported helper", suiteName];
+            throw ["Missing suite for imported extension", suiteName];
 
-          var helpers = suites[suiteName]._meta.helpers;
-          if (!( helperName in helpers ))
-            throw ["Missing helper in imported suite", suiteName, helperName ]
+          var extensions = suites[suiteName]._meta.extensions;
+          if (!( extensionName in extensions ))
+            throw ["Missing extension in imported suite", suiteName, extensionName ]
 
-          suite.helper( helperName , helpers[helperName] );
+          suite.extend( extensionName , extensions[extensionName] );
           return suite;
         }
 
-        // Allow object as a map of new helpers.
+        // Allow object as a map of new extensions.
         if ( (typeof mixed) == "object" ) {
           for (var name in mixed)
-            suite.helper( name, mixed[name] )
+            suite.extend( name, mixed[name] )
           return suite;
         }
 
-        // Single helper instantiation
+        // Single extension instantiation
         var name = mixed;
 
-        // Check if existing helper.
-        if ( name in suite._meta.helpers )
-          throw ["Existing helper", name];
+        // Check if existing extension.
+        if ( name in suite._meta.extensions )
+          throw ["Existing extension", name];
 
-        // Add helper to map
-        suite._meta.helpers[ name ] = member;
+        // Add extension to map
+        suite._meta.extensions[ name ] = member;
 
         // Chain.
         return suite;
@@ -156,8 +156,8 @@ var WebRTCTest = (function() {
         // The tests in the test suite.
         tests:{},
 
-        // Helper methods for the test suite.
-        helpers:{},
+        // Extended members for the test suite.
+        extensions:{},
 
         // Map of running tests.
         running:{},
@@ -176,8 +176,8 @@ var WebRTCTest = (function() {
     return suite;
   }
 
-  // Creates a test with fixture and injects helpers.
-  var createTest = function(suite, name, fixture, helpers) {
+  // Creates a test with fixture and injects extensions.
+  var createTest = function(suite, name, fixture, extensions) {
     var test = {
 
       execute:function() {
@@ -187,7 +187,7 @@ var WebRTCTest = (function() {
         output.log(PREFIX_RUN,test.suite._meta.name, test.name);
 
         // Execute the test fixture.
-        test.fixture( createContext(test), helpers );
+        test.fixture( createContext(test), extensions );
 
         if ( test.fatal )
           return false;
