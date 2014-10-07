@@ -11,9 +11,9 @@ WebRTC Test
 
 ### WebRTCTest *members* ###
 
-**```
+```
 testsuite( suiteName, suiteDescription )
-```**
+```
 
 > **Description**: Creates and/or gets a test suite.
 
@@ -31,9 +31,9 @@ testsuite( suiteName, suiteDescription )
 
 - - -
 
-**```
+```
 enumerate()
-```**
+```
 
 > **Description**: Gets list of existing test suites.
 
@@ -45,9 +45,9 @@ enumerate()
 
 - - -
 
-**```
+```
 complete( completeCallback ) 
-```**
+```
 
 > **Description**: Register a callback to be run after all test suites complete (finish executing).
 > Multiple callbacks can be registered and will be fired in order of registration.
@@ -62,9 +62,9 @@ complete( completeCallback )
 
 - - -
 
-**```
+```
 run( outputWriter ) 
-```**
+```
 
 > **Description**: Execute all test suites in order of creation. Test suites run
 in sequence, not in parallel. Write all output using the outputWriter.
@@ -85,9 +85,9 @@ in sequence, not in parallel. Write all output using the outputWriter.
 ### TestSuite *members* ###
 
 
-**```
+```
 test( testName, testFixture ) 
-```**
+```
 
 > **Description**: Create a new test in the current test suite.
 
@@ -110,9 +110,9 @@ Use `suiteExtensions` to access any extension defined in the test suite.
 
 - - -
 
-**```
+```
 extend( extensionName, extensionValue ) 
-```**
+```
 
 > **Description**: Add a new extension to the current test suite.
 An extension can be a function or any other type. These extensions are 
@@ -136,9 +136,9 @@ attached to a test suite instead of living in the global namespace.
 
 - - -
 
-**```
+```
 extend( extensionMap ) 
-```**
+```
 
 > **Description**: Adds new extensions to the current test suite. 
 Usefull for inlne definition of multiple or all the extensions being used
@@ -158,9 +158,9 @@ for `extend` above.
 
 - - -
 
-**```
+```
 extend( [ suiteName, extensionName ] ) 
-```**
+```
 
 > **Description**: Imports an existing extension from a suite.
 Makes an existing extension available to the current test. Note that when 
@@ -183,9 +183,9 @@ dependencies inline as new extensions for the current test suite.
 
 - - -
 
-**```
+```
 enumerate()
-```**
+```
 
 > **Description**: Gets list of existing tests in the suite in order of creation.
 
@@ -197,9 +197,9 @@ enumerate()
 
 - - -
 
-**```
+```
 run()
-```**
+```
 
 > **Description**: Runs all tests in the test suite by order of creation.
 > The tests are run in sequence and synchronously. Timeouts are detected and 
@@ -216,9 +216,9 @@ run()
 
 ### TestContext *members* ###
 
-**```
+```
 assert( boolExpression, failMessage )
-```**
+```
 
 > **Description**: 
 
@@ -227,105 +227,90 @@ assert( boolExpression, failMessage )
 > **Return value**
 
 - - -
-
-**```
-assertEqual( expectedValue, actualValue, failMessage )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-- - -
-
-**```
-success( message )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-- - -
-
-**```
-fail( message )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-- - -
-
-**```
-complete( message )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-- - -
-
-**```
-fatal( message )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-
-- - -
-
-**```
-error( message )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-
-- - -
-
-**```
-log( message )
-```**
-
-> **Description**: 
-
-> **Arguments**
-
-> **Return value**
-
-
-- - -
-
-```javascript
-
-.test( name , function( testContext , testExtensions ) {
-
-})
-
-.extend( name , testExtension )
-.extend( mapOfNameTestExtensions )
-
-.enumerate()
-
-.run()
 
 ```
+assertEqual( expectedValue, actualValue, failMessage )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+- - -
+
+```
+success( message )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+- - -
+
+```
+fail( message )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+- - -
+
+```
+complete( message )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+- - -
+
+```
+fatal( message )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+
+- - -
+
+```
+error( message )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+
+- - -
+
+```
+log( message )
+```
+
+> **Description**: 
+
+> **Arguments**
+
+> **Return value**
+
+
+- - -
