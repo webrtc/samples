@@ -18,10 +18,10 @@ var output = document.getElementById('output');
 var bugButton = document.getElementById('bug-button');
 var audioSelect = document.querySelector('select#audioSource');
 var videoSelect = document.querySelector('select#videoSource');
-var PREFIX_RUN    = "[ RUN    ]";
-var PREFIX_INFO   = "[ INFO   ]";
-var PREFIX_OK     = "[     OK ]";
-var PREFIX_FAILED = "[ FAILED ]";
+var PREFIX_RUN    = '[ RUN    ]';
+var PREFIX_INFO   = '[ INFO   ]';
+var PREFIX_OK     = '[     OK ]';
+var PREFIX_FAILED = '[ FAILED ]';
 var testSuites = [];
 var nextTestIndex;
 var successes;
@@ -62,10 +62,10 @@ function reportInfo(str) {
   reportMessage(PREFIX_INFO, str);
 }
 function assertEquals(expected, actual, failMsg, OkMsg) {
-  if (expected != actual) {
-    reportError('Expected: ' + expected + ' != ' + actual + ': ' + failMsg);
+  if (expected !== actual) {
+    reportError('Expected: ' + expected + ' !== ' + actual + ': ' + failMsg);
   } else {
-    reportSuccess('Expected: ' + expected + ' == ' + actual + ': ' + OkMsg);
+    reportSuccess('Expected: ' + expected + ' === ' + actual + ': ' + OkMsg);
   }
 }
 function asyncRunNextTestSuite() {

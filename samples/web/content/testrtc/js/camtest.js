@@ -31,134 +31,144 @@
 // 4.e We also check that all frames were non-near-black.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
-var CamCaptureTest = {};
-CamCaptureTest.isMuted = false;
-CamCaptureTest.stream = null;
-CamCaptureTest.testActive = false;
-CamCaptureTest.numBlackFrames = 0;
-CamCaptureTest.blackFrameThreshold = 3;
+function CamCaptureTest() {
+  this.isMuted = false;
+  this.stream = null;
+  this.testActive = false;
+  this.numBlackFrames = 0;
+  this.blackFrameThreshold = 3;
+  this.constraints = {
+    video: { mandatory: { minWidth: 1280, minHeight: 720} }
+  };
+};
 
-CamCaptureTest.CamCaptureTest = function () {
-  var constraints = { video: true, audio: false};
-  doGetUserMedia(constraints, function(stream) {
-    CamCaptureTest.stream = stream;
-    if (CamCaptureTest.checkVideoTracks(stream)) {
-      CamCaptureTest.checkVideoStart(stream);
+addTestSuite('CamCaptureTest', function() {
+  var test = new CamCaptureTest();
+  test.run();
+});
 
-    var video = document.getElementById('main-video');
-      attachMediaStream(video, stream);
+CamCaptureTest.prototype = {
+  run: function() {
+    doGetUserMedia(this.constraints, this.gotStream.bind(this));
+  },
 
-      reportInfo("Checking if your camera is delivering frames for five " +
-                 "seconds...");
-      setTimeout(function() {
-        CamCaptureTest.checkVideoFinish(video);
-      }, 5000);
+  gotStream: function(stream) {
+    this.stream = stream;
+    this.setupVideo();
+    if (this.checkVideoTracks(stream)) {
+      this.checkVideoStart(stream);
     }
-  });
-}
+    attachMediaStream(this.video, stream);
+    reportInfo('Checking if your camera is delivering frames for five ' +
+               'seconds...');
+    this.setupCanvas();
+    setTimeout(function() { this.checkVideoFinish(this.video); }.bind(this),
+        5000);
+  },
 
-addTestSuite("CamCaptureTest", CamCaptureTest.CamCaptureTest);
-
-CamCaptureTest.checkVideoTracks = function(stream) {
-  reportSuccess("getUserMedia succeeded.");
-  var tracks = stream.getVideoTracks();
-  if (tracks.length < 1) {
-    return reportFatal("No video track in returned stream.");
-  }
-  var videoTrack = tracks[0];
-  reportSuccess("Video track exists with label = " + videoTrack.label);
-  CamCaptureTest.testActive = true;
-  return true;
-}
-
-CamCaptureTest.setupCanvas = function() {
-  var video = document.getElementById('main-video');
-  var canvas = document.getElementById('main-video-canvas');
-  var context = canvas.getContext("2d");
-
-  var canvasWidth = Math.floor(canvas.clientWidth / 1);
-  var canvasHeight = Math.floor(canvas.clientHeight / 1);
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-
-  function draw(video,context,width,height) {
-    if(video.paused || video.ended) return false;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    if (CamCaptureTest.testActive) {
-      setTimeout(draw, 20, video, context, width, height);
+  checkVideoTracks: function(stream) {
+    reportSuccess("getUserMedia succeeded.");
+    var tracks = stream.getVideoTracks();
+    if (tracks.length < 1) {
+      return reportFatal('No video track in returned stream.');
     }
-    // trace('Forwarded a frame from <video> to <canvas>');
-    var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    CamCaptureTest.checkForBlackFrame(imageData.data,
-                                      imageData.data.length,
-                                      CamCaptureTest.numBlackFrames);
+    var videoTrack = tracks[0];
+    reportSuccess('Video track exists with label = ' + videoTrack.label);
+    this.testActive = true;
+    return true;
+  },
+
+  checkVideoStart: function(stream) {
+    var videoTrack = stream.getVideoTracks()[0];
+    videoTrack.onended = function() {
+      reportError('Video track ended, camera stopped working');
+    }
+    videoTrack.onmute = function() {
+      reportError('Your camera reported itself as muted.');
+      // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
+      // isMuted local state.
+      this.isMuted = true;
+    }
+    videoTrack.onunmute = function() {
+      this.isMuted = false;
+    }
+  },
+
+  checkVideoFinish: function(video) {
+    assertEquals(this.constraints.video.mandatory.minWidth,
+        video.videoWidth, 'Incorrect width', 'Width OK');
+    assertEquals(this.constraints.video.mandatory.minHeight,
+        video.videoHeight, 'Incorrect height', 'Height OK');
+    if (this.stream.getVideoTracks()[0].readyState !== 'ended') {
+      assertEquals(false, this.isMuted, 'Your camera reported ' +
+                   'itself as muted! It is probably not delivering frames. ' +
+                   'Please try another webcam.', 'Camera is delivering frames');
+    }
+    // Check: amount of near-black frames should be 0.
+    assertEquals(this.numBlackFrames, 0, 'Your camera seems to be ' +
+                 'delivering near-black frames. This might be all right or ' +
+                 'it could be a symptom of a camera in a bad state; if it\'s ' +
+                 'a USB WebCam, try plugging it out and in again.', 'Camera ' +
+                 'is sending non-black frames.');
+    this.stream.getVideoTracks()[0].onended = null;
+    this.testActive = false;
+    this.stream.getVideoTracks()[0].stop();
+    testSuiteFinished();
+  },
+
+setupVideo: function() {
+    this.video = document.createElement('video');
+    this.video.width = this.constraints.video.mandatory.minWidth;
+    this.video.height = this.constraints.video.mandatory.minHeight;
+    this.video.setAttribute('autoplay','');
+    this.video.setAttribute('muted','');
+  },
+
+  setupCanvas: function() {
+    this.canvas = document.createElement('canvas');
+    this.canvas.width = this.video.width;
+    this.canvas.height = this.video.height;
+    this.context = this.canvas.getContext('2d');
+    this.video.addEventListener('play', function() {
+        this.draw(this.video, this.context, this.canvas.width,
+        this.canvas.height);}.bind(this), false);
+    var imageData = this.context.getImageData(0, 0, this.canvas.width,
+        this.canvas.height);
+    this.checkForBlackFrame(imageData.data, imageData.data.length,
+        this.numBlackFrames);
+  },
+
+  draw: function(video, context, width, height) {
+    if (this.video.ended) {
+      return false;
+    }
+    if (this.testActive) {
+      setTimeout(function () {
+        this.draw(this.video, this.context, this.width,
+            this.height)}.bind(this), 20);
+    };
+    this.context.drawImage(this.video, 0, 0, this.canvas.width,
+        this.canvas.height);
+  },
+
+  checkForBlackFrame: function(data, length, numBlackFrames) {
+    // Algorithm is to accumulate over r, g, b channels and average, then
+    // compare against CamCaptureTest.blackFrameThreshold, following this simple
+    // algo:
+    // var accu = 0;
+    // for(var i = 0; i < length; i+=4) {
+    //  var r = data[i],  g = data[i+1], b = data[i+2];
+    //  accu += r + g + b;
+    // }
+    // trace('average pseudo luminance ' + accu / length);
+    //
+    // We expect frames to be non-black, so return if there is any non-near-zero
+    // pixel.
+    var threshold = this.blackFrameThreshold / length;
+    for (var i = 0; i < length; i += 4) {
+      if (data[i] > threshold || data[i+1] > threshold || data[i+2] > threshold)
+        return
+    }
+    numBlackFrames++;
   }
-
-  video.addEventListener('play', function () {
-    draw(this, context, canvasWidth, canvasHeight);
-  }, false);
-
-}
-
-
-CamCaptureTest.checkVideoStart = function(stream) {
-  CamCaptureTest.setupCanvas();
-
-
-  var videoTrack = stream.getVideoTracks()[0];
-  videoTrack.onended = function() {
-    reportError('Video track ended, camera stopped working');
-  }
-  videoTrack.onmute = function() {
-    reportError('Your camera reported itself as muted.');
-    // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
-    // isMuted local state.
-    CamCaptureTest.isMuted = true;
-  }
-  videoTrack.onunmute = function() {
-    CamCaptureTest.isMuted = false;
-  }
-}
-
-CamCaptureTest.checkVideoFinish = function(videoTag) {
-  assertEquals(640, videoTag.videoWidth, 'Incorrect width', 'Width OK');
-  assertEquals(480, videoTag.videoHeight, 'Incorrect height', 'Height OK');
-  if (CamCaptureTest.stream.getVideoTracks()[0].readyState != 'ended'){
-    assertEquals(false, CamCaptureTest.isMuted, 'Your camera reported ' +
-                 'itself as muted! It is probably not delivering frames. ' +
-                 'Please try another webcam.', 'Camera is delivering frames');
-  }
-
-  // Check: amount of near-black frames should be 0.
-  assertEquals(CamCaptureTest.numBlackFrames, 0, 'Your camera seems to be ' +
-               'delivering near-black frames. This might be all right or it ' +
-               'could be a symptom of a camera in a bad state; if it\'s a ' +
-               'USB WebCam, try plugging it out and in again.', 'Camera is ' +
-               'sending non-black frames.');
-
-  CamCaptureTest.stream.getVideoTracks()[0].onended = null;
-  CamCaptureTest.testActive = false;
-  CamCaptureTest.stream.getVideoTracks()[0].stop();
-  testSuiteFinished();
-}
-
-CamCaptureTest.checkForBlackFrame = function(data, length, numBlackFrames) {
-  // Algorithm is to accumulate over r, g, b channels and average, then compare
-  // against CamCaptureTest.blackFrameThreshold, following this simple algo:
-  //
-  // var accu = 0;
-  // for(var i = 0; i < length; i+=4) {
-  //  var r = data[i],  g = data[i+1], b = data[i+2];
-  //  accu += r + g + b;
-  // }
-  // trace('average pseudo luminance ' + accu / length);
-  //
-  // We expect frames to be non-black, so return if there is any non-near-zero
-  // pixel.
-  var threshold = CamCaptureTest.blackFrameThreshold / length;
-  for (var i = 0; i < length; i += 4) {
-    if (data[i] > threshold || data[i+1] > threshold || data[i+2] > threshold)
-      return
-  }
-  numBlackFrames++;
-}
+};
