@@ -17,6 +17,8 @@ function WebRTCCall(config) {
 
   this.pc1.addEventListener('icecandidate', this.onIceCandidate_.bind(this, this.pc2));
   this.pc2.addEventListener('icecandidate', this.onIceCandidate_.bind(this, this.pc1));
+
+  this.iceCandidateFilter_ = WebRTCCall.noFilter;
 }
 
 WebRTCCall.prototype = {
@@ -29,25 +31,60 @@ WebRTCCall.prototype = {
     this.pc2.close();
   },
 
-  isGoodCandidate: function () { return true; },
+  setIceCandidateFilter: function (filter) {
+    this.iceCandidateFilter_ = filter;
+  },
+
+  // Constraint max video bitrate by modifying the SDP when creating an answer.
+  constrainVideoBitrate: function (maxVideoBitrateKbps) {
+    this.constrainVideoBitrateKbps_ = maxVideoBitrateKbps;
+  },
+
+  // Remove video FEC if available on the offer.
+  disableVideoFec: function () {
+    this.constrainOfferToRemoveVideoFec_ = true;
+  },
 
   gotOffer_: function (offer) {
+    if (this.constrainOfferToRemoveVideoFec_) {
+      offer.sdp = offer.sdp.replace(/(m=video 1 [^\r]+)(116 117)(\r\n)/g,
+                                    '$1\r\n');
+      offer.sdp = offer.sdp.replace(/a=rtpmap:116 red\/90000\r\n/g, '');
+      offer.sdp = offer.sdp.replace(/a=rtpmap:117 ulpfec\/90000\r\n/g, '');
+    }
     this.pc1.setLocalDescription(offer);
     this.pc2.setRemoteDescription(offer);
     this.pc2.createAnswer(this.gotAnswer_.bind(this));
   },
 
   gotAnswer_: function (answer) {
+    if (this.constrainVideoBitrateKbps_) {
+      answer.sdp = answer.sdp.replace(
+          /a=mid:video\r\n/g,
+          'a=mid:video\r\nb=AS:' + this.constrainVideoBitrateKbps_ + '\r\n');
+    }
     this.pc2.setLocalDescription(answer);
     this.pc1.setRemoteDescription(answer);
   },
-  
+
   onIceCandidate_: function (otherPeer) {
     if (event.candidate) {
       var parsed = parseCandidate(event.candidate.candidate);
-      if (this.isGoodCandidate(parsed)) {
+      if (this.iceCandidateFilter_(parsed)) {
         otherPeer.addIceCandidate(event.candidate);
       }
     }
   }
+}
+
+WebRTCCall.noFilter = function () {
+  return true;
+}
+
+WebRTCCall.isRelay = function (candidate) {
+  return candidate.type === 'relay';
+}
+
+WebRTCCall.isIpv6 = function (candidate) {
+  return candidate.address.indexOf(':') !== -1;
 }

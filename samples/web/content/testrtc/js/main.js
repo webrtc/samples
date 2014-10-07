@@ -104,7 +104,7 @@ function doGetUserMedia(constraints, onSuccess) {
 }
 
 function appendSourceId(id, type, constraints) {
-  if (constraints[type] == null)
+  if (constraints[type] == null || constraints[type] === false)
     return;
 
   if (constraints[type] == true)
