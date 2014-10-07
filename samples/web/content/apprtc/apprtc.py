@@ -450,6 +450,9 @@ class MainPage(webapp2.RequestHandler):
     # Read url params for the initial video send bitrate (vsibr)
     vsibr = self.request.get('vsibr', default_value = '')
 
+    start_at_last_send_bitrate = \
+        self.request.get('start_at_last_send_bitrate', default_value = 'false')
+
     # Options for making pcConstraints
     dtls = self.request.get('dtls')
     dscp = self.request.get('dscp')
@@ -568,6 +571,7 @@ class MainPage(webapp2.RequestHandler):
       'audio_send_codec': audio_send_codec,
       'audio_receive_codec': audio_receive_codec,
       'ssr': ssr,
+      'start_at_last_send_bitrate': start_at_last_send_bitrate,
       'include_vr_js': include_vr_js,
       'meta_viewport': meta_viewport
     }
