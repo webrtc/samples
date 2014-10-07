@@ -42,40 +42,50 @@ function testIsDisabled(testName) {
 function addTestSuite(name, func) {
   testSuites.push({'name': name, 'func': func});
 }
+
 function start() {
   nextTestIndex = successes = failures = 0;
   output.value = '';
   asyncRunNextTestSuite();
 }
+
 function reportSkipped(testName) {
   reportMessage(PREFIX_SKIPPED, testName);
 }
+
 function reportStart(testName) {
   reportMessage(PREFIX_RUN, testName);
 }
+
 function reportSuccess(str) {
   reportMessage(PREFIX_OK, str);
   ++successes;
 }
+
 function reportError(str) {
   reportMessage(PREFIX_FAILED, str);
   ++failures;
 }
+
 function reportFatal(str) {
   reportError(str);
   testSuiteFinished();
   return false;
 }
+
 function testSuiteFinished() {
   reportMessage('[ ------ ]', '');
   asyncRunNextTestSuite();
 }
+
 function reportMessage(prefix, str) {
   output.value += prefix + ' ' + str + '\n';
 }
+
 function asyncRunNextTestSuite() {
   setTimeout(runNextTestSuite, 0);
 }
+
 function runNextTestSuite() {
   var index = nextTestIndex;
   if (index >= testSuites.length) {
@@ -93,6 +103,7 @@ function runNextTestSuite() {
     testSuite.func();
   }
 }
+
 function onComplete() {
   var str = successes + ' out of ' + (successes + failures) + ' tests passed';
   var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
@@ -163,7 +174,6 @@ if (typeof MediaStreamTrack === 'undefined') {
 } else {
   MediaStreamTrack.getSources(gotSources);
 }
-
 
 // Parse URL parameters and configure test filters.
 {
