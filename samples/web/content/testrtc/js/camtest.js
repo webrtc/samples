@@ -35,12 +35,12 @@ function CamCaptureTest() {
   this.isMuted = false;
   this.stream = null;
   this.testActive = false;
+  this.numFrames = 0;
   this.numBlackFrames = 0;
-  // TODO: This needs some tweaking, increasing to be able to detect near black
-  // frames. More advanced detection is in the pipeline.
-  this.blackFrameThreshold = 25;
+  // Threshold to consider a pixel luma as non-black.
+  this.nonBlackPixelLumaThreshold = 20;
   this.constraints = {
-    video: { mandatory: { minWidth: 1280, minHeight: 720} }
+    video: { mandatory: { minWidth: 640, minHeight: 480} }
   };
   this.video = document.createElement('video');
   this.video.width = this.constraints.video.mandatory.minWidth;
@@ -112,11 +112,13 @@ CamCaptureTest.prototype = {
                    'Please try another webcam.', 'Camera is delivering frames');
     }
     // Check: amount of near-black frames should be 0.
-    assertEquals(this.numBlackFrames, 0, 'Your camera seems to be ' +
+    assertEquals(0, this.numBlackFrames, 'Your camera seems to be ' +
                  'delivering near-black frames. This might be all right or ' +
                  'it could be a symptom of a camera in a bad state; if it\'s ' +
-                 'a USB WebCam, try plugging it out and in again.', 'Camera ' +
-                 'is sending non-black frames.');
+                 'a USB WebCam, try plugging it out and in again. (FYI: It ' +
+                 'has produced ' + this.numBlackFrames + '/' + this.numFrames +
+                 ' near-black frames in total).', 'Camera is sending ' +
+                 'non-black frames.');
     this.stream.getVideoTracks()[0].onended = null;
     this.testActive = false;
     this.stream.getVideoTracks()[0].stop();
@@ -141,19 +143,23 @@ CamCaptureTest.prototype = {
         this.canvas.height);
     if (this.isBlackFrame(imageData.data, imageData.data.length))
       this.numBlackFrames++;
-
+    this.numFrames++;
     if (this.testActive) {
       setTimeout(this.testFrame.bind(this), 20);
     };
   },
 
   isBlackFrame: function(data, length) {
-    var thresh = this.blackFrameThreshold;
-    for (var i = 0; i < length; i += 4) {
-      if (data[i] > thresh || data[i+1] > thresh || data[i+2] > thresh) {
+    // TODO: Use a statistical, histogram-based detection.
+    var thresh = this.nonBlackPixelLumaThreshold;
+    var accuLuma = 0;
+    for (var i = 4; i < length; i += 4) {
+      // Use Luma as in Rec. 709: Y′709 = 0.21R + 0.72G + 0.07B;
+      accuLuma += 0.21 * data[i] +  0.72 * data[i+1] + 0.07 * data[i+2];
+      // Early termination if the average Luma so far is bright enough.
+      if (accuLuma  > (thresh * i / 4) )
         return false;
-      }
     }
-    return true;
+    return (accuLuma < (thresh * length / 4));
   }
 };
