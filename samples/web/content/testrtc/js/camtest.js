@@ -36,7 +36,9 @@ function CamCaptureTest() {
   this.stream = null;
   this.testActive = false;
   this.numBlackFrames = 0;
-  this.blackFrameThreshold = 3;
+  // TODO: This needs some tweaking, increasing to be able to detect near black
+  // frames. More advanced detection is in the pipeline.
+  this.blackFrameThreshold = 100;
   this.constraints = {
     video: { mandatory: { minWidth: 1280, minHeight: 720} }
   };
@@ -55,15 +57,14 @@ CamCaptureTest.prototype = {
   gotStream: function(stream) {
     this.stream = stream;
     this.setupVideo();
-    if (this.checkVideoTracks(stream)) {
-      this.checkVideoStart(stream);
+    if (this.checkVideoTracks(this.stream)) {
+      this.checkVideoStart(this.stream);
     }
-    attachMediaStream(this.video, stream);
+    attachMediaStream(this.video, this.stream);
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
     this.setupCanvas();
-    setTimeout(function() { this.checkVideoFinish(this.video); }.bind(this),
-        5000);
+    setTimeout(this.checkVideoFinish.bind(this, this.video), 5000);
   },
 
   checkVideoTracks: function(stream) {
@@ -116,7 +117,7 @@ CamCaptureTest.prototype = {
     testSuiteFinished();
   },
 
-setupVideo: function() {
+  setupVideo: function() {
     this.video = document.createElement('video');
     this.video.width = this.constraints.video.mandatory.minWidth;
     this.video.height = this.constraints.video.mandatory.minHeight;
@@ -132,26 +133,23 @@ setupVideo: function() {
     this.video.addEventListener('play', function() {
         this.draw(this.video, this.context, this.canvas.width,
         this.canvas.height);}.bind(this), false);
-    var imageData = this.context.getImageData(0, 0, this.canvas.width,
-        this.canvas.height);
-    this.checkForBlackFrame(imageData.data, imageData.data.length,
-        this.numBlackFrames);
   },
 
   draw: function(video, context, width, height) {
-    if (this.video.ended) {
+    if (video.ended) {
       return false;
     }
     if (this.testActive) {
       setTimeout(function () {
-        this.draw(this.video, this.context, this.width,
-            this.height)}.bind(this), 20);
+        this.draw(this.video, this.context, this.canvas.width,
+            this.canvas.height)}.bind(this), 20);
     };
-    this.context.drawImage(this.video, 0, 0, this.canvas.width,
-        this.canvas.height);
+    context.drawImage(video, 0, 0, width, height);
+    var imageData = context.getImageData(0, 0, width, height);
+    this.isBlackFrame(imageData.data, imageData.data.length);
   },
 
-  checkForBlackFrame: function(data, length, numBlackFrames) {
+  isBlackFrame: function(data, length) {
     // Algorithm is to accumulate over r, g, b channels and average, then
     // compare against CamCaptureTest.blackFrameThreshold, following this simple
     // algo:
@@ -164,11 +162,13 @@ setupVideo: function() {
     //
     // We expect frames to be non-black, so return if there is any non-near-zero
     // pixel.
-    var threshold = this.blackFrameThreshold / length;
+    // tresh is short for threshold in order to fit on one line.
+    var tresh = this.blackFrameThreshold / 4;
     for (var i = 0; i < length; i += 4) {
-      if (data[i] > threshold || data[i+1] > threshold || data[i+2] > threshold)
-        return
+      if (data[i] > thresh || data[i+1] > thresh || data[i+2] > thresh) {
+        return;
+      }
+      this.numBlackFrames++;
     }
-    numBlackFrames++;
   }
 };
