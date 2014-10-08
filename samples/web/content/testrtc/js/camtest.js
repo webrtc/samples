@@ -163,7 +163,7 @@ CamCaptureTest.prototype = {
     // We expect frames to be non-black, so return if there is any non-near-zero
     // pixel.
     // tresh is short for threshold in order to fit on one line.
-    var tresh = this.blackFrameThreshold / 4;
+    var thresh = this.blackFrameThreshold / 4;
     for (var i = 0; i < length; i += 4) {
       if (data[i] > thresh || data[i+1] > thresh || data[i+2] > thresh) {
         return;
