@@ -38,10 +38,15 @@ function CamCaptureTest() {
   this.numBlackFrames = 0;
   // TODO: This needs some tweaking, increasing to be able to detect near black
   // frames. More advanced detection is in the pipeline.
-  this.blackFrameThreshold = 100;
+  this.blackFrameThreshold = 25;
   this.constraints = {
     video: { mandatory: { minWidth: 1280, minHeight: 720} }
   };
+  this.video = document.createElement('video');
+  this.video.width = this.constraints.video.mandatory.minWidth;
+  this.video.height = this.constraints.video.mandatory.minHeight;
+  this.video.setAttribute('autoplay','');
+  this.video.setAttribute('muted','');
 };
 
 addTestSuite('CamCaptureTest', function() {
@@ -56,14 +61,15 @@ CamCaptureTest.prototype = {
 
   gotStream: function(stream) {
     this.stream = stream;
-    this.setupVideo();
-    if (this.checkVideoTracks(this.stream)) {
-      this.checkVideoStart(this.stream);
+    if (!this.checkVideoTracks(this.stream)) {
+      testSuiteFinished();
+      return;
     }
+    this.setupVideoExpectations(this.stream);
     attachMediaStream(this.video, this.stream);
+    this.setupCanvas();
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
-    this.setupCanvas();
     setTimeout(this.checkVideoFinish.bind(this, this.video), 5000);
   },
 
@@ -79,7 +85,7 @@ CamCaptureTest.prototype = {
     return true;
   },
 
-  checkVideoStart: function(stream) {
+  setupVideoExpectations: function(stream) {
     var videoTrack = stream.getVideoTracks()[0];
     videoTrack.onended = function() {
       reportError('Video track ended, camera stopped working');
@@ -117,58 +123,37 @@ CamCaptureTest.prototype = {
     testSuiteFinished();
   },
 
-  setupVideo: function() {
-    this.video = document.createElement('video');
-    this.video.width = this.constraints.video.mandatory.minWidth;
-    this.video.height = this.constraints.video.mandatory.minHeight;
-    this.video.setAttribute('autoplay','');
-    this.video.setAttribute('muted','');
-  },
-
   setupCanvas: function() {
     this.canvas = document.createElement('canvas');
     this.canvas.width = this.video.width;
     this.canvas.height = this.video.height;
     this.context = this.canvas.getContext('2d');
-    this.video.addEventListener('play', function() {
-        this.draw(this.video, this.context, this.canvas.width,
-        this.canvas.height);}.bind(this), false);
+    this.video.addEventListener('play', this.testFrame.bind(this), false);
   },
 
-  draw: function(video, context, width, height) {
-    if (video.ended) {
+  testFrame: function() {
+    if (!this.testActive || this.video.ended) {
       return false;
     }
+    this.context.drawImage(this.video, 0, 0, this.canvas.width,
+        this.canvas.height);
+    var imageData = this.context.getImageData(0, 0, this.canvas.width,
+        this.canvas.height);
+    if (this.isBlackFrame(imageData.data, imageData.data.length))
+      this.numBlackFrames++;
+
     if (this.testActive) {
-      setTimeout(function () {
-        this.draw(this.video, this.context, this.canvas.width,
-            this.canvas.height)}.bind(this), 20);
+      setTimeout(this.testFrame.bind(this), 20);
     };
-    context.drawImage(video, 0, 0, width, height);
-    var imageData = context.getImageData(0, 0, width, height);
-    this.isBlackFrame(imageData.data, imageData.data.length);
   },
 
   isBlackFrame: function(data, length) {
-    // Algorithm is to accumulate over r, g, b channels and average, then
-    // compare against CamCaptureTest.blackFrameThreshold, following this simple
-    // algo:
-    // var accu = 0;
-    // for(var i = 0; i < length; i+=4) {
-    //  var r = data[i],  g = data[i+1], b = data[i+2];
-    //  accu += r + g + b;
-    // }
-    // trace('average pseudo luminance ' + accu / length);
-    //
-    // We expect frames to be non-black, so return if there is any non-near-zero
-    // pixel.
-    // tresh is short for threshold in order to fit on one line.
-    var thresh = this.blackFrameThreshold / 4;
+    var thresh = this.blackFrameThreshold;
     for (var i = 0; i < length; i += 4) {
       if (data[i] > thresh || data[i+1] > thresh || data[i+2] > thresh) {
-        return;
+        return false;
       }
-      this.numBlackFrames++;
     }
+    return true;
   }
 };
