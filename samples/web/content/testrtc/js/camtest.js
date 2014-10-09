@@ -101,23 +101,23 @@ CamCaptureTest.prototype = {
   },
 
   checkVideoFinish: function(video) {
-    expectEqual(this.constraints.video.mandatory.minWidth,
+    expectEquals(this.constraints.video.mandatory.minWidth,
         video.videoWidth, 'Incorrect width', 'Width OK');
-    expectEqual(this.constraints.video.mandatory.minHeight,
+    expectEquals(this.constraints.video.mandatory.minHeight,
         video.videoHeight, 'Incorrect height', 'Height OK');
     if (this.stream.getVideoTracks()[0].readyState !== 'ended') {
-      expectEqual(false, this.isMuted, 'Your camera reported ' +
-                  'itself as muted! It is probably not delivering frames. ' +
-                  'Please try another webcam.', 'Camera is delivering frames');
+      expectEquals(false, this.isMuted, 'Your camera reported ' +
+                   'itself as muted! It is probably not delivering frames. ' +
+                   'Please try another webcam.', 'Camera is delivering frames');
     }
     // Check: amount of near-black frames should be 0.
-    expectEqual(0, this.numBlackFrames, 'Your camera seems to be ' +
-                'delivering near-black frames. This might be all right or ' +
-                'it could be a symptom of a camera in a bad state; if it\'s ' +
-                'a USB WebCam, try plugging it out and in again. (FYI: It ' +
-                'has produced ' + this.numBlackFrames + '/' + this.numFrames +
-                ' near-black frames in total).', 'Camera is sending ' +
-                'non-black frames.');
+    expectEquals(0, this.numBlackFrames, 'Your camera seems to be ' +
+                 'delivering near-black frames. This might be all right or ' +
+                 'it could be a symptom of a camera in a bad state; if it\'s ' +
+                 'a USB WebCam, try plugging it out and in again. (FYI: It ' +
+                 'has produced ' + this.numBlackFrames + '/' + this.numFrames +
+                 ' near-black frames in total).', 'Camera is sending ' +
+                 'non-black frames.');
     this.stream.getVideoTracks()[0].onended = null;
     this.testActive = false;
     this.stream.getVideoTracks()[0].stop();
