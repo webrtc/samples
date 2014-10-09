@@ -87,7 +87,7 @@ function reportInfo(str) {
   reportMessage(PREFIX_INFO, str);
 }
 
-function assertEquals(expected, actual, failMsg, OkMsg) {
+function expectEquals(expected, actual, failMsg, OkMsg) {
   if (expected !== actual) {
     reportError('Expected: ' + expected + ' !== ' + actual + ': ' + failMsg);
   } else {
