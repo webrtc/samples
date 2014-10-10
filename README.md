@@ -1,5 +1,3 @@
-![Travis](https://travis-ci.org/paullewis/SimpleTest.svg?branch=master)
-
 # WebRTC code samples #
 
 This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples.
