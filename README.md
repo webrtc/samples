@@ -46,7 +46,7 @@ Patches and issues welcome!
 
 [Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pr-answer)
 
-[Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/peerconnection-states)
+[Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/states)
 
 [Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/webaudio-input)
 
