@@ -1,0 +1,161 @@
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>PeerConnection PRANSWER Demo</title>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src="../../js/adapter.js"></script>
+<style>
+video {
+  border:5px solid black;
+  width:320px;
+  height:240px;
+}
+</style>
+</head>
+<body>
+<video id="vid1" autoplay="true" muted="true"></video>
+<video id="vid2" autoplay></video>
+<br>
+<button id="btn1" onclick="start()">Call</button>
+<button id="btn2" onclick="accept()">Accept</button>
+<button id="btn3" onclick="stop()">Hang Up</button>
+<script>
+//var vid1 = document.getElementById("vid1");
+//var vid2 = document.getElementById("vid2");
+btn1.disabled = true;
+btn2.disabled = true;
+btn3.disabled = true;
+var pc1,pc2;
+var localstream;
+var sdpConstraints = {'mandatory': {
+                        'OfferToReceiveAudio':true,
+                        'OfferToReceiveVideo':true }};
+
+function gotStream(stream) {
+  trace("Received local stream");
+  // Call the polyfill wrapper to attach the media stream to this element.
+  attachMediaStream(vid1, stream);
+  localstream = stream;
+  btn1.disabled = false;
+}
+
+getUserMedia({audio:true, video:true}, gotStream, function() {});
+
+function start() {
+  btn1.disabled = true;
+  btn2.disabled = false;
+  btn3.disabled = false;
+  trace("Starting Call");
+  videoTracks = localstream.getVideoTracks();
+  audioTracks = localstream.getAudioTracks();
+  if (videoTracks.length > 0)
+    trace('Using Video device: ' + videoTracks[0].label);
+  if (audioTracks.length > 0)
+    trace('Using Audio device: ' + audioTracks[0].label);
+
+  var servers = null;
+  pc1 = new RTCPeerConnection(servers);
+  trace("Created local peer connection object pc1");
+  pc1.onicecandidate = iceCallback1;
+  pc2 = new RTCPeerConnection(servers);
+  trace("Created remote peer connection object pc2");
+  pc2.onicecandidate = iceCallback2;
+  pc2.onaddstream = gotRemoteStream;
+
+  pc1.addStream(localstream);
+  trace("Adding Local Stream to peer connection");
+
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+
+}
+
+function onCreateSessionDescriptionError(error) {
+  trace('Failed to create session description: ' + error.toString());
+}
+
+function gotDescription1(desc) {
+  pc1.setLocalDescription(desc);
+  trace("Offer from pc1 \n" + desc.sdp);
+  pc2.setRemoteDescription(desc);
+  // Since the "remote" side has no media stream we need
+  // to pass in the right constraints in order for it to
+  // accept the incoming offer of audio and video.
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+                   sdpConstraints);
+}
+
+function gotDescription2(desc) {
+  // Provisional answer, set a=inactive & set sdp type to pranswer.
+  desc.sdp = desc.sdp.replace(/a=recvonly/g, "a=inactive");
+  desc.type = "pranswer";
+  pc2.setLocalDescription(desc);
+  trace("Pranswer from pc2 \n" + desc.sdp);
+  pc1.setRemoteDescription(desc);
+}
+
+function gotDescription3(desc) {
+  // Final answer, setting a=recvonly & sdp type to answer.
+  desc.sdp = desc.sdp.replace(/a=inactive/g, "a=recvonly");
+  desc.type = "answer";
+  pc2.setLocalDescription(desc);
+  trace("Answer from pc2 \n" + desc.sdp);
+  pc1.setRemoteDescription(desc);
+}
+
+function accept() {
+  pc2.createAnswer(gotDescription3, null, sdpConstraints);
+  btn2.disabled = true;
+  btn1.disabled = false;
+}
+
+function stop() {
+  trace("Ending Call" + "\n\n");
+  pc1.close();
+  pc2.close();
+  pc1=null;
+  pc2=null;
+  btn2.disabled = true;
+  btn1.disabled = false;
+  btn3.disabled = true;
+}
+
+function gotRemoteStream(e) {
+  // Call the polyfill wrapper to attach the media stream to this element.
+  attachMediaStream(vid2, e.stream);
+  trace("Received remote stream");
+}
+
+function iceCallback1(event) {
+  if (event.candidate) {
+    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
+    trace("Local ICE candidate: \n" + event.candidate.candidate);
+  }
+}
+
+function iceCallback2(event) {
+  if (event.candidate) {
+    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
+                        onAddIceCandidateSuccess, onAddIceCandidateError);
+    trace("Remote ICE candidate: \n " + event.candidate.candidate);
+  }
+}
+
+function onAddIceCandidateSuccess() {
+  trace("AddIceCandidate success.");
+}
+
+function onAddIceCandidateError(error) {
+  trace("Failed to add Ice Candidate: " + error.toString());
+}
+    </script>
+  </body>
+</html>
+

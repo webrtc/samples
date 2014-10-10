@@ -1,0 +1,192 @@
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>WebRTC peer2peer test page</title>
+  
+  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script src="../../../js/adapter.js"></script>
+  <script src="js/main.js"></script>
+  <link rel="StyleSheet" href="../css/stylesheet.css">
+  
+  <meta charset="utf-8">
+
+</head>
+<body>
+
+<div id="wrapper">
+  <div id="header">
+    GetUserMedia <a href="http://goo.gl/V7cZg">MediaStreamConstraints</a>:
+    <input type="text" id="getusermedia-constraints" wrap="soft">
+    Audio<input type="checkbox" id="audio" checked
+        onclick="updateGetUserMediaConstraints();"/>
+    Video<input type="checkbox" id="video" checked
+        onclick="updateGetUserMediaConstraints();"/>
+    Screen capture<input type="checkbox" id="screencapture"
+        onclick="updateGetUserMediaConstraints();"/>
+    <button class="button-green" id="re-request" 
+        onclick="getUserMediaFromHere();">Request GetUserMedia</button><br/>
+    Audio source <select class="drop-down" id="audiosrc"
+        onchange="updateGetUserMediaConstraints();"></select>
+    Video source <select class="drop-down" id="videosrc"
+        onchange="updateGetUserMediaConstraints();"></select>
+    Optional min size <input type="text" id="video-width" value="1280" 
+        size="5px" onblur="updateGetUserMediaConstraints();">
+    x <input type="text" id="video-height" value="720" size="5px"
+        onblur="updateGetUserMediaConstraints();">
+    <button id="get-devices" onclick="getDevices();">
+        Get devices</button>
+    Onload<input type="checkbox" id="get-devices-onload">
+    You can also use <a href="../constraints/index.html">Constraints test page
+        </a>
+    <a href="help.html" target="_blank">Help</a>
+    <br/>
+  </div>
+
+  <div id="container">
+    <div class="left">
+        <div>
+          <h2>Local Preview</h2>
+          <video width="320" height="240" id="local-view" autoplay="autoplay"
+              muted></video><br/>
+        </div>
+        <div>
+          <div>
+            Size: <div id="local-view-size" class="inline-contents"></div>
+            <div id="local-view-stream-size" class="inline-contents">(stream
+                size: N/A)</div><br/>
+          </div>
+          <div>
+            Resize: <button onclick="updateVideoTagSize('local-view')"> To
+                stream size</button>
+            <button onclick="updateVideoTagSize('local-view', 320, 240);">
+                320x240</button>
+            <button onclick="updateVideoTagSize('local-view', 640, 480);">
+                640x480</button>
+          </div>
+        </div>
+
+      <h2>Send on data channel</h2>
+      <input type="text" id="data-channel-send" size="10" />
+      <button onclick="sendDataFromHere();">Send data</button><br>
+
+      <h2>Settings</h2>
+      Server [<a href="" onclick="showServerHelp();">?</a>]:
+      <input type="text" id="pc-server" size="30"
+          value="http://localhost:8888"/>
+      Peer ID: <input type="text" id="peer-id" size="10" />
+      <button class="button-green" id="connect" onclick="connectFromHere();">
+          Connect</button><br/>
+
+      PeerConnection Constraints:
+      CPU overuse <input type="checkbox" id="cpuoveruse-detection"
+          onclick="setPeerConnectionConstraints();" checked="true"/>
+      RTP <input type="checkbox" id="data-channel-type-rtp"
+          onclick="setPeerConnectionConstraints();"><br/>
+      <input class="width-100" type="text" id="pc-constraints" value="{}" ><br/>
+      PeerConnection <a href="http://goo.gl/xVi12">
+          createOffer MediaConstraints:</a><br/>
+      <input type="text" class="width-100" id="pc-createoffer-constraints"
+          value="{}"/><br/>
+      PeerConnection <a href="http://goo.gl/0TjfX">
+          createAnswer MediaConstraints:</a><br/>
+      <input type="text" class="width-100" id="pc-createanswer-constraints"
+          value="{}"/><br/>
+
+      Call:
+      <button class="button-green" onclick="negotiateCallFromHere();">Negotiate
+          </button>
+      <button class="button-red" onclick="hangUpFromHere();">Hang up</button>
+          <br/>
+
+      Local Stream:
+      <button class="button-green" onclick="addLocalStreamFromHere();">Add
+          </button>
+      <button class="button-red" onclick="removeLocalStreamFromHere();">Remove
+          </button>
+      <button class="button-red" onclick="stopLocalFromHere();">Stop</button>
+      <button onclick="toggleLocalVideoFromHere();">Toggle Video</button>
+      <button onclick="toggleLocalAudioFromHere();">Toggle Audio</button><br/>
+
+      Remote Stream:
+      <button onclick="toggleRemoteVideoFromHere();">Toggle Video</button>
+      <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button><br/>
+
+      Data Channel:
+      <button onclick="createDataChannelFromHere();">Create</button>
+      <button onclick="closeDataChannelFromHere();">Close</button>
+      status:
+      <input type="text" id="data-channel-status" size="10" value="not created"
+          disabled="true"/>
+      ID:
+      <input type="text" id="data-channel-id" size="10" disabled="true"/><br/>
+
+      DTMF Sender:
+      <button onclick="createDtmfSenderFromHere();">Create</button>
+      tones:
+      <input type="text" id="dtmf-tones" size="10" value="123,abc" />
+      duration(ms):
+      <input type="text" id="dtmf-tones-duration" size="10" value="100" />
+      gap(ms):
+      <input type="text" id="dtmf-tones-gap" size="10" value="50" />
+      <button onclick="insertDtmfFromHere();">Send</button><br/>
+
+      Options:
+      <input type="checkbox" id="force-isac" onclick="forceIsacChanged();"/>
+      Force iSAC in Outgoing SDP<br/>
+      <button onclick="clearLog();">Clear Logs</button>
+    </div>
+
+    <div class="right">
+      <div>
+        <h2>Remote Video</h2>
+          <video width="320" height="240" id="remote-view" autoplay="autoplay">
+              </video><br/>
+      </div>
+      <div>
+        <div>
+          Size: <div id="remote-view-size" class="inline-contents"></div>
+          <div id="remote-view-stream-size" class="inline-contents">(stream size
+              :N/A)</div><br/>
+        </div>
+        <div>
+          Resize: <button onclick="updateVideoTagSize('remote-view')"> To
+              stream size</button>
+          <button onclick="updateVideoTagSize('remote-view', 320, 240);">
+              320x240</button>
+          <button onclick="updateVideoTagSize('remote-view', 640, 480);">
+              640x480</button>
+        </div>
+      </div>
+
+      <h2>Received on data channel</h2>
+      <textarea id="data-channel-receive" rows="7" cols="40" disabled="true">
+          </textarea>
+
+      <h2>Sent DTMF tones</h2>
+      <textarea id="dtmf-tones-sent" rows="7" cols="40" disabled="true">
+          </textarea>
+    </div>
+
+    <div id="footer">
+      <div class="left">
+        <h2>Messages</h2>
+        <pre id="messages"></pre>
+      </div>
+
+      <div class="right">
+        <h2>Debug</h2>
+        <pre id="debug"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
