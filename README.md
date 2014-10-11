@@ -14,44 +14,44 @@ Patches and issues welcome!
 
 ## The demos ##
 
-[getUserMedia()](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia)
+[getUserMedia()](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/gum)
 
-[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-canvas)
+[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/canvas)
 
-[getUserMedia() + Canvas + CSS Filters](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-filter)
+[getUserMedia() + Canvas + CSS Filters](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/filter)
 
-[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-resolution)
+[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution)
 
-[getUserMedia() with camera/mic selection](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-source)
+[getUserMedia() with camera/mic selection](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/source)
 
-[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-audio)
+[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/audio)
 
-[Audio-only getUserMedia() displaying volume](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-volume)
+[Audio-only getUserMedia() displaying volume](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/volume)
+
+[Face tracking](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/face)
 
 [Data channels](http://googlechrome.github.io/webrtc/samples/web/content/datachannel)
 
-[Peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection)
+[Peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pc1)
 
-[Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-audio)
+[Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio)
 
-[Multiple peer connections](http://googlechrome.github.io/webrtc/samples/web/content/multiple)
+[Multiple peer connections](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/multiple)
 
-[Multiple relay](http://googlechrome.github.io/webrtc/samples/web/content/multiple-relay)
+[Multiple relay](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/multiple-relay)
 
-[Munge SDP](http://googlechrome.github.io/webrtc/samples/web/content/munge-sdp)
+[Munge SDP](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/munge-sdp)
 
-[ICE candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickle-ice)
+[ICE candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/trickle-ice)
 
-[Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pr-answer)
+[Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pr-answer)
 
-[Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-states)
+[Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/states)
 
-[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/webaudio-input)
+[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/webaudio-input)
 
-[Adjust constraints, view stats](http://googlechrome.github.io/webrtc/samples/web/content/constraints)
+[Adjust constraints, view stats](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/constraints)
 
-[Display createOffer output](http://googlechrome.github.io/webrtc/samples/web/content/create-offer)
+[Display createOffer output](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/create-offer)
 
-[DTMF](http://googlechrome.github.io/webrtc/samples/web/content/dtmf)
-
-[Face tracking](http://googlechrome.github.io/webrtc/samples/web/content/face)
+[DTMF](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection/dtmf)
