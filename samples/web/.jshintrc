@@ -1,0 +1,12 @@
+{
+  "browser": true,
+  "camelcase": true,
+  "curly": true,
+  "devel": true,
+  "eqeqeq": true,
+  "forin": false,
+  "globalstrict": true,
+  "quotmark": "single",
+  "undef": true,
+  "unused": "strict"
+}
