@@ -38,11 +38,11 @@ function CamResolutionsTest() {
                        [1920,1200, false],
                        [3840,2160, false],  // 4K
                        [4096,2160, false] ];
-  this.mandatoryUnsupportedResolutions = 0;
+  this.mandatoryunsupportedResolutions = 0;
   this.numResolutions = this.resolutions.length;
   this.counter = 0;
   this.supportedResolutions = 0;
-  this.unSupportedResolutions = 0;
+  this.unsupportedResolutions = 0;
 };
 
 addTestSuite('CamResolutionsTest', function() {
@@ -78,10 +78,10 @@ CamResolutionsTest.prototype = {
   },
 
   failFunc: function(error) {
-    this.unSupportedResolutions++;
+    this.unsupportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     if (theResolution[2]) {
-      this.mandatoryUnsupportedResolutions++;
+      this.mandatoryunsupportedResolutions++;
       reportError('Camera does not support a mandatory resolution, (' +
                   theResolution[0] + 'x' + theResolution[1] + ')');
     } else {
@@ -93,7 +93,7 @@ CamResolutionsTest.prototype = {
 
   finishTestOrRetrigger: function() {
     if (this.counter === this.numResolutions) {
-      if (this.mandatoryUnsupportedResolutions === 0) {
+      if (this.mandatoryunsupportedResolutions === 0) {
         if (this.supportedResolutions) {
           reportSuccess(this.supportedResolutions + '/' + this.numResolutions +
                         ' resolutions supported.');
