@@ -1,24 +1,23 @@
 #!/bin/bash -e
 
-function chrome_pids() {
-  ps axuwww|grep $D|grep c[h]rome|awk '{print $2}'
-}
-function xvfb_pids() {
-  ps x -o "%p %r %c" | grep Xvfb | grep $$ | awk '{print $1}'
+function pids_of() {
+  ps axuwww|grep $D|awk '{print $2}'
 }
 
-function cleanup() {
-  # Suppress bash's Killed message for the chrome above.
+function kill_all_of() {
+  # Suppress bash's Killed message
   exec 3>&2
   exec 2>/dev/null
-  while [ ! -z "$(chrome_pids)" ]; do
-    kill -9 $(chrome_pids)
-  done
-  while [ ! -z "$(xvfb_pids)" ]; do
-    kill -9 $(xvfb_pids)
+  while [ ! -z "$(pids_of $1)" ]; do
+    kill -9 $(pids_of $1)
   done
   exec 2>&3
   exec 3>&-
+}
+
+function cleanup() {
+  kill_all_of c[h]rome
+  kill_all_of X[v]fb
 
   rm -rf $D
 }
@@ -31,7 +30,7 @@ export D=$(mktemp -d)
 CHROME_LOG_FILE="${D}/chrome_debug.log"
 touch $CHROME_LOG_FILE
 
-XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24'"
+XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24 -I workingdir=$D'"
 if [ -n "$DISPLAY" ]; then
   XVFB=""
 fi
@@ -46,9 +45,11 @@ eval $XVFB chrome \
   "file://${PWD}/turn-prober.html" > $CHROME_LOG_FILE 2>&1 &
 CHROME_PID=$!
 
-while ! grep -q DONE $CHROME_LOG_FILE && chrome_pids|grep -q .; do
+while ! grep -q DONE $CHROME_LOG_FILE && pids_of c[h]rome|grep -q .; do
   sleep 0.1
 done
+
+kill_all_of c[h]rome
 
 DONE=$(grep DONE $CHROME_LOG_FILE)
 EXIT_CODE=0
