@@ -23,9 +23,6 @@
  */
 
 var CamResolutionsTest = {};
-CamResolutionsTest.index = 0;
-CamResolutionsTest.supported = 0;
-CamResolutionsTest.unsupported = 0;
 // Each resolution has width, height and 'mandatory' fields.
 CamResolutionsTest.resolutions = [ [ 160, 120, false],
                                    [ 320, 180, false],
@@ -45,6 +42,9 @@ CamResolutionsTest.mandatory_yet_unsupported_resolutions = 0;
 CamResolutionsTest.numResolutions = CamResolutionsTest.resolutions.length;
 
 CamResolutionsTest.camResolutionsTest = function () {
+  CamResolutionsTest.index = 0;
+  CamResolutionsTest.supported = 0;
+  CamResolutionsTest.unsupported = 0;
   trace('Checking ' + CamResolutionsTest.numResolutions + ' constraint sets');
   CamResolutionsTest.triggerGetUserMedia(CamResolutionsTest.resolutions[0]);
 }
@@ -88,9 +88,6 @@ CamResolutionsTest.finishTestOrRetrigger = function() {
                     ' is not accessible or dead.');
       }
     }
-    CamResolutionsTest.index = 0;
-    CamResolutionsTest.supported = 0;
-    CamResolutionsTest.unsupported = 0;
     testSuiteFinished();
   } else {
     CamResolutionsTest.triggerGetUserMedia(
