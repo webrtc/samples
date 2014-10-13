@@ -22,6 +22,11 @@
  * might support only one resolution.
  */
 
+ addTestSuite('CamResolutionsTest', function() {
+  var test = new CamResolutionsTest();
+  test.run();
+});
+
 function CamResolutionsTest() {
   // Each resolution has width, height and 'mandatory' fields.
   this.resolutions = [ [ 160, 120, false],
@@ -45,11 +50,6 @@ function CamResolutionsTest() {
   this.unsupportedResolutions = 0;
 };
 
-addTestSuite('CamResolutionsTest', function() {
-  var test = new CamResolutionsTest();
-  test.run();
-});
-
 CamResolutionsTest.prototype = {
   run: function() {
     trace('Checking ' + this.numResolutions + ' constraint sets');
@@ -57,11 +57,19 @@ CamResolutionsTest.prototype = {
   },
 
   triggerGetUserMedia: function(resolution) {
+    var constraints = { 
+      audio: false, 
+      video: { 
+        mandatory: {
+          minWidth:  resolution[0], 
+          minHeight: resolution[1],
+          maxWidth:  resolution[0], 
+          maxHeight: resolution[1] 
+        } 
+      } 
+    };
     try {
-      getUserMedia({ audio: false, video: { mandatory: {
-          minWidth:  resolution[0], minHeight: resolution[1],
-          maxWidth:  resolution[0], maxHeight: resolution[1] } } },
-          this.successFunc.bind(this),
+      getUserMedia(constraints, this.successFunc.bind(this), 
           this.failFunc.bind(this));
     } catch (e) {
       reportFatal('GetUserMedia failed.');
