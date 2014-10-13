@@ -88,6 +88,9 @@ CamResolutionsTest.finishTestOrRetrigger = function() {
                     ' is not accessible or dead.');
       }
     }
+    CamResolutionsTest.index = 0;
+    CamResolutionsTest.supported = 0;
+    CamResolutionsTest.unsupported = 0;
     testSuiteFinished();
   } else {
     CamResolutionsTest.triggerGetUserMedia(
