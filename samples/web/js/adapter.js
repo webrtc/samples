@@ -9,7 +9,6 @@
 /* More information about these options at jshint.com/docs/options */
 /* global mozRTCIceCandidate, mozRTCPeerConnection,
 mozRTCSessionDescription, webkitRTCPeerConnection */
-
 /* exported trace */
 
 'use strict';

@@ -5,6 +5,7 @@
   "devel": true,
   "eqeqeq": true,
   "forin": false,
+  "global": ["RTCPeerConnection", "trace", "webrtcDetectedBrowser", "webrtcDetectedVersion"],
   "globalstrict": true,
   "quotmark": "single",
   "undef": true,
