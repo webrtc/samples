@@ -31,6 +31,11 @@
 // 4.e We also check that all frames were non-near-black.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
+addTestSuite('CamCaptureTest', function() {
+  var test = new CamCaptureTest();
+  test.run();
+});
+
 function CamCaptureTest() {
   this.isMuted = false;
   this.stream = null;
@@ -47,11 +52,6 @@ function CamCaptureTest() {
   this.video.setAttribute('autoplay','');
   this.video.setAttribute('muted','');
 };
-
-addTestSuite('CamCaptureTest', function() {
-  var test = new CamCaptureTest();
-  test.run();
-});
 
 CamCaptureTest.prototype = {
   run: function() {
