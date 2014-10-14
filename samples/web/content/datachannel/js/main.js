@@ -5,7 +5,11 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-var localConnection, remotePeerConnection, sendChannel, receiveChannel, pcConstraint, dataConstraint;
+
+'use strict';
+
+var localConnection, remotePeerConnection, sendChannel, receiveChannel,
+  pcConstraint, dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 var sctpSelect = document.querySelector('input#useSctp');
@@ -41,20 +45,24 @@ function createConnection() {
   pcConstraint = null;
   dataConstraint = null;
   if (sctpSelect.checked &&
-     (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
-      webrtcDetectedBrowser === 'firefox'){
+      (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
+      webrtcDetectedBrowser === 'firefox') {
     // SCTP is supported from Chrome M31 and is supported in FF.
     // No need to pass DTLS constraint as it is on by default in Chrome M31.
     // For SCTP, reliable and ordered is true by default.
     trace('Using SCTP-based data channels');
   } else {
-    pcConstraint = {optional: [{RtpDataChannels: true}]};
+    pcConstraint = {
+      optional: [{
+        RtpDataChannels: true
+      }]
+    };
     if (!rtpSelect.checked) {
       // Use RTP data channels for Chrome versions older than M31.
       trace('Using RTP-based data channels, ' +
-            'as you are on an older version than M31.');
+          'as you are on an older version than M31.');
       alert('Reverting to RTP-based data channels, ' +
-            'as you are on an older version than M31.');
+          'as you are on an older version than M31.');
       rtpSelect.checked = true;
     }
   }
@@ -68,7 +76,7 @@ function createConnection() {
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
-          'You need Chrome M25 or later with --enable-data-channels flag');
+        'You need Chrome M25 or later with --enable-data-channels flag');
     trace('Create data channel failed with exception: ' + e.message);
   }
   localConnection.onicecandidate = iceCallback1;
@@ -132,7 +140,7 @@ function iceCallback1(event) {
   trace('local ice callback');
   if (event.candidate) {
     remotePeerConnection.addIceCandidate(event.candidate,
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -141,7 +149,7 @@ function iceCallback2(event) {
   trace('remote ice callback');
   if (event.candidate) {
     localConnection.addIceCandidate(event.candidate,
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
@@ -170,7 +178,7 @@ function onReceiveMessageCallback(event) {
 function onSendChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
-  if (readyState == 'open') {
+  if (readyState === 'open') {
     dataChannelSend.disabled = false;
     dataChannelSend.focus();
     sendButton.disabled = false;
