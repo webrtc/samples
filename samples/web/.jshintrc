@@ -5,7 +5,7 @@
   "devel": true,
   "eqeqeq": true,
   "forin": false,
-  "global": ["attachMediaStream", "createIceServers", "getUserMedia", "MediaStreamTrack", "reattachMediaStream", "RTCIceCandidate", "RTCPeerConnection", "RTCSessionDescription", "trace", "webrtcDetectedBrowser", "webrtcDetectedVersion"],
+  "global": ["attachMediaStream", "createIceServer", "createIceServers", "getUserMedia", "MediaStreamTrack", "reattachMediaStream", "RTCIceCandidate", "RTCPeerConnection", "RTCSessionDescription", "trace", "webrtcDetectedBrowser", "webrtcDetectedVersion"],
   "globalstrict": true,
   "quotmark": "single",
   "undef": true,
