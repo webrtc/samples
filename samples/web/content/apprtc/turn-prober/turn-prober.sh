@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 function pids_of() {
-  ps axuwww|grep $D|awk '{print $2}'
+  ps axuwww|grep $1|grep $D|awk '{print $2}'
 }
 
 function kill_all_of() {
@@ -30,13 +30,13 @@ export D=$(mktemp -d)
 CHROME_LOG_FILE="${D}/chrome_debug.log"
 touch $CHROME_LOG_FILE
 
-XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24 -I workingdir=$D'"
+XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24 -nolisten tcp -I workingdir=$D'"
 if [ -n "$DISPLAY" ]; then
   XVFB=""
 fi
 
 # "eval" below is required by $XVFB containing a quoted argument.
-eval $XVFB chrome \
+eval $XVFB google-chrome \
   --enable-logging=stderr \
   --no-first-run \
   --disable-web-security \
