@@ -45,30 +45,33 @@
   <script src="/js/adapter.js"></script>
 
   <script type="text/javascript">
-    var errorMessages = {{ error_messages }};
+    var audioRecvBitrate = '{{ arbr }}';
+    var audioRecvCodec = '{{ audio_receive_codec }}';
+    var audioSendBitrate = '{{ asbr }}';
+    var audioSendCodec = '{{ audio_send_codec }}';
     var channelToken = '{{ token }}';
-    var me = '{{ me }}';
-    var roomKey = '{{ room_key }}';
-    var roomLink = '{{ room_link }}';
+    var errorMessages = {{ error_messages }};
     var initiator = {{ initiator }};
+    var me = '{{ me }}';
+    var mediaConstraints = {{ media_constraints | safe }};
+    var offerConstraints = {{ offer_constraints | safe }};
+    var opusfec = {{ opusfec }};
+    var opusMaxPbr = '{{ opusmaxpbr }}';
     var pcConfig = {{ pc_config | safe }};
     var pcConstraints = {{ pc_constraints | safe }};
-    var offerConstraints = {{ offer_constraints | safe }};
-    var mediaConstraints = {{ media_constraints | safe }};
-    var turnUrl = '{{ turn_url }}';
+    var roomKey = '{{ room_key }}';
+    var roomLink = '{{ room_link }}';
     var stereo = {{ stereo }};
-    var audioSendBitrate = '{{ asbr }}';
-    var audioRecvBitrate = '{{ arbr }}';
-    var videoSendBitrate = '{{ vsbr }}';
-    var videoRecvBitrate = '{{ vrbr }}';
-    var videoSendInitialBitrate = '{{ vsibr }}';
     var stereoscopic = '{{ ssr }}';
-    var audioSendCodec = '{{ audio_send_codec }}';
-    var audioRecvCodec = '{{ audio_receive_codec }}';
+    var turnUrl = '{{ turn_url }}';
+    var videoRecvBitrate = '{{ vrbr }}';
+    var videoSendBitrate = '{{ vsbr }}';
+    var videoSendInitialBitrate = '{{ vsibr }}';
+
     setTimeout(initialize, 1);
   </script>
 
-  <script src="../../js/lib/ga.js"></script>
+  <script src="/js/lib/ga.js"></script>
 
 </body>
 </html>

@@ -8,19 +8,11 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* jshint browser: true, camelcase: true, curly: true, devel: true,
-eqeqeq: true, forin: false, globalstrict: true, quotmark: single,
-undef: true, unused: strict */
-
-/* global attachMediaStream, audioRecvBitrate, audioRecvCodec,
-audioSendBitrate, audioSendCodec, channelToken, createIceServers,
-getUserMedia, goog, initiator:true, me, mediaConstraints,
-offerConstraints, pcConfig, pcConstraints, reattachMediaStream,
-roomKey, roomLink, RTCIceCandidate, RTCPeerConnection,
-RTCSessionDescription, setupStereoscopic, stereo, stereoscopic, trace,
-turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
-
-/* exported initialize */
+// Directives for JSHint checking (see jshint.com/docs/options).
+// globals: variables defined in apprtc/index.html
+/* globals audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, roomLink, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
+// exported: functions used in apprtc/index.html
+/* exported enterFullScreen, initialize, onHangup */
 
 'use strict';
 
@@ -263,7 +255,15 @@ function setLocalAndSendMessage(sessionDescription) {
 function setRemote(message) {
   // Set Opus in Stereo, if stereo enabled.
   if (stereo) {
-    message.sdp = addStereo(message.sdp);
+    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo=1');
+  }
+  if (opusfec) {
+    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
+  }
+  // Set Opus maxplaybackrate, if requested.
+  if (opusMaxPbr) {
+    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate=' +
+        opusMaxPbr);
   }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
@@ -295,6 +295,7 @@ function setRemote(message) {
     }
   }
 }
+
 
 function sendMessage(message) {
   var msgString = JSON.stringify(message);
@@ -948,7 +949,6 @@ function maybePreferAudioReceiveCodec(sdp) {
 // Sets |codec| as the default audio codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function preferAudioCodec(sdp, codec) {
-
   var sdpLines = sdp.split('\r\n');
 
   // Search for m line.
@@ -970,25 +970,24 @@ function preferAudioCodec(sdp, codec) {
   return sdp;
 }
 
-// Sets Opus in stereo if stereo is enabled, by adding the stereo=1 fmtp param.
-function addStereo(sdp) {
+// Add fmtp param to specified codec in SDP.
+function addCodecParam(sdp, codec, param) {
   var sdpLines = sdp.split('\r\n');
 
   // Find opus payload.
-  var opusIndex = findLine(sdpLines, 'a=rtpmap', 'opus/48000');
-  var opusPayload;
-  if (opusIndex) {
-    opusPayload = getCodecPayloadType(sdpLines[opusIndex]);
+  var index = findLine(sdpLines, 'a=rtpmap', codec);
+  var payload;
+  if (index) {
+    payload = getCodecPayloadType(sdpLines[index]);
   }
 
   // Find the payload in fmtp line.
-  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + opusPayload.toString());
+  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + payload.toString());
   if (fmtpLineIndex === null) {
     return sdp;
   }
 
-  // Append stereo=1 to fmtp line.
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; stereo=1');
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
 
   sdp = sdpLines.join('\r\n');
   return sdp;
