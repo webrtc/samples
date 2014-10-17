@@ -6,6 +6,11 @@
  *  tree.
  */
 
+/* More information about these options at jshint.com/docs/options */
+/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
+
+'use strict';
+
 var apprtc = apprtc || {};
 
 (function() {
@@ -23,26 +28,56 @@ var Pubsub = function() {
 // argument as its paramter.
 Pubsub.prototype.subscribe = function(topic, fn) {
   if (!topic || !fn) {
-    Log.error("Missing topic or fn!");
+    Log.error('Missing topic or fn!');
     return;
   }
   var subscriptions = this.topics[topic];
   if (!subscriptions) {
     subscriptions = this.topics[topic] = [];
   }
-  subscriptions.push(fn);
+  if (subscriptions.indexOf(fn) === -1) {
+    subscriptions.push(fn);
+  }
+};
+
+// Subscribe to all topic pair keyvals in the given dictionary.
+Pubsub.prototype.subscribeAll = function(subscriptions) {
+  for (var topic in subscriptions) {
+    this.subscribe(topic, subscriptions[topic]);
+  }
+};
+
+// Unsubscribe function from the topic.
+Pubsub.prototype.unsubscribe = function(topic, fn) {
+  var arr = this.topics[topic];
+  if (arr) {
+    var i = arr.indexOf(fn);
+    if (i !== -1) {
+      arr.splice(i, 1);
+    }
+    if (arr.length === 0) {
+      delete this.topics[topic];
+    }
+  }
+};
+
+// Unsubscribe all topic pair keyvals in the given dictionary.
+Pubsub.prototype.unsubscribeAll = function(subscriptions) {
+  for (var topic in subscriptions) {
+    this.unsubscribe(topic, subscriptions[topic]);
+  }
 };
 
 // Publish to the given topic with args dictionary. Calls the subscribed
 // function using args.
 Pubsub.prototype.publish = function(topic, args) {
   if (!topic) {
-    Log.error("Missing topic!");
+    Log.error('Missing topic!');
     return;
   }
   var subscriptions = this.topics[topic];
   // Bail if nothing subscribed.
-  if (!subscriptions || subscriptions.length == 0) {
+  if (!subscriptions || subscriptions.length === 0) {
     return;
   }
   subscriptions.forEach(function(fn) {

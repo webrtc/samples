@@ -10,22 +10,28 @@
 /* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
 /* global trace */
 
+'use strict';
+
 var apprtc = apprtc || {};
 apprtc.Log = apprtc.Log || {};
 
 (function() {
 
-apprtc.Log.info = function(message) {
-  trace(message);
+var Log = apprtc.Log;
 
+Log.ERROR_TOPIC = 'LOG_ERROR';
+
+Log.info = function(message) {
+  trace(message);
 };
 
-apprtc.Log.warn = function(message) {
+Log.warn = function(message) {
   trace('WARNING: ' + message);
 };
 
-apprtc.Log.error = function(message) {
+Log.error = function(message) {
   trace('ERROR: ' + message);
+  apprtc.pubsub.publish(Log.ERROR_TOPIC, { error: message });
 };
 
 })();

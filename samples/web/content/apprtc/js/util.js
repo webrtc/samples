@@ -6,6 +6,12 @@
  *  tree.
  */
 
+/* More information about these options at jshint.com/docs/options */
+/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
+/* global createIceServers */
+
+'use strict';
+
 var apprtc = apprtc || {};
 apprtc.util = apprtc.util || {};
 
@@ -127,21 +133,22 @@ apprtc.util.updateBitRate = function(sdp, bitrate, mediaType) {
   var sdpLines = sdp.split('\r\n');
 
   // Find m line for the given mediaType.
-  var mLineIndex = findLine(sdpLines, 'm=', mediaType);
+  var mLineIndex = apprtc.util.findLine(sdpLines, 'm=', mediaType);
   if (mLineIndex === null) {
     Log.error('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
 
   // Find next m-line if any.
-  var nextMLineIndex = findLineInRange(sdpLines, mLineIndex + 1, -1, 'm=');
+  var nextMLineIndex = apprtc.util.findLineInRange(
+      sdpLines, mLineIndex + 1, -1, 'm=');
   if (nextMLineIndex === null) {
     nextMLineIndex = sdpLines.length;
   }
 
   // Find c-line corresponding to the m-line.
-  var cLineIndex = findLineInRange(sdpLines, mLineIndex + 1, nextMLineIndex,
-      'c=');
+  var cLineIndex = apprtc.util.findLineInRange(
+      sdpLines, mLineIndex + 1, nextMLineIndex, 'c=');
   if (cLineIndex === null) {
     Log.error('Failed to add bandwidth line to sdp, as no c-line found');
     return sdp;

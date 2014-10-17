@@ -6,6 +6,12 @@
  *  tree.
  */
 
+/* More information about these options at jshint.com/docs/options */
+/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
+/* global RTCPeerConnection, RTCSessionDescription, RTCIceCandidate */
+
+'use strict';
+
 var apprtc = apprtc || {};
 
 (function() {
@@ -13,8 +19,8 @@ var apprtc = apprtc || {};
 var Log = apprtc.Log;
 //var WSS_POST_URL = "https://apprtc-ws.webrtc.org:8089/";
 //var WSS_URL = "wss://apprtc-ws.webrtc.org:8089/ws";
-var WSS_POST_URL = "http://localhost:8089/";
-var WSS_URL = "ws://localhost:8089/ws";
+var WSS_POST_URL = 'http://localhost:8089/';
+var WSS_URL = 'ws://localhost:8089/ws';
 
 /*
  * Channel over which signaling data is sent. Creates a websocket for
@@ -44,7 +50,7 @@ SignalingChannel.prototype.shutdown = function() {
 
 // Registers with WSS. Required before sending.
 SignalingChannel.prototype.register = function() {
-  if (this.socket.readyState != WebSocket.OPEN) {
+  if (this.socket.readyState !== WebSocket.OPEN) {
     return;
   }
   Log.info('Registering on WSS.');
@@ -62,7 +68,7 @@ SignalingChannel.prototype.sendMessage = function(message) {
     cmd: 'send',
     msg: JSON.stringify(message)
   });
-  if (this.socket.readyState != WebSocket.OPEN) {
+  if (this.socket.readyState !== WebSocket.OPEN) {
     Log.info('Pushing message onto queue: ' + message);
     this.pendingMessages.push(msgString);
     return;
@@ -75,12 +81,12 @@ SignalingChannel.prototype.sendMessage = function(message) {
 SignalingChannel.prototype.postMessage = function(message) {
   var msgString = JSON.stringify(message);
   Log.info('WSS POST C->S: ' + msgString);
-  var path = WSS_POST_URL + this.roomId + "/" + this.clientId;
+  var path = WSS_POST_URL + this.roomId + '/' + this.clientId;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
   // WSS looks as POST data.
-  xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-  xhr.send("msg=" + msgString);
+  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  xhr.send('msg=' + msgString);
 };
 
 // Posts messages object to app engine instance.
@@ -98,7 +104,7 @@ SignalingChannel.prototype.postAppEngineMessage = function(message) {
 // WebSocket event handlers.
 //
 
-SignalingChannel.prototype.onSocketOpen = function(event) {
+SignalingChannel.prototype.onSocketOpen = function() {
   Log.info('WebSocket connection opened.');
   this.register();
   // Send any pending messages.
@@ -118,12 +124,12 @@ SignalingChannel.prototype.onSocketMessage = function(event) {
   this.onSignalingMessage(JSON.parse(wssMessage.msg));
 };
 
-SignalingChannel.prototype.onSocketError = function(event) {
-  var errorMessage = "WebSocket connection error.";
+SignalingChannel.prototype.onSocketError = function() {
+  var errorMessage = 'WebSocket connection error.';
   Log.error(errorMessage);
 };
 
-SignalingChannel.prototype.onSocketClose = function(event) {
+SignalingChannel.prototype.onSocketClose = function() {
   Log.info('WebSocket connection closed.');
 };
 
@@ -132,7 +138,7 @@ SignalingChannel.prototype.onSocketClose = function(event) {
  */
 var SignalingManager = apprtc.SignalingManager = function(config) {
   this.config = config;
-  this.isInitiator = this.config.messages.length == 0;
+  this.isInitiator = this.config.messages.length === 0;
   this.peerConnection = null;
   this.channel = new SignalingChannel(
       this.config.roomId,
@@ -164,23 +170,24 @@ SignalingManager.DEFAULT_CONSTRAINTS = {
     'VoiceActivityDetection': false
   }]
 };
-SignalingManager.ICE_CANDIDATE_TOPIC = "ICE_CANDIDATE";
-SignalingManager.REMOTE_STREAM_TOPIC = "REMOTE_STREAM";
-SignalingManager.SIGNALING_STATE_TOPIC = "SIGNALING_STATE";
-SignalingManager.ICE_STATE_TOPIC = "ICE_STATE";
-SignalingManager.REMOTE_VIDEO_NONE_TOPIC = "REMOTE_VIDEO_NONE";
-SignalingManager.REMOTE_VIDEO_PENDING_TOPIC = "REMOTE_VIDEO_PENDING";
-SignalingManager.REMOTE_HANGUP_TOPIC = "REMOTE_HANGUP";
+SignalingManager.ICE_CANDIDATE_TOPIC = 'SIGNALINGMANAGER_ICE_CANDIDATE';
+SignalingManager.ICE_STATE_TOPIC = 'SIGNALINGMANAGER_ICE_STATE';
+SignalingManager.REMOTE_HANGUP_TOPIC = 'SIGNALINGMANAGER_REMOTE_HANGUP';
+SignalingManager.REMOTE_STREAM_TOPIC = 'SIGNALINGMANAGER_REMOTE_STREAM';
+SignalingManager.REMOTE_VIDEO_NONE_TOPIC = 'SIGNALINGMANAGER_REMOTE_VIDEO_NONE';
+SignalingManager.REMOTE_VIDEO_PENDING_TOPIC =
+    'SIGNALINGMANAGER_REMOTE_VIDEO_PENDING';
+SignalingManager.SIGNALING_STATE_TOPIC = 'SIGNALINGMANAGER_SIGNALING_STATE';
 
 SignalingManager.prototype.start = function(localStream) {
-//  this.startTime = window.performance.now();
+  var i, len;
   this.setupPeerConnection(localStream);
   if (this.isInitiator) {
     this.sendOffer();
   } else {
     var messages = this.config.messages;
     // Should only contain offer SDP.
-    for (var i = 0, len = messages.length; i < len; i++) {
+    for (i = 0, len = messages.length; i < len; i++) {
       this.onSignalingMessage(JSON.parse(messages[i]));
     }
     this.config.messages = [];
@@ -188,15 +195,15 @@ SignalingManager.prototype.start = function(localStream) {
 
   // Clear out any pending signals now that we have a peer connection. Do this
   // after we've had a chance to process offer SDP.
-  for (var i = 0, len = this.pendingMessages.length; i < len; i++) {
+  for (i = 0, len = this.pendingMessages.length; i < len; i++) {
     this.onSignalingMessage(this.pendingMessages[i]);
   }
   this.pendingMessages = [];
 };
 
 SignalingManager.prototype.setupPeerConnection = function(localStream) {
-  if (this.peerConnection != null) {
-    Log.error("PeerConnection already exists!");
+  if (this.peerConnection) {
+    Log.error('PeerConnection already exists!');
     return;
   }
   var peerConnection = null;
@@ -216,7 +223,7 @@ SignalingManager.prototype.setupPeerConnection = function(localStream) {
     peerConnection.addStream(localStream);
   } else {
     Log.info('Not sending any stream.');
-  };
+  }
   peerConnection.onaddstream = this.onAddStream.bind(this);
   peerConnection.onremovestream = this.onRemoveStream.bind(this);
   peerConnection.onsignalingstatechange =
@@ -271,7 +278,7 @@ SignalingManager.prototype.onSignalingMessage = function(message) {
       break;
     default:
       Log.error('Unknown message type: ' + message);
-  };
+  }
 };
 
 //
@@ -320,13 +327,9 @@ SignalingManager.prototype.onRemoteSessionDescription = function(description) {
     if (remoteStreams.length > 0 &&
         remoteStreams[0].getVideoTracks().length > 0) {
       apprtc.pubsub.publish(SignalingManager.REMOTE_VIDEO_PENDING_TOPIC);
-//      trace('Waiting for remote video.');
-//      waitForRemoteVideo();
     } else {
       // TODO(juberti): Make this wait for ICE connection before transitioning.
       apprtc.pubsub.publish(SignalingManager.REMOTE_VIDEO_NONE_TOPIC);
-//      trace('No remote video stream; not waiting for media to arrive.');
-//      transitionToActive();
     }
   };
 
@@ -398,10 +401,9 @@ SignalingManager.prototype.onAddStream = function(event) {
   apprtc.pubsub.publish(SignalingManager.REMOTE_STREAM_TOPIC, {
     stream: event.stream
   });
-//  attachMediaStream(this.remoteVideoElt, event.stream);
 };
 
-SignalingManager.prototype.onRemoveStream = function(event) {
+SignalingManager.prototype.onRemoveStream = function() {
   Log.info('Remote stream removed');
 };
 
@@ -411,9 +413,7 @@ SignalingManager.prototype.onSignalingStateChange = function() {
     apprtc.pubsub.publish(SignalingManager.SIGNALING_STATE_TOPIC, {
       state: state
     });
-//    trace('Signaling state changed to: ' + state);
   }
-//  logger.updateInfoDiv();
 };
 
 SignalingManager.prototype.onIceConnectionStateChange = function() {
@@ -422,9 +422,7 @@ SignalingManager.prototype.onIceConnectionStateChange = function() {
     apprtc.pubsub.publish(SignalingManager.ICE_STATE_TOPIC, {
       state: state
     });
-//    trace('ICE connection state changed to: ' + state);
   }
-//  logger.updateInfoDiv();
 };
 
 
