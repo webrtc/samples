@@ -7,14 +7,8 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-
-/* jshint browser: true, camelcase: true, curly: true, devel: true,
-eqeqeq: true, forin: false, globalstrict: true, quotmark: single,
-undef: true, unused: strict */
-
 /* global mozRTCIceCandidate, mozRTCPeerConnection,
 mozRTCSessionDescription, webkitRTCPeerConnection */
-
 /* exported trace */
 
 'use strict';

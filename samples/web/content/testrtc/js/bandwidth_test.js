@@ -118,10 +118,10 @@ function testVideoBandwidth(config) {
   doGetUserMedia({audio: false, video: true}, gotStream, reportFatal);
 
   function gotStream(stream) {
-     call.pc1.addStream(stream);
-     call.establishConnection();
-     startTime = new Date();
-     setTimeout(gatherStats, statStepMs);
+    call.pc1.addStream(stream);
+    call.establishConnection();
+    startTime = new Date();
+    setTimeout(gatherStats, statStepMs);
   }
 
   function gatherStats() {
@@ -146,6 +146,7 @@ function testVideoBandwidth(config) {
   }
 
   function completed() {
+    call.pc1.getLocalStreams()[0].getVideoTracks()[0].stop();
     call.close();
     reportSuccess("RTT average: " + rttStats.getAverage() + " ms");
     reportSuccess("RTT max: " + rttStats.getMax() + " ms");
