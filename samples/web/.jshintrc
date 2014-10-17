@@ -10,9 +10,9 @@
   "undef": true,
   "unused": "strict",
   "globals": [
-    "attachMediaStream", "createIceServers", "getUserMedia",
-    "reattachMediaStream", "MediaStreamTrack",  "RTCIceCandidate",
-    "RTCPeerConnection", "RTCSessionDescription", "trace",
-    "webrtcDetectedBrowser", "webrtcDetectedVersion"
+    "attachMediaStream", "createIceServers", "createIceServer",
+    "getUserMedia", "MediaStreamTrack", "reattachMediaStream",
+    "RTCIceCandidate", "RTCPeerConnection", "RTCSessionDescription",
+    "trace", "webrtcDetectedBrowser", "webrtcDetectedVersion"
   ]
 }
