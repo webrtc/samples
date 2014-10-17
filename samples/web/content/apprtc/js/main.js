@@ -7,8 +7,8 @@
  */
 
 // Directives for JSHint checking (see jshint.com/docs/options).
-// global: variables defined in apprtc/index.html
-/* global audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, errorMessages, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, roomLink, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
+// globals: variables defined in apprtc/index.html
+/* globals audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, errorMessages, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, roomLink, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
 // exported: functions used in apprtc/index.html
 /* exported enterFullScreen, initialize, onHangup */
 
