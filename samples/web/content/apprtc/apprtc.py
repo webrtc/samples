@@ -26,6 +26,7 @@ jinja_environment = jinja2.Environment(
 # TODO(brave): keeping working on improving performance with thread syncing.
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
+WSS_LOCK = threading.RLock()
 
 def generate_random(length):
   word = ''
@@ -295,6 +296,14 @@ class Room(db.Model):
     if user == self.user2:
       return self.user2_connected
 
+class WSSMessage(db.Model):
+  room_id = db.StringProperty()
+  msg = db.TextProperty()
+
+class WSSRoom(Room):
+  def __str__(self):
+    return "WSS room: " + super(WSSRoom, self).__str__()
+
 @db.transactional
 def connect_user_to_room(room_key, user):
   room = Room.get_by_key_name(room_key)
@@ -334,7 +343,6 @@ class DisconnectPage(webapp2.RequestHandler):
           logging.info('Sent BYE to ' + other_user)
     logging.warning('User ' + user + ' disconnected from room ' + room_key)
 
-
 class MessagePage(webapp2.RequestHandler):
   def post(self):
     message = self.request.body
@@ -347,27 +355,70 @@ class MessagePage(webapp2.RequestHandler):
       else:
         logging.warning('Unknown room ' + room_key)
 
-class MainPage(webapp2.RequestHandler):
-  """The main UI page, renders the 'index.html' template."""
-  def get(self):
-    """Renders the main page. When this page is shown, we create a new
-    channel to push asynchronous updates to the client."""
+class WSSMessagePage(webapp2.RequestHandler):
+  def post(self):
+    room_key = self.request.get('r')
+    user_id = self.request.get('u')
+    message_json = self.request.body
+    with LOCK:
+      room = WSSRoom.get_by_key_name(room_key)
+      message = json.loads(message_json)
+      if not room:
+        logging.warning('Unknown room: ' + room_key)
+        return
+      if message['type'] == 'bye':
+        # This would remove the other_user in loopback test too.
+        # So check its availability before forwarding Bye message.
+        room.remove_user(user_id)
+        logging.info('User ' + user_id + ' quit from room ' + room_key)
+        logging.info('Room ' + room_key + ' has state ' + str(room))
+        return
+      # TODO(tkchin): handle loopback & unit test
+      wss_message = WSSMessage(room_id = room.key().name(),
+                               msg = message_json)
+      wss_message.put()
+      logging.info('Saved message for room ' + room.key().name() + '\n' +
+                   message_json)
 
-    # Append strings to this list to have them thrown up in message boxes. This
-    # will also cause the app to fail.
-    error_messages = []
-    # Get the base url without arguments.
-    base_url = self.request.path_url
-    user_agent = self.request.headers['User-Agent']
-    room_key = sanitize(self.request.get('r'))
-    response_type = self.request.get('t')
+class WSSMainPage(webapp2.RequestHandler):
+  def get_stun_server(self):
     stun_server = self.request.get('ss')
     if not stun_server:
+      user_agent = self.request.headers['User-Agent']
       stun_server = get_default_stun_server(user_agent)
+    return stun_server
+  
+  def get_pc_config(self):
+    stun_server = self.get_stun_server()
     turn_server = self.request.get('ts')
+    if turn_server == 'false':
+      turn_server = None
     ts_pwd = self.request.get('tp')
     ice_transports = self.request.get('it')
+    return make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
 
+  def get_turn_url(self, user):
+    turn_server = self.request.get('ts')
+    if turn_server == 'false':
+      return ''
+    turn_url = 'https://computeengineondemand.appspot.com/'
+    turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
+    return turn_url
+
+  def get_pc_constraints(self):
+    debug = self.request.get('debug')
+    dtls = self.request.get('dtls')
+    if debug == 'loopback':
+      # Set dtls to false as DTLS does not work for loopback.
+      dtls = 'false'
+    dscp = self.request.get('dscp')
+    ipv6 = self.request.get('ipv6')
+    return make_pc_constraints(dtls, dscp, ipv6);
+
+  def get_offer_constraints(self):
+    return make_offer_constraints()
+
+  def get_media_constraints(self):
     # Use "audio" and "video" to set the media stream constraints. Defined here:
     # http://goo.gl/V7cZg
     #
@@ -407,10 +458,11 @@ class MainPage(webapp2.RequestHandler):
     # When defaulting to HD, use optional constraints, in case the camera
     # doesn't actually support HD modes.
     hd = self.request.get('hd').lower()
+    user_agent = self.request.headers['User-Agent']
     if hd and video:
       message = 'The "hd" parameter has overridden video=' + video
       logging.error(message)
-      error_messages.append(message)
+      self.error_messages.append(message)
     if hd == 'true':
       video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
     elif not hd and not video and get_hd_default(user_agent) == 'true':
@@ -420,167 +472,224 @@ class MainPage(webapp2.RequestHandler):
       message = ('The "minre" and "maxre" parameters are no longer supported. '
                  'Use "video" instead.')
       logging.error(message)
-      error_messages.append(message)
+      self.error_messages.append(message)
 
+    return make_media_stream_constraints(audio, video, firefox_fake_device)
+
+  def get_audio_send_codec(self):
     audio_send_codec = self.request.get('asc', default_value = '')
     if not audio_send_codec:
+      user_agent = self.request.headers['User-Agent']
       audio_send_codec = get_preferred_audio_send_codec(user_agent)
+    return audio_send_codec
 
+  def get_audio_receive_codec(self):
     audio_receive_codec = self.request.get('arc', default_value = '')
     if not audio_receive_codec:
       audio_receive_codec = get_preferred_audio_receive_codec()
+    return audio_receive_codec
 
-    # Set stereo to false by default.
-    stereo = self.request.get('stereo', default_value = 'false')
+  def get_stereo(self):
+    return self.request.get('stereo', default_value = 'false')
 
-    # Set opusfec to false by default.
-    opusfec = self.request.get('opusfec', default_value = 'true')
+  def get_opusfec(self):
+    return self.request.get('opusfec', default_value = 'true')
 
-    # Read url param for opusmaxpbr
-    opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
+  def get_opus_max_playback_rate(self):
+    return self.request.get('opusmaxpbr', default_value = '')
 
-    # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
-    asbr = self.request.get('asbr', default_value = '')
-    arbr = self.request.get('arbr', default_value = '')
+  def get_audio_send_bitrate(self):
+    return self.request.get('asbr', default_value = '')
 
-    # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
-    vsbr = self.request.get('vsbr', default_value = '')
-    vrbr = self.request.get('vrbr', default_value = '')
+  def get_audio_receive_bitrate(self):
+    return self.request.get('arbr', default_value = '')
 
-    # Read url params for the initial video send bitrate (vsibr)
-    vsibr = self.request.get('vsibr', default_value = '')
+  def get_video_send_bitrate(self):
+    return self.request.get('vsbr', default_value = '')
 
-    # Options for making pcConstraints
-    dtls = self.request.get('dtls')
-    dscp = self.request.get('dscp')
-    ipv6 = self.request.get('ipv6')
+  def get_video_receive_bitrate(self):
+    return self.request.get('vrbr', default_value = '')
 
+  def get_video_send_initial_bitrate(self):
+    return self.request.get('vsibr', default_value = '')
+
+  def get_stereoscopic(self):
     # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
     # two cameras' captures, which will each be fed to one eye.
-    ssr = self.request.get('ssr')
+    return self.request.get('ssr')
+
+  def get_include_vr_js(self):
     # Avoid pulling down vr.js (>25KB, minified) if not needed.
     include_vr_js = ''
-    if ssr == 'true':
+    if self.get_stereoscopic() == 'true':
       include_vr_js = ('<script src="/js/vr.js"></script>\n' +
                        '<script src="/js/stereoscopic.js"></script>')
+    return include_vr_js
 
+  def get_meta_viewport_tag(self):
+    user_agent = self.request.headers['User-Agent']
     # Disable pinch-zoom scaling since we manage video real-estate explicitly
     # (via full-screen) and don't want devicePixelRatios changing dynamically.
-    meta_viewport = ''
+    meta_viewport_tag = ''
     if is_chrome_for_android(user_agent):
-      meta_viewport = ('<meta name="viewport" content="width=device-width, ' +
-                       'user-scalable=no, initial-scale=1, maximum-scale=1">')
+      meta_viewport_tag =\
+          '<meta name="viewport" content="width=device-width, '\
+          'user-scalable=no, initial-scale=1, maximum-scale=1">'
+    return meta_viewport_tag
 
+  def get_room_if_available(self, room_key):
+    logging.info('Preparing to add user to room ' + room_key)
     debug = self.request.get('debug')
-    if debug == 'loopback':
-      # Set dtls to false as DTLS does not work for loopback.
-      dtls = 'false'
+    # Query for room and check occupancy.
+    room = None
+    user_key = generate_random(8)
+    is_initiator = True
+    with WSS_LOCK:
+      room = WSSRoom.get_by_key_name(room_key)
+      if not room and debug != 'full':
+        # New room.
+        room = WSSRoom(key_name = room_key)
+        room.add_user(user_key)
+        if debug == 'loopback':
+          room.add_user(user_key)
+          is_initiator = False
+      elif room and room.get_occupancy() == 1 and debug != 'full':
+        # 1 occupant.
+        room.add_user(user_key)
+        is_initiator = False
+      else:
+        return None, None, False
+    logging.info('User ' + user_key + ' added to room ' + room_key)
+    logging.info('Room ' + room_key + ' has state ' + str(room))
+    return room, user_key, is_initiator
 
+  def get_apprtc_params(self, user, room, is_initiator):
+    room_key = room.key().name()
+    room_link = self.request.host_url + '/?r=' + room_key
+    room_link = append_url_arguments(self.request, room_link)
+    params = {
+      'error_messages': self.error_messages,
+      'me': user,
+      'room_key': room_key,
+      'room_link': room_link,
+      'initiator': 1 if is_initiator else 0,
+      'pc_config': json.dumps(self.get_pc_config()),
+      'pc_constraints': json.dumps(self.get_pc_constraints()),
+      'offer_constraints': json.dumps(self.get_offer_constraints()),
+      'media_constraints': json.dumps(self.get_media_constraints()),
+      'turn_url': self.get_turn_url(user),
+      'stereo': self.get_stereo(),
+      'opusfec': self.get_opusfec(),
+      'opusmaxpbr': self.get_opus_max_playback_rate(),
+      'arbr': self.get_audio_receive_bitrate(),
+      'asbr': self.get_audio_send_bitrate(),
+      'vrbr': self.get_video_receive_bitrate(),
+      'vsbr': self.get_video_send_bitrate(),
+      'vsibr': self.get_video_send_initial_bitrate(),
+      'audio_send_codec': self.get_audio_send_codec(),
+      'audio_receive_codec': self.get_audio_receive_codec(),
+      'ssr': self.get_stereoscopic(),
+      'include_vr_js': self.get_include_vr_js(),
+      'meta_viewport': self.get_meta_viewport_tag()
+    }
+
+    # Add any saved messages to response.
+    messages = []
+    if not is_initiator:
+      saved_messages = WSSMessage.gql("WHERE room_id = :id", id=room_key)
+      for saved_message in saved_messages:
+        messages.append(saved_message.msg.encode('utf8'))
+        logging.info('Writing saved message for ' + room_key)
+        saved_message.delete()
+    params['saved_messages'] = messages
+
+    return params
+
+  def get(self):
+    # Set up error messages.
+    # Append strings to this list to have them thrown up in message boxes. This
+    # will also cause the app to fail.
+    self.error_messages = []
+
+    # Get response format type.
+    response_type = self.request.get('t')
+
+    # Special case for unit testing.
+    unittest = self.request.get('unittest')
+    if unittest:
+      # Always create a new room for the unit tests.
+      room_key = generate_random(8)
+      target_page = 'test/test_' + unittest + '.html'
+    else:
+      # Get room key or redirect.
+      room_key = sanitize(self.request.get('r'))
+      if not room_key:
+        room_key = generate_random(8)
+        redirect = self.request.path_url + '?r=' + room_key
+        redirect = append_url_arguments(self.request, redirect)
+        self.redirect(redirect)
+        logging.info('Redirecting visitor to base URL to ' + redirect)
+        return
+      target_page = 'index.html'
+    
+    # Get room or return error.
+    room, user, is_initiator = self.get_room_if_available(room_key)
+    if not room:
+      # Room is full.
+      params = {
+        'error': 'full',
+        'error_messages': ['The room is full.'],
+        'room_key': room_key
+      }
+      write_response(self.response, response_type, 'full.html', params)
+      logging.info('Room ' + room_key + ' is full')
+      return
+
+    # Get apprtc params and write to template.
+    params = self.get_apprtc_params(user, room, is_initiator)
+    write_response(self.response, response_type, target_page, params)
+
+class MainPage(WSSMainPage):
+  def get_room_if_available(self, room_key):
+    logging.info('Preparing to add user to room ' + room_key)
+    debug = self.request.get('debug')
+    # Query for room and check occupancy.
+    room = None
+    user_key = generate_random(8)
+    is_initiator = False
+    with WSS_LOCK:
+      room = WSSRoom.get_by_key_name(room_key)
+      if not room and debug != 'full':
+        # New room.
+        room = WSSRoom(key_name = room_key)
+        room.add_user(user_key)
+        if debug == 'loopback':
+          room.add_user(user_key)
+          is_initiator = True
+      elif room and room.get_occupancy() == 1 and debug != 'full':
+        # 1 occupant.
+        room.add_user(user_key)
+        is_initiator = True
+      else:
+        return None, None, False
+    logging.info('User ' + user_key + ' added to room ' + room_key)
+    logging.info('Room ' + room_key + ' has state ' + str(room))
+    return room, user_key, is_initiator
+
+  def get_apprtc_params(self, user, room, is_initiator):
+    params = super(MainPage, self).get_apprtc_params(user, room, is_initiator)
     # token_timeout for channel creation, default 30min, max 1 days, min 3min.
     token_timeout = self.request.get_range('tt',
                                            min_value = 3,
                                            max_value = 1440,
                                            default = 30)
-
-    unittest = self.request.get('unittest')
-    if unittest:
-      # Always create a new room for the unit tests.
-      room_key = generate_random(8)
-
-    if not room_key:
-      room_key = generate_random(8)
-      redirect = '/?r=' + room_key
-      redirect = append_url_arguments(self.request, redirect)
-      self.redirect(redirect)
-      logging.info('Redirecting visitor to base URL to ' + redirect)
-      return
-
-    logging.info('Preparing to add user to room ' + room_key)
-    user = None
-    initiator = 0
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if not room and debug != "full":
-        # New room.
-        user = generate_random(8)
-        room = Room(key_name = room_key)
-        room.add_user(user)
-        if debug != 'loopback':
-          initiator = 0
-        else:
-          room.add_user(user)
-          initiator = 1
-      elif room and room.get_occupancy() == 1 and debug != 'full':
-        # 1 occupant.
-        user = generate_random(8)
-        room.add_user(user)
-        initiator = 1
-      else:
-        # 2 occupants (full).
-        params = {
-          'error': 'full',
-          'error_messages': ['The room is full.'],
-          'room_key': room_key
-        }
-        write_response(self.response, response_type, 'full.html', params)
-        logging.info('Room ' + room_key + ' is full')
-        return
-
-    logging.info('User ' + user + ' added to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-
-    if turn_server == 'false':
-      turn_server = None
-      turn_url = ''
-    else:
-      turn_url = 'https://computeengineondemand.appspot.com/'
-      turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
-
-    room_link = base_url + '?r=' + room_key
-    room_link = append_url_arguments(self.request, room_link)
-    token = create_channel(room, user, token_timeout)
-    pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
-    offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video,
-                                                      firefox_fake_device)
-
-    params = {
-      'error_messages': error_messages,
-      'token': token,
-      'me': user,
-      'room_key': room_key,
-      'room_link': room_link,
-      'initiator': initiator,
-      'pc_config': json.dumps(pc_config),
-      'pc_constraints': json.dumps(pc_constraints),
-      'offer_constraints': json.dumps(offer_constraints),
-      'media_constraints': json.dumps(media_constraints),
-      'turn_url': turn_url,
-      'stereo': stereo,
-      'opusfec': opusfec,
-      'opusmaxpbr': opusmaxpbr,
-      'arbr': arbr,
-      'asbr': asbr,
-      'vrbr': vrbr,
-      'vsbr': vsbr,
-      'vsibr': vsibr,
-      'audio_send_codec': audio_send_codec,
-      'audio_receive_codec': audio_receive_codec,
-      'ssr': ssr,
-      'include_vr_js': include_vr_js,
-      'meta_viewport': meta_viewport
-    }
-
-    if unittest:
-      target_page = 'test/test_' + unittest + '.html'
-    else:
-      target_page = 'index.html'
-    write_response(self.response, response_type, target_page, params)
-
+    params['token'] = create_channel(room, user, token_timeout)
+    return params
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/wss', WSSMainPage),
+    ('/wssmessage', WSSMessagePage),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)
