@@ -364,7 +364,7 @@ class WSSMessagePage(webapp2.RequestHandler):
     room_key = self.request.get('r')
     user_id = self.request.get('u')
     message_json = self.request.body
-    with LOCK:
+    with WSS_LOCK:
       room = WSSRoom.get_by_key_name(room_key)
       message = json.loads(message_json)
       if not room:
@@ -568,14 +568,10 @@ class WSSMainPage(webapp2.RequestHandler):
     return room, user_key, is_initiator
 
   def get_apprtc_params(self, user, room, is_initiator):
-    room_key = room.key().name()
-    room_link = self.request.host_url + '/wss?r=' + room_key
-    room_link = append_url_arguments(self.request, room_link)
     params = {
       'error_messages': self.error_messages,
       'me': user,
-      'room_key': room_key,
-      'room_link': room_link,
+      'room_key': room.key().name(),
       'initiator': 1 if is_initiator else 0,
       'pc_config': json.dumps(self.get_pc_config()),
       'pc_constraints': json.dumps(self.get_pc_constraints()),
@@ -596,6 +592,15 @@ class WSSMainPage(webapp2.RequestHandler):
       'include_vr_js': self.get_include_vr_js(),
       'meta_viewport': self.get_meta_viewport_tag()
     }
+    self.update_apprtc_params(user, room, is_initiator, params)
+    return params
+
+  # Perform any updates to params as needed.
+  def update_apprtc_params(self, user, room, is_initiator, params):
+    room_key = params['room_key']
+    room_link = self.request.host_url + '/wss?r=' + room_key
+    room_link = append_url_arguments(self.request, room_link)
+    params['room_link'] = room_link
 
     # Add any saved messages to response.
     messages = []
@@ -606,8 +611,6 @@ class WSSMainPage(webapp2.RequestHandler):
         logging.info('Writing saved message for ' + room_key)
       saved_message.delete()
     params['saved_messages'] = json.dumps(messages)
-
-    return params
 
   def get(self):
     # Set up error messages.
@@ -665,11 +668,11 @@ class MainPage(WSSMainPage):
     room = None
     user_key = generate_random(8)
     is_initiator = False
-    with WSS_LOCK:
-      room = WSSRoom.get_by_key_name(room_key)
+    with LOCK:
+      room = Room.get_by_key_name(room_key)
       if not room and debug != 'full':
         # New room.
-        room = WSSRoom(key_name = room_key)
+        room = Room(key_name = room_key)
         room.add_user(user_key)
         if debug == 'loopback':
           room.add_user(user_key)
@@ -684,12 +687,8 @@ class MainPage(WSSMainPage):
     logging.info('Room ' + room_key + ' has state ' + str(room))
     return room, user_key, is_initiator
 
-  def get_apprtc_params(self, user, room, is_initiator):
-    params = super(MainPage, self).get_apprtc_params(user, room, is_initiator)
-
-    # Reset the room link.
-    room_key = room.key().name()
-    room_link = self.request.host_url + '/?r=' + room_key
+  def update_apprtc_params(self, user, room, is_initiator, params):
+    room_link = self.request.host_url + '/?r=' + params['room_key']
     room_link = append_url_arguments(self.request, room_link)
     params['room_link'] = room_link
 
@@ -699,7 +698,6 @@ class MainPage(WSSMainPage):
                                            max_value = 1440,
                                            default = 30)
     params['token'] = create_channel(room, user, token_timeout)
-    return params
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
