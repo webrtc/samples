@@ -8,13 +8,11 @@
 
 /* More information about these options at jshint.com/docs/options */
 /* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-/* global getUserMedia, attachMediaStream, reattachMediaStream */
+/* global config, getUserMedia, attachMediaStream, reattachMediaStream, setupStereoscopic */
 
 'use strict';
 
 var apprtc = apprtc || {};
-// Config dictionary is set by app engine.
-var config = config || {};
 
 (function() {
 
@@ -33,6 +31,7 @@ var App = apprtc.App = function() {
   this.containerDiv = document.getElementById('container');
   this.localVideoElt = document.getElementById('localVideo');
   this.miniVideoElt = document.getElementById('miniVideo');
+  this.remoteCanvasElt = document.getElementById('remoteCanvas');
   this.remoteVideoElt = document.getElementById('remoteVideo');
   this.statusDiv = document.getElementById('status');
 
@@ -40,10 +39,15 @@ var App = apprtc.App = function() {
   this.localVideoElt.addEventListener(
       'loadedmetadata', this.onResize.bind(this));
   this.containerDiv.addEventListener(
-      'dblclick', this.enterFullScreen.bind(this));
+      'dblclick', this.onDblClick.bind(this));
+  this.containerDiv.addEventListener(
+      'touchend', this.onTouchEnd.bind(this));
+  window.addEventListener(
+      'keydown', this.onKeyDown.bind(this));
   window.addEventListener('resize', this.onResize.bind(this));
 
   // Create signaling manager.
+  // Config object is passed in from App Engine in global scope.
   this.config = config;
   this.signalingManager = new SignalingManager(this.config);
 
@@ -71,6 +75,8 @@ var App = apprtc.App = function() {
   this.gotUserMedia = false;
   this.localStream = null;
   this.remoteStream = null;
+  this.isVideoMuted = false;
+  this.isAudioMuted = false;
   this.resetStatusMessage();
   this.prepareForCall();
 };
@@ -91,7 +97,7 @@ App.prototype.shutdown = function() {
 };
 
 App.CALL_START_TOPIC = 'APP_CALL_START';
-App.CALL_END_TOPIC = 'APP_CALL_END';
+App.CALL_CONNECTED_TOPIC = 'APP_CALL_CONNECTED';
 
 // Prepares for a call by retrieving a TURN server if needed and by requesting
 // user media.
@@ -186,10 +192,13 @@ App.prototype.waitForRemoteVideo = function() {
 // Sets the app into an active video call state. This makes the remote video
 // the main view on the screen with a local video view in the corner.
 App.prototype.transitionToActive = function() {
-  apprtc.pubsub.publish(App.CALL_END_TOPIC);
-
-  // TODO(tkchin): stereoscopic.
-  reattachMediaStream(this.miniVideoElt, this.localVideoElt);
+  apprtc.pubsub.publish(App.CALL_CONNECTED_TOPIC);
+  // Prepare the remote video and PIP elements.
+  if (this.config.stereoscopic) {
+    setupStereoscopic(this.remoteVideoElt, this.remoteCanvasElt);
+  } else {
+    reattachMediaStream(this.miniVideoElt, this.localVideoElt);
+  }
   this.miniVideoElt.style.opacity = 1;
   this.remoteVideoElt.style.opacity = 1;
   // Spin the card to show remote video (800 ms). Set a timer to detach the
@@ -203,7 +212,7 @@ App.prototype.transitionToActive = function() {
   this.onResize();
   this.setStatusMessage(
       '<input type=\'button\' id=\'hangup\' value=\'Hang up\' />');
-  // TODO(tkchin): fix hack.
+  // TODO(tkchin): do something better. Pending merge of separate UI CL.
   var button = document.getElementById('hangup');
   button.addEventListener('click', this.onHangup.bind(this));
 };
@@ -216,13 +225,67 @@ App.prototype.transitionToDone = function() {
   this.setStatusMessage('You have left the call.');
 };
 
-App.prototype.enterFullScreen = function(event) {
+// Mutes/unmutes the video.
+App.prototype.toggleVideoMute = function() {
+  // Call the getVideoTracks method via adapter.js.
+  var videoTracks = this.localStream.getVideoTracks();
+
+  if (videoTracks.length === 0) {
+    Log.info('No local video available.');
+    return;
+  }
+
+  Log.info('Toggling video mute state.');
+  var i;
+  if (this.isVideoMuted) {
+    for (i = 0; i < videoTracks.length; i++) {
+      videoTracks[i].enabled = true;
+    }
+    Log.info('Video unmuted.');
+  } else {
+    for (i = 0; i < videoTracks.length; i++) {
+      videoTracks[i].enabled = false;
+    }
+    Log.info('Video muted.');
+  }
+
+  this.isVideoMuted = !this.isVideoMuted;
+};
+
+// Mutes/unmutes the audio.
+App.prototype.toggleAudioMute = function() {
+  // Call the getAudioTracks method via adapter.js.
+  var audioTracks = this.localStream.getAudioTracks();
+
+  if (audioTracks.length === 0) {
+    Log.info('No local audio available.');
+    return;
+  }
+
+  Log.info('Toggling audio mute state.');
+  var i;
+  if (this.isAudioMuted) {
+    for (i = 0; i < audioTracks.length; i++) {
+      audioTracks[i].enabled = true;
+    }
+    Log.info('Audio unmuted.');
+  } else {
+    for (i = 0; i < audioTracks.length; i++) {
+      audioTracks[i].enabled = false;
+    }
+    Log.info('Audio muted.');
+  }
+
+  this.isAudioMuted = !this.isAudioMuted;
+};
+
+// Enters full screen mode.
+App.prototype.enterFullScreen = function(isCanvas) {
   // When full-screening the canvas we want to avoid the extra spacing
   // introduced by the containing div, but when full-screening the rectangular
   // view we want to keep the full container visible (including e.g. miniVideo).
-  var element = event.target.id === 'remoteCanvas' ?
-      event.target : this.containerDiv;
-  element.webkitRequestFullScreen();
+  var elt = isCanvas ? this.remoteCanvasElt : this.containerDiv;
+  elt.webkitRequestFullScreen();
 };
 
 //
@@ -253,11 +316,51 @@ App.prototype.onRemoteHangup = function() {
 // DOM event handlers.
 //
 
+// Called when container is double clicked. Fullscreens the application.
+App.prototype.onDblClick = function(event) {
+  this.enterFullScreen(event.target.id === 'remoteCanvas');
+};
+
+App.prototype.onTouchEnd = function(event) {
+  this.enterFullScreen(event.target.id === 'remoteCanvas');
+};
+
+// Called when hangup button is pressed. Terminates the call.
 App.prototype.onHangup = function() {
   this.transitionToDone();
   this.shutdown();
 };
 
+// Called when key down occurs in window.
+// Mac: hotkey is Command.
+// Non-Mac: hotkey is Control.
+// <hotkey>-D: toggle audio mute.
+// <hotkey>-E: toggle video mute.
+// <hotkey>-I: toggle Info box.
+App.prototype.onKeyDown = function(event) {
+  var hotkey = event.ctrlKey;
+  if (navigator.appVersion.indexOf('Mac') !== -1) {
+    hotkey = event.metaKey;
+  }
+  if (!hotkey) {
+    return;
+  }
+  switch (event.keyCode) {
+    case 68:
+      this.toggleAudioMute();
+      return;
+    case 69:
+      this.toggleVideoMute();
+      return;
+    case 73:
+      this.infoBox.setVisible(!this.infoBox.isVisible());
+      return;
+    default:
+      return;
+  }
+};
+
+// Called on window resize.
 App.prototype.onResize = function() {
   // Don't letterbox while full-screening, by undoing the changes below.
   if (document.webkitIsFullScreen) {

@@ -15,8 +15,8 @@ var apprtc = apprtc || {};
 
 (function() {
 
-var Log = apprtc.Log || {};
-var SignalingManager = apprtc.SignalingManager || {};
+var Log = apprtc.Log;
+var SignalingManager = apprtc.SignalingManager;
 
 /*
  * Provides statistics data.
@@ -24,7 +24,7 @@ var SignalingManager = apprtc.SignalingManager || {};
 var Stats = apprtc.Stats = function(signalingManager) {
   this.signalingManager = signalingManager;
   this.stats = null;
-  this.pollTimer = 0;
+  this.pollTimer = null;
   this.gatheredIceCandidateTypes = {
     'local': {},
     'remote': {}
@@ -42,8 +42,8 @@ var Stats = apprtc.Stats = function(signalingManager) {
       this.onIceState.bind(this);
   this.subscriptions[apprtc.App.CALL_START_TOPIC] =
       this.onCallStart.bind(this);
-  this.subscriptions[apprtc.App.CALL_END_TOPIC] =
-      this.onCallEnd.bind(this);
+  this.subscriptions[apprtc.App.CALL_CONNECTED_TOPIC] =
+      this.onCallConnected.bind(this);
   apprtc.pubsub.subscribeAll(this.subscriptions);
 };
 
@@ -68,7 +68,7 @@ Stats.prototype.stopPolling = function() {
     return;
   }
   clearInterval(this.pollTimer);
-  this.pollTimer = 0;
+  this.pollTimer = null;
 };
 
 // Returns if we have stats available for query.
@@ -266,7 +266,7 @@ Stats.prototype.onCallStart = function() {
   this.callStartTime = window.performance.now();
 };
 
-Stats.prototype.onCallEnd = function() {
+Stats.prototype.onCallConnected = function() {
   if (!this.callStartTime) {
     Log.error('Unexpected call start time: ' + this.callStartTime);
   }

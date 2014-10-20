@@ -17,10 +17,11 @@ var apprtc = apprtc || {};
 (function() {
 
 var Log = apprtc.Log;
-//var WSS_POST_URL = "https://apprtc-ws.webrtc.org:8089/";
-//var WSS_URL = "wss://apprtc-ws.webrtc.org:8089/ws";
-var WSS_POST_URL = 'http://localhost:8089/';
-var WSS_URL = 'ws://localhost:8089/ws';
+// TODO(tkchin): maybe serve this through app engine instead.
+var WSS_POST_URL = "https://apprtc-ws.webrtc.org:8089/";
+var WSS_URL = "wss://apprtc-ws.webrtc.org:8089/ws";
+//var WSS_POST_URL = 'http://localhost:8089/';
+//var WSS_URL = 'ws://localhost:8089/ws';
 
 /*
  * Channel over which signaling data is sent. Creates a websocket for
@@ -73,7 +74,7 @@ SignalingChannel.prototype.sendMessage = function(message) {
     this.pendingMessages.push(msgString);
     return;
   }
-  Log.info('WSS C->S: ' + msgString);
+  Log.info('C->S: ' + msgString);
   this.socket.send(msgString);
 };
 
@@ -86,7 +87,9 @@ SignalingChannel.prototype.postMessage = function(message) {
   xhr.open('POST', path, true);
   // WSS looks as POST data.
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  xhr.send('msg=' + msgString);
+  // Must call encodeURIComponent because SDP messages have special characters.
+  // Without it, call will fail due to improper SDP received.
+  xhr.send('msg=' + encodeURIComponent(msgString));
 };
 
 // Posts messages object to app engine instance.
@@ -117,10 +120,6 @@ SignalingChannel.prototype.onSocketOpen = function() {
 
 SignalingChannel.prototype.onSocketMessage = function(event) {
   var wssMessage = JSON.parse(event.data);
-  if (wssMessage.error.length > 0) {
-    Log.error('WSS error: ' + wssMessage.error);
-    return;
-  }
   this.onSignalingMessage(JSON.parse(wssMessage.msg));
 };
 
@@ -150,7 +149,14 @@ var SignalingManager = apprtc.SignalingManager = function(config) {
 
 // Cleanup.
 SignalingManager.prototype.shutdown = function() {
+  // For now, app engine needs to be notified when the call is terminated so it
+  // can delete the room information.
   this.channel.postAppEngineMessage({
+    type: 'bye'
+  });
+  // Notifies the other client that the call is over. This is faster than
+  // waiting for the ICE state to change.
+  this.channel.sendMessage({
     type: 'bye'
   });
   if (this.peerConnection) {
@@ -208,10 +214,13 @@ SignalingManager.prototype.setupPeerConnection = function(localStream) {
   }
   var peerConnection = null;
   try {
+    var config = this.config.peerConnectionConfig;
+    var constraints = this.config.peerConnectionConstraints;
     // Create an RTCPeerConnection via the polyfill (adapter.js).
-    peerConnection = new RTCPeerConnection(
-        this.config.peerConnectionConfig,
-        this.config.peerConnectionConstraints);
+    peerConnection = new RTCPeerConnection(config, constraints);
+    Log.info('Created RTCPeerConnnection with:\n' +
+        '  config: \'' + JSON.stringify(config) + '\';\n' +
+        '  constraints: \'' + JSON.stringify(constraints) + '\'.');
   } catch (e) {
     Log.error('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object; ' +
@@ -373,7 +382,6 @@ SignalingManager.prototype.onLocalIceCandidate = function(event) {
   }
 };
 
-// This isn't a PeerConnection handler, but it fits here.
 SignalingManager.prototype.onRemoteIceCandidate = function(message) {
   var candidate = new RTCIceCandidate({
     sdpMLineIndex: message.label,
@@ -424,6 +432,5 @@ SignalingManager.prototype.onIceConnectionStateChange = function() {
     });
   }
 };
-
 
 })();

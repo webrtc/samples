@@ -265,7 +265,6 @@ class Room(db.Model):
     self.put()
 
   def remove_user(self, user):
-    delete_saved_messages(make_client_id(self, user))
     if user == self.user2:
       self.user2 = None
       self.user2_connected = False
@@ -281,6 +280,7 @@ class Room(db.Model):
     if self.get_occupancy() > 0:
       self.put()
     else:
+      logging.info("Deleting room: " + self.key().id_or_name())
       self.delete()
 
   def set_connected(self, user):
@@ -302,7 +302,8 @@ class WSSMessage(db.Model):
 
 class WSSRoom(Room):
   def __str__(self):
-    return "WSS room: " + super(WSSRoom, self).__str__()
+    return 'WSSRoom { id:%s, user1: %s, user2: %s }' %\
+        (self.key().id_or_name(), self.user1, self.user2)
 
 @db.transactional
 def connect_user_to_room(room_key, user):
@@ -334,6 +335,7 @@ class DisconnectPage(webapp2.RequestHandler):
       room = Room.get_by_key_name(room_key)
       if room and room.has_user(user):
         other_user = room.get_other_user(user)
+        delete_saved_messages(make_client_id(room, user))
         room.remove_user(user)
         logging.info('User ' + user + ' removed from room ' + room_key)
         logging.info('Room ' + room_key + ' has state ' + str(room))
@@ -355,6 +357,8 @@ class MessagePage(webapp2.RequestHandler):
       else:
         logging.warning('Unknown room ' + room_key)
 
+# WSSMessage is either an SDP offer to be cached while waiting for another
+# client to connect or a disconnect message.
 class WSSMessagePage(webapp2.RequestHandler):
   def post(self):
     room_key = self.request.get('r')
@@ -367,18 +371,18 @@ class WSSMessagePage(webapp2.RequestHandler):
         logging.warning('Unknown room: ' + room_key)
         return
       if message['type'] == 'bye':
-        # This would remove the other_user in loopback test too.
-        # So check its availability before forwarding Bye message.
+        logging.info('Received bye from user:' + user_id)
+        logging.info('Deleting saved messages.')
+        saved_messages = WSSMessage.gql("WHERE room_id = :id", id=room_key)
+        for saved_message in saved_messages:
+          saved_message.delete()
         room.remove_user(user_id)
-        logging.info('User ' + user_id + ' quit from room ' + room_key)
-        logging.info('Room ' + room_key + ' has state ' + str(room))
         return
-      # TODO(tkchin): handle loopback & unit test
+      # TODO(tkchin): handle loopback scenario.
       wss_message = WSSMessage(room_id = room.key().name(),
                                msg = message_json)
       wss_message.put()
-      logging.info('Saved message for room ' + room.key().name() + '\n' +
-                   message_json)
+      logging.info('Saved message for room ' + room.key().name())
 
 class WSSMainPage(webapp2.RequestHandler):
   def get_stun_server(self):
@@ -537,6 +541,9 @@ class WSSMainPage(webapp2.RequestHandler):
           'user-scalable=no, initial-scale=1, maximum-scale=1">'
     return meta_viewport_tag
 
+  def get_main_page(self):
+    return 'wss_index.html'
+
   def get_room_if_available(self, room_key):
     logging.info('Preparing to add user to room ' + room_key)
     debug = self.request.get('debug')
@@ -546,26 +553,23 @@ class WSSMainPage(webapp2.RequestHandler):
     is_initiator = True
     with WSS_LOCK:
       room = WSSRoom.get_by_key_name(room_key)
+      # TODO(tkchin): handle loopback scenario.
       if not room and debug != 'full':
         # New room.
         room = WSSRoom(key_name = room_key)
         room.add_user(user_key)
-        if debug == 'loopback':
-          room.add_user(user_key)
-          is_initiator = False
       elif room and room.get_occupancy() == 1 and debug != 'full':
         # 1 occupant.
         room.add_user(user_key)
         is_initiator = False
       else:
         return None, None, False
-    logging.info('User ' + user_key + ' added to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
+    logging.info('User ' + user_key + ' added to ' + str(room))
     return room, user_key, is_initiator
 
   def get_apprtc_params(self, user, room, is_initiator):
     room_key = room.key().name()
-    room_link = self.request.host_url + '/?r=' + room_key
+    room_link = self.request.host_url + '/wss?r=' + room_key
     room_link = append_url_arguments(self.request, room_link)
     params = {
       'error_messages': self.error_messages,
@@ -595,13 +599,13 @@ class WSSMainPage(webapp2.RequestHandler):
 
     # Add any saved messages to response.
     messages = []
-    if not is_initiator:
-      saved_messages = WSSMessage.gql("WHERE room_id = :id", id=room_key)
-      for saved_message in saved_messages:
-        messages.append(saved_message.msg.encode('utf8'))
+    saved_messages = WSSMessage.gql("WHERE room_id = :id", id=room_key)
+    for saved_message in saved_messages:
+      if not is_initiator:
+        messages.append(saved_message.msg)
         logging.info('Writing saved message for ' + room_key)
-        saved_message.delete()
-    params['saved_messages'] = messages
+      saved_message.delete()
+    params['saved_messages'] = json.dumps(messages)
 
     return params
 
@@ -618,6 +622,7 @@ class WSSMainPage(webapp2.RequestHandler):
     unittest = self.request.get('unittest')
     if unittest:
       # Always create a new room for the unit tests.
+      # TODO(tkchin): remove this, investigate better way to do unit tests.
       room_key = generate_random(8)
       target_page = 'test/test_' + unittest + '.html'
     else:
@@ -630,7 +635,7 @@ class WSSMainPage(webapp2.RequestHandler):
         self.redirect(redirect)
         logging.info('Redirecting visitor to base URL to ' + redirect)
         return
-      target_page = 'index.html'
+      target_page = self.get_main_page()
     
     # Get room or return error.
     room, user, is_initiator = self.get_room_if_available(room_key)
@@ -650,6 +655,9 @@ class WSSMainPage(webapp2.RequestHandler):
     write_response(self.response, response_type, target_page, params)
 
 class MainPage(WSSMainPage):
+  def get_main_page(self):
+    return 'index.html'
+
   def get_room_if_available(self, room_key):
     logging.info('Preparing to add user to room ' + room_key)
     debug = self.request.get('debug')
@@ -678,6 +686,13 @@ class MainPage(WSSMainPage):
 
   def get_apprtc_params(self, user, room, is_initiator):
     params = super(MainPage, self).get_apprtc_params(user, room, is_initiator)
+
+    # Reset the room link.
+    room_key = room.key().name()
+    room_link = self.request.host_url + '/?r=' + room_key
+    room_link = append_url_arguments(self.request, room_link)
+    params['room_link'] = room_link
+
     # token_timeout for channel creation, default 30min, max 1 days, min 3min.
     token_timeout = self.request.get_range('tt',
                                            min_value = 3,
@@ -688,9 +703,9 @@ class MainPage(WSSMainPage):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/message', MessagePage),
     ('/wss', WSSMainPage),
     ('/wssmessage', WSSMessagePage),
-    ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)
   ], debug=True)
