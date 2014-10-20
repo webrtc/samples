@@ -9,10 +9,18 @@
   "quotmark": "single",
   "undef": true,
   "unused": "strict",
-  "globals": [
-    "attachMediaStream", "createIceServers", "createIceServer",
-    "getUserMedia", "MediaStreamTrack", "reattachMediaStream",
-    "RTCIceCandidate", "RTCPeerConnection", "RTCSessionDescription",
-    "trace", "webrtcDetectedBrowser", "webrtcDetectedVersion"
-  ]
+  "globals": {
+    "attachMediaStream": true,
+    "createIceServer": true,
+    "createIceServers": true,
+    "getUserMedia": true,
+    "MediaStreamTrack": true,
+    "reattachMediaStream": true,
+    "RTCIceCandidate": true,
+    "RTCPeerConnection": true,
+    "RTCSessionDescription": true,
+    "trace": true,
+    "webrtcDetectedBrowser": true,
+    "webrtcDetectedVersion": true
+  }
 }
