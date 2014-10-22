@@ -5,18 +5,20 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-var videoElement = document.querySelector("video");
-var audioSelect = document.querySelector("select#audioSource");
-var videoSelect = document.querySelector("select#videoSource");
-var startButton = document.querySelector("button#start");
+
+'use strict';
+
+var videoElement = document.querySelector('video');
+var audioSelect = document.querySelector('select#audioSource');
+var videoSelect = document.querySelector('select#videoSource');
 
 navigator.getUserMedia = navigator.getUserMedia ||
   navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function gotSources(sourceInfos) {
-  for (var i = 0; i != sourceInfos.length; ++i) {
+  for (var i = 0; i !== sourceInfos.length; ++i) {
     var sourceInfo = sourceInfos[i];
-    var option = document.createElement("option");
+    var option = document.createElement('option');
     option.value = sourceInfo.id;
     if (sourceInfo.kind === 'audio') {
       option.text = sourceInfo.label || 'microphone ' + (audioSelect.length + 1);
@@ -30,7 +32,7 @@ function gotSources(sourceInfos) {
   }
 }
 
-if (typeof MediaStreamTrack === 'undefined'){
+if (typeof MediaStreamTrack === 'undefined') {
   alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
 } else {
   MediaStreamTrack.getSources(gotSources);
@@ -42,12 +44,12 @@ function successCallback(stream) {
   videoElement.src = window.URL.createObjectURL(stream);
 }
 
-function errorCallback(error){
-  console.log("navigator.getUserMedia error: ", error);
+function errorCallback(error) {
+  console.log('navigator.getUserMedia error: ', error);
 }
 
-function start(){
-  if (!!window.stream) {
+function start() {
+  if ( !! window.stream) {
     videoElement.src = null;
     window.stream.stop();
   }
@@ -55,10 +57,14 @@ function start(){
   var videoSource = videoSelect.value;
   var constraints = {
     audio: {
-      optional: [{sourceId: audioSource}]
+      optional: [{
+        sourceId: audioSource
+      }]
     },
     video: {
-      optional: [{sourceId: videoSource}]
+      optional: [{
+        sourceId: videoSource
+      }]
     }
   };
   navigator.getUserMedia(constraints, successCallback, errorCallback);
