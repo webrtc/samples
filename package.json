@@ -1,0 +1,29 @@
+{
+  "name": "webrtc",
+  "version": "1.0.0",
+  "description": "Project checking for WebRTC GitHub sample repo",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "test": "grunt travis --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samdutton/webrtc.git"
+  },
+  "keywords": [
+    "webrtc"
+  ],
+  "author": "samdutton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samdutton/webrtc/issues"
+  },
+  "homepage": "https://github.com/samdutton/webrtc",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-html-validation": "^0.1.18",
+    "grunt-htmlhint": "^0.4.1",
+    "grunt-w3c-validation": "^0.1.16"
+  }
+}
