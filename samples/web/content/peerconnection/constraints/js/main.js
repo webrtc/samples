@@ -5,6 +5,10 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+'use strict';
+
+
 var getMediaButton = document.querySelector('button#getMedia');
 var connectButton = document.querySelector('button#connect');
 
@@ -23,8 +27,10 @@ minWidthInput.onchange = maxWidthInput.onchange =
   framerateInput.onchange = maxBitrateInput.onchange =
   displayRangeValue;
 
-var getUserMediaConstraintsDiv = document.querySelector('div#getUserMediaConstraints');
-var addStreamConstraintsDiv = document.querySelector('div#addStreamConstraints');
+var getUserMediaConstraintsDiv =
+  document.querySelector('div#getUserMediaConstraints');
+var addStreamConstraintsDiv =
+  document.querySelector('div#addStreamConstraints');
 var bitrateDiv = document.querySelector('div#bitrate');
 var senderStatsDiv = document.querySelector('div#senderStats');
 var receiverStatsDiv = document.querySelector('div#receiverStats');
@@ -56,7 +62,7 @@ function getMedia() {
     }
   }
   getUserMedia(getUserMediaConstraints(), gotStream,
-    function (e) {
+    function(e) {
       var message = 'getUserMedia error: ' + e.name + '\n' +
         'PermissionDeniedError may mean invalid constraints.';
       alert(message);
@@ -130,36 +136,37 @@ function createPeerConnection() {
   remotePeerConnection = new RTCPeerConnection(null);
   localPeerConnection.addStream(localStream, addStreamConstraints());
   console.log('localPeerConnection creating offer');
-  localPeerConnection.onnegotiationeeded = function () {
+  localPeerConnection.onnegotiationeeded = function() {
     console.log('Negotiation needed - localPeerConnection');
   };
-  remotePeerConnection.onnegotiationeeded = function () {
+  remotePeerConnection.onnegotiationeeded = function() {
     console.log('Negotiation needed - remotePeerConnection');
   };
-  localPeerConnection.onicecandidate = function (e) {
+  localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
       remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
         onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
-  remotePeerConnection.onicecandidate = function (e) {
+  remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
-      localPeerConnection.addIceCandidate(newCandidate, onAddIceCandidateSuccess, onAddIceCandidateError);
+      localPeerConnection.addIceCandidate(newCandidate,
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
-  remotePeerConnection.onaddstream = function (e) {
+  remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
     attachMediaStream(remoteVideo, e.stream);
     console.log('Remote video is ' + remoteVideo.src);
   };
-  localPeerConnection.createOffer(function (desc) {
+  localPeerConnection.createOffer(function(desc) {
     console.log('localPeerConnection offering');
     localPeerConnection.setLocalDescription(desc);
     remotePeerConnection.setRemoteDescription(desc);
-    remotePeerConnection.createAnswer(function (desc2) {
+    remotePeerConnection.createAnswer(function(desc2) {
       console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(desc2);
       localPeerConnection.setRemoteDescription(desc2);
@@ -183,7 +190,7 @@ function AugumentedStatsResponse(response) {
   this.addressPairMap = [];
 }
 
-AugumentedStatsResponse.prototype.collectAddressPairs = function (componentId) {
+AugumentedStatsResponse.prototype.collectAddressPairs = function(componentId) {
   if (!this.addressPairMap[componentId]) {
     this.addressPairMap[componentId] = [];
     for (var i = 0; i < this.response.result().length; ++i) {
@@ -197,26 +204,26 @@ AugumentedStatsResponse.prototype.collectAddressPairs = function (componentId) {
   return this.addressPairMap[componentId];
 };
 
-AugumentedStatsResponse.prototype.result = function () {
+AugumentedStatsResponse.prototype.result = function() {
   return this.response.result();
 };
 
 // The indexed getter isn't easy to prototype.
-AugumentedStatsResponse.prototype.get = function (key) {
+AugumentedStatsResponse.prototype.get = function(key) {
   return this.response[key];
 };
 
 
 // Display statistics
-setInterval(function () {
-  var display = function (string) {
+setInterval(function() {
+  var display = function(string) {
     bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + string;
   };
 
   //  display('No stream');
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
     if (remotePeerConnection.getStats) {
-      remotePeerConnection.getStats(function (rawStats) {
+      remotePeerConnection.getStats(function(rawStats) {
         var stats = new AugumentedStatsResponse(rawStats);
         var statsString = '';
         var results = stats.result();
@@ -252,7 +259,7 @@ setInterval(function () {
           '<h2>Receiver stats</h2>' + statsString;
         display(videoFlowInfo);
       });
-      localPeerConnection.getStats(function (stats) {
+      localPeerConnection.getStats(function(stats) {
         var statsString = '';
         var results = stats.result();
         for (var i = 0; i < results.length; ++i) {
