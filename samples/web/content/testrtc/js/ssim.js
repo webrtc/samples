@@ -12,15 +12,16 @@
 
 
 /* This is an implementation of the algorithm for calculating the Structural
- * SIMilarity (SSIM) index between two images. Please refer to the article [1]
- * and/or the Wikipedia article [2]. In particular this JS code is weakly
- * inspired by the associated public domain Matlab implementation in [3].
+ * SIMilarity (SSIM) index between two images. Please refer to the article [1],
+ * the website [2] and/or the Wikipedia article [3]. This code takes the value
+ * of the constants C1 and C2 from the Matlab implementation in [4].
  *
  * [1] Z. Wang, A. C. Bovik, H. R. Sheikh, and E. P. Simoncelli, "Image quality
  * assessment: From error measurement to structural similarity",
  * IEEE Transactions on Image Processing, vol. 13, no. 1, Jan. 2004.
- * [2] http://en.wikipedia.org/wiki/Structural_similarity
- * [3] http://www.cns.nyu.edu/~lcv/ssim/ssim_index.m
+ * [2] http://www.cns.nyu.edu/~lcv/ssim/
+ * [3] http://en.wikipedia.org/wiki/Structural_similarity
+ * [4] http://www.cns.nyu.edu/~lcv/ssim/ssim_index.m
  */
 
 function Ssim() {
