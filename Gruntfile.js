@@ -9,10 +9,28 @@ module.exports = function(grunt) {
     // make node configurations available
     pkg: grunt.file.readJSON('package.json'),
 
+    csslint: {
+      options: {
+        csslintrc: '.csslintrc'
+      },
+      strict: {
+        options: {
+          import: 2
+        },
+        src: ['samples/web/content/**/*.css']
+      },
+      lax: {
+        options: {
+          import: false
+        },
+        src: ['samples/web/content/**/*.css']
+      }
+    },
+
     htmlhint: {
       html1: {
-        src: ['samples/web/content/datachannel/index.html',
-        'samples/web/content/apprtc/index.html',
+        src: ['samples/web/content/apprtc/index.html',
+        'samples/web/content/datachannel/index.html',
         'samples/web/content/getusermedia/**/index.html',
         'samples/web/content/peerconnection/**/index.html']
       }
@@ -35,9 +53,10 @@ module.exports = function(grunt) {
       files: ['samples/web/content/**/*.js']
     },
 
-    });
+  });
 
-  // Load plugins
+  // load plugins
+  grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-htmlhint');
 };

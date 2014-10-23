@@ -12,7 +12,7 @@ body, td {
 }
 
 h1, h2, h3 {
-  margin: 6px 0px 3px 0px;
+  margin: 6px 0 3px 0;
 }
 
 a {
@@ -36,7 +36,7 @@ textarea {
 
 button {
   font-size: 11px;
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 input[type=text] {
@@ -87,7 +87,7 @@ video {
 }
 
 #wrapper {
-  margin: 0px auto;
+  margin: 0 auto;
   padding: 5px;
 }
 
