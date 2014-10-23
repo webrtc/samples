@@ -52,9 +52,9 @@ def get_preferred_audio_receive_codec():
 def get_preferred_audio_send_codec(user_agent):
   # Empty string means no preference.
   preferred_audio_send_codec = ''
-  # Prefer to send ISAC on Chrome for Android.
+  # Prefer to send Opus on Chrome for Android.
   if is_chrome_for_android(user_agent):
-    preferred_audio_send_codec = 'ISAC/16000'
+    preferred_audio_send_codec = 'opus/48000'
   return preferred_audio_send_codec
 
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
