@@ -264,13 +264,20 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 function setRemote(message) {
-  // Set Opus in Stereo, if stereo enabled.
+  // Set Opus in Stereo, if stereo enabled, unset it otherwise.
   if (stereo) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo=1');
+  } else {
+    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'stereo=1');
   }
+
+  // Set Opus FEC, if FEC enabled, unset it otherwise.
   if (opusfec) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
+  } else {
+    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
   }
+
   // Set Opus maxplaybackrate, if requested.
   if (opusMaxPbr) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate=' +
@@ -995,11 +1002,8 @@ function preferAudioCodec(sdp, codec) {
   return sdp;
 }
 
-// Adds fmtp param to specified codec in SDP.
-function addCodecParam(sdp, codec, param) {
-  var sdpLines = sdp.split('\r\n');
-
-  // Find opus payload.
+function findFmtpLine(sdpLines, codec) {
+  // Find payload of codec.
   var index = findLine(sdpLines, 'a=rtpmap', codec);
   var payload;
   if (index) {
@@ -1007,12 +1011,35 @@ function addCodecParam(sdp, codec, param) {
   }
 
   // Find the payload in fmtp line.
-  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + payload.toString());
+  return findLine(sdpLines, 'a=fmtp:' + payload.toString());
+}
+
+// Adds fmtp param to specified codec in SDP.
+function addCodecParam(sdp, codec, param) {
+  var sdpLines = sdp.split('\r\n');
+
+  var fmtpLineIndex = findFmtpLine(sdpLines, codec);
+  if (fmtpLineIndex === null) {
+     return sdp;
+  }
+
+  if (sdpLines[fmtpLineIndex].match(param) === null) 
+    sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
+
+  sdp = sdpLines.join('\r\n');
+  return sdp;
+}
+
+// If specified fmtp param exists, removes it from specified codec in SDP.
+function removeCodecParam(sdp, codec, param) {
+  var sdpLines = sdp.split('\r\n');
+
+  var fmtpLineIndex = findFmtpLine(sdpLines, codec);
   if (fmtpLineIndex === null) {
     return sdp;
   }
 
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(param, '');
 
   sdp = sdpLines.join('\r\n');
   return sdp;
