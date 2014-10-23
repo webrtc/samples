@@ -1,0 +1,6 @@
+{
+  "box-model": false,
+  "ids": false,
+  "overqualified-elements": false,
+  "unique-headings": false
+}
