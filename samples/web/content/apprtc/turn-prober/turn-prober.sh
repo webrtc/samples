@@ -1,7 +1,13 @@
 #!/bin/bash -e
 
 function pids_of() {
-  ps axuwww|grep $1|grep $D|awk '{print $2}'
+  local pids=""
+  for p in `ps axuwww|grep $1|awk '{print $2}'`; do
+    if [ -x /proc/$p/cwd ] && [ "$(realpath /proc/$p/cwd)" == "$D" ]; then
+      pids="$pids $p" 
+    fi
+  done
+  echo $pids
 }
 
 function kill_all_of() {
@@ -9,7 +15,7 @@ function kill_all_of() {
   exec 3>&2
   exec 2>/dev/null
   while [ ! -z "$(pids_of $1)" ]; do
-    kill -9 $(pids_of $1)
+    kill $(pids_of $1)
   done
   exec 2>&3
   exec 3>&-
@@ -23,14 +29,15 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-
 cd $(dirname $0)
+WEBPAGE="file://${PWD}/turn-prober.html"
 export D=$(mktemp -d)
+cd $D
 
 CHROME_LOG_FILE="${D}/chrome_debug.log"
 touch $CHROME_LOG_FILE
 
-XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24 -nolisten tcp -I workingdir=$D'"
+XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24'"
 if [ -n "$DISPLAY" ]; then
   XVFB=""
 fi
@@ -42,7 +49,7 @@ eval $XVFB google-chrome \
   --disable-web-security \
   --user-data-dir=$D \
   --vmodule="*media/*=3,*turn*=3" \
-  "file://${PWD}/turn-prober.html" > $CHROME_LOG_FILE 2>&1 &
+  $WEBPAGE > $CHROME_LOG_FILE 2>&1 &
 CHROME_PID=$!
 
 while ! grep -q DONE $CHROME_LOG_FILE && pids_of c[h]rome|grep -q .; do
