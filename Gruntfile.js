@@ -36,6 +36,19 @@ module.exports = function(grunt) {
       }
     },
 
+    jscs: {
+      src: 'samples/web/content/**/*.js',
+      options: {
+        config: 'google', // as per Google style guide – could use '.jscsrc' instead
+        'excludeFiles': ['samples/web/content/manual-test/**/*',
+        'samples/web/content/testrtc/**/*',
+        'samples/web/content/apprtc/js/vr.js',
+        'samples/web/content/apprtc/js/stereoscopic.js',
+        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js'],
+        requireCurlyBraces: ['if']
+      }
+    },
+
     jshint: {
       options: {
         ignores: ['samples/web/content/manual-test/**/*',
@@ -55,8 +68,14 @@ module.exports = function(grunt) {
 
   });
 
-  // load plugins
+  // enable plugins
   grunt.loadNpmTasks('grunt-contrib-csslint');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-htmlhint');
+  grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+
+  // set default tasks to run when grunt is called without parameters
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
+  // also possible to call JavaScript directly in registerTask()
+  // or to call external tasks with grunt.loadTasks()
 };

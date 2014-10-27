@@ -39,7 +39,7 @@ var constraints = {
 };
 
 function successCallback(stream) {
-  window.stream = stream; // make stream available to brwoser console
+  window.stream = stream; // make stream available to browser console
   if (window.URL) {
     video.src = window.URL.createObjectURL(stream);
   } else {
