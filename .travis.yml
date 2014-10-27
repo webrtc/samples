@@ -5,5 +5,5 @@ before_script:
   - npm install -g grunt-cli
   - npm install grunt-contrib-csslint --save-dev
   - npm install grunt-htmlhint --save-dev
-  - npm install grunt-jscs --save-dev --save-dev
+  - npm install grunt-jscs --save-dev
   - npm install grunt-contrib-jshint --save-dev
