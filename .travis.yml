@@ -1,3 +1,9 @@
 language: node_js
 node_js:
-  - 0.8
+  - 0.10
+before_script:
+  - npm install -g grunt-cli
+  - npm install -g grunt-contrib-csslint --save-dev
+  - npm install -g grunt-contrib-htmlhint --save-dev
+  - npm install -g grunt-jscs --save-dev --save-dev
+  - npm install -g grunt-contrib-jshint --save-dev
