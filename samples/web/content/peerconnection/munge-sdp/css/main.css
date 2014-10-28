@@ -76,7 +76,7 @@ video {
   }
 }
 
-@media screen and (max-height: 350px) {
+@media screen and (max-width: 800px) {
   button {
     margin: 0 15px 15px 0;
     width: 155px;
@@ -89,5 +89,14 @@ video {
   }
   select {
     margin: 0 1.5em 0 0;
+  }
+  textarea {
+    font-size: 0.7em;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  textarea {
+    font-size: 0.5em;
   }
 }

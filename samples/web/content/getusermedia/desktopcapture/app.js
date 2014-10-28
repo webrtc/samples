@@ -1,3 +1,5 @@
+'use strict';
+
 var extensionInstalled = false;
 
 document.getElementById('start').addEventListener('click', function() {
@@ -16,7 +18,9 @@ document.getElementById('start').addEventListener('click', function() {
 
 // listen for messages from the content-script
 window.addEventListener('message', function (event) {
-  if (event.origin != window.location.origin) return;
+  if (event.origin !== window.location.origin) {
+      return;
+  }
 
   // content-script will send a 'SS_PING' msg if extension is installed
   if (event.data.type && (event.data.type === 'SS_PING')) {
@@ -48,7 +52,7 @@ function startScreenStreamFrom(streamId) {
   },
   // successCallback
   function(screenStream) {
-    videoElement = document.getElementById('video');
+    var videoElement = document.getElementById('video');
     videoElement.src = URL.createObjectURL(screenStream);
     videoElement.play();
   },

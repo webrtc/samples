@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!--
  *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
  *
@@ -5,83 +6,42 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
 -->
-<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Local Audio Rendering Demo</title>
-<script type="text/javascript" src="../../../js/adapter.js"></script>
-<script>
-  var audioElement;
-  var buttonStart;
-  var buttonStop;
-  var localStream;
 
-  $ = function(id) {
-    return document.getElementById(id);
-  };
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript">
+  <meta name="description" content="Client-side WebRTC code samples.">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
 
-  function start() {
-    var constraints = {audio:true, video:false};
-    getUserMedia(constraints, gotStream, gotStreamFailed);
-    buttonStart.disabled = true;
-    buttonStop.disabled = false;
-  }
+  <base target="_blank">
 
-  function stop() {
-    buttonStart.enabled = true;
-    buttonStop.enabled = false;
-    localStream.stop();
-  }
+  <title>gUM audio</title>
 
-  function gotStream(stream) {
-    videoTracks = stream.getVideoTracks();
-    audioTracks = stream.getAudioTracks();
-    if (audioTracks.length == 1 && videoTracks.length == 0) {
-      console.log('gotStream({audio:true, video:false})');
-      console.log('Using audio device: ' + audioTracks[0].label);
-      attachMediaStream(audioElement, stream);
-      stream.onended = function() {
-        console.log('stream.onended');
-        buttonStart.disabled = false;
-        buttonStop.disabled = true;
-      };
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css">
 
-      localStream = stream;
-    } else {
-      alert('The media stream contains an invalid amount of audio tracks.');
-      stream.stop();
-    }
-  }
-
-  function gotStreamFailed(error) {
-    buttonStart.disabled = false;
-    buttonStop.disabled = true;
-    alert('Failed to get access to local media. Error code: ' + error.code);
-  }
-
-  function onload() {
-    audioElement = $('audio');
-    buttonStart = $('start');
-    buttonStop = $('stop');
-    buttonStart.enabled = true;
-    buttonStop.disabled = true;
-  }
-</script>
 </head>
 
-<body onload="onload()">
-  <h2>Rendering of a local media stream using &lt;audio&gt;</h2>
-  <p>Demonstrates usage of a local media stream connected to an HTML5 audio tag.<br>
-     Press Start, select a microphone and listen to your own voice in loopback.</p>
-  <style>
-    button {
-      font: 14px sans-serif;
-      padding: 8px;
-    }
-  </style>
-  <audio id="audio" autoplay="autoplay" controls="controls"></audio><br><br>
-  <button id="start" onclick="start()">Start</button>
-  <button id="stop" onclick="stop()">Stop</button>
+<body>
+
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia, audio only</span></h1>
+
+    <audio controls autoplay></audio>
+
+    <p>Render the audio stream from an audio-only <code>getUserMedia()</code> call with an audio element.</p>
+
+    <p>The <code>MediaStream</code> object <code><em>stream</em></code> passed to the <code>getUserMedia()</code> callback is in global scope, so you can inspect it from the console.</p>
+
+    <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/getusermedia/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+
 </body>
 </html>

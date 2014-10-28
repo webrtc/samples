@@ -5,6 +5,10 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+'use strict';
+
+var audio2 = document.querySelector('audio#audio2');
 var callButton = document.querySelector('button#callButton');
 var hangupButton = document.querySelector('button#hangupButton');
 hangupButton.disabled = true;
@@ -25,9 +29,10 @@ function gotStream(stream) {
   trace('Received local stream');
   // Call the polyfill wrapper to attach the media stream to this element.
   localstream = stream;
-  audioTracks = localstream.getAudioTracks();
-  if (audioTracks.length > 0)
+  var audioTracks = localstream.getAudioTracks();
+  if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
+  }
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
 
@@ -59,7 +64,7 @@ function call() {
       audio: true,
       video: false
     },
-    gotStream, function(e){
+    gotStream, function(e) {
       alert('getUserMedia() error: ' + e.name);
     });
 }

@@ -8,7 +8,7 @@
 
 'use strict';
 
-var localConnection, remotePeerConnection, sendChannel, receiveChannel,
+var localConnection, remoteConnection, sendChannel, receiveChannel,
   pcConstraint, dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
@@ -47,10 +47,10 @@ function createConnection() {
   if (sctpSelect.checked &&
       (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
       webrtcDetectedBrowser === 'firefox') {
-    // SCTP is supported from Chrome M31 and is supported in FF.
-    // No need to pass DTLS constraint as it is on by default in Chrome M31.
+    // SCTP is supported from Chrome 31 and is supported in FF.
+    // No need to pass DTLS constraint as it is on by default in Chrome 31.
     // For SCTP, reliable and ordered is true by default.
-    trace('Using SCTP-based data channels');
+    trace('Using SCTP based data channels');
   } else {
     pcConstraint = {
       optional: [{
@@ -58,36 +58,38 @@ function createConnection() {
       }]
     };
     if (!rtpSelect.checked) {
-      // Use RTP data channels for Chrome versions older than M31.
-      trace('Using RTP-based data channels, ' +
-          'as you are on an older version than M31.');
-      alert('Reverting to RTP-based data channels, ' +
-          'as you are on an older version than M31.');
+      // Use RTP data channels for Chrome versions older than 31.
+      trace('Using RTP based data channels,' +
+        'as you are on an older version than 31.');
+      alert('Reverting to RTP based data channels,' +
+        'as you are on an older version than 31.');
       rtpSelect.checked = true;
     }
   }
-  localConnection = new RTCPeerConnection(servers, pcConstraint);
+  // Add localConnection to global scope to make it visible from the browser console.
+  window.localConnection = localConnection = new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object localConnection');
 
   try {
-    // Data Channel API supported from Chrome M25.
+    // Data channel API supported from Chrome 25.
     // You might need to start Chrome with --enable-data-channels flag.
     sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
-        'You need Chrome M25 or later with --enable-data-channels flag');
+        'You need Chrome 25 or later with --enable-data-channels flag');
     trace('Create data channel failed with exception: ' + e.message);
   }
   localConnection.onicecandidate = iceCallback1;
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
-  remotePeerConnection = new RTCPeerConnection(servers, pcConstraint);
-  trace('Created remote peer connection object remotePeerConnection');
+  // Add remoteConnection to global scope to make it visible from the browser console.
+  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers, pcConstraint);
+  trace('Created remote peer connection object remoteConnection');
 
-  remotePeerConnection.onicecandidate = iceCallback2;
-  remotePeerConnection.ondatachannel = receiveChannelCallback;
+  remoteConnection.onicecandidate = iceCallback2;
+  remoteConnection.ondatachannel = receiveChannelCallback;
 
   localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
   startButton.disabled = true;
@@ -111,9 +113,9 @@ function closeDataChannels() {
   receiveChannel.close();
   trace('Closed data channel with label: ' + receiveChannel.label);
   localConnection.close();
-  remotePeerConnection.close();
+  remoteConnection.close();
   localConnection = null;
-  remotePeerConnection = null;
+  remoteConnection = null;
   trace('Closed peer connections');
   startButton.disabled = false;
   sendButton.disabled = true;
@@ -126,20 +128,20 @@ function closeDataChannels() {
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
   trace('Offer from localConnection \n' + desc.sdp);
-  remotePeerConnection.setRemoteDescription(desc);
-  remotePeerConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  remoteConnection.setRemoteDescription(desc);
+  remoteConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
-  remotePeerConnection.setLocalDescription(desc);
-  trace('Answer from remotePeerConnection \n' + desc.sdp);
+  remoteConnection.setLocalDescription(desc);
+  trace('Answer from remoteConnection \n' + desc.sdp);
   localConnection.setRemoteDescription(desc);
 }
 
 function iceCallback1(event) {
   trace('local ice callback');
   if (event.candidate) {
-    remotePeerConnection.addIceCandidate(event.candidate,
+    remoteConnection.addIceCandidate(event.candidate,
         onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
