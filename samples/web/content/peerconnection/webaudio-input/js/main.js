@@ -5,141 +5,135 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-var callButton = document.querySelector('button#callButton');
-var sendTonesButton = document.querySelector('button#sendTonesButton');
-var hangupButton = document.querySelector('button#hangupButton');
 
-sendTonesButton.disabled = true;
-hangupButton.disabled = true;
+'use strict';
 
-callButton.onclick = call;
-sendTonesButton.onclick = handleSendTonesClick;
-hangupButton.onclick = hangup;
+/* global WebAudioExtended, webkitRTCPeerConnection */
 
-var durationInput = document.querySelector('input#duration');
-var gapInput = document.querySelector('input#gap');
-var tonesInput = document.querySelector('input#tones');
+var audioElement = document.querySelector('audio');
+var statusDiv = document.querySelector('div#status');
 
-var sentTonesDiv = document.querySelector('div#sentTones');
-var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
+var startButton = document.querySelector('button#start');
+var stopButton = document.querySelector('button#stop');
+startButton.onclick = start;
+stopButton.onclick = stop;
 
-var audio = document.querySelector('audio');
+var renderLocallyCheckbox = document.querySelector('input#renderLocally');
+renderLocallyCheckbox.onclick = toggleRenderLocally;
 
-var pc1, pc2;
+document.addEventListener('keydown', handleKeyDown, false);
+
+
 var localStream;
-var dtmfSender;
+var pc1, pc2;
 
-var sdpConstraints = {
-  'mandatory': {
-    'OfferToReceiveAudio': true,
-    'OfferToReceiveVideo': false
-  }
-};
+var webAudio = new WebAudioExtended();
+webAudio.loadSound('audio/Shamisen-C4.wav');
 
 
-main();
-
-function main() {
-  addDialPadHandlers();
+function trace(txt) {
+  statusDiv.innerHTML += '<p>' + txt + '</p>';
 }
 
-function gotStream(stream) {
-  trace('Received local stream');
-  // Call the polyfill wrapper to attach the media stream to this element.
-  localStream = stream;
-  var audioTracks = localStream.getAudioTracks();
-  if (audioTracks.length > 0)
-    trace('Using Audio device: ' + audioTracks[0].label);
-  pc1.addStream(localStream);
-  trace('Adding Local Stream to peer connection');
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
-}
-
-function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
-}
-
-function call() {
-  trace('Starting call');
-  var servers = null;
-  var pcConstraints = {
-    'optional': []
+function start() {
+  webAudio.start();
+  var constraints = {
+    audio: true,
+    video: false
   };
-  pc1 = new RTCPeerConnection(servers, pcConstraints);
-  trace('Created local peer connection object pc1');
-  pc1.onicecandidate = iceCallback1;
-  pc2 = new RTCPeerConnection(servers, pcConstraints);
-  trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
-
-  trace('Requesting local stream');
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({
-      audio: true,
-      video: false
-    },
-    gotStream, function (e) {
-      alert('getUserMedia() error: ' + e.name);
-    });
-
-  callButton.disabled = true;
-  hangupButton.disabled = false;
-  sendTonesButton.disabled = false;
+  getUserMedia(constraints, gotStream, gotStreamFailed);
+  startButton.disabled = true;
+  stopButton.disabled = false;
 }
 
-function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
-  trace('Offer from pc1 \n' + desc.sdp);
-  pc2.setRemoteDescription(desc);
-  // Since the 'remote' side has no media stream we need
-  // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-    sdpConstraints);
-}
-
-function gotDescription2(desc) {
-  // Setting PCMU as the preferred codec.
-  desc.sdp = desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 RTP/SAVPF 0 126\r\n');
-  // Workaround for issue 1603.
-  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
-  pc2.setLocalDescription(desc);
-  trace('Answer from pc2: \n' + desc.sdp);
-  pc1.setRemoteDescription(desc);
-}
-
-function hangup() {
-  trace('Ending call');
+function stop() {
+  webAudio.stop();
   pc1.close();
   pc2.close();
   pc1 = null;
   pc2 = null;
-  localStream = null;
-  dtmfSender = null;
-  callButton.disabled = false;
-  hangupButton.disabled = true;
-  sendTonesButton.disabled = true;
-  dtmfStatusDiv.textContent = 'DTMF deactivated';
+  startButton.enabled = true;
+  stopButton.enabled = false;
+  renderLocallyCheckbox.disabled = true;
+  localStream.stop();
+}
+
+function gotStream(stream) {
+  renderLocallyCheckbox.disabled = false;
+  var audioTracks = stream.getAudioTracks();
+  if (audioTracks.length === 1) {
+    console.log('gotStream({audio:true, video:false})');
+
+    var filteredStream = webAudio.applyFilter(stream);
+
+    var servers = null;
+
+    pc1 = new webkitRTCPeerConnection(servers);
+    console.log('Created local peer connection object pc1');
+    pc1.onicecandidate = iceCallback1;
+    pc2 = new webkitRTCPeerConnection(servers);
+    console.log('Created remote peer connection object pc2');
+    pc2.onicecandidate = iceCallback2;
+    pc2.onaddstream = gotRemoteStream;
+
+    pc1.addStream(filteredStream);
+    pc1.createOffer(gotDescription1);
+
+    stream.onended = function() {
+      console.log('stream.onended');
+      startButton.disabled = false;
+      stopButton.disabled = true;
+    };
+
+    localStream = stream;
+  } else {
+    alert('The media stream contains an invalid amount of audio tracks.');
+    stream.stop();
+  }
+}
+
+function gotStreamFailed(error) {
+  startButton.disabled = false;
+  stopButton.disabled = true;
+  alert('Failed to get access to local media. Error code: ' +
+    error.code);
+}
+
+function forceOpus(sdp) {
+  // Remove all other codecs (not the video codecs though).
+  sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
+    'm=audio $1 RTP/SAVPF 111\r\n');
+  sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
+  return sdp;
+}
+
+function gotDescription1(desc) {
+  console.log('Offer from pc1 \n' + desc.sdp);
+  var modifiedOffer = new RTCSessionDescription({
+    type: 'offer',
+    sdp: forceOpus(desc.sdp)
+  });
+  pc1.setLocalDescription(modifiedOffer);
+  console.log('Offer from pc1 \n' + modifiedOffer.sdp);
+  pc2.setRemoteDescription(modifiedOffer);
+  pc2.createAnswer(gotDescription2);
+}
+
+function gotDescription2(desc) {
+  pc2.setLocalDescription(desc);
+  console.log('Answer from pc2 \n' + desc.sdp);
+  pc1.setRemoteDescription(desc);
 }
 
 function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(audio, e.stream);
-  trace('Received remote stream');
-  if (RTCPeerConnection.prototype.createDTMFSender) {
-    enableDtmfSender();
-  } else {
-    alert('This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.');
-  }
-
+  attachMediaStream(audioElement, e.stream);
 }
 
 function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
       onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
+    console.log('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
@@ -147,59 +141,23 @@ function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
       onAddIceCandidateSuccess, onAddIceCandidateError);
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
+    console.log('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success');
+  trace('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
 }
 
-function enableDtmfSender() {
-  dtmfStatusDiv.textContent = 'DTMF activated';
-  if (localStream !== null) {
-    var localAudioTrack = localStream.getAudioTracks()[0];
-    dtmfSender = pc1.createDTMFSender(localAudioTrack);
-    trace('Created DTMFSender:\n');
-    dtmfSender.ontonechange = dtmfOnToneChange;
-  } else {
-    trace('No local stream to create DTMF Sender\n');
-  }
+function handleKeyDown() {
+  webAudio.addEffect();
 }
 
-function dtmfOnToneChange(tone) {
-  if (tone) {
-    trace('Sent DTMF tone: ' + tone.tone);
-    sentTonesDiv.textContent += tone.tone + ' ';
-  }
+function toggleRenderLocally() {
+  console.log('Render locally: ', renderLocallyCheckbox.checked);
+  webAudio.renderLocally(renderLocallyCheckbox.checked);
 }
-
-function sendTones(tones) {
-  if (dtmfSender) {
-    var duration = durationInput.value;
-    var gap = gapInput.value;
-    console.log('Tones, duration, gap: ', tones, duration, gap);
-    dtmfSender.insertDTMF(tones, duration, gap);
-  }
-}
-
-function handleSendTonesClick(){
-  sendTones(tonesInput.value);
-}
-
-function addDialPadHandlers() {
-  var dialPad = document.querySelector('div#dialPad');
-  var buttons = dialPad.querySelectorAll('button');
-  for (var i = 0; i != buttons.length; ++i) {
-    buttons[i].onclick = sendDtmfTone;
-  }
-}
-
-function sendDtmfTone() {
-  sendTones(this.textContent);
-}
-

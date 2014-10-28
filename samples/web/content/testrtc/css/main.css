@@ -9,7 +9,7 @@
   display: none;
 }
 
-* {
+body {
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
 }
@@ -59,7 +59,7 @@ body {
 font-family: 'Roboto', sans-serif;
 margin: 0;
 padding: 1em;
-word-break: break-word;
+word-break: break-all;
 }
 
 button {
