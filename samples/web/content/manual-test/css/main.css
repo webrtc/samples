@@ -35,7 +35,7 @@
 }
 
 .bottom-border {
-  border-bottom: 4px solid grey
+  border-bottom: 4px solid grey;
 }
 
 #log {
@@ -51,10 +51,6 @@
   word-wrap: break-word;
   white-space: pre-wrap;
   font-size: 0.7em;
-}
-
-#pc-server {
-  width: 35%
 }
 
 #audio-source {
