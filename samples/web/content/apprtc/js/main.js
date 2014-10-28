@@ -264,17 +264,19 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 function setRemote(message) {
-  // Set Opus in Stereo, if stereo enabled, unset it otherwise.
-  if (stereo) {
+  // Set Opus in Stereo, if stereo is true, unset it, if stereo is false, and
+  // do nothing if otherwise.
+  if (stereo === 'true') {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo=1');
-  } else {
+  } else if (stereo === 'false') {
     message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'stereo=1');
   }
 
-  // Set Opus FEC, if FEC enabled, unset it otherwise.
-  if (opusfec) {
+  // Set Opus FEC, if opusfec is true, unset it, if opusfec is false, and
+  // do nothing if otherwise.
+  if (opusfec === 'true') {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
-  } else {
+  } else if (opusfec === 'false'){
     message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
   }
 
@@ -990,12 +992,9 @@ function preferAudioCodec(sdp, codec) {
   }
 
   // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
-  if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
-    if (payload) {
-      sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
-    }
+  var payload = findCodecPayloadType(sdpLines, codec);
+  if (payload) {
+    sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
   }
 
   sdp = sdpLines.join('\r\n');
@@ -1004,14 +1003,9 @@ function preferAudioCodec(sdp, codec) {
 
 function findFmtpLine(sdpLines, codec) {
   // Find payload of codec.
-  var index = findLine(sdpLines, 'a=rtpmap', codec);
-  var payload;
-  if (index) {
-    payload = getCodecPayloadType(sdpLines[index]);
-  }
-
+  var payload = findCodecPayloadType(sdpLines, codec);
   // Find the payload in fmtp line.
-  return findLine(sdpLines, 'a=fmtp:' + payload.toString());
+  return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
 }
 
 // Adds fmtp param to specified codec in SDP.
@@ -1020,12 +1014,15 @@ function addCodecParam(sdp, codec, param) {
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
   if (fmtpLineIndex === null) {
-     return sdp;
-  }
-
-  if (sdpLines[fmtpLineIndex].match(param) === null) 
+    var index = findLine(sdpLines, 'a=rtpmap', codec);
+    if (index === null)
+      return sdp;
+    var payload = getCodecPayloadType(sdpLines[index]);
+    sdpLines.splice(index + 1, 0, 'a=fmtp:' + payload.toString() + ' ' + param);
+  } else if (sdpLines[fmtpLineIndex].match(param) === null) {
     sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
-
+  }
+  
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
@@ -1039,7 +1036,14 @@ function removeCodecParam(sdp, codec, param) {
     return sdp;
   }
 
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(param, '');
+  // Removes fmtp param, covers various cases.
+  // param does not appear first.
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace('; ' + param, '');
+  // param appears first, but is not the only parameter.
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(param + '; ', '');
+  // param is the only parameter.
+  if (sdpLines[fmtpLineIndex].indexOf(param) !== -1)
+    sdpLines.splice(fmtpLineIndex, 1);
 
   sdp = sdpLines.join('\r\n');
   return sdp;
@@ -1064,6 +1068,12 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
     }
   }
   return null;
+}
+
+// Finds the codec payload type from fmtp lines.
+function findCodecPayloadType(sdpLines, codec) {
+  var index = findLine(sdpLines, 'a=rtpmap', codec);
+  return index ? getCodecPayloadType(sdpLines[index]) : null;
 }
 
 // Gets the codec payload type from an a=rtpmap:X line.

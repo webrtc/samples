@@ -425,10 +425,10 @@ class MainPage(webapp2.RequestHandler):
       audio_receive_codec = get_preferred_audio_receive_codec()
 
     # Set stereo to false by default.
-    stereo = self.request.get('stereo', default_value = 'false')
+    stereo = self.request.get('stereo', default_value = '')
 
     # Set opusfec to false by default.
-    opusfec = self.request.get('opusfec', default_value = 'true')
+    opusfec = self.request.get('opusfec', default_value = '')
 
     # Read url param for opusmaxpbr
     opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
