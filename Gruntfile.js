@@ -11,7 +11,7 @@ module.exports = function(grunt) {
 
     csslint: {
       options: {
-        csslintrc: '.csslintrc'
+        csslintrc: 'samples/web/.csslintrc'
       },
       strict: {
         options: {
