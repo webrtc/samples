@@ -30,6 +30,14 @@
   width: 100%;
 }
 
+.top-border {
+  border-top: 4px solid grey;
+}
+
+.bottom-border {
+  border-bottom: 4px solid grey
+}
+
 #log {
   float: left;
   position: fixed;
@@ -90,22 +98,20 @@
 
 #pc-server-container {
   position: absolute;
-  margin-left: 12%;
+  margin: 0 0 0 12%;
   width: 40%;
   overflow: hidden;
   height: 1.5em;
 }
 
 #pc-constraints-left {
+  margin: 0.7em 0 0 0;
   width: 60%;
 }
 
-#pc-constraints-right {
-  margin-left: 60%;
-}
-
 #call {
-  margin-top: 1em;
+  float: left;
+  margin: 0.7em 0 0 0;
 }
 
 .float-left {
@@ -199,8 +205,7 @@ h2 {
   margin: 0 0 0.8em 0;
 }
 
-div#middle h2 {
-  border-top: 4px solid grey;
+div#middle {
 }
 
 div {
