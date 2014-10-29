@@ -95,10 +95,11 @@ WebRTCCall.parseCandidate = function (text) {
     'protocol': fields[2],
     'address': fields[4],
   };
-}
+};
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
-WebRTCCall.CEOD_URL = 'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
+WebRTCCall.CEOD_URL =
+  'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
 WebRTCCall.asyncCreateTurnConfig = function (onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   function onResult() {
@@ -123,4 +124,4 @@ WebRTCCall.asyncCreateTurnConfig = function (onSuccess, onError) {
   xhr.onreadystatechange = onResult;
   xhr.open('GET', WebRTCCall.CEOD_URL, true);
   xhr.send();
-}
+};
