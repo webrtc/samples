@@ -5,9 +5,8 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
 /* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
+/* exported asyncCreateTurnConfig, parseCandidate */
 
 'use strict';
 
@@ -52,10 +51,11 @@ function hasIpv6Test() {
 function asyncCreateTurnConfig(onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   function onResult() {
-    if (xhr.readyState != 4)
+    if (xhr.readyState !== 4) {
       return;
+    }
 
-    if (xhr.status != 200) {
+    if (xhr.status !== 200) {
       onError('TURN request failed');
       return;
     }
@@ -101,14 +101,15 @@ function checkIpv6(c) {
 // Create a PeerConnection, and gather candidates using RTCConfig |config|
 // and ctor params |params|. Succeed if any candidates pass the |isGood| 
 // check, fail if we complete gathering without any passing.
-function gatherCandidates(opt_config, opt_params, isGood) {
-  var pc = new RTCPeerConnection(opt_config, opt_params);
+function gatherCandidates(config, params, isGood) {
+  var pc = new RTCPeerConnection(config, params);
 
   // In our candidate callback, stop if we get a candidate that passes |isGood|.
   pc.onicecandidate = function(e) {
     // Once we've decided, ignore future callbacks.
-    if (pc.signalingState === 'closed')
+    if (pc.signalingState === 'closed') {
       return;
+    }
 
     if (e.candidate) {
       var parsed = parseCandidate(e.candidate.candidate);
