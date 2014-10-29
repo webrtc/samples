@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!--
  *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
  *
@@ -5,103 +6,53 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
 -->
-<!DOCTYPE html>
 <html>
 <head>
-<title>PeerConnection Demo 1</title>
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="../../../js/adapter.js"></script>
-<script src="../../../js/videopipe.js"></script>
-<style>
-video {
-  border:5px solid black;
-  width:480px;
-  height:360px;
-}
-button {
-  font: 18px sans-serif;
-  padding: 8px;
-}
-textarea {
-  border: none;
-  resize: none;
-  font-family: monospace;
-  margin: 2px;
-  width:480px;
-  height:64px;
-}
-</style>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+  <meta name="description" content="Client-side WebRTC code samples." />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>Peer connection relay</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
 </head>
+
 <body>
-<video id="vid1" autoplay></video>
-<video id="vid2" autoplay></video>
-<br>
-<button id="btn1" onclick="start()">Start</button>
-<button id="btn2" onclick="call()">Call</button>
-<button id="btn3" onclick="addrelay()">Insert relay</button>
-<button id="btn4" onclick="hangup()">Hang Up</button>
-<br>
-<textarea id="ta1"></textarea><br>
-<script>
-btn1.disabled = false;
-btn2.disabled = true;
-btn3.disabled = true;
-btn4.disabled = true;
-var pipes = new Array();
 
-var localstream;
-var remotestream;
+  <div id="container">
 
-function gotStream(stream){
-  trace("Received local stream");
-  attachMediaStream(vid1, stream);
-  localstream = stream;
-  btn2.disabled = false;
-}
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection relay</span></h1>
 
-function gotRemoteStream(stream){
-  remotestream = stream;
-  attachMediaStream(vid2, stream);
-  trace("Received remote stream");
-  trace(pipes.length + ' elements in chain');
-  ta1.textContent = pipes.length + ' elements in chain';
-  btn3.disabled = false;
-}
+    <div id="videos">
+      <video id="video1" autoplay></video>
+      <video id="video2" autoplay></video>
+    </div>
 
-function start() {
-  trace("Requesting local stream");
-  btn1.disabled = true;
-  getUserMedia({audio:false, video:true},
-                gotStream,
-                function() {
-                  alert('getUserMedia failed');
-                });
-}
+    <div id="status"></div>
 
-function call() {
-  btn2.disabled = true;
-  btn3.disabled = false;
-  btn4.disabled = false;
-  trace("Starting call");
-  pipes.push(new VideoPipe(localstream, gotRemoteStream));
-}
+    <div id="buttons">
+      <button id="start">Start</button>
+      <button id="call" disabled>Call</button>
+      <button id="insertRelay" disabled>Insert relay</button>
+      <button id="hangup" disabled>Hang Up</button>
+    </div>
 
-function addrelay() {
-  pipes.push(new VideoPipe(remotestream, gotRemoteStream));
-  btn3.disabled = true;
-}
+    <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection/multiple-relay" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
-function hangup() {
-  trace("Ending call");
-  while (pipes.length > 0) {
-    var pipe = pipes.pop()
-    pipe.close();
-  }
-  btn3.disabled = true;
-  btn4.disabled = true;
-  btn2.disabled = false;
-}
+  </div>
 
-</script>
+  <script src="../../../js/adapter.js"></script>
+  <script src="../../../js/videopipe.js"></script>
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+
 </body>
 </html>

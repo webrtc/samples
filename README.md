@@ -1,3 +1,5 @@
+![Travis](https://travis-ci.org/samdutton/webrtc.svg?branch=demo-updates)
+
 # WebRTC code samples #
 
 This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples.
