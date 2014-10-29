@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
+/* jshint camelcase: false */
 'use strict';
 
 
@@ -24,32 +24,33 @@
  * [4] http://www.cns.nyu.edu/~lcv/ssim/ssim_index.m
  */
 
-function Ssim() {
-};
+function Ssim() {}
 
 Ssim.prototype = {
-
   // Implementation of Eq.2, a simple average of a vector and Eq.4., except the
   // square root. The latter is actually an unbiased estimate of the variance,
   // not the exact variance.
   statistics: function(a) {
     var accu = 0;
-    for (var i = 0; i < a.length; ++i)
+    var i;
+    for (i = 0; i < a.length; ++i) {
       accu += a[i];
+    }
     var mean_a = accu / (a.length - 1);
     var diff = 0;
-    for (var i = 1; i < a.length; ++i) {
+    for (i = 1; i < a.length; ++i) {
       diff = a[i - 1] - mean_a;
       accu += a[i] + (diff * diff);
     }
-    return {mean : mean_a, variance : accu / a.length};
+    return { mean : mean_a, variance : accu / a.length };
   },
 
   // Implementation of Eq.11., cov(Y, Z) = E((Y - uY), (Z - uZ)).
   covariance: function(a, b, mean_a, mean_b) {
     var accu = 0;
-    for (var i = 0; i < a.length; i += 1)
+    for (var i = 0; i < a.length; i += 1) {
       accu += (a[i] - mean_a) * (b[i] - mean_b);
+    }
     return accu / a.length;
   },
 

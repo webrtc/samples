@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 /* This test tries calling getUserMedia() with each resolution from the list
@@ -48,7 +44,7 @@ function CamResolutionsTest() {
   this.counter = 0;
   this.supportedResolutions = 0;
   this.unsupportedResolutions = 0;
-};
+}
 
 CamResolutionsTest.prototype = {
   run: function() {
@@ -86,6 +82,7 @@ CamResolutionsTest.prototype = {
   },
 
   failFunc: function(error) {
+    trace(error);
     this.unsupportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     if (theResolution[2]) {

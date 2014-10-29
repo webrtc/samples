@@ -7,8 +7,8 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
+/* globals AudioContext, MediaStreamTrack */
+/* exported addTestSuite, reportInfo, doGetUserMedia, expectEquals, testSuiteFinished, start, audioContext */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -30,12 +30,14 @@ var successes;
 var failures;
 
 function testIsDisabled(testName) {
-  if (testFilters.length == 0)
+  if (testFilters.length === 0) {
     return false;
+  }
 
-  for (var i = 0; i != testFilters.length; ++i) {
-    if (testFilters[i] == testName)
+  for (var i = 0; i !== testFilters.length; ++i) {
+    if (testFilters[i] === testName) {
       return false;
+    }
   }
   return true;
 }
@@ -130,12 +132,12 @@ function doGetUserMedia(constraints, onSuccess) {
   var successFunc = function(stream) {
     trace('User has granted access to local media.');
     onSuccess(stream);
-  }
+  };
   var failFunc = function(error) {
     var errorMessage = 'Failed to get access to local media. Error name was ' +
       error.name;
     return reportFatal(errorMessage);
-  }
+  };
   try {
     // Append the constraints with the getSource constraints.
     appendSourceId(audioSelect.value, 'audio', constraints);
@@ -150,19 +152,18 @@ function doGetUserMedia(constraints, onSuccess) {
 }
 
 function appendSourceId(id, type, constraints) {
-  if (constraints[type] == null || constraints[type] === false)
-    return;
-
-  if (constraints[type] == true)
-    constraints[type] = { optional: [{sourceId: id}] };
-  else if (constraints[type].optional == null)
-    constraints[type].optional = [{sourceId: id}];
-  else
-    constraints[type].optional.push( {sourceId: id} );
+  if (constraints[type] === true) {
+    constraints[type] = {optional: [{sourceId: id}]};
+  } else if (typeof(constraints[type]) === "object") {
+    if (typeof(constraints[type].optional) === "undefined") {
+      constraints[type].optional = [];
+    }
+    constraints[type].optional.push({sourceId: id});
+  }
 }
 
 function gotSources(sourceInfos) {
-  for (var i = 0; i != sourceInfos.length; ++i) {
+  for (var i = 0; i !== sourceInfos.length; ++i) {
     var sourceInfo = sourceInfos[i];
     var option = document.createElement('option');
     option.value = sourceInfo.id;
@@ -195,16 +196,17 @@ if (typeof MediaStreamTrack === 'undefined') {
     // python SimpleHTTPServer always adds a / on the end of the request.
     // Remove it so developers can easily run testrtc on their machines.
     // Note that an actual / is still sent in most cases as %2F.
-    var args = window.location.search.replace(/\//g, '').substr(1).split("&");
-    for (var i = 0; i != args.length; ++i) {
-      var split = args[i].split("=");
+    var args = window.location.search.replace(/\//g, '').substr(1).split('&');
+    for (var i = 0; i !== args.length; ++i) {
+      var split = args[i].split('=');
       output[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
     }
     return output;
   };
 
   var parameters = parseUrlParameters();
-  if ('test_filter' in parameters) {
-    testFilters = parameters['test_filter'].split(',');
+  var filterParameterName = 'test_filter';
+  if (filterParameterName in parameters) {
+    testFilters = parameters[filterParameterName].split(',');
   }
 }

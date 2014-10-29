@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 // Test spec
@@ -58,7 +54,7 @@ function CamCaptureTest() {
   this.video.height = this.constraints.video.mandatory.minHeight;
   this.video.setAttribute('autoplay','');
   this.video.setAttribute('muted','');
-};
+}
 
 CamCaptureTest.prototype = {
   run: function() {
@@ -80,7 +76,7 @@ CamCaptureTest.prototype = {
   },
 
   checkVideoTracks: function(stream) {
-    reportSuccess("getUserMedia succeeded.");
+    reportSuccess('getUserMedia succeeded.');
     var tracks = stream.getVideoTracks();
     if (tracks.length < 1) {
       return reportFatal('No video track in returned stream.');
@@ -95,16 +91,16 @@ CamCaptureTest.prototype = {
     var videoTrack = stream.getVideoTracks()[0];
     videoTrack.onended = function() {
       reportError('Video track ended, camera stopped working');
-    }
+    };
     videoTrack.onmute = function() {
       reportError('Your camera reported itself as muted.');
       // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
       // isMuted local state.
       this.isMuted = true;
-    }
+    };
     videoTrack.onunmute = function() {
       this.isMuted = false;
-    }
+    };
   },
 
   checkVideoFinish: function(video) {

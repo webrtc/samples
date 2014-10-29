@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 addTestSuite('MicrophoneTest', micTest);
@@ -35,7 +31,6 @@ function checkTracks(stream) {
 // Analyze one buffer of audio.
 function checkAudioStart(stream) {
   var processFunc = function(event) {
-    var sampleRate = event.sampleRate;
     var inputBuffer = event.inputBuffer;
     source.disconnect(scriptNode); 
     scriptNode.disconnect(audioContext.destination);

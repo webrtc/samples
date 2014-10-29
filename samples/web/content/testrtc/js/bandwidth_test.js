@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 // Creates a loopback via relay candidates and tries to send as many packets
@@ -25,8 +21,11 @@ function testDataChannelThroughput(config) {
   var sentPayloadBytes = 0;
   var receivedPayloadBytes = 0;
   var stopSending = false;
-  var samplePacket = "";
-  for (var i = 0; i != 1024; ++i) samplePacket += 'h';
+  var samplePacket = '';
+
+  for (var i = 0; i !== 1024; ++i) {
+    samplePacket += 'h';
+  }
 
   var maxNumberOfPacketsToSend = 100;
   var bytesToKeepBuffered = 1024 * maxNumberOfPacketsToSend;
@@ -53,7 +52,7 @@ function testDataChannelThroughput(config) {
       lastBitrateMeasureTime = now;
     }
 
-    for (var i = 0; i != maxNumberOfPacketsToSend; ++i) {
+    for (var i = 0; i !== maxNumberOfPacketsToSend; ++i) {
       if (senderChannel.bufferedAmount >= bytesToKeepBuffered) {
         break;
       }
@@ -79,7 +78,7 @@ function testDataChannelThroughput(config) {
       lastReceivedPayloadBytes = receivedPayloadBytes;
       lastBitrateMeasureTime = now;
     }
-    if (stopSending && sentPayloadBytes == receivedPayloadBytes) {
+    if (stopSending && sentPayloadBytes === receivedPayloadBytes) {
       call.close();
 
       var elapsedTime = Math.round((now - startTime) * 10) / 10000.0;
@@ -125,21 +124,22 @@ function testVideoBandwidth(config) {
   }
 
   function gatherStats() {
-     if ((new Date()) - startTime > durationMs)
-       completed();
-     else
-       call.pc1.getStats(gotStats);
+    if ((new Date()) - startTime > durationMs) {
+      completed();
+    } else {
+      call.pc1.getStats(gotStats);
+    }
   }
 
   function gotStats(response) {
     for (var index in response.result()) {
       var report = response.result()[index];
-      if (report.id == "bweforvideo") {
+      if (report.id === 'bweforvideo') {
         bweStats.add(Date.parse(report.timestamp),
-          parseInt(report.stat("googAvailableSendBandwidth")));
-      } else if (report.type == "ssrc") {
+          parseInt(report.stat('googAvailableSendBandwidth')));
+      } else if (report.type === 'ssrc') {
         rttStats.add(Date.parse(report.timestamp),
-          parseInt(report.stat("googRtt")));
+          parseInt(report.stat('googRtt')));
       }
     }
     setTimeout(gatherStats, statStepMs);
@@ -148,11 +148,11 @@ function testVideoBandwidth(config) {
   function completed() {
     call.pc1.getLocalStreams()[0].getVideoTracks()[0].stop();
     call.close();
-    reportSuccess("RTT average: " + rttStats.getAverage() + " ms");
-    reportSuccess("RTT max: " + rttStats.getMax() + " ms");
-    reportSuccess("Send bandwidth estimate average: " + bweStats.getAverage() + " bps");
-    reportSuccess("Send bandwidth estimate max: " + bweStats.getMax() + " bps");
-    reportSuccess("Send bandwidth ramp-up time: " + bweStats.getRampUpTime() + " ms");
+    reportSuccess('RTT average: ' + rttStats.getAverage() + ' ms');
+    reportSuccess('RTT max: ' + rttStats.getMax() + ' ms');
+    reportSuccess('Send bandwidth estimate average: ' + bweStats.getAverage() + ' bps');
+    reportSuccess('Send bandwidth estimate max: ' + bweStats.getMax() + ' bps');
+    reportSuccess('Send bandwidth ramp-up time: ' + bweStats.getRampUpTime() + ' ms');
     reportSuccess('Test finished');
     testSuiteFinished();
   }

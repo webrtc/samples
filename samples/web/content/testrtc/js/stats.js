@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 function StatisticsAggregate(rampUpThreshold) {
@@ -22,19 +18,22 @@ function StatisticsAggregate(rampUpThreshold) {
 
 StatisticsAggregate.prototype = {
   add: function (time, datapoint) {
-    if (this.startTime_ == 0)
+    if (this.startTime_ === 0) {
       this.startTime_ = time;
+    }
     this.sum_ += datapoint;
     this.max_ = Math.max(this.max_, datapoint);
-    if (this.rampUpTime_ == Infinity &&
-        datapoint > this.rampUpThreshold_)
+    if (this.rampUpTime_ === Infinity &&
+        datapoint > this.rampUpThreshold_) {
       this.rampUpTime_ = time;
+    }
     this.count_++;
   },
 
   getAverage: function () {
-    if (this.count_ == 0)
+    if (this.count_ === 0) {
       return 0;
+    }
     return Math.round(this.sum_ / this.count_);
   },
 
@@ -45,4 +44,4 @@ StatisticsAggregate.prototype = {
   getRampUpTime: function () {
     return this.rampUpTime_ - this.startTime_;
   },
-}
+};
