@@ -10,7 +10,7 @@
 // globals: variables defined in apprtc/index.html
 /* globals audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, errorMessages, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, roomLink, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
 // exported: functions used in apprtc/index.html
-/* exported enterFullScreen, initialize, onHangup */
+/* exported enterFullScreen, initialize, onHangup, doGetUserMedia */
 
 'use strict';
 

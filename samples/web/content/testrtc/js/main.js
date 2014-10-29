@@ -7,8 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* globals AudioContext, MediaStreamTrack */
-/* exported addTestSuite, reportInfo, doGetUserMedia, expectEquals, testSuiteFinished, start, audioContext */
+/* exported addTestSuite, doGetUserMedia, reportInfo, expectEquals, testSuiteFinished, start, audioContext */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -154,8 +153,8 @@ function doGetUserMedia(constraints, onSuccess) {
 function appendSourceId(id, type, constraints) {
   if (constraints[type] === true) {
     constraints[type] = {optional: [{sourceId: id}]};
-  } else if (typeof(constraints[type]) === "object") {
-    if (typeof(constraints[type].optional) === "undefined") {
+  } else if (typeof(constraints[type]) === 'object') {
+    if (typeof(constraints[type].optional) === 'undefined') {
       constraints[type].optional = [];
     }
     constraints[type].optional.push({sourceId: id});
