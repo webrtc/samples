@@ -65,7 +65,7 @@ WebRTCCall.prototype = {
 
   onIceCandidate_: function (otherPeer) {
     if (event.candidate) {
-      var parsed = parseCandidate(event.candidate.candidate);
+      var parsed = WebRTCCall.parseCandidate(event.candidate.candidate);
       if (this.iceCandidateFilter_(parsed)) {
         otherPeer.addIceCandidate(event.candidate);
       }
@@ -84,3 +84,43 @@ WebRTCCall.isRelay = function (candidate) {
 WebRTCCall.isIpv6 = function (candidate) {
   return candidate.address.indexOf(':') !== -1;
 };
+
+// Parse a 'candidate:' line into a JSON object.
+WebRTCCall.parseCandidate = function (text) {
+  var candidateStr = 'candidate:';
+  var pos = text.indexOf(candidateStr) + candidateStr.length;
+  var fields = text.substr(pos).split(' ');
+  return {
+    'type': fields[7],
+    'protocol': fields[2],
+    'address': fields[4],
+  };
+}
+
+// Ask computeengineondemand to give us TURN server credentials and URIs.
+WebRTCCall.CEOD_URL = 'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
+WebRTCCall.asyncCreateTurnConfig = function (onSuccess, onError) {
+  var xhr = new XMLHttpRequest();
+  function onResult() {
+    if (xhr.readyState !== 4) {
+      return;
+    }
+
+    if (xhr.status !== 200) {
+      onError('TURN request failed');
+      return;
+    }
+
+    var response = JSON.parse(xhr.responseText);
+    var iceServer = {
+      'username': response.username,
+      'credential': response.password,
+      'urls': response.uris
+    };
+    onSuccess({ 'iceServers': [ iceServer ] });
+  }
+
+  xhr.onreadystatechange = onResult;
+  xhr.open('GET', WebRTCCall.CEOD_URL, true);
+  xhr.send();
+}

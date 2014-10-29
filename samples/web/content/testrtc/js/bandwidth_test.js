@@ -11,7 +11,7 @@
 // with 1024 chars as possible while keeping dataChannel bufferedAmmount above
 // zero.
 addTestSuite('Data channel throughput',
-  asyncCreateTurnConfig.bind(null, testDataChannelThroughput, reportFatal));
+  WebRTCCall.asyncCreateTurnConfig.bind(null, testDataChannelThroughput, reportFatal));
 
 function testDataChannelThroughput(config) {
   var call = new WebRTCCall(config);
@@ -95,7 +95,7 @@ function testDataChannelThroughput(config) {
 // average and maximum as well as time to ramp up (defined as reaching 75% of
 // the max bitrate. It reports infinite time to ramp up if never reaches it.
 addTestSuite('Video Bandwidth Test',
-  asyncCreateTurnConfig.bind(null, testVideoBandwidth, reportFatal));
+  WebRTCCall.asyncCreateTurnConfig.bind(null, testVideoBandwidth, reportFatal));
 
 function testVideoBandwidth(config) {
   var maxVideoBitrateKbps = 2000;
