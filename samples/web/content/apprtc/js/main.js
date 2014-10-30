@@ -419,7 +419,7 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function onSetSessionDescriptionSuccess() {
-  sendMessage(sessionDescription);
+  sendMessage(pc.localDescription);
   trace('Set session description success.');
 }
 
