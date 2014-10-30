@@ -11,11 +11,11 @@
   "unused": "strict",
   "globals": {
     "addTestSuite": true,
-    "asyncCreateTurnConfig": true,
     "attachMediaStream": true,
     "attachMediaStream": true,
     "audioContext": true,
     "AudioContext": true,
+    "Call": true,
     "createIceServers": true,
     "createIceServer": true,
     "doGetUserMedia": true,
@@ -23,7 +23,6 @@
     "getUserMedia": true,
     "getUserMedia": true,
     "MediaStreamTrack": true,
-    "parseCandidate": true,
     "reattachMediaStream": true,
     "reportBug": true,
     "reportError": true,
@@ -38,7 +37,6 @@
     "StatisticsAggregate": true,
     "testSuiteFinished": true,
     "trace": true,
-    "WebRTCCall": true,
     "webrtcDetectedBrowser": true,
     "webrtcDetectedVersion": true
   }
