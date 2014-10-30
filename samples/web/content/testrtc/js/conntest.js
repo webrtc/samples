@@ -17,20 +17,20 @@ addTestSuite('HasIpv6Test', hasIpv6Test);
 
 // Get a TURN config, and try to get a relay candidate using UDP.
 function udpConnectivityTest() {
-  WebRTCCall.asyncCreateTurnConfig(
+  Call.asyncCreateTurnConfig(
       function(config) { 
         filterConfig(config, 'udp');
-        gatherCandidates(config, null, WebRTCCall.isRelay);
+        gatherCandidates(config, null, Call.isRelay);
       },
       reportFatal);
 }
 
 // Get a TURN config, and try to get a relay candidate using TCP.
 function tcpConnectivityTest() {
-  WebRTCCall.asyncCreateTurnConfig(
+  Call.asyncCreateTurnConfig(
       function(config) { 
         filterConfig(config, 'tcp');
-        gatherCandidates(config, null, WebRTCCall.isRelay);
+        gatherCandidates(config, null, Call.isRelay);
       },
       reportFatal);
 }
@@ -38,7 +38,7 @@ function tcpConnectivityTest() {
 // Turn on IPv6, and try to get an IPv6 host candidate.
 function hasIpv6Test() {
   var params = { optional: [ { googIPv6: true } ] };
-  gatherCandidates(null, params, WebRTCCall.isIpv6);
+  gatherCandidates(null, params, Call.isIpv6);
 }
 
 // Filter the RTCConfiguration |config| to only contain URLs with the
@@ -71,7 +71,7 @@ function gatherCandidates(config, params, isGood) {
     }
 
     if (e.candidate) {
-      var parsed = WebRTCCall.parseCandidate(e.candidate.candidate);
+      var parsed = Call.parseCandidate(e.candidate.candidate);
       if (isGood(parsed)) {
         reportSuccess('Gathered candidate with type: ' + parsed.type +
                       ' address: ' + parsed.address);

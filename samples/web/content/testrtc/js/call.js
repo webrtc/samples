@@ -7,17 +7,17 @@
  */
 'use strict';
 
-function WebRTCCall(config) {
+function Call(config) {
   this.pc1 = new RTCPeerConnection(config);
   this.pc2 = new RTCPeerConnection(config);
 
   this.pc1.addEventListener('icecandidate', this.onIceCandidate_.bind(this, this.pc2));
   this.pc2.addEventListener('icecandidate', this.onIceCandidate_.bind(this, this.pc1));
 
-  this.iceCandidateFilter_ = WebRTCCall.noFilter;
+  this.iceCandidateFilter_ = Call.noFilter;
 }
 
-WebRTCCall.prototype = {
+Call.prototype = {
   establishConnection: function () {
     this.pc1.createOffer(this.gotOffer_.bind(this));
   },
@@ -65,7 +65,7 @@ WebRTCCall.prototype = {
 
   onIceCandidate_: function (otherPeer) {
     if (event.candidate) {
-      var parsed = WebRTCCall.parseCandidate(event.candidate.candidate);
+      var parsed = Call.parseCandidate(event.candidate.candidate);
       if (this.iceCandidateFilter_(parsed)) {
         otherPeer.addIceCandidate(event.candidate);
       }
@@ -73,20 +73,20 @@ WebRTCCall.prototype = {
   }
 };
 
-WebRTCCall.noFilter = function () {
+Call.noFilter = function () {
   return true;
 };
 
-WebRTCCall.isRelay = function (candidate) {
+Call.isRelay = function (candidate) {
   return candidate.type === 'relay';
 };
 
-WebRTCCall.isIpv6 = function (candidate) {
+Call.isIpv6 = function (candidate) {
   return candidate.address.indexOf(':') !== -1;
 };
 
 // Parse a 'candidate:' line into a JSON object.
-WebRTCCall.parseCandidate = function (text) {
+Call.parseCandidate = function (text) {
   var candidateStr = 'candidate:';
   var pos = text.indexOf(candidateStr) + candidateStr.length;
   var fields = text.substr(pos).split(' ');
@@ -98,9 +98,8 @@ WebRTCCall.parseCandidate = function (text) {
 };
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
-WebRTCCall.CEOD_URL =
-  'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
-WebRTCCall.asyncCreateTurnConfig = function (onSuccess, onError) {
+Call.CEOD_URL = 'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
+Call.asyncCreateTurnConfig = function (onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   function onResult() {
     if (xhr.readyState !== 4) {
@@ -122,6 +121,6 @@ WebRTCCall.asyncCreateTurnConfig = function (onSuccess, onError) {
   }
 
   xhr.onreadystatechange = onResult;
-  xhr.open('GET', WebRTCCall.CEOD_URL, true);
+  xhr.open('GET', Call.CEOD_URL, true);
   xhr.send();
 };

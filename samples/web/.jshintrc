@@ -15,6 +15,7 @@
     "attachMediaStream": true,
     "audioContext": true,
     "AudioContext": true,
+    "Call": true,
     "createIceServers": true,
     "createIceServer": true,
     "doGetUserMedia": true,
@@ -36,7 +37,6 @@
     "StatisticsAggregate": true,
     "testSuiteFinished": true,
     "trace": true,
-    "WebRTCCall": true,
     "webrtcDetectedBrowser": true,
     "webrtcDetectedVersion": true
   }
