@@ -33,6 +33,7 @@
     "RTCIceCandidate": true,
     "RTCPeerConnection": true,
     "RTCSessionDescription": true,
+    "setTestProgress": true,
     "Ssim": true,
     "StatisticsAggregate": true,
     "testFinished": true,

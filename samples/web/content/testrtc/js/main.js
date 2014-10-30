@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, audioContext */
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -74,6 +74,9 @@ function reportFatal(str) {
   testFinished();
   return false;
 }
+
+// TODO(andresp): Wire up to UI.
+function setTestProgress(value) {}
 
 function testFinished() {
   reportMessage('[ ------ ]', '');

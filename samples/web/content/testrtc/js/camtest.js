@@ -72,7 +72,21 @@ CamCaptureTest.prototype = {
     this.setupCanvas();
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
-    setTimeout(this.checkVideoFinish.bind(this, this.video), 5000);
+    this.setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video), 5000);
+  },
+
+  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
+    var start = new Date();
+    var updateProgressBar = setInterval(function () {
+      var now = new Date();
+      setTestProgress((now - start) * 100 / timeoutMs);
+    }, 100);
+
+    setTimeout(function () {
+      clearInterval(updateProgressBar);
+      setTestProgress(100);
+      timeoutCallback();
+    }, timeoutMs);
   },
 
   checkVideoTracks: function(stream) {

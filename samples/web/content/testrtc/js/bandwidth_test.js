@@ -61,8 +61,10 @@ function testDataChannelThroughput(config) {
     }
 
     if (now - startTime >= 1000 * testDurationSeconds) {
+      setTestProgress(100);
       stopSending = true;
     } else {
+      setTestProgress((now - startTime) / (10 * testDurationSeconds));
       setTimeout(sendingStep, 1);
     }
   }
@@ -124,9 +126,12 @@ function testVideoBandwidth(config) {
   }
 
   function gatherStats() {
-    if ((new Date()) - startTime > durationMs) {
+    var now = new Date();
+    if (now - startTime > durationMs) {
+      setTestProgress(100);
       completed();
     } else {
+      setTestProgress((now - startTime) * 100 / durationMs);
       call.pc1.getStats(gotStats);
     }
   }

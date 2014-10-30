@@ -18,7 +18,7 @@
  * might support only one resolution.
  */
 
-addTest('Camera', 'CamResolutionsTest', function() {
+addTest('Camera', 'Supported resolutions', function() {
   var test = new CamResolutionsTest();
   test.run();
 });
@@ -48,7 +48,6 @@ function CamResolutionsTest() {
 
 CamResolutionsTest.prototype = {
   run: function() {
-    trace('Checking ' + this.numResolutions + ' constraint sets');
     this.triggerGetUserMedia(this.resolutions[0]);
   },
 
@@ -75,23 +74,21 @@ CamResolutionsTest.prototype = {
   successFunc: function(stream) {
     this.supportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
-    reportMessage('[   INFO ]', 'Supported resolution: (' + theResolution[0] +
-                  'x' + theResolution[1] + ')');
+    reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
     stream.stop();
     this.finishTestOrRetrigger();
   },
 
   failFunc: function(error) {
-    trace(error);
     this.unsupportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     if (theResolution[2]) {
       this.mandatoryUnsupportedResolutions++;
-      reportError('Camera does not support a mandatory resolution, (' +
-                  theResolution[0] + 'x' + theResolution[1] + ')');
+      reportError('Camera does not support a mandatory resolution: ' +
+                  theResolution[0] + 'x' + theResolution[1]);
     } else {
-      reportInfo('Resolution NOT supported: (' + theResolution[0] + 'x' +
-                 theResolution[1] + ')');
+      reportInfo('NOT supported ' + theResolution[0] + 'x' +
+                 theResolution[1]);
     }
     this.finishTestOrRetrigger();
   },
