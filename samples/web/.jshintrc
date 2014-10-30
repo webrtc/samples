@@ -10,7 +10,7 @@
   "undef": true,
   "unused": "strict",
   "globals": {
-    "addTestSuite": true,
+    "addTest": true,
     "attachMediaStream": true,
     "attachMediaStream": true,
     "audioContext": true,
@@ -35,7 +35,7 @@
     "RTCSessionDescription": true,
     "Ssim": true,
     "StatisticsAggregate": true,
-    "testSuiteFinished": true,
+    "testFinished": true,
     "trace": true,
     "webrtcDetectedBrowser": true,
     "webrtcDetectedVersion": true

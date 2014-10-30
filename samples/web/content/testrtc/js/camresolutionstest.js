@@ -18,7 +18,7 @@
  * might support only one resolution.
  */
 
- addTestSuite('CamResolutionsTest', function() {
+addTest('Camera', 'CamResolutionsTest', function() {
   var test = new CamResolutionsTest();
   test.run();
 });
@@ -107,7 +107,7 @@ CamResolutionsTest.prototype = {
                       'camera is not accessible or dead.');
         }
       }
-      testSuiteFinished();
+      testFinished();
     } else {
       this.triggerGetUserMedia(this.resolutions[this.counter]);
     }

@@ -27,7 +27,7 @@
 // 4.e We also check that all frames were non-near-black.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
-addTestSuite('CamCaptureTest', function() {
+addTest('Camera', 'Test video feed', function() {
   var test = new CamCaptureTest();
   test.run();
 });
@@ -64,7 +64,7 @@ CamCaptureTest.prototype = {
   gotStream: function(stream) {
     this.stream = stream;
     if (!this.checkVideoTracks(this.stream)) {
-      testSuiteFinished();
+      testFinished();
       return;
     }
     this.setupVideoExpectations(this.stream);
@@ -132,7 +132,7 @@ CamCaptureTest.prototype = {
     this.stream.getVideoTracks()[0].onended = null;
     this.testActive = false;
     this.stream.getVideoTracks()[0].stop();
-    testSuiteFinished();
+    testFinished();
   },
 
   setupCanvas: function() {

@@ -10,7 +10,7 @@
 // Creates a loopback via relay candidates and tries to send as many packets
 // with 1024 chars as possible while keeping dataChannel bufferedAmmount above
 // zero.
-addTestSuite('Data channel throughput',
+addTest('Connectivity', 'Data throughput',
   Call.asyncCreateTurnConfig.bind(null, testDataChannelThroughput, reportFatal));
 
 function testDataChannelThroughput(config) {
@@ -85,7 +85,7 @@ function testDataChannelThroughput(config) {
       var receivedKBits = receivedPayloadBytes * 8 / 1000;
       reportSuccess('Total transmitted: ' + receivedKBits + ' kilo-bits in ' +
                     elapsedTime + ' seconds.');
-      testSuiteFinished();
+      testFinished();
     }
   }
 }
@@ -94,7 +94,7 @@ function testDataChannelThroughput(config) {
 // relay candidates for 40 seconds. Computes rtt and bandwidth estimation
 // average and maximum as well as time to ramp up (defined as reaching 75% of
 // the max bitrate. It reports infinite time to ramp up if never reaches it.
-addTestSuite('Video Bandwidth Test',
+addTest('Connectivity', 'Video bandwidth',
   Call.asyncCreateTurnConfig.bind(null, testVideoBandwidth, reportFatal));
 
 function testVideoBandwidth(config) {
@@ -154,6 +154,6 @@ function testVideoBandwidth(config) {
     reportSuccess('Send bandwidth estimate max: ' + bweStats.getMax() + ' bps');
     reportSuccess('Send bandwidth ramp-up time: ' + bweStats.getRampUpTime() + ' ms');
     reportSuccess('Test finished');
-    testSuiteFinished();
+    testFinished();
   }
 }
