@@ -8,7 +8,7 @@
   "globalstrict": true,
   "quotmark": "single",
   "undef": true,
-  "unused": "strict",
+  "unused": "vars",
   "globals": {
     "addTest": true,
     "attachMediaStream": true,
@@ -28,7 +28,6 @@
     "reportError": true,
     "reportFatal": true,
     "reportInfo": true,
-    "reportMessage": true,
     "reportSuccess": true,
     "RTCIceCandidate": true,
     "RTCPeerConnection": true,

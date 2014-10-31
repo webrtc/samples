@@ -80,6 +80,7 @@ CamResolutionsTest.prototype = {
   },
 
   failFunc: function(error) {
+    reportError(String(error));
     this.unsupportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     if (theResolution[2]) {
