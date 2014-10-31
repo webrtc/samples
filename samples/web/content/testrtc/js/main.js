@@ -36,11 +36,11 @@ function TestSuite(name) {
 }
 
 TestSuite.prototype = {
-  addTest: function (testName, testFunction) {
+  addTest: function(testName, testFunction) {
     this.tests.push(new Test(testName, testFunction));
   },
 
-  run: function (doneCallback) {
+  run: function(doneCallback) {
     runAllSequentially(this.tests, doneCallback);
   }
 };
@@ -53,7 +53,7 @@ function Test(name, func) {
 }
 
 Test.prototype = {
-  run: function (doneCallback) {
+  run: function(doneCallback) {
     this.doneCallback_ = doneCallback;
 
     currentTest = this;
@@ -67,35 +67,35 @@ Test.prototype = {
     }
   },
 
-  done: function () {
+  done: function() {
     this.reportMessage_('[ ------ ]', '');
     this.doneCallback_();
   },
 
-  setProgress: function (/*value*/) {
+  setProgress: function(/*value*/) {
     // TODO(andresp): Wire up to UI.
   },
 
-  reportSuccess: function (str) {
+  reportSuccess: function(str) {
     this.reportMessage_(PREFIX_OK, str);
     ++successes;
   },
 
-  reportError: function (str) {
+  reportError: function(str) {
     this.reportMessage_(PREFIX_FAILED, str);
     ++failures;
   },
 
-  reportFatal: function (str) {
+  reportFatal: function(str) {
     this.reportError(str);
     this.done();
   },
 
-  reportInfo: function (str) {
+  reportInfo: function(str) {
     this.reportMessage_(PREFIX_INFO, str);
   },
 
-  reportMessage_: function (prefix, str) {
+  reportMessage_: function(prefix, str) {
     output.textContent += prefix + ' ' + str + '\n';
   }
 };
@@ -130,8 +130,8 @@ function addTest(suiteName, testName, func) {
 }
 
 // Helper to run a list of tasks sequentially:
-//   items - Array of { run: function (doneCallback) {} }.
-//   doneCallback - called once all items have run sequentially.
+//   tasks - Array of { run: function(doneCallback) {} }.
+//   doneCallback - called once all tasks have run sequentially.
 function runAllSequentially(tasks, doneCallback) {
   var current = -1;
   var runNextAsync = setTimeout.bind(null, runNext);
@@ -242,7 +242,7 @@ function testIsDisabled(testName) {
 
 // Parse URL parameters and configure test filters.
 {
-  var parseUrlParameters = function () {
+  var parseUrlParameters = function() {
     var output = {};
     // python SimpleHTTPServer always adds a / on the end of the request.
     // Remove it so developers can easily run testrtc on their machines.
