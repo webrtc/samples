@@ -10,12 +10,12 @@
 <head>
 
   <title>WebRTC peer2peer test page</title>
-  
+
   <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
   <script src="../../../js/adapter.js"></script>
   <script src="js/main.js"></script>
-  <link rel="StyleSheet" href="../css/main.css">
-  
+  <link rel="stylesheet" href="../css/main.css">
+
   <meta charset="utf-8">
 
 </head>
@@ -37,7 +37,7 @@
         <video width="640" height="360" id="remote-view" autoplay="autoplay">
             </video>
         <div>
-        <button id="remote-view-size" 
+        <button id="remote-view-size"
             onclick="updateVideoElementSize('remote-view')">Stream size</button>
         <button onclick="updateVideoElementSize('remote-view', 640, 360);">
             640x360</button>
@@ -47,7 +47,7 @@
         <video width="320" height="180" id="local-view" autoplay="autoplay"
             muted></video>
         <div>
-          <button id="local-view-size" 
+          <button id="local-view-size"
               onclick="updateVideoElementSize('local-view')">Stream size
                 </button>
           <button onclick="updateVideoElementSize('local-view', 320, 180);">
@@ -71,7 +71,7 @@
               onclick="updateGetUserMediaConstraints();"/></label>
           <button onclick="editConstraints('getusermedia-constraints');">
               Edit constraints</button>
-          <button class="green" id="re-request" 
+          <button class="green" id="re-request"
               onclick="getUserMediaFromHere();">Request GetUserMedia</button>
         </div>
         <div id="audio-source">
@@ -105,7 +105,7 @@
           </div>
         </div>
         <div id="peer-id-container">
-          <label>Peer ID:</label> 
+          <label>Peer ID:</label>
           <input type="text" id="peer-id" disabled />
           <button class="green" id="connect" onclick="connectFromHere();">
               Connect</button>
@@ -157,7 +157,7 @@
           <input type="checkbox" id="data-channel-type-rtp"
               onclick="setPeerConnectionConstraints();">
           <label>status:</label>
-          <input type="text" id="data-channel-status" size="10" 
+          <input type="text" id="data-channel-status" size="10"
               value="not created" disabled="true"/>
           <label>ID:</label>
           <input type="text" id="data-channel-id" class="small-input"
@@ -167,7 +167,7 @@
             <input type="text" id="data-channel-send" class="medium-input"
                 size="10"/>
             <button onclick="sendDataFromHere();">Send data</button>
-            <label>Received data:</label> 
+            <label>Received data:</label>
             <input type="text" id="data-channel-receive"
                 size="10" disabled="true"/>
           </div>
@@ -189,10 +189,10 @@
 
       <div class="top-border bottom-border float-clear-left">
         <h2>Options</h2>
-        <label>Force iSAC</label> 
+        <label>Force iSAC</label>
         <input type="checkbox" id="force-isac" onclick="forceIsacChanged();"/>
         <label>CPU overuse</label>
-        <input type="checkbox" id="cpuoveruse-detection" 
+        <input type="checkbox" id="cpuoveruse-detection"
             onclick="setPeerConnectionConstraints();" checked="true"/>
       </div>
     </div>
