@@ -7,7 +7,7 @@
  */
 'use strict';
 
-addTestSuite('MicrophoneTest', micTest);
+addTest('Microphone', 'Audio capture', micTest);
 
 function micTest() {
   doGetUserMedia({audio:true}, function(stream) {
@@ -56,5 +56,5 @@ function checkAudioFinish(buffer) {
   var rms = Math.sqrt(sum / buffer.length);
   var db = 20 * Math.log(rms) / Math.log(10);
   reportSuccess('Audio power=' + db);
-  testSuiteFinished();
+  testFinished();
 }

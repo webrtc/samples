@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTestSuite, doGetUserMedia, reportInfo, expectEquals, testSuiteFinished, start, audioContext */
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -41,8 +41,8 @@ function testIsDisabled(testName) {
   return true;
 }
 
-function addTestSuite(name, func) {
-  testSuites.push({'name': name, 'func': func});
+function addTest(suiteName, testName, func) {
+  testSuites.push({'name': suiteName + '.' + testName, 'func': func});
 }
 
 function start() {
@@ -71,11 +71,14 @@ function reportError(str) {
 
 function reportFatal(str) {
   reportError(str);
-  testSuiteFinished();
+  testFinished();
   return false;
 }
 
-function testSuiteFinished() {
+// TODO(andresp): Wire up to UI.
+function setTestProgress(/*value*/) {}
+
+function testFinished() {
   reportMessage('[ ------ ]', '');
   asyncRunNextTestSuite();
 }

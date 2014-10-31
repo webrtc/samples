@@ -7,16 +7,13 @@
  */
 'use strict';
 
-// Tests whether
-// 1) We can connect via UDP to a TURN server
-// 2) We can connect via TCP to a TURN server
-// 3) We have IPv6 enabled (TODO: test IPv6 to a destination)
-addTestSuite('UdpConnectivityTest', udpConnectivityTest);
-addTestSuite('TcpConnectivityTest', tcpConnectivityTest);
-addTestSuite('HasIpv6Test', hasIpv6Test);
+addTest('Connectivity', 'Udp connectivity', testUdpConnectivity);
+addTest('Connectivity', 'Tcp connectivity', testTcpConnectivity);
+addTest('Connectivity', 'Ipv6 enabled', testHasIpv6Candidates);
 
+// Test whether it can connect via UDP to a TURN server
 // Get a TURN config, and try to get a relay candidate using UDP.
-function udpConnectivityTest() {
+function testUdpConnectivity() {
   Call.asyncCreateTurnConfig(
       function(config) { 
         filterConfig(config, 'udp');
@@ -25,8 +22,9 @@ function udpConnectivityTest() {
       reportFatal);
 }
 
+// Test whether it can connect via TCP to a TURN server
 // Get a TURN config, and try to get a relay candidate using TCP.
-function tcpConnectivityTest() {
+function testTcpConnectivity() {
   Call.asyncCreateTurnConfig(
       function(config) { 
         filterConfig(config, 'tcp');
@@ -35,8 +33,9 @@ function tcpConnectivityTest() {
       reportFatal);
 }
 
+// Test whether it is IPv6 enabled (TODO: test IPv6 to a destination).
 // Turn on IPv6, and try to get an IPv6 host candidate.
-function hasIpv6Test() {
+function testHasIpv6Candidates() {
   var params = { optional: [ { googIPv6: true } ] };
   gatherCandidates(null, params, Call.isIpv6);
 }
@@ -76,7 +75,7 @@ function gatherCandidates(config, params, isGood) {
         reportSuccess('Gathered candidate with type: ' + parsed.type +
                       ' address: ' + parsed.address);
         pc.close();
-        testSuiteFinished();
+        testFinished();
       }
     } else {
       pc.close();
