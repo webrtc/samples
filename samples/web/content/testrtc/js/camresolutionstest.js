@@ -52,19 +52,19 @@ CamResolutionsTest.prototype = {
   },
 
   triggerGetUserMedia: function(resolution) {
-    var constraints = { 
-      audio: false, 
-      video: { 
+    var constraints = {
+      audio: false,
+      video: {
         mandatory: {
-          minWidth:  resolution[0], 
+          minWidth:  resolution[0],
           minHeight: resolution[1],
-          maxWidth:  resolution[0], 
-          maxHeight: resolution[1] 
-        } 
-      } 
+          maxWidth:  resolution[0],
+          maxHeight: resolution[1]
+        }
+      }
     };
     try {
-      getUserMedia(constraints, this.successFunc.bind(this), 
+      doGetUserMedia(constraints, this.successFunc.bind(this),
           this.failFunc.bind(this));
     } catch (e) {
       reportFatal('GetUserMedia failed.');
