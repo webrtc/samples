@@ -76,7 +76,7 @@ function reportFatal(str) {
 }
 
 // TODO(andresp): Wire up to UI.
-function setTestProgress(value) {}
+function setTestProgress(/*value*/) {}
 
 function testFinished() {
   reportMessage('[ ------ ]', '');

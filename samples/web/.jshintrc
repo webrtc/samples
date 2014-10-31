@@ -8,7 +8,7 @@
   "globalstrict": true,
   "quotmark": "single",
   "undef": true,
-  "unused": "vars",
+  "unused": "strict",
   "globals": {
     "addTest": true,
     "attachMediaStream": true,
