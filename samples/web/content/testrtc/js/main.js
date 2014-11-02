@@ -165,15 +165,17 @@ function start() {
   }
 }
 
-function doGetUserMedia(constraints, onSuccess) {
+function doGetUserMedia(constraints, onSuccess, onFail) {
   // Call into getUserMedia via the polyfill (adapter.js).
   var successFunc = function(stream) {
     trace('User has granted access to local media.');
     onSuccess(stream);
   };
-  var failFunc = function(error) {
+  var failFunc = onFail || function(error) {
+    // If onFail function is provided error callback is propagated to the
+    // caller.
     var errorMessage = 'Failed to get access to local media. Error name was ' +
-      error.name;
+        error.name;
     return reportFatal(errorMessage);
   };
   try {
@@ -192,8 +194,8 @@ function doGetUserMedia(constraints, onSuccess) {
 function appendSourceId(id, type, constraints) {
   if (constraints[type] === true) {
     constraints[type] = {optional: [{sourceId: id}]};
-  } else if (typeof(constraints[type]) === 'object') {
-    if (typeof(constraints[type].optional) === 'undefined') {
+  } else if (typeof constraints[type] === 'object') {
+    if (typeof constraints[type].optional === 'undefined') {
       constraints[type].optional = [];
     }
     constraints[type].optional.push({sourceId: id});
