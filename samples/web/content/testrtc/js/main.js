@@ -135,16 +135,12 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
     trace('User has granted access to local media.');
     onSuccess(stream);
   };
-  var failFunc = function(error) {
-    // If onFail function is provided error callback is propogated to the
+  var failFunc = onFail || function(error) {
+    // If onFail function is provided error callback is propagated to the
     // caller.
-    if (typeof onFail !== 'undefined') {
-      return onFail(error);
-    } else {
-      var errorMessage = 'Failed to get access to local media. Error name was ' +
-      error.name;
-      return reportFatal(errorMessage);
-    }
+    var errorMessage = 'Failed to get access to local media. Error name was ' +
+        error.name;
+    return reportFatal(errorMessage);
   };
   try {
     // Append the constraints with the getSource constraints.
@@ -162,7 +158,7 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
 function appendSourceId(id, type, constraints) {
   if (constraints[type] === true) {
     constraints[type] = {optional: [{sourceId: id}]};
-  } else if (typeof constraints[type]  === 'object') {
+  } else if (typeof constraints[type] === 'object') {
     if (typeof constraints[type].optional === 'undefined') {
       constraints[type].optional = [];
     }
