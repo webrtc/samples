@@ -52,18 +52,14 @@ window.onbeforeunload = function() {
 };
 
 function checkIfToMoveLogDiv() {
-// Check if mobile UI layout should be used on page load (log div placed at
-// bottom.).
-  if (window.screen.availWidth < 1200) {
-    moveLogDiv();
-  } else if (window.orientiation === 'landscape' &&
-        window.screen.availHeight < 1200) {
+  // Check if mobile UI layout should be used on page load (log div placed at
+  // bottom.).
+  if (window.innerWidth < 1200) {
     moveLogDiv();
   }
   window.addEventListener('orientationchange', function() {
-    if (window.orientiation === 'landscape' &&
-        window.screen.availHeight < 1200) {
-          moveLogDiv();
+    if (window.innerWidth < 1200) {
+      moveLogDiv();
     }
   });
   // Check if mobile UI layout should be used due to width constraints
@@ -84,7 +80,7 @@ function moveLogDiv() {
   var newDiv = document.createElement('div');
   newDiv.id = 'log';
   newDiv.style.display = 'inherit';
-  newDiv.innerHTML = '<h3>Log</h3><button onclick="clearLog()">ClearLogs' +
+  newDiv.innerHTML = '<h2>Log</h2><button onclick="clearLog()">Clear logs' +
                      '</button><p id="messages" class="small-font"></p>';
 
   if (parentDiv.id === 'wrapper') {
