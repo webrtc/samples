@@ -42,7 +42,6 @@ window.onload = function() {
     getDevices();
   }
   // Checks if the mobile UI should be used.
-  checkIfToMoveLogDiv();
   registerResButtonsEvents();
 };
 
@@ -50,49 +49,6 @@ window.onload = function() {
 window.onbeforeunload = function() {
   disconnect_();
 };
-
-function checkIfToMoveLogDiv() {
-  // Check if mobile UI layout should be used on page load (log div placed at
-  // bottom.).
-  if (window.innerWidth < 1200) {
-    moveLogDiv();
-  }
-  window.addEventListener('orientationchange', function() {
-    if (window.innerWidth < 1200) {
-      moveLogDiv();
-    }
-  });
-  // Check if mobile UI layout should be used due to width constraints
-  // (log div placed at bottom.).
- window.addEventListener('resize', function() {
-    if (window.innerWidth > 1200 && $('log').parentNode.id === 'middle') {
-      moveLogDiv();
-    } else if (
-      window.innerWidth < 1200 && $('log').parentNode.id === 'wrapper') {
-        moveLogDiv();
-    }
-  });
-}
-
-function moveLogDiv() {
-  var oldLogDiv = $('log');
-  var parentDiv = oldLogDiv.parentNode;
-  var newDiv = document.createElement('div');
-  newDiv.id = 'log';
-  newDiv.style.display = 'inherit';
-  newDiv.innerHTML = '<h2>Log</h2><button onclick="clearLog()">Clear logs' +
-                     '</button><p id="messages" class="small-font"></p>';
-
-  if (parentDiv.id === 'wrapper') {
-    var middleDiv = $('middle');
-    oldLogDiv.parentNode.removeChild(oldLogDiv);
-    middleDiv.insertAdjacentElement('beforeend', newDiv);
-  } else if (parentDiv.id === 'middle') {
-    var wrapperDiv = $('wrapper');
-    oldLogDiv.parentNode.removeChild(oldLogDiv);
-    wrapperDiv.insertAdjacentElement('afterBegin', newDiv);
-  }
-}
 
 // Handles the resolution button events.
 function registerResButtonsEvents() {

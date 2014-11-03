@@ -38,15 +38,6 @@
   border-bottom: 4px solid grey;
 }
 
-#log {
-  float: left;
-  position: fixed;
-  overflow: auto;
-  width: 25%;
-  word-wrap: break-word;
-  z-index: 1;
-}
-
 #messages {
   word-wrap: break-word;
   white-space: pre-wrap;
@@ -222,11 +213,24 @@ video {
   width: 100%;
 }
 
+#log {
+  float: left;
+  position: fixed;
+  overflow: auto;
+  top: 0;
+  left: 0;
+  width: 20%;
+  padding: 16px;
+  word-wrap: break-word;
+  z-index: 1;
+}
+
 @media screen and (max-width: 1200px) {
   div#log {
     float: none;
     width: 100%;
     position: inherit;
+    padding: 0;
   }
   button {
     padding: 0.7em;
