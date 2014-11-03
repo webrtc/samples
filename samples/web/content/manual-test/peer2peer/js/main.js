@@ -14,6 +14,9 @@
 // Global namespace object.
 var global = {};
 global.transformOutgoingSdp = function(sdp) { return sdp; };
+// Default getUserMedia video resolution.
+global.videoWidth = 1280;
+global.videoHeight = 720;
 
 // We need a STUN server for some API calls.
 var STUN_SERVER = 'stun.l.google.com:19302';
@@ -21,7 +24,7 @@ var STUN_SERVER = 'stun.l.google.com:19302';
 // Used as a shortcut for finding DOM elements by ID.
 // @param {string} id is a case-sensitive string representing the unique ID of
 // the element being sought.
-// @return {object} id returns the element object specified as a parameter
+// @return {object} id returns the element object specified as a parameter.
 var $ = function(id) {
   return document.getElementById(id);
 };
@@ -38,6 +41,8 @@ window.onload = function() {
   if ($('get-devices-onload').checked === true) {
     getDevices();
   }
+  // Checks if the mobile UI should be used.
+  registerResButtonsEvents();
 };
 
 // Disconnect before the tab is closed.
@@ -45,12 +50,37 @@ window.onbeforeunload = function() {
   disconnect_();
 };
 
+// Handles the resolution button events.
+function registerResButtonsEvents() {
+  var lastResButtonPressed;
+  var elementIdAndResolutions = [
+    ['video-qvga', 320, 180],
+    ['video-vga', 640, 360],
+    ['video-hd', 1280, 720]
+  ];
+
+  function setResolution(elementAndRes) {
+    $(elementAndRes[0]).addEventListener('click', function() {
+      global.videoWidth = elementAndRes[1];
+      global.videoHeight = elementAndRes[2];
+      $(elementAndRes[0]).className = 'pressed';
+      if (typeof lastResButtonPressed !== 'undefined') {
+        lastResButtonPressed.className = '';
+      }
+      lastResButtonPressed = $(elementAndRes[0]);
+      updateGetUserMediaConstraints();
+    }, false );
+  }
+
+  for (var i in elementIdAndResolutions) {
+   setResolution(elementIdAndResolutions[i]);
+  }
+}
+
 // TODO (jansson) Setup events using addEventListener, applies in general.
 // A list of element id's to be registered for local storage.
 function setupLocalStorageFieldValues() {
   registerLocalStorage_('pc-server');
-  registerLocalStorage_('pc-createanswer-constraints');
-  registerLocalStorage_('pc-createoffer-constraints');
   registerLocalStorage_('get-devices-onload');
 }
 
@@ -68,6 +98,17 @@ function getUserMediaFromHere() {
     print_('getUserMedia says: ' + exception);
   }
 }
+/* exported editConstraints */
+function editConstraints(elementId) {
+  $(elementId).style.display = 'inline';
+  $(elementId).style.height = '400px';
+  $(elementId).style.zIndex = '9';
+  $(elementId).focus();
+  $(elementId).onblur = function() {
+      $(elementId).style.display = 'none';
+  };
+}
+
 /* exported connectFromHere */
 function connectFromHere() {
   var server = $('pc-server').value;
@@ -83,9 +124,9 @@ function connectFromHere() {
 function negotiateCallFromHere() {
   // Set the global variables with values from our UI.
   setCreateOfferConstraints(getEvaluatedJavaScript_(
-      $('pc-createoffer-constraints').value));
+      $('createoffer-constraints').value));
   setCreateAnswerConstraints(getEvaluatedJavaScript_(
-      $('pc-createanswer-constraints').value));
+      $('createanswer-constraints').value));
 
   ensureHasPeerConnection_();
   negotiateCall_();
@@ -190,15 +231,15 @@ function forceIsacChanged() {
 function updateGetUserMediaConstraints() {
   var selectedAudioDevice = $('audiosrc');
   var selectedVideoDevice = $('videosrc');
-  var constraints = {audio: $('audio').checked,
-                     video: $('video').checked
+  global.constraints = {audio: $('audio').checked,
+                        video: $('video').checked
   };
 
   if ($('video').checked) {
     // Default optional constraints placed here.
-    constraints.video = {optional: [{minWidth: $('video-width').value},
-                                    {minHeight: $('video-height').value},
-                                    {googLeakyBucket: true}]};
+    global.constraints.video = {optional: [{minWidth: global.videoWidth},
+                                           {minHeight: global.videoHeight},
+                                           {googLeakyBucket: true}]};
   }
 
   if (!selectedAudioDevice.disabled && !selectedAudioDevice.disabled) {
@@ -207,19 +248,19 @@ function updateGetUserMediaConstraints() {
 
     if ($('audio').checked) {
       if (typeof devices.audioId !== 'undefined') {
-        constraints.audio = {optional: [{sourceId: devices.audioId}]};
+        global.constraints.audio = {optional: [{sourceId: devices.audioId}]};
       }
     }
 
     if ($('video').checked) {
       if (typeof devices.videoId !== 'undefined') {
-        constraints.video.optional.push({sourceId: devices.videoId});
+        global.constraints.video.optional.push({sourceId: devices.videoId});
       }
     }
   }
 
   if ($('screencapture').checked) {
-      constraints = {
+      global.constraints = {
         audio: $('audio').checked,
         video: {mandatory: {chromeMediaSource: 'screen',
                             maxWidth: screen.width,
@@ -231,7 +272,12 @@ function updateGetUserMediaConstraints() {
     }
   }
 
-  $('getusermedia-constraints').value = JSON.stringify(constraints, null, ' ');
+  $('getusermedia-constraints').value = JSON.stringify(global.constraints,
+      null, ' ');
+  $('getusermedia-constraints').addEventListener('change', function() {
+    global.constraints = JSON.parse($('getusermedia-constraints').value);
+  }, false);
+  $('local-res').innerHTML = global.videoWidth + 'x' + global.videoHeight;
 }
 
 /* exported showServerHelp */
@@ -246,7 +292,6 @@ function showServerHelp() {
 /* exported clearLog */
 function clearLog() {
   $('messages').innerHTML = '';
-  $('debug').innerHTML = '';
 }
 
 // Stops the local stream.
@@ -476,7 +521,7 @@ function answerCall(peerConnection, message) {
 }
 
 function createDataChannel(peerConnection, label) {
-  if (typeof global.dataChannel  !== 'undefined' && 
+  if (typeof global.dataChannel  !== 'undefined' &&
       global.dataChannel.readyState !== 'closed') {
     error_('Creating DataChannel, but we already have one.');
   }
@@ -569,7 +614,7 @@ function removeLocalStream() {
 // @param {function} typeToToggle Either "audio" or "video" depending on what
 // the selector function selects.
 function toggleRemoteStream(selectAudioOrVideoTrack, typeToToggle) {
-  if (typeofglobal.peerConnection === 'undefined') {
+  if (typeof global.peerConnection === 'undefined') {
     error_('Tried to toggle remote stream, but have no peer connection.');
   }
   if (global.peerConnection.getRemoteStreams().length === 0) {
@@ -676,6 +721,7 @@ function sendToPeer(peer, message) {
 // height is 0, size will be taken from videoElement.videoWidth.
 // @param {!number} height of the video to update the video element, if width or
 // height is 0 size will be taken from the videoElement.videoHeight.
+/* exported updateVideoElementSize */
 function updateVideoElementSize(videoElementId, width, height) {
   var videoElement = $(videoElementId);
   if (width > 0 || height > 0) {
@@ -692,7 +738,7 @@ function updateVideoElementSize(videoElementId, width, height) {
              ' resize');
     }
   }
-  displayVideoSize_(videoElement);
+  displayVideoSize(videoElement);
 }
 
 // Disconnects from the peerconnection server. Returns ok-disconnected on
@@ -746,6 +792,7 @@ function doGetUserMedia_(constraints) {
   } catch (exception) {
     error_('Not valid JavaScript expression: ' + constraints);
   }
+
   print_('Requesting doGetUserMedia: constraints: ' + constraints);
   getUserMedia(evaluatedConstraints, getUserMediaOkCallback_,
                getUserMediaFailedCallback_);
@@ -758,7 +805,7 @@ function doGetUserMedia_(constraints) {
 // callback got called by WebRTC.
 function obtainGetUserMediaResult_() {
   if (typeof global.requestWebcamAndMicrophoneResult === 'undefined') {
-    global.requestWebcamAndMicrophoneResult = ' not called yet'; 
+    global.requestWebcamAndMicrophoneResult = ' not called yet';
   }
   return global.requestWebcamAndMicrophoneResult;
 }
@@ -777,7 +824,7 @@ function negotiateCall_() {
   if (typeof global.peerConnection === 'undefined') {
     error_('Negotiating call, but we have no peer connection.');
   } else if (typeof global.ourPeerId === 'undefined') {
-    error_('Negotiating call, but not connected.'); 
+    error_('Negotiating call, but not connected.');
   } else if (typeof global.remotePeerId === 'undefined') {
     error_('Negotiating call, but missing remote peer.');
   }
@@ -835,8 +882,8 @@ function addStreamCallback_(event) {
   var videoElement = document.getElementById('remote-view');
   attachMediaStream(videoElement, event.stream);
 
-  window.addEventListener('loadedmetadata', 
-      function() {displayVideoSize_(videoElement);}, true);
+  window.addEventListener('loadedmetadata',
+      function() {displayVideoSize(videoElement);}, true);
 }
 
 function removeStreamCallback_() {
@@ -845,7 +892,7 @@ function removeStreamCallback_() {
 }
 
 function onCreateDataChannelCallback_(event) {
-  if (typeof global.dataChannel !== 'undefined' && 
+  if (typeof global.dataChannel !== 'undefined' &&
       global.dataChannel.readyState !== 'closed') {
     error_('Received DataChannel, but we already have one.');
   }
@@ -886,7 +933,7 @@ function getUserMediaOkCallback_(stream) {
     var videoElement = $('local-view');
     attachMediaStream(videoElement, stream);
     window.addEventListener('loadedmetadata', function() {
-        displayVideoSize_(videoElement);}, true);
+        displayVideoSize(videoElement);}, true);
     // Throw an error when no video is sent from camera but gUM returns OK.
     stream.getVideoTracks()[0].onended = function() {
       error_(global.localStream + ' getUserMedia successful but ' +
@@ -904,19 +951,12 @@ function getUserMediaOkCallback_(stream) {
   }
 }
 
-// @param {string} videoElement The ID of the video element + stream used to
-// write the size to a HTML element based on id if the div's exists.
-function displayVideoSize_(videoElement) {
-  if ($(videoElement.id + '-stream-size') && $(videoElement.id + '-size')) {
-    if (videoElement.videoWidth > 0 || videoElement.videoHeight > 0) {
-      $(videoElement.id + '-stream-size').innerHTML = '(stream size: ' +
-          videoElement.videoWidth + 'x' + videoElement.videoHeight + ')';
-      $(videoElement.id + '-size').innerHTML = videoElement.width + 'x' +
-          videoElement.height;
-    }
-  } else {
-    print_('Skipping updating -stream-size and -size elements due to div\'s ' +
-           'are missing');
+// @param {string} videoTag The ID of the video tag + stream used to write the
+// size to a HTML tag based on id if the div's exists.
+function displayVideoSize(videoTag) {
+  if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
+    $(videoTag.id + '-size').firstChild.data = videoTag.videoWidth + 'x' +
+                                               videoTag.videoHeight;
   }
 }
 
@@ -1000,32 +1040,32 @@ function ensureHasPeerConnection_() {
 
 // @param {string} message Text to print.
 function print_(message) {
-  printHandler_(message, 'messages', 'black');
+  printHandler_(message, 'black');
 }
 
 // @param {string} message Text to print.
 function success_(message) {
-  printHandler_(message, 'messages', 'green');
+  printHandler_(message, 'green');
 }
 
 // @param {string} message Text to print.
 function warning_(message) {
-  printHandler_(message, 'debug', 'orange');
+  printHandler_(message, 'orange');
 }
 
 // @param {string} message Text to print.
 function error_(message) {
-  printHandler_(message, 'debug', 'red');
+  printHandler_(message, 'red');
 }
 
 // @param {string} message Text to print.
 // @param {string} textField Element ID of where to print.
 // @param {string} color Color of the text.
-function printHandler_(message, textField, color) {
+function printHandler_(message, color) {
   if (color === 'green' ) {
     message += ' success';
   }
-  $(textField).innerHTML += '<span style="color:' + color + ';">' + message +
+  $('messages').innerHTML += '<span style="color:' + color + ';">' + message +
                             '</span><br>';
   console.log(message);
   if (color === 'red' ) {
@@ -1074,8 +1114,6 @@ function hookupDataChannelCallbacks_() {
 function hookupDtmfSenderCallback_() {
   setOnToneChange(function(tone) {
     print_('Sent DTMF tone: ' + tone.tone);
-    $('dtmf-tones-sent').value =
-      tone.tone + '\n' + $('dtmf-tones-sent').value;
   });
 }
 

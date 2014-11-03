@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 // Test spec
@@ -31,7 +27,7 @@
 // 4.e We also check that all frames were non-near-black.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
-addTestSuite('CamCaptureTest', function() {
+addTest('Camera', 'Test video feed', function() {
   var test = new CamCaptureTest();
   test.run();
 });
@@ -58,7 +54,7 @@ function CamCaptureTest() {
   this.video.height = this.constraints.video.mandatory.minHeight;
   this.video.setAttribute('autoplay','');
   this.video.setAttribute('muted','');
-};
+}
 
 CamCaptureTest.prototype = {
   run: function() {
@@ -68,7 +64,7 @@ CamCaptureTest.prototype = {
   gotStream: function(stream) {
     this.stream = stream;
     if (!this.checkVideoTracks(this.stream)) {
-      testSuiteFinished();
+      testFinished();
       return;
     }
     this.setupVideoExpectations(this.stream);
@@ -76,11 +72,25 @@ CamCaptureTest.prototype = {
     this.setupCanvas();
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
-    setTimeout(this.checkVideoFinish.bind(this, this.video), 5000);
+    this.setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video), 5000);
+  },
+
+  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
+    var start = new Date();
+    var updateProgressBar = setInterval(function () {
+      var now = new Date();
+      setTestProgress((now - start) * 100 / timeoutMs);
+    }, 100);
+
+    setTimeout(function () {
+      clearInterval(updateProgressBar);
+      setTestProgress(100);
+      timeoutCallback();
+    }, timeoutMs);
   },
 
   checkVideoTracks: function(stream) {
-    reportSuccess("getUserMedia succeeded.");
+    reportSuccess('getUserMedia succeeded.');
     var tracks = stream.getVideoTracks();
     if (tracks.length < 1) {
       return reportFatal('No video track in returned stream.');
@@ -95,16 +105,16 @@ CamCaptureTest.prototype = {
     var videoTrack = stream.getVideoTracks()[0];
     videoTrack.onended = function() {
       reportError('Video track ended, camera stopped working');
-    }
+    };
     videoTrack.onmute = function() {
       reportError('Your camera reported itself as muted.');
       // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
       // isMuted local state.
       this.isMuted = true;
-    }
+    };
     videoTrack.onunmute = function() {
       this.isMuted = false;
-    }
+    };
   },
 
   checkVideoFinish: function(video) {
@@ -136,7 +146,7 @@ CamCaptureTest.prototype = {
     this.stream.getVideoTracks()[0].onended = null;
     this.testActive = false;
     this.stream.getVideoTracks()[0].stop();
-    testSuiteFinished();
+    testFinished();
   },
 
   setupCanvas: function() {

@@ -7,14 +7,14 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
 var audioContext = new AudioContext();
 var output = document.getElementById('output');
+var startButton = document.getElementById('start-button');
 var bugButton = document.getElementById('bug-button');
 var audioSelect = document.querySelector('select#audioSource');
 var videoSelect = document.querySelector('select#videoSource');
@@ -25,67 +25,88 @@ var PREFIX_OK      = '[     OK ]';
 var PREFIX_FAILED  = '[ FAILED ]';
 var testSuites = [];
 var testFilters = [];
-var nextTestIndex;
+var currentTest;
 var successes;
 var failures;
 
-function testIsDisabled(testName) {
-  if (testFilters.length == 0)
-    return false;
+// A test suite is a composition of many tests.
+function TestSuite(name) {
+  this.name = name;
+  this.tests = [];
+}
 
-  for (var i = 0; i != testFilters.length; ++i) {
-    if (testFilters[i] == testName)
-      return false;
+TestSuite.prototype = {
+  addTest: function(testName, testFunction) {
+    this.tests.push(new Test(testName, testFunction));
+  },
+
+  run: function(doneCallback) {
+    runAllSequentially(this.tests, doneCallback);
   }
-  return true;
+};
+
+function Test(name, func) {
+  this.name = name;
+  this.func = func;
+  this.doneCallback_ = null;
+  this.isDisabled = testIsDisabled(name);
 }
 
-function addTestSuite(name, func) {
-  testSuites.push({'name': name, 'func': func});
-}
+Test.prototype = {
+  run: function(doneCallback) {
+    this.doneCallback_ = doneCallback;
 
-function start() {
-  nextTestIndex = successes = failures = 0;
-  output.value = '';
-  asyncRunNextTestSuite();
-}
+    currentTest = this;
 
-function reportSkipped(testName) {
-  reportMessage(PREFIX_SKIPPED, testName);
-}
+    if (!this.isDisabled) {
+      this.reportMessage_(PREFIX_RUN, this.name);
+      this.func();
+    } else {
+      this.reportMessage_(PREFIX_SKIPPED, this.name);
+      this.done();
+    }
+  },
 
-function reportStart(testName) {
-  reportMessage(PREFIX_RUN, testName);
-}
+  done: function() {
+    this.reportMessage_('[ ------ ]', '');
+    this.doneCallback_();
+  },
 
-function reportSuccess(str) {
-  reportMessage(PREFIX_OK, str);
-  ++successes;
-}
+  setProgress: function(/*value*/) {
+    // TODO(andresp): Wire up to UI.
+  },
 
-function reportError(str) {
-  reportMessage(PREFIX_FAILED, str);
-  ++failures;
-}
+  reportSuccess: function(str) {
+    this.reportMessage_(PREFIX_OK, str);
+    ++successes;
+  },
 
-function reportFatal(str) {
-  reportError(str);
-  testSuiteFinished();
-  return false;
-}
+  reportError: function(str) {
+    this.reportMessage_(PREFIX_FAILED, str);
+    ++failures;
+  },
 
-function testSuiteFinished() {
-  reportMessage('[ ------ ]', '');
-  asyncRunNextTestSuite();
-}
+  reportFatal: function(str) {
+    this.reportError(str);
+    this.done();
+  },
 
-function reportMessage(prefix, str) {
-  output.value += prefix + ' ' + str + '\n';
-}
+  reportInfo: function(str) {
+    this.reportMessage_(PREFIX_INFO, str);
+  },
 
-function reportInfo(str) {
-  reportMessage(PREFIX_INFO, str);
-}
+  reportMessage_: function(prefix, str) {
+    output.textContent += prefix + ' ' + str + '\n';
+  }
+};
+
+// TODO(andresp): Pass Test object to test instead of using global methods.
+function reportSuccess(str) { currentTest.reportSuccess(str); }
+function reportError(str) { currentTest.reportError(str); }
+function reportFatal(str) { currentTest.reportFatal(str); }
+function reportInfo(str) { currentTest.reportInfo(str); }
+function setTestProgress(value) { currentTest.setProgress(value); }
+function testFinished() { currentTest.done(); }
 
 function expectEquals(expected, actual, failMsg, OkMsg) {
   if (expected !== actual) {
@@ -95,47 +116,68 @@ function expectEquals(expected, actual, failMsg, OkMsg) {
   }
 }
 
-function asyncRunNextTestSuite() {
-  setTimeout(runNextTestSuite, 0);
-}
-
-function runNextTestSuite() {
-  var index = nextTestIndex;
-  if (index >= testSuites.length) {
-    onComplete();
-    return;
+function addTest(suiteName, testName, func) {
+  for (var i = 0; i !== testSuites.length; ++i) {
+    if (testSuites[i].name === suiteName) {
+      testSuites[i].addTest(testName, func);
+      return;
+    }
   }
+  // Non-existent suite.
+  var testSuite = new TestSuite(suiteName);
+  testSuite.addTest(testName, func);
+  testSuites.push(testSuite);
+}
 
-  var testSuite = testSuites[nextTestIndex++];
+// Helper to run a list of tasks sequentially:
+//   tasks - Array of { run: function(doneCallback) {} }.
+//   doneCallback - called once all tasks have run sequentially.
+function runAllSequentially(tasks, doneCallback) {
+  var current = -1;
+  var runNextAsync = setTimeout.bind(null, runNext);
 
-  if (testIsDisabled(testSuite.name)) {
-    reportSkipped(testSuite.name);
-    asyncRunNextTestSuite();
-  } else {
-    reportStart(testSuite.name);
-    testSuite.func();
+  runNextAsync();
+
+  function runNext() {
+    current++;
+    if (current === tasks.length) {
+      doneCallback();
+      return;
+    }
+    tasks[current].run(runNextAsync);
   }
 }
 
-function onComplete() {
-  var str = successes + ' out of ' + (successes + failures) + ' tests passed';
-  var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
-  reportMessage('[ ------ ]', '');
-  reportMessage(prefix, str);
-  bugButton.disabled = false;
+function start() {
+  successes = failures = 0;
+  output.textContent = '';
+  startButton.setAttribute('disabled', null);
+
+  runAllSequentially(testSuites, onComplete);
+
+  function onComplete() {
+    var str = successes + ' out of ' + (successes + failures) + ' tests passed';
+    var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
+    output.textContent += '[ ----- ]\n' + prefix + ' ' + str + '\n';
+
+    bugButton.removeAttribute('disabled');
+    startButton.removeAttribute('disabled');
+  }
 }
 
-function doGetUserMedia(constraints, onSuccess) {
+function doGetUserMedia(constraints, onSuccess, onFail) {
   // Call into getUserMedia via the polyfill (adapter.js).
   var successFunc = function(stream) {
     trace('User has granted access to local media.');
     onSuccess(stream);
-  }
-  var failFunc = function(error) {
+  };
+  var failFunc = onFail || function(error) {
+    // If onFail function is provided error callback is propagated to the
+    // caller.
     var errorMessage = 'Failed to get access to local media. Error name was ' +
-      error.name;
+        error.name;
     return reportFatal(errorMessage);
-  }
+  };
   try {
     // Append the constraints with the getSource constraints.
     appendSourceId(audioSelect.value, 'audio', constraints);
@@ -150,19 +192,18 @@ function doGetUserMedia(constraints, onSuccess) {
 }
 
 function appendSourceId(id, type, constraints) {
-  if (constraints[type] == null || constraints[type] === false)
-    return;
-
-  if (constraints[type] == true)
-    constraints[type] = { optional: [{sourceId: id}] };
-  else if (constraints[type].optional == null)
-    constraints[type].optional = [{sourceId: id}];
-  else
-    constraints[type].optional.push( {sourceId: id} );
+  if (constraints[type] === true) {
+    constraints[type] = {optional: [{sourceId: id}]};
+  } else if (typeof constraints[type] === 'object') {
+    if (typeof constraints[type].optional === 'undefined') {
+      constraints[type].optional = [];
+    }
+    constraints[type].optional.push({sourceId: id});
+  }
 }
 
 function gotSources(sourceInfos) {
-  for (var i = 0; i != sourceInfos.length; ++i) {
+  for (var i = 0; i !== sourceInfos.length; ++i) {
     var sourceInfo = sourceInfos[i];
     var option = document.createElement('option');
     option.value = sourceInfo.id;
@@ -188,23 +229,37 @@ if (typeof MediaStreamTrack === 'undefined') {
   MediaStreamTrack.getSources(gotSources);
 }
 
+function testIsDisabled(testName) {
+  if (testFilters.length === 0) {
+    return false;
+  }
+
+  for (var i = 0; i !== testFilters.length; ++i) {
+    if (testFilters[i] === testName) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Parse URL parameters and configure test filters.
 {
-  var parseUrlParameters = function () {
+  var parseUrlParameters = function() {
     var output = {};
     // python SimpleHTTPServer always adds a / on the end of the request.
     // Remove it so developers can easily run testrtc on their machines.
     // Note that an actual / is still sent in most cases as %2F.
-    var args = window.location.search.replace(/\//g, '').substr(1).split("&");
-    for (var i = 0; i != args.length; ++i) {
-      var split = args[i].split("=");
+    var args = window.location.search.replace(/\//g, '').substr(1).split('&');
+    for (var i = 0; i !== args.length; ++i) {
+      var split = args[i].split('=');
       output[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
     }
     return output;
   };
 
   var parameters = parseUrlParameters();
-  if ('test_filter' in parameters) {
-    testFilters = parameters['test_filter'].split(',');
+  var filterParameterName = 'test_filter';
+  if (filterParameterName in parameters) {
+    testFilters = parameters[filterParameterName].split(',');
   }
 }
