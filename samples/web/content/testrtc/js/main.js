@@ -7,83 +7,198 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext */
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
 var audioContext = new AudioContext();
-var output = document.getElementById('output');
+var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
-var bugButton = document.getElementById('bug-button');
 var audioSelect = document.querySelector('select#audioSource');
 var videoSelect = document.querySelector('select#videoSource');
-var PREFIX_RUN     = '[ RUN    ]';
+var settingsDialog = document.getElementById('settings-dialog');
 var PREFIX_INFO    = '[   INFO ]';
-var PREFIX_SKIPPED = '[   SKIP ]';
 var PREFIX_OK      = '[     OK ]';
 var PREFIX_FAILED  = '[ FAILED ]';
 var testSuites = [];
 var testFilters = [];
 var currentTest;
-var successes;
-var failures;
 
 // A test suite is a composition of many tests.
-function TestSuite(name) {
+function TestSuite(name, output) {
   this.name = name;
   this.tests = [];
+
+  // UI elements.
+  this.toolbar_ = document.createElement('core-toolbar');
+  this.toolbar_.setAttribute('class', 'test-suite');
+  this.toolbar_.setAttribute('state', 'pending');
+  this.toolbar_.addEventListener('click', this.onClickToolbar_.bind(this));
+
+  var title = document.createElement('span');
+  title.setAttribute('flex', null);
+  title.textContent = name;
+  this.toolbar_.appendChild(title);
+
+  this.statusIcon_ = document.createElement('core-icon');
+  this.statusIcon_.setAttribute('icon', '');
+  this.toolbar_.appendChild(this.statusIcon_);
+
+  this.content_ = document.createElement('core-collapse');
+  this.content_.opened = false;
+
+  output.appendChild(this.toolbar_);
+  output.appendChild(this.content_);
 }
 
 TestSuite.prototype = {
   addTest: function(testName, testFunction) {
-    this.tests.push(new Test(testName, testFunction));
+    this.tests.push(new Test(this, testName, testFunction));
   },
 
   run: function(doneCallback) {
-    runAllSequentially(this.tests, doneCallback);
+    this.content_.opened = true;
+    this.toolbar_.setAttribute('state', 'pending');
+    this.statusIcon_.setAttribute('icon', 'more-horiz');
+    runAllSequentially(this.tests, this.allTestFinished.bind(this, doneCallback));
+  },
+
+  allTestFinished: function(doneCallback) {
+    var errors = 0;
+    var successes = 0;
+    for (var i = 0; i !== this.tests.length; ++i) {
+      successes += this.tests[i].successCount;
+      errors += this.tests[i].errorCount;
+    }
+
+    if (errors === 0 && successes > 0) {
+      this.toolbar_.setAttribute('state', 'success');
+      this.statusIcon_.setAttribute('icon', 'check');
+      this.content_.opened = false;
+    } else {
+      this.toolbar_.setAttribute('state', 'failure');
+      this.statusIcon_.setAttribute('icon', 'close');
+      this.content_.opened = true;
+    }
+
+    doneCallback();
+  },
+
+  onClickToolbar_: function() {
+    this.content_.toggle();
   }
 };
 
-function Test(name, func) {
+function Test(suite, name, func) {
+  this.suite = suite;
   this.name = name;
   this.func = func;
+
+  var progressBar = document.createElement('paper-progress');
+  progressBar.setAttribute('class', 'test-progress');
+  progressBar.setAttribute('flex', null);
+  progressBar.style.display = 'none';
+
+  var toolbar = document.createElement('core-toolbar');
+  toolbar.setAttribute('class', 'test');
+  var title = document.createElement('span');
+  title.textContent = name;
+  title.setAttribute('flex', null);
+  var statusIcon = document.createElement('core-icon');
+  statusIcon.setAttribute('icon', '');
+  toolbar.addEventListener('click', this.onClickToolbar_.bind(this));
+  toolbar.appendChild(title);
+  toolbar.appendChild(progressBar);
+  toolbar.appendChild(statusIcon);
+
+  var collapse = document.createElement('core-collapse');
+  collapse.setAttribute('class', 'test-output');
+  collapse.opened = false;
+  suite.content_.appendChild(toolbar);
+  suite.content_.appendChild(collapse);
+
+  this.statusIcon_ = statusIcon;
+  this.progressBar_ = progressBar;
+  this.output_ = collapse;
+
+  this.successCount = 0;
+  this.errorCount = 0;
   this.doneCallback_ = null;
+
   this.isDisabled = testIsDisabled(name);
+  this.reportInfo('Test not run yet.');
 }
 
 Test.prototype = {
   run: function(doneCallback) {
+    this.successCount = 0;
+    this.errorCount = 0;
     this.doneCallback_ = doneCallback;
+    this.clearMessages_();
+    this.statusIcon_.setAttribute('icon', 'more-horiz');
+    this.setProgress(null);
 
     currentTest = this;
-
     if (!this.isDisabled) {
-      this.reportMessage_(PREFIX_RUN, this.name);
       this.func();
     } else {
-      this.reportMessage_(PREFIX_SKIPPED, this.name);
+      this.reportInfo('Test is disabled.');
       this.done();
     }
   },
 
   done: function() {
-    this.reportMessage_('[ ------ ]', '');
+    this.setProgress(null);
+    if (this.errorCount === 0 && this.successCount > 0) {
+      this.statusIcon_.setAttribute('icon', 'check');
+      // On success, always close the details.
+      this.output_.opened = false;
+    } else {
+      this.statusIcon_.setAttribute('icon', 'close');
+      // Only close the details if there is only one expectations in which
+      // case the test name should provide enough information.
+      if (this.errorCount + this.successCount === 1) {
+        this.output_.opened = false;
+      }
+    }
     this.doneCallback_();
   },
 
-  setProgress: function(/*value*/) {
-    // TODO(andresp): Wire up to UI.
+  setProgress: function(value) {
+    var bar = this.progressBar_;
+    var statusIcon = this.statusIcon_;
+    if (value !== null) {
+      bar.style.display = 'block';
+      bar.setAttribute('value', value);
+      statusIcon.style.display = 'none';
+    } else {
+      bar.style.display = 'none';
+      statusIcon.style.display = 'block';
+    }
+  },
+
+  expectEquals: function(expected, actual, failMsg, okMsg) {
+    if (expected !== actual) {
+      this.reportError('Failed expectation: ' + expected + ' !== ' + actual + ': ' + failMsg);
+    } else if (okMsg) {
+      this.reportSuccess(okMsg);
+    }
   },
 
   reportSuccess: function(str) {
     this.reportMessage_(PREFIX_OK, str);
-    ++successes;
+    this.successCount++;
   },
 
   reportError: function(str) {
+    this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
-    ++failures;
+    this.errorCount++;
+  },
+
+  reportInfo: function(str) {
+    this.reportMessage_(PREFIX_INFO, str);
   },
 
   reportFatal: function(str) {
@@ -91,12 +206,20 @@ Test.prototype = {
     this.done();
   },
 
-  reportInfo: function(str) {
-    this.reportMessage_(PREFIX_INFO, str);
+  reportMessage_: function(prefix, str) {
+    var message = document.createElement('div');
+    message.textContent = prefix + ' ' + str;
+    this.output_.appendChild(message);
   },
 
-  reportMessage_: function(prefix, str) {
-    output.textContent += prefix + ' ' + str + '\n';
+  clearMessages_: function() {
+    while (this.output_.lastChild !== null) {
+      this.output_.removeChild(this.output_.lastChild);
+    }
+  },
+
+  onClickToolbar_: function() {
+    this.output_.toggle();
   }
 };
 
@@ -107,14 +230,7 @@ function reportFatal(str) { currentTest.reportFatal(str); }
 function reportInfo(str) { currentTest.reportInfo(str); }
 function setTestProgress(value) { currentTest.setProgress(value); }
 function testFinished() { currentTest.done(); }
-
-function expectEquals(expected, actual, failMsg, OkMsg) {
-  if (expected !== actual) {
-    reportError('Expected: ' + expected + ' !== ' + actual + ': ' + failMsg);
-  } else {
-    reportSuccess('Expected: ' + expected + ' === ' + actual + ': ' + OkMsg);
-  }
-}
+function expectEquals() { currentTest.expectEquals.apply(currentTest, arguments); }
 
 function addTest(suiteName, testName, func) {
   for (var i = 0; i !== testSuites.length; ++i) {
@@ -124,7 +240,7 @@ function addTest(suiteName, testName, func) {
     }
   }
   // Non-existent suite.
-  var testSuite = new TestSuite(suiteName);
+  var testSuite = new TestSuite(suiteName, contentDiv);
   testSuite.addTest(testName, func);
   testSuites.push(testSuite);
 }
@@ -149,18 +265,10 @@ function runAllSequentially(tasks, doneCallback) {
 }
 
 function start() {
-  successes = failures = 0;
-  output.textContent = '';
   startButton.setAttribute('disabled', null);
-
   runAllSequentially(testSuites, onComplete);
 
   function onComplete() {
-    var str = successes + ' out of ' + (successes + failures) + ' tests passed';
-    var prefix = (!failures) ? PREFIX_OK : PREFIX_FAILED;
-    output.textContent += '[ ----- ]\n' + prefix + ' ' + str + '\n';
-
-    bugButton.removeAttribute('disabled');
     startButton.removeAttribute('disabled');
   }
 }
