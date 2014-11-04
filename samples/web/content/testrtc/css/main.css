@@ -19,7 +19,7 @@ body {
   font-weight: 500;
   background-color: #4F7DC9;
   color: #FFF;
-  transition: height 0.2s;
+  transition: height .2s;
   font-family: 'Roboto', sans-serif;
   max-width: 40em;
   margin: 0 auto 1em auto;
@@ -41,18 +41,18 @@ core-toolbar.test-suite {
   cursor: pointer;
 }
 core-toolbar.test-suite[state='pending'] {
-  background-color: rgb(226, 226, 226);
+  background-color: #e2e2e2;
 }
 core-toolbar.test-suite[state='success'] {
-  background-color: rgb(144, 236, 144);
+  background-color: #90ec90;
 }
 core-toolbar.test-suite[state='failure'] {
-  background-color: rgb(236, 144, 144);
+  background-color: #ec9090;
 }
 
 core-toolbar.test-suite + core-collapse {
-  background-color: rgb(244, 244, 244);
-  padding-bottom: 10px;
+  background-color: #f4f4f4;
+  padding: 0 0 1em 0;
 }
 
 core-toolbar.test-suite core-icon[icon="check"],
@@ -69,17 +69,18 @@ core-toolbar.test core-icon[icon="close"] {
 core-toolbar.test {
   cursor: pointer;
   background-color: transparent;
-  height: 46px;
-  padding-bottom: 10px;
+  height: 2em;
 }
-.test span {
+
+core-toolbar.test span {
   min-width: 80%;
 }
+
 .test-output {
-  margin-left: 40px;
+  margin-left: 2em;
 }
 
 .test-progress {
   display: block;
-  min-width: 25px;
+  min-width: 2em;
 }

@@ -16,30 +16,30 @@
   <base target="_blank">
   <title>WebRTC Troubleshooter</title>
 
-  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-  <link rel='stylesheet' href="css/main.css" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" href="css/main.css" />
 
   <script src="//www.polymer-project.org/components/platform/platform.js"></script>
-  <link rel='import' href='//www.polymer-project.org/components/core-toolbar/core-toolbar.html'>
-  <link rel='import' href='//www.polymer-project.org/components/core-icon-button/core-icon-button.html'>
-  <link rel='import' href='//www.polymer-project.org/components/core-icon/core-icon.html'>
-  <link rel='import' href='//www.polymer-project.org/components/core-collapse/core-collapse.html'>
-  <link rel='import' href='//www.polymer-project.org/components/paper-dialog/paper-dialog.html'>
-  <link rel='import' href='//www.polymer-project.org/components/paper-dialog/paper-dialog-transition.html'>
-  <link rel='import' href='//www.polymer-project.org/components/paper-progress/paper-progress.html'>
-  <link rel='import' href='//www.polymer-project.org/components/paper-button/paper-button.html'>
+  <link rel="import" href="//www.polymer-project.org/components/core-toolbar/core-toolbar.html">
+  <link rel="import" href="//www.polymer-project.org/components/core-icon-button/core-icon-button.html">
+  <link rel="import" href="//www.polymer-project.org/components/core-icon/core-icon.html">
+  <link rel="import" href="//www.polymer-project.org/components/core-collapse/core-collapse.html">
+  <link rel="import" href="//www.polymer-project.org/components/paper-dialog/paper-dialog.html">
+  <link rel="import" href="//www.polymer-project.org/components/paper-dialog/paper-dialog-transition.html">
+  <link rel="import" href="//www.polymer-project.org/components/paper-progress/paper-progress.html">
+  <link rel="import" href="//www.polymer-project.org/components/paper-button/paper-button.html">
 </head>
 <body unresolved>
   <!-- Title toolbar -->
-  <core-toolbar class='title'>
+  <core-toolbar class="title">
     <span flex>WebRTC Troubleshooter</span>
     <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
-    <core-icon-button icon="bug-report" id='bug-button' onclick="reportBug()"></core-icon-button>
-    <paper-button id='start-button' onclick="start()" raised>Start</paper-button>
+    <core-icon-button icon="bug-report" id="bug-button" onclick="reportBug()"></core-icon-button>
+    <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
   </core-toolbar>
 
   <!-- Placeholder for dynamically generated test suites. -->
-  <div id='content'></div>
+  <div id="content"></div>
 
   <!-- Settings dialog -->
   <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
