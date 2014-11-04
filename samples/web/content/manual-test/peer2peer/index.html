@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <title>WebRTC peer2peer test page</title>
+
+  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script src="../../../js/adapter.js"></script>
+  <script src="js/main.js"></script>
+  <link rel="stylesheet" href="../css/main.css">
+
+  <meta charset="utf-8">
+
+</head>
+<body>
+
+<div id="wrapper">
+
+  <div id="container">
+
+    <div class="video-area">
+      <div>
+        <h2>Remote Video</h2>
+        <video width="640" height="360" id="remote-view" autoplay="autoplay">
+            </video>
+        <div>
+        <button id="remote-view-size"
+            onclick="updateVideoElementSize('remote-view')">Stream size</button>
+        <button onclick="updateVideoElementSize('remote-view', 640, 360);">
+            640x360</button>
+        </div>
+
+        <h2>Local Preview</h2>
+        <video width="320" height="180" id="local-view" autoplay="autoplay"
+            muted></video>
+        <div>
+          <button id="local-view-size"
+              onclick="updateVideoElementSize('local-view')">Stream size
+                </button>
+          <button onclick="updateVideoElementSize('local-view', 320, 180);">
+              320x180</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="middle">
+
+      <div class="top-border">
+        <h2>GetUserMedia</h2>
+        <div class="float-left">
+          <textarea class="constraints" id="getusermedia-constraints">
+            </textarea>
+          <label>Audio<input type="checkbox" id="audio" checked
+              onclick="updateGetUserMediaConstraints();"/></label>
+          <label>Video<input type="checkbox" id="video" checked
+              onclick="updateGetUserMediaConstraints();"/></label>
+          <label>Screen capture<input type="checkbox" id="screencapture"
+              onclick="updateGetUserMediaConstraints();"/></label>
+          <button onclick="editConstraints('getusermedia-constraints');">
+              Edit constraints</button>
+          <button class="green" id="re-request"
+              onclick="getUserMediaFromHere();">Request GetUserMedia</button>
+        </div>
+        <div id="audio-source">
+          <label>Audio source <select class="drop-down" id="audiosrc"
+              onchange="updateGetUserMediaConstraints();"></select></label>
+          <label>Auto<input type="checkbox" id="get-devices-onload"></label>
+          <button id="get-devices" onclick="getDevices();">
+              Get devices</button>
+        </div>
+        <div id="video-source">
+          <label>Video source <select class="drop-down" id="videosrc"
+              onchange="updateGetUserMediaConstraints();"></select></label>
+          <div id="res-buttons">
+            <button id="video-hd">HD</button>
+            <button id="video-vga">VGA</button>
+            <button id="video-qvga">QVGA</button>
+            <span id="local-res"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-border float-left">
+        <h2>PeerConnection</h2>
+        <div>
+          <div id="pc-server-label" class="float-left">
+            <label>Server [<a href="" onclick="showServerHelp();">?</a>]:
+                </label>
+          </div>
+          <div id="pc-server-container">
+            <input type="text" id="pc-server" >
+          </div>
+        </div>
+        <div id="peer-id-container">
+          <label>Peer ID:</label>
+          <input type="text" id="peer-id" disabled />
+          <button class="green" id="connect" onclick="connectFromHere();">
+              Connect</button>
+        </div>
+      </div>
+      <div id="pc-constraints-container">
+        <div id="pc-constraints-left" class="float-left">
+          <label>Constraints:</label>
+          <textarea class="constraints" id="pc-constraints"></textarea>
+          <button onclick="editConstraints('pc-constraints');">Connection</button>
+          <textarea class="constraints" id="createoffer-constraints">{}</textarea>
+          <button onclick="editConstraints('createoffer-constraints');">
+              createOffer</button>
+          <textarea class="constraints" id="createanswer-constraints">{}
+              </textarea>
+          <button onclick="editConstraints('createanswer-constraints');">
+              createAnswer</button>
+        </div>
+        <div id="call">
+          <label>Call:</label>
+          <button class="green" onclick="negotiateCallFromHere();">Negotiate
+              </button>
+          <button class="red" onclick="hangUpFromHere();">Hang up</button>
+        </div>
+      </div>
+
+      <div class="top-border float-left">
+        <h2>Media streams</h2>
+        <div class="float-left">
+          <label>Local Stream:</label>
+          <button class="green" onclick="addLocalStreamFromHere();">Add
+              </button>
+          <button class="red" onclick="removeLocalStreamFromHere();">Remove
+              </button>
+          <button class="red" onclick="stopLocalFromHere();">Stop</button>
+          <button onclick="toggleLocalVideoFromHere();">Toggle Video</button>
+          <button onclick="toggleLocalAudioFromHere();">Toggle Audio</button>
+        </div>
+        <div class="float-clear-left">
+          <label>Remote Stream:</label>
+          <button onclick="toggleRemoteVideoFromHere();">Toggle Video</button>
+          <button onclick="toggleRemoteAudioFromHere();">Toggle Audio</button>
+        </div>
+        <div class="float-clear-left">
+          <label>Data Channel:</label>
+          <button onclick="createDataChannelFromHere();">Create</button>
+          <button onclick="closeDataChannelFromHere();">Close</button>
+          <label>RTP</label>
+          <input type="checkbox" id="data-channel-type-rtp"
+              onclick="setPeerConnectionConstraints();">
+          <label>status:</label>
+          <input type="text" id="data-channel-status" size="10"
+              value="not created" disabled="true"/>
+          <label>ID:</label>
+          <input type="text" id="data-channel-id" class="small-input"
+              disabled="true"/>
+          <div>
+            <label>Send on data channel:</label>
+            <input type="text" id="data-channel-send" class="medium-input"
+                size="10"/>
+            <button onclick="sendDataFromHere();">Send data</button>
+            <label>Received data:</label>
+            <input type="text" id="data-channel-receive"
+                size="10" disabled="true"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-border float-clear-left">
+        <h2>DTMF Sender</h2>
+        <button onclick="createDtmfSenderFromHere();">Create</button>
+        <label>tones:</label>
+        <input type="text" id="dtmf-tones" class="medium-input" value="123,abc"/>
+        <label>dur(ms):</label>
+        <input type="text" id="dtmf-tones-duration" class="small-input"
+            value="100" />
+        <label>gap(ms):</label>
+        <input type="text" id="dtmf-tones-gap" class="small-input" value="50"/>
+        <button onclick="insertDtmfFromHere();">Send</button>
+      </div>
+
+      <div class="top-border bottom-border float-clear-left">
+        <h2>Options</h2>
+        <label>Force iSAC</label>
+        <input type="checkbox" id="force-isac" onclick="forceIsacChanged();"/>
+        <label>CPU overuse</label>
+        <input type="checkbox" id="cpuoveruse-detection"
+            onclick="setPeerConnectionConstraints();" checked="true"/>
+      </div>
+    </div>
+
+    <div id="log">
+      <h2>Log</h2>
+      <button onclick="clearLog()">Clear logs</button>
+      <p id="messages" class="small-font"></p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

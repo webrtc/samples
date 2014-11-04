@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript">
+  <meta name="description" content="Client-side WebRTC code samples.">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>DTMF</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Send DTMF tones</span></h1>
+
+    <div id="dialPad">
+      <div>
+        <button>1</button><button>2</button><button>3</button><button>4</button>
+      </div>
+      <div>
+        <button>5</button><button>6</button><button>7</button><button>8</button>
+      </div>
+      <div>
+        <button>9</button><button>0</button><button>*</button><button>#</button>
+      </div>
+      <div>
+        <button>A</button><button>B</button><button>C</button><button>D</button>
+      </div>
+    </div>
+
+    <div id="dtmf">
+      <h2>Sent tones</h2>
+      <div id="dtmfStatus"></div>
+      <div id="sentTones"></div>
+      <audio autoplay="autoplay"></audio>
+    </div>
+
+    <div id="parameters">
+      <div>
+        <label for="duration">Duration:</label>
+        <input id="duration" type="text" value="500" />
+      </div>
+      <div>
+        <label for="gap">Gap:</label>
+        <input id="gap" type="text" value="50" />
+      </div>
+      <div>
+       <label for="tones">Tones:</label>
+       <input id="tones" type="text" value="1199##9,6633221,9966332,9966332,1199##9,6633221" />
+     </div>
+   </div>
+
+   <div id="buttons">
+    <button id="callButton">Call</button>
+    <button id="sendTonesButton">Send tones</button>
+    <button id="hangupButton">Hang up</button>
+  </div>
+
+  <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection/dtmf" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<script src="../../../js/adapter.js"></script>
+<script src="js/main.js"></script>
+<script src="../../../js/lib/ga.js"></script>
+
+</body>
+</html>

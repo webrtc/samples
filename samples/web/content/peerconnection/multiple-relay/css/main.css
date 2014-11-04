@@ -1,0 +1,35 @@
+/*
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
+button {
+  margin: 20px 10px 0 0;
+  width: 100px;
+}
+
+div#buttons {
+  margin: 0 0 20px 0;
+}
+
+div#status {
+  height: 1em;
+  margin: 0 0 20px 0;
+}
+
+div#videos {
+  height: 232px;
+}
+video {
+  display: block;
+  float: left;
+  height: 232px;
+  width: calc(50% - 10px);
+}
+
+video:first-child {
+  margin: 0 20px 0 0;
+}
