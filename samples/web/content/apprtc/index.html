@@ -7,12 +7,14 @@
  *  tree.
 -->
 <html>
+
 <head>
 
   <title>WebRTC Reference App</title>
 
   <meta charset="utf-8">
   <meta name="description" content="WebRTC reference app">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
   {{ meta_viewport }}
 
   <link rel="canonical" href="{{ room_link }}">
@@ -22,59 +24,54 @@
 
 <body>
 
-<div id="container" ondblclick="enterFullScreen()" ontouchend="enterFullScreen()">
-  <div id="card">
-    <div id="local">
-      <video id="localVideo" autoplay="autoplay" muted></video>
-    </div>
-    <div id="remote">
-      <!-- Remote video is displayed in the canvas below when stereoscopic
-          rendering is requested (&ssr=true). -->
-      <canvas id="remoteCanvas" style="display: none;"></canvas>
-      <video id="remoteVideo" autoplay="autoplay"></video>
-      <div id="mini">
-        <video id="miniVideo" autoplay="autoplay" muted></video>
-      </div>
-    </div>
+  <div id="videos">
+    <video id="mini-video" autoplay muted></video>
+    <canvas id="remote-canvas"></canvas>
+    <video id="remote-video" autoplay></video>
+    <video id="local-video" autoplay muted></video>
   </div>
-</div>
 
-<footer id="status"></footer>
+  <footer>
+    <div id="sharing">
+      <div id="room-link">Waiting for someone to join this room: <a href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
+    </div>
+    <div id="info"></div>
+    <div id="status"></div>
+  </footer>
 
-<div id="infoDiv"></div>
+  <script type="text/javascript" src="/_ah/channel/jsapi"></script>
+  <script src="/js/main.js"></script>
+  {{ include_vr_js }}
+  <script src="/js/adapter.js"></script>
 
-<script type="text/javascript" src="/_ah/channel/jsapi"></script>
-<script src="/js/main.js"></script>
-{{ include_vr_js }}
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="/js/adapter.js"></script>
-<script src="/js/ga.js"></script>
+  <script type="text/javascript">
+    var audioRecvBitrate = '{{ arbr }}';
+    var audioRecvCodec = '{{ audio_receive_codec }}';
+    var audioSendBitrate = '{{ asbr }}';
+    var audioSendCodec = '{{ audio_send_codec }}';
+    var channelToken = '{{ token }}';
+    var errorMessages = {{ error_messages }};
+    var initiator = {{ initiator }};
+    var me = '{{ me }}';
+    var mediaConstraints = {{ media_constraints | safe }};
+    var offerConstraints = {{ offer_constraints | safe }};
+    var opusfec = {{ opusfec }};
+    var opusMaxPbr = '{{ opusmaxpbr }}';
+    var pcConfig = {{ pc_config | safe }};
+    var pcConstraints = {{ pc_constraints | safe }};
+    var roomKey = '{{ room_key }}';
+    var roomLink = '{{ room_link }}';
+    var stereo = {{ stereo }};
+    var stereoscopic = '{{ ssr }}';
+    var turnUrl = '{{ turn_url }}';
+    var videoRecvBitrate = '{{ vrbr }}';
+    var videoSendBitrate = '{{ vsbr }}';
+    var videoSendInitialBitrate = '{{ vsibr }}';
 
-<script type="text/javascript">
-  var errorMessages = {{ error_messages }};
-  var channelToken = '{{ token }}';
-  var me = '{{ me }}';
-  var roomKey = '{{ room_key }}';
-  var roomLink = '{{ room_link }}';
-  var initiator = {{ initiator }};
-  var pcConfig = {{ pc_config | safe }};
-  var pcConstraints = {{ pc_constraints | safe }};
-  var offerConstraints = {{ offer_constraints | safe }};
-  var mediaConstraints = {{ media_constraints | safe }};
-  var turnUrl = '{{ turn_url }}';
-  var stereo = {{ stereo }};
-  var opusfec = {{ opusfec }};
-  var opusMaxPbr = '{{ opusmaxpbr }}';
-  var audioSendBitrate = '{{ asbr }}';
-  var audioRecvBitrate = '{{ arbr }}';
-  var videoSendBitrate = '{{ vsbr }}';
-  var videoRecvBitrate = '{{ vrbr }}';
-  var videoSendInitialBitrate = '{{ vsibr }}';
-  var stereoscopic = '{{ ssr }}';
-  var audioSendCodec = '{{ audio_send_codec }}';
-  var audioRecvCodec = '{{ audio_receive_codec }}';
-  setTimeout(initialize, 1);
-</script>
+    setTimeout(initialize, 1);
+  </script>
+
+  <script src="/js/lib/ga.js"></script>
 
 </body>
 </html>
