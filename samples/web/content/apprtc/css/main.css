@@ -40,7 +40,7 @@ body {
   width: 100%;
 }
 
-div.active.warning {
+div.warning {
   background-color: #a80202;
   color: black;
   font-weight: 400;
@@ -73,9 +73,10 @@ div.active.warning {
 }
 
 #videos.active {
-  -webkit-transform: rotateY(180deg);
   -moz-transform: rotateY(180deg);
+  -ms-transform: rotateY(180deg);
   -o-transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
 }
 
@@ -102,10 +103,12 @@ footer > div.active {
 @-webkit-keyframes rotate {
   0% {
     -webkit-transform: rotateY(0);
+    transform: rotateY(0);
   }
 
   100% {
     -webkit-transform: rotateY(180deg);
+    transform: rotateY(180deg);
   }
 }
 
@@ -134,8 +137,11 @@ label {
   max-height: 100%;
   max-width: 100%;
   transition: opacity 1s;
-  transform: scale(-1, 1);
+  -moz-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  -o-transform: scale(-1, 1);
   -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
   width: 100%;
 }
 

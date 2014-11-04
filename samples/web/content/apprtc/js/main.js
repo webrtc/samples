@@ -10,9 +10,9 @@
 
 // Directives for JSHint checking (see jshint.com/docs/options).
 // globals: variables defined in apprtc/index.html
-/* globals audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, room-link, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
+/* globals audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, roomLink, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
 // exported: functions used in apprtc/index.html
-/* exported enterFullScreen, initialize, onHangup */
+/* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
 
 'use strict';
 
@@ -621,7 +621,7 @@ function transitionToDone() {
   localVideo.classList.remove('active');
   remoteVideo.classList.remove('active');
   miniVideo.classList.remove('active');
-  displayStatus('You have left the call. <a href=\'' + room-link +
+  displayStatus('You have left the call. <a href=\'' + roomLink +
       '\'>Click here</a> to rejoin.');
 }
 
