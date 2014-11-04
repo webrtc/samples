@@ -1,2 +1,5 @@
-
+node_modules
+.DS_Store
 *.pyc
+validation-report.json
+validation-status.json
