@@ -287,7 +287,7 @@ function setRemote(message) {
     if (remoteStreams.length > 0 &&
         remoteStreams[0].getVideoTracks().length > 0) {
       trace('Waiting for remote video.');
-      waitForremoteVideo();
+      waitForRemoteVideo();
     } else {
       // TODO(juberti): Make this wait for ICE connection before transitioning.
       trace('No remote video stream; not waiting for media to arrive.');
@@ -567,12 +567,12 @@ function stop() {
   msgQueue.length = 0;
 }
 
-function waitForremoteVideo() {
+function waitForRemoteVideo() {
   // Wait for the actual video to start arriving before moving to the active call state.
   if (remoteVideo.currentTime > 0) {
     transitionToActive();
   } else {
-    setTimeout(waitForremoteVideo, 10);
+    setTimeout(waitForRemoteVideo, 10);
   }
 }
 
@@ -801,7 +801,7 @@ document.onkeydown = function(event) {
   switch (event.keyCode) {
     case 68:
       toggleAudioMute();
-      toggleremoteVideoElementMuted();
+      toggleRemoteVideoElementMuted();
       return false;
     case 69:
       toggleVideoMute();
@@ -1049,11 +1049,11 @@ function displaySharingInfo() {
   sharingDiv.classList.add('active');
 }
 
-function toggleremoteVideoElementMuted() {
-  setremoteVideoElementMuted(!remoteVideo.muted);
+function toggleRemoteVideoElementMuted() {
+  setRemoteVideoElementMuted(!remoteVideo.muted);
 }
 
-function setremoteVideoElementMuted(mute) {
+function setRemoteVideoElementMuted(mute) {
   if (mute) {
     remoteVideo.muted = true;
     remoteVideo.title = 'Unmute audio';
