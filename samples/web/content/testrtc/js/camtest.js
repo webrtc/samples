@@ -93,7 +93,8 @@ CamCaptureTest.prototype = {
     reportSuccess('getUserMedia succeeded.');
     var tracks = stream.getVideoTracks();
     if (tracks.length < 1) {
-      return reportFatal('No video track in returned stream.');
+      reportFatal('No video track in returned stream.');
+      return false;
     }
     var videoTrack = tracks[0];
     reportSuccess('Video track exists with label = ' + videoTrack.label);
