@@ -16,6 +16,7 @@ function MicTest() {
   this.inputChannels = 6;
   this.outputChannels = 2;
   this.lowVolumeThreshold = -60;
+  // To be able to capture any data on Windows we need a large buffer size.
   this.bufferSize = 8192;
   this.activeChannels = [];
   // TODO (jansson) Currently only getting mono on two channels, need to figure
