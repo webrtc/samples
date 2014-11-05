@@ -18,11 +18,67 @@
   <link rel="canonical" href="{{ room_link }}">
   <link rel="stylesheet" href="css/main.css">
 
+  <!-- External dependencies. -->
+  <script type="text/javascript" src="/_ah/channel/jsapi" defer></script>
+  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script src="/js/adapter.js" defer></script>
+  <script src="/js/ga.js" defer></script>
+  {{ include_vr_js }}
+
+  <!-- Application includes. Changing order may break application. -->
+  <script type="text/javascript" defer>
+    var config = {
+      errorMessages: {{ error_messages }},
+      channelToken: '{{ token }}',
+
+      roomId: '{{ room_key }}',
+      roomLink: '{{ room_link }}',
+      clientId: '{{ me }}',
+      isInitiator: {{ initiator }},
+
+      turnUrl: '{{ turn_url }}',
+      peerConnectionConfig: {{ pc_config | safe }},
+      peerConnectionConstraints: {{ pc_constraints | safe }},
+      offerConstraints: {{ offer_constraints | safe }},
+      mediaConstraints: {{ media_constraints | safe }},
+
+      stereo: {{ stereo }},
+      opusfec: {{ opusfec }},
+      opusMaxPbr: '{{ opusmaxpbr }}',
+      audioSendBitrate: '{{ asbr }}',
+      audioRecvBitrate: '{{ arbr }}',
+      videoSendBitrate: '{{ vsbr }}',
+      videoRecvBitrate: '{{ vrbr }}',
+      videoSendInitialBitrate: '{{ vsibr }}',
+      stereoscopic: '{{ ssr }}',
+      audioSendCodec: '{{ audio_send_codec }}',
+      audioRecvCodec: '{{ audio_receive_codec }}',
+    };
+
+    var app = null;
+    document.addEventListener('DOMContentLoaded', function() {
+      app = new apprtc.App();
+    });
+
+    window.addEventListener('beforeunload', function() {
+      app.shutdown();
+      app = null;
+    });
+  </script>
+  <script src="/js/pubsub.js" defer></script>
+  <script src="/js/perf.js" defer></script>
+  <script src="/js/logging.js" defer></script>
+  <script src="/js/util.js" defer></script>
+  <script src="/js/signaling.js" defer></script>
+  <script src="/js/stats.js" defer></script>
+  <script src="/js/infobox.js" defer></script>
+  <script src="/js/apprtc.js" defer></script>
+
 </head>
 
 <body>
 
-<div id="container" ondblclick="enterFullScreen()" ontouchend="enterFullScreen()">
+<div id="container">
   <div id="card">
     <div id="local">
       <video id="localVideo" autoplay="autoplay" muted></video>
@@ -42,39 +98,6 @@
 <footer id="status"></footer>
 
 <div id="infoDiv"></div>
-
-<script type="text/javascript" src="/_ah/channel/jsapi"></script>
-<script src="/js/main.js"></script>
-{{ include_vr_js }}
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="/js/adapter.js"></script>
-<script src="/js/ga.js"></script>
-
-<script type="text/javascript">
-  var errorMessages = {{ error_messages }};
-  var channelToken = '{{ token }}';
-  var me = '{{ me }}';
-  var roomKey = '{{ room_key }}';
-  var roomLink = '{{ room_link }}';
-  var initiator = {{ initiator }};
-  var pcConfig = {{ pc_config | safe }};
-  var pcConstraints = {{ pc_constraints | safe }};
-  var offerConstraints = {{ offer_constraints | safe }};
-  var mediaConstraints = {{ media_constraints | safe }};
-  var turnUrl = '{{ turn_url }}';
-  var stereo = {{ stereo }};
-  var opusfec = {{ opusfec }};
-  var opusMaxPbr = '{{ opusmaxpbr }}';
-  var audioSendBitrate = '{{ asbr }}';
-  var audioRecvBitrate = '{{ arbr }}';
-  var videoSendBitrate = '{{ vsbr }}';
-  var videoRecvBitrate = '{{ vrbr }}';
-  var videoSendInitialBitrate = '{{ vsibr }}';
-  var stereoscopic = '{{ ssr }}';
-  var audioSendCodec = '{{ audio_send_codec }}';
-  var audioRecvCodec = '{{ audio_receive_codec }}';
-  setTimeout(initialize, 1);
-</script>
 
 </body>
 </html>
