@@ -18,21 +18,12 @@ function MicTest() {
   this.lowVolumeThreshold = -60;
   // To be able to capture any data on Windows we need a large buffer size.
   this.bufferSize = 8192;
-  this.activeChannels = [];
-  // TODO (jansson) Currently only getting mono on two channels, need to figure
-  // out how to fix that.
-  // Turning off all audio processing constraints enables stereo input.
+  this.activeChannelsDb = [];
+  // Turning off echoCancellation constraint enables stereo input.
   this.constraints = { 
     audio: {
       optional: [ 
-        { googEchoCancellation: false },
-        { googAutoGainControl:false},
-        { googNoiseSuppression:false},
-        { googHighpassFilter:false},
-        { googAudioMirroring:true},
-        { googNoiseSuppression2:false},
-        { googEchoCancellation2:false},
-        { googAutoGainControl2:false}
+        { echoCancellation: false }
       ]
     }
   };
@@ -90,24 +81,25 @@ MicTest.prototype = {
         }
       }
       if (numberOfZeroSamples !== buffer.length) {
-        this.activeChannels[channel] = numberOfZeroSamples;
-        this.testInputVolume(buffer, channel);
-      }        
+        this.activeChannelsDb[channel] = this.testInputVolume(buffer, channel);
+      }
     }
-    if (this.activeChannels.length === 0) {
+    if (this.activeChannelsDb.length === 0) {
       reportFatal('No active input channels detected. Microphone is most ' +
                   'likely muted or broken, please check if muted in the ' +
                   'sound settings or physically on the device.');
       return;
     } else {
-      reportSuccess('Audio input channels=' + this.activeChannels.length);
+      reportSuccess('Audio input channels=' + this.activeChannelsDb.length);
     }
-    // TODO (jansson) Add logic to get stereo input to webaudio, currently
-    // always getting mono, e.g. same data on 2 channels.
-    // If two channel input compare zero data samples to determine if it's mono.
-    if (this.activeChannels.length === 2) {
-      if (this.activeChannels[0][0] === this.activeChannels[1][0]) {
-        reportInfo('Mono stream detected.');
+    // If two channel input compare calculated db values to determine if it's 
+    // a mono microphone.
+    if (this.activeChannelsDb.length === 2) {
+      if (this.activeChannelsDb[0] === this.activeChannelsDb[1]) {
+        reportInfo('Mono microphone detected.');
+      }
+      else {
+        reportInfo('Stereo microphone detected.');
       }
     }
     testFinished();
@@ -120,7 +112,7 @@ MicTest.prototype = {
       sum += Math.abs(data[sample]);
     }
     var rms = Math.sqrt(sum / buffer.length);
-    var db = 20 * Math.log(rms) / Math.log(10);
+    var db = Math.round(20 * Math.log(rms) / Math.log(10));
 
     // Check input audio level.
     if (db < this.lowVolumeThreshold) {
@@ -130,5 +122,6 @@ MicTest.prototype = {
     } else {
       reportSuccess('Audio power for channel ' + channel + '=' + db + ' db');
     }
+    return db;
   }
 };
