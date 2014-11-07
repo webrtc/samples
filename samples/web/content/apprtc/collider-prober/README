@@ -1,0 +1,8 @@
+This script contains a simple prober that verifies that:
+- A WebSocket client in Chrome can send messages to another client through
+  Collider.
+
+To use simply run ./collider-prober.sh
+If it prints "PASS" (and exits 0) then all is well.
+If it prints a mess of logs (and exits non-0) then something has gone sideways
+and signaling in apprtc.appspot.com is probably not working well.

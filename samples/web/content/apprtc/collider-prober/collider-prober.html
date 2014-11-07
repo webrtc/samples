@@ -1,0 +1,111 @@
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+  <head>
+    <script>
+    var wsServerUrl = 'wss://apprtc-ws.webrtc.org:8089/ws';
+    var testRoomId = 'testRoomForColliderProber';
+    var clientIdPrefix = 'prober-';
+    var testMessage = 'hello';
+
+    var ws1 = null, ws2 = null;
+
+    var intervalId = null;
+
+    // Test is done; log & replace document body with an appropriate message.
+    function finish(msg) {
+      msg = 'DONE: ' + msg;
+      console.log(msg);
+      document.body.innerHTML = msg;
+
+      window.clearInterval(intervalId);
+      intervalId = null;
+    }
+
+    // Kicks off the test.
+    function start() {
+      intervalId = window.setInterval(function() {
+        if (!checkTestResults()) {
+          finish("TIMEOUT");
+        }
+      }, 1000);
+
+      testWebSocketMessaging();
+    }
+
+    // Checks if all tests have succeeded and update the document if so.
+    function checkTestResults() {
+      if (ws1.succeeded && ws2.succeeded) {
+        finish('PASS');
+        return true;
+      }
+      return false;
+    }
+
+    // Tests sending and receiving messages with websocket clients.
+    function testWebSocketMessaging() {
+      console.log('Testing websocket message forwarding...');
+      ws1 = createWebSocketClient('client1');
+      ws2 = createWebSocketClient('client2');
+    }
+
+    function createWebSocketClient(tag) {
+      ws = new WebSocket(wsServerUrl);
+      ws.tag = tag;
+      ws.succeeded = false;
+
+      ws.onopen = function() {
+        console.log('WebSocket ' + this.tag + ' is open.');
+
+        this.send(JSON.stringify({
+          'cmd': 'register',
+          'roomid': testRoomId,
+          'clientid': clientIdPrefix + this.tag
+        }));
+
+        this.send(JSON.stringify({
+          'cmd': 'send',
+          'msg': testMessage
+        }));
+      }.bind(ws);
+
+      ws.onerror = function(event) {
+        console.log('WebSocket ' + this.tag + ' gets an error.');
+        finish('FAIL');
+      }.bind(ws);
+
+      ws.onclose = function(event) {
+        console.log('WebSocket ' + this.tag + ' is closed: code = ' + event.code
+            + ', reason = ' + event.reason);
+        finish('FAIL');
+      }.bind(ws);
+
+      ws.onmessage = function(event) {
+        var msg = event.data;
+        console.log('WebSocket ' + this.tag + ' receives a message: ' + msg);
+
+        var msg_obj = JSON.parse(msg);
+        if (msg_obj.msg && msg_obj.msg === testMessage) {
+          console.log('WebSocket messaging test from ' + this.tag + ' OK.');
+
+          this.succeeded = true;
+          checkTestResults();
+        } else {
+          finish('FAIL');
+        }
+      }.bind(ws);
+
+      return ws;
+    }
+
+    </script>
+  </head>
+  <body onload="start()">
+    Tests in progress...
+  </body>
+</html>
