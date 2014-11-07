@@ -5,6 +5,9 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+'use strict';
+
 var video1 = document.querySelector('video#video1');
 var video2 = document.querySelector('video#video2');
 
@@ -25,15 +28,14 @@ var pc2IceStateDiv = document.querySelector('div#pc2IceState');
 
 var localstream, pc1, pc2;
 
-var sdpConstraints =
-  {
-    mandatory: {
-      OfferToReceiveAudio: true,
-      OfferToReceiveVideo: true
-    }
-  };
+var sdpConstraints = {
+  mandatory: {
+    OfferToReceiveAudio: true,
+    OfferToReceiveVideo: true
+  }
+};
 
-function gotStream(stream){
+function gotStream(stream) {
   trace('Received local stream');
   // Call the polyfill wrapper to attach the media stream to this element.
   attachMediaStream(video1, stream);
@@ -45,8 +47,11 @@ function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
   // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({audio: true, video: true}, gotStream,
-    function(e){
+  getUserMedia({
+      audio: true,
+      video: true
+    }, gotStream,
+    function(e) {
       alert('getUserMedia() error: ', e.name);
     });
 }
@@ -57,12 +62,16 @@ function call() {
   trace('Starting call');
   var videoTracks = localstream.getVideoTracks();
   var audioTracks = localstream.getAudioTracks();
-  if (videoTracks.length > 0)
+  if (videoTracks.length > 0) {
     trace('Using Video device: ' + videoTracks[0].label);
-  if (audioTracks.length > 0)
+  }
+  if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
+  }
   var servers = null;
-  var pcConstraints = {'optional': []};
+  var pcConstraints = {
+    'optional': []
+  };
 
   pc1 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created local peer connection object pc1');
@@ -123,17 +132,17 @@ function hangup() {
   trace('Ending call');
   pc1.close();
   pc2.close();
-  pc1StateDiv.textContent += ' ⇒ ' + pc1.signalingState || pc1.readyState;
-  pc2StateDiv.textContent += ' ⇒ ' + pc2.signalingState || pc2.readyState;
-  pc1IceStateDiv.textContent += ' ⇒ ' + pc1.iceConnectionState;
-  pc2IceStateDiv.textContent += ' ⇒ ' + pc2.iceConnectionState;
+  pc1StateDiv.textContent += ' => ' + pc1.signalingState || pc1.readyState;
+  pc2StateDiv.textContent += ' => ' + pc2.signalingState || pc2.readyState;
+  pc1IceStateDiv.textContent += ' => ' + pc1.iceConnectionState;
+  pc2IceStateDiv.textContent += ' => ' + pc2.iceConnectionState;
   pc1 = null;
   pc2 = null;
   hangupButton.disabled = true;
   callButton.disabled = false;
 }
 
-function gotRemoteStream(e){
+function gotRemoteStream(e) {
   attachMediaStream(video2, e.stream);
   trace('Got remote stream');
 }
@@ -143,7 +152,7 @@ function stateCallback1() {
   if (pc1) {
     state = pc1.signalingState || pc1.readyState;
     trace('pc1 state change callback, state: ' + state);
-    pc1StateDiv.textContent += ' ⇒ ' + state;
+    pc1StateDiv.textContent += ' => ' + state;
   }
 }
 
@@ -152,7 +161,7 @@ function stateCallback2() {
   if (pc2) {
     state = pc2.signalingState || pc2.readyState;
     trace('pc2 state change callback, state: ' + state);
-    pc2StateDiv.textContent += ' ⇒ ' + state;
+    pc2StateDiv.textContent += ' => ' + state;
   }
 }
 
@@ -161,7 +170,7 @@ function iceStateCallback1() {
   if (pc1) {
     iceState = pc1.iceConnectionState;
     trace('pc1 ICE connection state change callback, state: ' + iceState);
-    pc1IceStateDiv.textContent += ' ⇒ ' + iceState;
+    pc1IceStateDiv.textContent += ' => ' + iceState;
   }
 }
 
@@ -170,11 +179,11 @@ function iceStateCallback2() {
   if (pc2) {
     iceState = pc2.iceConnectionState;
     trace('pc2 ICE connection state change callback, state: ' + iceState);
-    pc2IceStateDiv.textContent += ' ⇒ ' + iceState;
+    pc2IceStateDiv.textContent += ' => ' + iceState;
   }
 }
 
-function iceCallback1(event){
+function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
       onAddIceCandidateSuccess, onAddIceCandidateError);
@@ -184,7 +193,7 @@ function iceCallback1(event){
   }
 }
 
-function iceCallback2(event){
+function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
       onAddIceCandidateSuccess, onAddIceCandidateError);
@@ -201,8 +210,3 @@ function onAddIceCandidateSuccess() {
 function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
 }
-
-function trace(text) {
-  console.log((window.performance.now() / 1000).toFixed(3) + ': ' + text);
-}
-

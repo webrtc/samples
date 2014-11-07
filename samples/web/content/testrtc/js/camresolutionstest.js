@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 /* This test tries calling getUserMedia() with each resolution from the list
@@ -22,7 +18,7 @@
  * might support only one resolution.
  */
 
- addTestSuite('CamResolutionsTest', function() {
+addTest('Camera', 'Supported resolutions', function() {
   var test = new CamResolutionsTest();
   test.run();
 });
@@ -48,28 +44,27 @@ function CamResolutionsTest() {
   this.counter = 0;
   this.supportedResolutions = 0;
   this.unsupportedResolutions = 0;
-};
+}
 
 CamResolutionsTest.prototype = {
   run: function() {
-    trace('Checking ' + this.numResolutions + ' constraint sets');
     this.triggerGetUserMedia(this.resolutions[0]);
   },
 
   triggerGetUserMedia: function(resolution) {
-    var constraints = { 
-      audio: false, 
-      video: { 
+    var constraints = {
+      audio: false,
+      video: {
         mandatory: {
-          minWidth:  resolution[0], 
+          minWidth:  resolution[0],
           minHeight: resolution[1],
-          maxWidth:  resolution[0], 
-          maxHeight: resolution[1] 
-        } 
-      } 
+          maxWidth:  resolution[0],
+          maxHeight: resolution[1]
+        }
+      }
     };
     try {
-      getUserMedia(constraints, this.successFunc.bind(this), 
+      doGetUserMedia(constraints, this.successFunc.bind(this),
           this.failFunc.bind(this));
     } catch (e) {
       reportFatal('GetUserMedia failed.');
@@ -79,22 +74,21 @@ CamResolutionsTest.prototype = {
   successFunc: function(stream) {
     this.supportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
-    reportMessage('[   INFO ]', 'Supported resolution: (' + theResolution[0] +
-                  'x' + theResolution[1] + ')');
+    reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
     stream.stop();
     this.finishTestOrRetrigger();
   },
 
-  failFunc: function(error) {
+  failFunc: function() {
     this.unsupportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     if (theResolution[2]) {
       this.mandatoryUnsupportedResolutions++;
-      reportError('Camera does not support a mandatory resolution, (' +
-                  theResolution[0] + 'x' + theResolution[1] + ')');
+      reportError('Camera does not support a mandatory resolution: ' +
+                  theResolution[0] + 'x' + theResolution[1]);
     } else {
-      reportInfo('Resolution NOT supported: (' + theResolution[0] + 'x' +
-                 theResolution[1] + ')');
+      reportInfo('NOT supported ' + theResolution[0] + 'x' +
+                 theResolution[1]);
     }
     this.finishTestOrRetrigger();
   },
@@ -110,7 +104,7 @@ CamResolutionsTest.prototype = {
                       'camera is not accessible or dead.');
         }
       }
-      testSuiteFinished();
+      testFinished();
     } else {
       this.triggerGetUserMedia(this.resolutions[this.counter]);
     }

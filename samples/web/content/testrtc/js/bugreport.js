@@ -5,17 +5,15 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
 /* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
+/* exported reportBug */
 'use strict';
 
 function reportBug() {
   // Detect browser and version.
   var res = getBrowserNameAndVersion();
-  var browserName = res['name']
-  var browserVersion = res['version']
+  var browserName = res.name;
+  var browserVersion = res.version;
   console.log('Detected browser: ' + browserName + ' ' + browserVersion);
 
   var description = 'Browser: ' + browserName + ' ' + browserVersion +
@@ -25,11 +23,11 @@ function reportBug() {
 
   // Labels for the bug to be filed.
   var osLabel = 'OS-';
-  if (navigator.platform.indexOf('Win') != -1) osLabel += 'Windows';
-  if (navigator.platform.indexOf('Mac') != -1) osLabel += 'Mac';
-  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) osLabel += 'iOS';
-  if (navigator.platform.indexOf('Linux') != -1) osLabel += 'Linux';
-  if (navigator.platform.indexOf('Android') != -1) osLabel += 'Android';
+  if (navigator.platform.indexOf('Win') !== -1) { osLabel += 'Windows'; }
+  if (navigator.platform.indexOf('Mac') !== -1) { osLabel += 'Mac'; }
+  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) { osLabel += 'iOS'; }
+  if (navigator.platform.indexOf('Linux') !== -1) { osLabel += 'Linux'; }
+  if (navigator.platform.indexOf('Android') !== -1) { osLabel += 'Android'; }
 
   var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
   var url = 'https://code.google.com/p/chromium/issues/entry?' +
@@ -53,21 +51,21 @@ function getBrowserNameAndVersion() {
   var version = '' + parseFloat(navigator.appVersion);
   var offsetName, offsetVersion, ix;
 
-  if ((offsetVersion = agent.indexOf('Chrome')) != -1) {
+  if ((offsetVersion = agent.indexOf('Chrome')) !== -1) {
     browserName = 'Chrome';
     version = agent.substring(offsetVersion + 7);
-  } else if ((offsetVersion = agent.indexOf('MSIE')) != -1) {
+  } else if ((offsetVersion = agent.indexOf('MSIE')) !== -1) {
     browserName = 'Microsoft Internet Explorer'; // Older IE versions.
     version = agent.substring(offsetVersion + 5);
-  } else if ((offsetVersion = agent.indexOf('Trident')) != -1) {
+  } else if ((offsetVersion = agent.indexOf('Trident')) !== -1) {
     browserName = 'Microsoft Internet Explorer'; // Newer IE versions.
     version = agent.substring(offsetVersion + 8);
-  } else if ((offsetVersion = agent.indexOf('Firefox')) != -1) {
+  } else if ((offsetVersion = agent.indexOf('Firefox')) !== -1) {
     browserName = 'Firefox';
-  } else if ((offsetVersion = agent.indexOf('Safari')) != -1) {
+  } else if ((offsetVersion = agent.indexOf('Safari')) !== -1) {
     browserName = 'Safari';
     version = agent.substring(offsetVersion + 7);
-    if ((offsetVersion = agent.indexOf('Version')) != -1) {
+    if ((offsetVersion = agent.indexOf('Version')) !== -1) {
       version = agent.substring(offsetVersion + 8);
     }
   } else if ( (offsetName = agent.lastIndexOf(' ') + 1) <
@@ -75,14 +73,16 @@ function getBrowserNameAndVersion() {
     // For other browsers 'name/version' is at the end of userAgent
     browserName = agent.substring(offsetName, offsetVersion);
     version = agent.substring(offsetVersion + 1);
-    if (browserName.toLowerCase() == browserName.toUpperCase()) {
+    if (browserName.toLowerCase() === browserName.toUpperCase()) {
       browserName = navigator.appName;
     }
   } // Trim the version string at semicolon/space if present.
-  if ((ix = version.indexOf(';')) != -1)
+  if ((ix = version.indexOf(';')) !== -1) {
     version = version.substring(0, ix);
-  if ((ix = version.indexOf(' ')) != -1)
+  }
+  if ((ix = version.indexOf(' ')) !== -1) {
     version = version.substring(0, ix);
+  }
 
   return { 'name': browserName, 'version': version };
 }

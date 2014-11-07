@@ -5,10 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
-/* More information about these options at jshint.com/docs/options */
-/* jshint browser: true, camelcase: true, curly: true, devel: true, eqeqeq: true, forin: false, globalstrict: true, quotmark: single, undef: true, unused: strict */
-
 'use strict';
 
 // Test spec
@@ -31,7 +27,7 @@
 // 4.e We also check that all frames were non-near-black.
 // 5. Tear down the |stream|. TODO: this should be done in the test harness.
 
-addTestSuite('CamCaptureTest', function() {
+addTest('Camera', 'Test video feed', function() {
   var test = new CamCaptureTest();
   test.run();
 });
@@ -41,8 +37,15 @@ function CamCaptureTest() {
   this.stream = null;
   this.testActive = false;
   this.numFrames = 0;
+  // Variables associated with near-black frame detection.
   this.numBlackFrames = 0;
   this.nonBlackPixelLumaThreshold = 20;
+  // Variables associated with nearly-frozen frames detection.
+  this.numFrozenFrames = 0;
+  this.previousFrame = [];
+  this.identicalFrameSsimThreshold = 0.985;
+  this.frameComparator = new Ssim();
+
   this.constraints = {
     video: { mandatory: { minWidth: 640, minHeight: 480} }
   };
@@ -51,7 +54,7 @@ function CamCaptureTest() {
   this.video.height = this.constraints.video.mandatory.minHeight;
   this.video.setAttribute('autoplay','');
   this.video.setAttribute('muted','');
-};
+}
 
 CamCaptureTest.prototype = {
   run: function() {
@@ -61,7 +64,7 @@ CamCaptureTest.prototype = {
   gotStream: function(stream) {
     this.stream = stream;
     if (!this.checkVideoTracks(this.stream)) {
-      testSuiteFinished();
+      testFinished();
       return;
     }
     this.setupVideoExpectations(this.stream);
@@ -69,14 +72,29 @@ CamCaptureTest.prototype = {
     this.setupCanvas();
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
-    setTimeout(this.checkVideoFinish.bind(this, this.video), 5000);
+    this.setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video), 5000);
+  },
+
+  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
+    var start = new Date();
+    var updateProgressBar = setInterval(function () {
+      var now = new Date();
+      setTestProgress((now - start) * 100 / timeoutMs);
+    }, 100);
+
+    setTimeout(function () {
+      clearInterval(updateProgressBar);
+      setTestProgress(100);
+      timeoutCallback();
+    }, timeoutMs);
   },
 
   checkVideoTracks: function(stream) {
-    reportSuccess("getUserMedia succeeded.");
+    reportSuccess('getUserMedia succeeded.');
     var tracks = stream.getVideoTracks();
     if (tracks.length < 1) {
-      return reportFatal('No video track in returned stream.');
+      reportFatal('No video track in returned stream.');
+      return false;
     }
     var videoTrack = tracks[0];
     reportSuccess('Video track exists with label = ' + videoTrack.label);
@@ -88,16 +106,16 @@ CamCaptureTest.prototype = {
     var videoTrack = stream.getVideoTracks()[0];
     videoTrack.onended = function() {
       reportError('Video track ended, camera stopped working');
-    }
+    };
     videoTrack.onmute = function() {
       reportError('Your camera reported itself as muted.');
       // MediaStreamTrack.muted property is not wired up in Chrome yet, checking
       // isMuted local state.
       this.isMuted = true;
-    }
+    };
     videoTrack.onunmute = function() {
       this.isMuted = false;
-    }
+    };
   },
 
   checkVideoFinish: function(video) {
@@ -118,10 +136,18 @@ CamCaptureTest.prototype = {
                  'has produced ' + this.numBlackFrames + '/' + this.numFrames +
                  ' near-black frames in total).', 'Camera is sending ' +
                  'non-black frames.');
+    // Check: amount of frozen frames should be 0.
+    expectEquals(0, this.numFrozenFrames, 'Your camera seems to be ' +
+                 'delivering frozen frames. This might be a symptom of the ' +
+                 'camera in a bad state; if it\'s a USB WebCam, try plugging ' +
+                 'it out and in again. (FYI: It has produced ' +
+                 this.numFrozenFrames + '/' + (this.numFrames - 1) +
+                 ' analyzed frame-pairs in total).', 'Camera is sending ' +
+                 'non-frozen frames.');
     this.stream.getVideoTracks()[0].onended = null;
     this.testActive = false;
     this.stream.getVideoTracks()[0].stop();
-    testSuiteFinished();
+    testFinished();
   },
 
   setupCanvas: function() {
@@ -140,12 +166,21 @@ CamCaptureTest.prototype = {
         this.canvas.height);
     var imageData = this.context.getImageData(0, 0, this.canvas.width,
         this.canvas.height);
-    if (this.isBlackFrame(imageData.data, imageData.data.length))
+
+    if (this.isBlackFrame(imageData.data, imageData.data.length)) {
       this.numBlackFrames++;
+    }
+
+    if (this.frameComparator.calculate(this.previousFrame, imageData.data) >
+        this.identicalFrameSsimThreshold) {
+      this.numFrozenFrames++;
+    }
+    this.previousFrame = imageData.data;
+
     this.numFrames++;
     if (this.testActive) {
       setTimeout(this.testFrame.bind(this), 20);
-    };
+    }
   },
 
   isBlackFrame: function(data, length) {
@@ -156,8 +191,9 @@ CamCaptureTest.prototype = {
       // Use Luma as in Rec. 709: Y′709 = 0.21R + 0.72G + 0.07B;
       accuLuma += 0.21 * data[i] +  0.72 * data[i+1] + 0.07 * data[i+2];
       // Early termination if the average Luma so far is bright enough.
-      if (accuLuma  > (thresh * i / 4) )
+      if (accuLuma  > (thresh * i / 4)) {
         return false;
+      }
     }
     return true;
   }
