@@ -101,3 +101,15 @@ func TestClientClose(t *testing.T) {
 		t.Errorf("After client.close(), rwc.Closed = %t, want true", rwc.Closed)
 	}
 }
+
+func TestClientMaxQueuedMsg(t *testing.T) {
+	c := newClient("abc")
+	for i := 0; i < maxQueuedMsgCount; i++ {
+		if err := c.enqueue("msg"); err != nil {
+			t.Errorf("client.enqueue(...) got error %v after %d calls, want nil", err, i)
+		}
+	}
+	if err := c.enqueue("msg"); err == nil {
+		t.Error("client.enqueue(...) got no error after maxQueuedMsgCount + 1 calls, want error")
+	}
+}

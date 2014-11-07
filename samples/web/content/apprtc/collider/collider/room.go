@@ -10,18 +10,23 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 )
 
 const maxRoomCapacity = 2
+
+const clientRegisterTimeoutInSeconds = 5
 
 type room struct {
 	id string
 	// A mapping from the client ID to the client object.
 	clients map[string]*client
+	// A mapping from the client ID to the timer that is used to clean up un-registered clients.
+	timers map[string]*time.Timer
 }
 
 func newRoom(id string) *room {
-	return &room{id: id, clients: make(map[string]*client)}
+	return &room{id: id, clients: make(map[string]*client), timers: make(map[string]*time.Timer)}
 }
 
 // client returns the client, or creates it if it does not exist and the room is not full.
@@ -36,6 +41,12 @@ func (rm *room) client(clientID string) (*client, error) {
 	rm.clients[clientID] = newClient(clientID)
 	log.Printf("Added client %s to room %s", clientID, rm.id)
 
+	rm.timers[clientID] = time.NewTimer(time.Second * clientRegisterTimeoutInSeconds)
+	go func() {
+		<-rm.timers[clientID].C
+		rooms.removeIfUnregistered(rm.id, clientID)
+	}()
+
 	return rm.clients[clientID], nil
 }
 
@@ -48,6 +59,8 @@ func (rm *room) register(clientID string, rwc io.ReadWriteCloser) error {
 	if err = c.register(rwc); err != nil {
 		return err
 	}
+	rm.timers[clientID].Stop()
+
 	log.Printf("Client %s registered in room %s", clientID, rm.id)
 
 	// Sends the queued messages from the other client of the room.
@@ -68,8 +81,7 @@ func (rm *room) send(srcClientID string, msg string) error {
 
 	// Queue the message if the other client has not joined.
 	if len(rm.clients) == 1 {
-		rm.clients[srcClientID].enqueue(msg)
-		return nil
+		return rm.clients[srcClientID].enqueue(msg)
 	}
 
 	// Send the message to the other client of the room.
@@ -86,7 +98,9 @@ func (rm *room) send(srcClientID string, msg string) error {
 // remove closes the client connection and removes the client specified by the |clientID|.
 func (rm *room) remove(clientID string) {
 	if c, ok := rm.clients[clientID]; ok {
-		c.rwc.Close()
+		if c.rwc != nil {
+			c.rwc.Close()
+		}
 		delete(rm.clients, clientID)
 	}
 }

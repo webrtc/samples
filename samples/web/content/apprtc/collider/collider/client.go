@@ -11,6 +11,8 @@ import (
 	"log"
 )
 
+const maxQueuedMsgCount = 1024
+
 type client struct {
 	id string
 	// rwc is the interface to access the websocket connection.
@@ -35,8 +37,12 @@ func (c *client) register(rwc io.ReadWriteCloser) error {
 }
 
 // Adds a message to the client's message queue.
-func (c *client) enqueue(msg string) {
+func (c *client) enqueue(msg string) error {
+	if len(c.msgs) >= maxQueuedMsgCount {
+		return errors.New("Out of memory")
+	}
 	c.msgs = append(c.msgs, msg)
+	return nil
 }
 
 // sendQueued the queued messages to the other client.
@@ -61,8 +67,7 @@ func (c *client) send(other *client, msg string) error {
 	if other.rwc != nil {
 		return sendServerMsg(other.rwc, msg)
 	}
-	c.enqueue(msg)
-	return nil
+	return c.enqueue(msg)
 }
 
 // close closes the ReadWriteCloser if it exists.
@@ -71,4 +76,9 @@ func (c *client) close() {
 		c.rwc.Close()
 		c.rwc = nil
 	}
+}
+
+// registered returns true if the client has registered.
+func (c *client) registered() bool {
+	return c.rwc != nil
 }
