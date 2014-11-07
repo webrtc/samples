@@ -8,25 +8,25 @@
 -->
 <html>
 <head>
-  <title>PeerConnection PRANSWER Demo</title>
-  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-  <script src="../../../js/adapter.js"></script>
-  <style>
-    video {
-      border:5px solid black;
-      width:320px;
-      height:240px;
-    }
-  </style>
+<title>PeerConnection PRANSWER Demo</title>
+<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+<script src="../../../js/adapter.js"></script>
+<style>
+video {
+  border:5px solid black;
+  width:320px;
+  height:240px;
+}
+</style>
 </head>
 <body>
-  <video id="vid1" autoplay="true" muted="true"></video>
-  <video id="vid2" autoplay></video>
-  <br>
-  <button id="btn1" onclick="start()">Call</button>
-  <button id="btn2" onclick="accept()">Accept</button>
-  <button id="btn3" onclick="stop()">Hang Up</button>
-  <script>
+<video id="vid1" autoplay="true" muted="true"></video>
+<video id="vid2" autoplay></video>
+<br>
+<button id="btn1" onclick="start()">Call</button>
+<button id="btn2" onclick="accept()">Accept</button>
+<button id="btn3" onclick="stop()">Hang Up</button>
+<script>
 //var vid1 = document.getElementById("vid1");
 //var vid2 = document.getElementById("vid2");
 btn1.disabled = true;
@@ -35,11 +35,11 @@ btn3.disabled = true;
 var pc1,pc2;
 var localstream;
 var sdpConstraints = {'mandatory': {
-  'OfferToReceiveAudio':true,
-  'OfferToReceiveVideo':true }};
+                        'OfferToReceiveAudio':true,
+                        'OfferToReceiveVideo':true }};
 
-  function gotStream(stream) {
-    trace("Received local stream");
+function gotStream(stream) {
+  trace("Received local stream");
   // Call the polyfill wrapper to attach the media stream to this element.
   attachMediaStream(vid1, stream);
   localstream = stream;
@@ -155,7 +155,7 @@ function onAddIceCandidateSuccess() {
 function onAddIceCandidateError(error) {
   trace("Failed to add Ice Candidate: " + error.toString());
 }
-</script>
-</body>
+    </script>
+  </body>
 </html>
 
