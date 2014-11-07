@@ -16,8 +16,9 @@ function MicTest() {
   this.inputChannels = 6;
   this.outputChannels = 2;
   this.lowVolumeThreshold = -60;
-  // To be able to capture any data on Windows we need a large buffer size.
-  this.bufferSize = 8192;
+  // Buffer size set to 0 to let Chrome choose based on the running platform.
+  this.bufferSize = 0;
+  this.inputBuffer = [];
   this.activeChannelsDb = [];
   // Turning off echoCancellation constraint enables stereo input.
   this.constraints = { 
@@ -41,6 +42,20 @@ MicTest.prototype = {
     this.createAudioBuffer(stream);
   },
 
+  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
+    var start = new Date();
+    var updateProgressBar = setInterval(function () {
+      var now = new Date();
+      setTestProgress((now - start) * 100 / timeoutMs);
+    }, 100);
+
+    setTimeout(function () {
+      clearInterval(updateProgressBar);
+      setTestProgress(100);
+      timeoutCallback();
+    }, timeoutMs);
+  },
+
   checkAudioTracks: function(stream) {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
@@ -58,17 +73,21 @@ MicTest.prototype = {
         this.inputChannels, this.outputChannels);
     this.audioSource.connect(this.scriptNode);
     this.scriptNode.connect(audioContext.destination);
-    this.scriptNode.onaudioprocess = this.processAudio.bind(this);
+    this.scriptNode.onaudioprocess = this.collectAudio.bind(this);
+    this.setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 1000);
   },
 
-  processAudio: function(event) {
+  collectAudio: function(event) {
     var inputBuffer = event.inputBuffer;
+    this.inputBuffer = inputBuffer;
+  },
+
+  stopCollectingAudio: function() {
     this.stream.stop();
     this.audioSource.disconnect(this.scriptNode);
     this.scriptNode.disconnect(audioContext.destination);
-    // Start analazying the audio buffer.
-    reportInfo('Audio input sample rate=' + inputBuffer.sampleRate);
-    this.testNumberOfActiveChannels(inputBuffer);
+    // Start analyzing the audio buffer.
+    this.testNumberOfActiveChannels(this.inputBuffer);
   },
 
   testNumberOfActiveChannels: function(buffer) {
@@ -84,6 +103,7 @@ MicTest.prototype = {
         this.activeChannelsDb[channel] = this.testInputVolume(buffer, channel);
       }
     }
+    // Validate the result.
     if (this.activeChannelsDb.length === 0) {
       reportFatal('No active input channels detected. Microphone is most ' +
                   'likely muted or broken, please check if muted in the ' +
@@ -112,15 +132,17 @@ MicTest.prototype = {
       sum += Math.abs(data[sample]);
     }
     var rms = Math.sqrt(sum / buffer.length);
-    var db = Math.round(20 * Math.log(rms) / Math.log(10));
+    var db = 20 * Math.log(rms) / Math.log(10);
 
     // Check input audio level.
     if (db < this.lowVolumeThreshold) {
-      reportError('Audio input level=' + db + ' db' + 'Microphone input ' +
-                  'level is low, increase input volume or move closer to the ' +
-                  'microphone.');
+      // Use Math.round to display up to two decimal places.
+      reportError('Audio input level = ' + Math.round(db * 100) / 100 + ' db' +
+                  'Microphone input level is low, increase input volume or' +
+                  'move closer to the microphone.');
     } else {
-      reportSuccess('Audio power for channel ' + channel + '=' + db + ' db');
+      reportSuccess('Audio power for channel ' + channel + '=' +
+                    Math.round(db * 100) / 100 + ' db');
     }
     return db;
   }
