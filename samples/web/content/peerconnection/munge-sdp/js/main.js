@@ -86,7 +86,7 @@ function getMedia() {
   getMediaButton.disabled = true;
   createPeerConnectionButton.disabled = false;
 
-  if ( !! localStream) {
+  if (localStream) {
     localVideo.src = null;
     localStream.stop();
   }
