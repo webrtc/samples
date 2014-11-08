@@ -8,13 +8,13 @@
 
 'use strict';
 
-var dimensions = document.querySelector('#dimensions');
+var dimensions = document.querySelector('p#dimensions');
 var video = document.querySelector('video');
 var stream;
 
-var vgaButton = document.querySelector('#vga');
-var qvgaButton = document.querySelector('#qvga');
-var hdButton = document.querySelector('#hd');
+var vgaButton = document.querySelector('button#vga');
+var qvgaButton = document.querySelector('button#qvga');
+var hdButton = document.querySelector('button#hd');
 
 vgaButton.onclick = function() {
   getMedia(vgaConstraints);
@@ -79,7 +79,7 @@ video.onplay = function() {
 };
 
 function getMedia(constraints) {
-  if (stream) {
+  if (!!stream) {
     video.src = null;
     stream.stop();
   }
