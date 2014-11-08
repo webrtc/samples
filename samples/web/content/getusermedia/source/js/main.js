@@ -49,7 +49,7 @@ function errorCallback(error) {
 }
 
 function start() {
-  if (window.stream) {
+  if ( !! window.stream) {
     videoElement.src = null;
     window.stream.stop();
   }

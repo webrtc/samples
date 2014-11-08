@@ -8,56 +8,56 @@
 -->
 <html>
 <head>
+<title>Room full</title>
+<script src="/_ah/channel/jsapi"></script>
+<style type="text/css">
+  a:link { color: #ffffff; }
+  a:visited {color: #ffffff; }
+  html, body {
+    background-color: #000000;
+    height: 100%;
+    font-family:Verdana, Arial, Helvetica, sans-serif;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  #container {
+    position: relative;
+    min-height: 100%;
+    width: 100%;
+    margin: 0px auto;
+  }
+  #footer {
+    spacing: 4px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 28px;
+    background-color: #3F3F3F;
+    color: rgb(255, 255, 255);
+    font-size:13px; font-weight: bold;
+    line-height: 28px;
+    text-align: center;
+  }
+  #logo {
+    display: block;
+    top:4;
+    right:4;
+    position:absolute;
+    float:right;
+    #opacity: 0.8;
+  }
 
-<meta name="keywords" content="WebRTC, HTML5, JavaScript">
-<meta name="description" content="WebRTC Reference App">
-<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
-
-<meta itemprop="name" content="Invitation to video chat">
-<meta itemprop="description" content="Video chat using the reference WebRTC application">
-<meta itemprop="image" content="images/webrtcLogo.png">
-
-<base target="_blank">
-
-<title>WebRTC Reference App: room full</title>
-
-<link rel="stylesheet" href="css/main.css">
-<link rel="canonical" href="{{ room_link }}">
-<link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet">
-
-<style>
-body {
-  padding: 25% 0 0 0;
-}
-
-button {
-  display: block;
-  font-size: 1.5em;
-  margin: 0 auto;
-  padding: .5em;
-  width: 10em;
-}
-
-div {
-  color: white;
-  font-size: 2em;
-  margin: 0 0 2em 0;
-  text-align: center;
-}
 </style>
-
 </head>
 <body>
-
-<div>Sorry, this room is full.</div>
-<button>Open a new room</button>
-
-
-<script>
-document.querySelector("button").onclick = function() {
-  location.href = location.origin;
-};
-</script>
-
+<div id="container">
+  <div id="footer">
+    Sorry, this room is full.
+    <a href="{{room_link}}">Click here</a> to try again.
+  </div>
+</div>
+<img id="logo" alt="WebRTC" src="images/webrtc_black_20p.png">
 </body>
 </html>
