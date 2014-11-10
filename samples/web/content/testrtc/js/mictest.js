@@ -18,7 +18,7 @@ function MicTest() {
   this.lowVolumeThreshold = -60;
   // Buffer size set to 0 to let Chrome choose based on the platform.
   this.bufferSize = 0;
-  this.lastInputBuffer = [];
+  this.inputBuffer = [];
   // Turning off echoCancellation constraint enables stereo input.
   this.constraints = {
     audio: {
@@ -77,8 +77,7 @@ MicTest.prototype = {
   },
 
   collectAudio: function(event) {
-    var inputBuffer = event.inputBuffer;
-    this.lastInputBuffer = inputBuffer;
+    this.inputBuffer = event.inputBuffer;
   },
 
   stopCollectingAudio: function() {
@@ -86,18 +85,18 @@ MicTest.prototype = {
     this.audioSource.disconnect(this.scriptNode);
     this.scriptNode.disconnect(audioContext.destination);
     // Start analyzing the audio buffer.
-    this.testNumberOfActiveChannels(this.lastInputBuffer);
+    this.testNumberOfActiveChannels(this.inputBuffer);
   },
 
   testNumberOfActiveChannels: function(buffer) {
-    var channelSampleData = [ [], [] ];
+    var sampleData = [ [], [] ];
     var numberOfChannels = buffer.numberOfChannels;
     var activeChannels = [];
     for (var channel = 0; channel < numberOfChannels; channel++) {
       var numberOfZeroSamples = 0;
       for (var sample = 0; sample < buffer.length; sample++) {
         if (buffer.getChannelData(channel)[sample] !== 0) {
-          channelSampleData[channel][sample] = buffer.getChannelData(channel)[sample];
+          sampleData[channel][sample] = buffer.getChannelData(channel)[sample];
         } else {
           numberOfZeroSamples++;
         }
@@ -118,14 +117,14 @@ MicTest.prototype = {
     // If two channel input compare samples on channel 0 and 1 to determine if
     // it is a mono microphone.
     if (activeChannels.length === 2) {
-      var sampleMatch = 0;
+      var samplesMatched = 0;
       var epsilon = buffer.length * 0.15;
-      for (var i= 0; i < channelSampleData[0].length; i++) {
-        if (channelSampleData[0][i] === channelSampleData[1][i]) {
-          sampleMatch++;
+      for (var i= 0; i < sampleData[0].length; i++) {
+        if (sampleData[0][i] === sampleData[1][i]) {
+          samplesMatched++;
         }
       }
-      if (sampleMatch > buffer.length - epsilon) {
+      if (samplesMatched > buffer.length - epsilon) {
         reportInfo('Mono microphone detected.');
       } else {
         reportInfo('Multiple channel microphone detected.');
