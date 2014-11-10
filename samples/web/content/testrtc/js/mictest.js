@@ -18,7 +18,7 @@ function MicTest() {
   this.lowVolumeThreshold = -60;
   // Buffer size set to 0 to let Chrome choose based on the platform.
   this.bufferSize = 0;
-  this.inputBuffer = [];
+  this.lastInputBuffer = [];
   // Turning off echoCancellation constraint enables stereo input.
   this.constraints = {
     audio: {
@@ -78,7 +78,7 @@ MicTest.prototype = {
 
   collectAudio: function(event) {
     var inputBuffer = event.inputBuffer;
-    this.inputBuffer = inputBuffer;
+    this.lastInputBuffer = inputBuffer;
   },
 
   stopCollectingAudio: function() {
@@ -86,7 +86,7 @@ MicTest.prototype = {
     this.audioSource.disconnect(this.scriptNode);
     this.scriptNode.disconnect(audioContext.destination);
     // Start analyzing the audio buffer.
-    this.testNumberOfActiveChannels(this.inputBuffer);
+    this.testNumberOfActiveChannels(this.lastInputBuffer);
   },
 
   testNumberOfActiveChannels: function(buffer) {
