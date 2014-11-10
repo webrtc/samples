@@ -1,4 +1,4 @@
-application: apprtc-bb
+application: apprtc
 version: 6
 runtime: python27
 threadsafe: true

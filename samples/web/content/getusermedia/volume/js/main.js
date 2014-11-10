@@ -25,7 +25,7 @@ try {
   alert('Web Audio API not supported.');
 }
 
-// put variables in global scope to make them available to the browser console
+// Put variables in global scope to make them available to the browser console.
 var constraints = window.constraints = {
   audio: true,
   video: false
@@ -35,7 +35,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
   navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function successCallback(stream) {
-  // put variables in global scope to make them available to the browser console
+  // Put variables in global scope to make them available to the browser console.
   window.stream = stream;
   var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
   soundMeter.connectToSource(stream);

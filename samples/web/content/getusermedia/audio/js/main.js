@@ -8,7 +8,7 @@
 
 'use strict';
 
-// Put variables in global scope to make them available to the browser console
+// Put variables in global scope to make them available to the browser console.
 var audio = window.audio = document.querySelector('audio');
 var constraints = window.constraints = {
   audio: true,

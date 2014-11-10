@@ -11,7 +11,7 @@
 var snapshotButton = document.querySelector('button#snapshot');
 var filterButton = document.querySelector('button#filter');
 
-// put variables in global scope to make them available to the browser console
+// Put variables in global scope to make them available to the browser console.
 var video = window.video = document.querySelector('video');
 var canvas = window.canvas = document.querySelector('canvas');
 canvas.width = 480;
