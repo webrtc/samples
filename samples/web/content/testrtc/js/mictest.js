@@ -86,6 +86,7 @@ MicTest.prototype = {
     this.scriptNode.disconnect(audioContext.destination);
     // Start analyzing the audio buffer.
     this.testNumberOfActiveChannels(this.inputBuffer);
+    testFinished();
   },
 
   testNumberOfActiveChannels: function(buffer) {
@@ -127,10 +128,9 @@ MicTest.prototype = {
       if (samplesMatched > buffer.length - epsilon) {
         reportInfo('Mono microphone detected.');
       } else {
-        reportInfo('Multiple channel microphone detected.');
+        reportInfo('Stereo microphone detected.');
       }
     }
-    testFinished();
   },
 
   testInputVolume: function(buffer, channel) {
