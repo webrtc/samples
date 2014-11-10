@@ -10,7 +10,7 @@
 
 // Directives for JSHint checking (see jshint.com/docs/options).
 // globals: variables defined in apprtc/index.html
-/* globals audioRecvBitrate, audioRecvCodec, audioSendBitrate, audioSendCodec, channelToken, goog, initiator:true, me, mediaConstraints, offerConstraints, opusfec, opusMaxPbr, pcConfig, pcConstraints, roomKey, roomLink, setupStereoscopic, stereo, stereoscopic, turnUrl, videoRecvBitrate, videoSendBitrate, videoSendInitialBitrate:true */
+/* globals goog, params, setupStereoscopic */
 // exported: functions used in apprtc/index.html
 /* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
 
@@ -61,17 +61,18 @@ var turnDone = false;
 var xmlhttp;
 
 function initialize() {
-  console.log(errorMessages);
-  if (errorMessages.length > 0) {
-    for (var i = 0; i < errorMessages.length; ++i) {
-      window.alert(errorMessages[i]);
+  var roomErrors = params.errorMessages;
+  if (roomErrors.length > 0) {
+    console.log(roomErrors);
+    for (var i = 0; i < roomErrors.length; ++i) {
+      window.alert(roomErrors[i]);
     }
     return;
   }
 
   document.body.ondblclick = toggleFullScreen;
 
-  trace('Initializing; room=' + roomKey + '.');
+  trace('Initializing; room=' + params.roomId + '.');
 
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
@@ -79,10 +80,10 @@ function initialize() {
   maybeRequestTurn();
 
   // Caller is always ready to create peerConnection.
-  signalingReady = initiator;
+  signalingReady = params.isInitiator;
 
-  if (mediaConstraints.audio === false &&
-      mediaConstraints.video === false) {
+  if (params.mediaConstraints.audio === false &&
+      params.mediaConstraints.video === false) {
     hasLocalStream = false;
     maybeStart();
   } else {
@@ -93,7 +94,7 @@ function initialize() {
 
 function openChannel() {
   trace('Opening channel.');
-  var channel = new goog.appengine.Channel(channelToken);
+  var channel = new goog.appengine.Channel(params.channelToken);
   var handler = {
     'onopen': onChannelOpened,
     'onmessage': onChannelMessage,
@@ -105,13 +106,14 @@ function openChannel() {
 
 function maybeRequestTurn() {
   // Allow to skip turn by passing ts=false to apprtc.
-  if (turnUrl === '') {
+  if (params.turnRequestUrl === '') {
     turnDone = true;
     return;
   }
 
-  for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
-    if (pcConfig.iceServers[i].urls.substr(0, 5) === 'turn:') {
+  var iceServers = params.peerConnectionConfig.iceServers;
+  for (var i = 0, len = iceServers.length; i < len; i++) {
+    if (iceServers[i].urls.substr(0, 5) === 'turn:') {
       turnDone = true;
       return;
     }
@@ -128,7 +130,7 @@ function maybeRequestTurn() {
   // No TURN server. Get one from computeengineondemand.appspot.com.
   xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = onTurnResult;
-  xmlhttp.open('GET', turnUrl, true);
+  xmlhttp.open('GET', params.turnRequestUrl, true);
   xmlhttp.send();
 }
 
@@ -140,10 +142,11 @@ function onTurnResult() {
   if (xmlhttp.status === 200) {
     var turnServer = JSON.parse(xmlhttp.responseText);
     // Create turnUris using the polyfill (adapter.js).
-    var iceServers = createIceServers(turnServer.uris,
+    var turnServers = createIceServers(turnServer.uris,
         turnServer.username, turnServer.password);
-    if (iceServers !== null) {
-      pcConfig.iceServers = pcConfig.iceServers.concat(iceServers);
+    if (turnServers !== null) {
+      var iceServers = params.peerConnectionConfig.iceServers;
+      params.peerConnectionConfig.iceServers = iceServers.concat(turnServers);
     }
   } else {
     var subject = encodeURIComponent('AppRTC demo TURN server not working');
@@ -161,9 +164,9 @@ function doGetUserMedia() {
   // Call into getUserMedia via the polyfill (adapter.js).
   try {
     displayStatus('Calling getUserMedia()...');
-    getUserMedia(mediaConstraints, onUserMediaSuccess, onUserMediaError);
+    getUserMedia(params.mediaConstraints, onUserMediaSuccess, onUserMediaError);
     trace('Requested access to local media with mediaConstraints:\n' +
-        '  \'' + JSON.stringify(mediaConstraints) + '\'');
+        '  \'' + JSON.stringify(params.mediaConstraints) + '\'');
   } catch (e) {
     alert('getUserMedia() failed. Is this a WebRTC capable browser?');
     displayError('getUserMedia failed with exception: ' + e.message);
@@ -172,12 +175,14 @@ function doGetUserMedia() {
 
 function createPeerConnection() {
   try {
+    var config = params.peerConnectionConfig;
+    var constraints = params.peerConnectionConstraints;
     // Create an RTCPeerConnection via the polyfill (adapter.js).
-    pc = new RTCPeerConnection(pcConfig, pcConstraints);
+    pc = new RTCPeerConnection(config, constraints);
     pc.onicecandidate = onIceCandidate;
     trace('Created RTCPeerConnnection with:\n' +
-        '  config: \'' + JSON.stringify(pcConfig) + '\';\n' +
-        '  constraints: \'' + JSON.stringify(pcConstraints) + '\'.');
+        '  config: \'' + JSON.stringify(config) + '\';\n' +
+        '  constraints: \'' + JSON.stringify(constraints) + '\'.');
   } catch (e) {
     displayError('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object; WebRTC is not supported by this browser.');
@@ -205,7 +210,7 @@ function maybeStart() {
     }
     started = true;
 
-    if (initiator) {
+    if (params.isInitiator) {
       doCall();
     } else {
       calleeStart();
@@ -214,7 +219,7 @@ function maybeStart() {
 }
 
 function doCall() {
-  var constraints = mergeConstraints(offerConstraints, sdpConstraints);
+  var constraints = mergeConstraints(params.offerConstraints, sdpConstraints);
   trace('Sending offer to peer, with constraints: \n\'' +
       JSON.stringify(constraints) + '\'.');
   pc.createOffer(setLocalAndSendMessage,
@@ -254,16 +259,16 @@ function setLocalAndSendMessage(sessionDescription) {
 
 function setRemote(message) {
   // Set Opus in Stereo, if stereo enabled.
-  if (stereo) {
+  if (params.isOpusStereo) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo=1');
   }
-  if (opusfec) {
+  if (params.isOpus) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
   }
   // Set Opus maxplaybackrate, if requested.
-  if (opusMaxPbr) {
+  if (params.opusMaxPbr) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate=' +
-        opusMaxPbr);
+        params.opusMaxPbr);
   }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
@@ -302,7 +307,7 @@ function sendMessage(message) {
   trace('C->S: ' + msgString);
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
-  var path = '/message?r=' + roomKey + '&u=' + me;
+  var path = '/message?r=' + params.roomId + '&u=' + params.clientId;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
   xhr.send(msgString);
@@ -352,7 +357,7 @@ function onChannelMessage(message) {
   // Since the turn response is async and also GAE might disorder the
   // Message delivery due to possible datastore query at server side,
   // So callee needs to cache messages before peerConnection is created.
-  if (!initiator && !started) {
+  if (!params.isInitiator && !started) {
     if (msg.type === 'offer') {
       // Add offer to the beginning of msgQueue, since we can't handle
       // Early candidates before offer at present.
@@ -384,7 +389,7 @@ function onUserMediaSuccess(stream) {
   // Caller creates PeerConnection.
   maybeStart();
   displayStatus('');
-  if (initiator === 0) {
+  if (params.isInitiator === 0) {
     displaySharingInfo();
   }
   localVideo.classList.add('active');
@@ -427,7 +432,7 @@ function iceCandidateType(candidateSDP) {
 
 function onIceCandidate(event) {
   if (event.candidate) {
-    if (pcConfig.iceTransports === 'relay') {
+    if (params.peerConnectionConfig.iceTransports === 'relay') {
       // Filter out non relay Candidates, if iceTransports is set to relay.
       if (event.candidate.candidate.search('relay') === -1) {
         return;
@@ -551,7 +556,7 @@ function hangup() {
 
 function onRemoteHangup() {
   displayStatus('The remote side hung up.');
-  initiator = 0;
+  params.isInitiator = 0;
   transitionToWaiting();
   stop();
 }
@@ -582,7 +587,7 @@ function transitionToActive() {
   updateInfoDiv();
 
   // Prepare the remote video and PIP elements.
-  if (stereoscopic) {
+  if (params.isStereoscopic) {
     miniVideo.classList.remove('active');
     miniVideo.classList.add('hidden');
     setupStereoscopic(remoteVideo, remoteCanvas);
@@ -621,7 +626,7 @@ function transitionToDone() {
   localVideo.classList.remove('active');
   remoteVideo.classList.remove('active');
   miniVideo.classList.remove('active');
-  displayStatus('You have left the call. <a href=\'' + roomLink +
+  displayStatus('You have left the call. <a href=\'' + params.roomLink +
       '\'>Click here</a> to rejoin.');
 }
 
@@ -818,35 +823,35 @@ document.onkeydown = function(event) {
 };
 
 function maybeSetAudioSendBitRate(sdp) {
-  if (!audioSendBitrate) {
+  if (!params.audioSendBitrate) {
     return sdp;
   }
-  trace('Prefer audio send bitrate: ' + audioSendBitrate);
-  return preferBitRate(sdp, audioSendBitrate, 'audio');
+  trace('Prefer audio send bitrate: ' + params.audioSendBitrate);
+  return preferBitRate(sdp, params.audioSendBitrate, 'audio');
 }
 
 function maybeSetAudioReceiveBitRate(sdp) {
-  if (!audioRecvBitrate) {
+  if (!params.audioRecvBitrate) {
     return sdp;
   }
-  trace('Prefer audio receive bitrate: ' + audioRecvBitrate);
-  return preferBitRate(sdp, audioRecvBitrate, 'audio');
+  trace('Prefer audio receive bitrate: ' + params.audioRecvBitrate);
+  return preferBitRate(sdp, params.audioRecvBitrate, 'audio');
 }
 
 function maybeSetVideoSendBitRate(sdp) {
-  if (!videoSendBitrate) {
+  if (!params.videoSendBitrate) {
     return sdp;
   }
-  trace('Prefer video send bitrate: ' + videoSendBitrate);
-  return preferBitRate(sdp, videoSendBitrate, 'video');
+  trace('Prefer video send bitrate: ' + params.videoSendBitrate);
+  return preferBitRate(sdp, params.videoSendBitrate, 'video');
 }
 
 function maybeSetVideoReceiveBitRate(sdp) {
-  if (!videoRecvBitrate) {
+  if (!params.videoRecvBitrate) {
     return sdp;
   }
-  trace('Prefer video receive bitrate: ' + videoRecvBitrate);
-  return preferBitRate(sdp, videoRecvBitrate, 'video');
+  trace('Prefer video receive bitrate: ' + params.videoRecvBitrate);
+  return preferBitRate(sdp, params.videoRecvBitrate, 'video');
 }
 
 // Add a b=AS:bitrate line to the m=mediaType section.
@@ -893,19 +898,22 @@ function preferBitRate(sdp, bitrate, mediaType) {
 // is specified. We'll also add a x-google-min-bitrate value, since the max
 // must be >= the min.
 function maybeSetVideoSendInitialBitRate(sdp) {
-  if (!videoSendInitialBitrate) {
+  var initialBitrate = params.videoSendInitialBitrate;
+  if (!initialBitrate) {
     return sdp;
   }
 
   // Validate the initial bitrate value.
-  var maxBitrate = videoSendInitialBitrate;
-  if (videoSendBitrate) {
-    if (videoSendInitialBitrate > videoSendBitrate) {
+  var maxBitrate = initialBitrate;
+  var bitrate = params.videoSendBitrate;
+  if (bitrate) {
+    if (initialBitrate > bitrate) {
       displayError('Clamping initial bitrate to max bitrate of ' +
-          videoSendBitrate + ' kbps.');
-      videoSendInitialBitrate = videoSendBitrate;
+                   bitrate + ' kbps.');
+      initialBitrate = bitrate;
+      params.videoSendInitialBitrate = initialBitrate;
     }
-    maxBitrate = videoSendBitrate;
+    maxBitrate = bitrate;
   }
 
   var sdpLines = sdp.split('\r\n');
@@ -920,7 +928,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
   var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
   var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
-      videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
+      params.videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
       maxBitrate.toString();
   sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
   return sdpLines.join('\r\n');
@@ -928,22 +936,22 @@ function maybeSetVideoSendInitialBitRate(sdp) {
 
 // Promotes |audioSendCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioSendCodec(sdp) {
-  if (audioSendCodec === '') {
+  if (params.audioSendCodec === '') {
     trace('No preference on audio send codec.');
     return sdp;
   }
-  trace('Prefer audio send codec: ' + audioSendCodec);
-  return preferAudioCodec(sdp, audioSendCodec);
+  trace('Prefer audio send codec: ' + params.audioSendCodec);
+  return preferAudioCodec(sdp, params.audioSendCodec);
 }
 
 // Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioReceiveCodec(sdp) {
-  if (audioRecvCodec === '') {
+  if (params.audioRecvCodec === '') {
     trace('No preference on audio receive codec.');
     return sdp;
   }
-  trace('Prefer audio receive codec: ' + audioRecvCodec);
-  return preferAudioCodec(sdp, audioRecvCodec);
+  trace('Prefer audio receive codec: ' + params.audioRecvCodec);
+  return preferAudioCodec(sdp, params.audioRecvCodec);
 }
 
 // Sets |codec| as the default audio codec if it's present.
