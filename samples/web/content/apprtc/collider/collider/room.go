@@ -10,23 +10,18 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"time"
 )
 
 const maxRoomCapacity = 2
-
-const clientRegisterTimeoutInSeconds = 5
 
 type room struct {
 	id string
 	// A mapping from the client ID to the client object.
 	clients map[string]*client
-	// A mapping from the client ID to the timer that is used to clean up un-registered clients.
-	timers map[string]*time.Timer
 }
 
 func newRoom(id string) *room {
-	return &room{id: id, clients: make(map[string]*client), timers: make(map[string]*time.Timer)}
+	return &room{id: id, clients: make(map[string]*client)}
 }
 
 // client returns the client, or creates it if it does not exist and the room is not full.
@@ -38,14 +33,8 @@ func (rm *room) client(clientID string) (*client, error) {
 		log.Printf("Room %s is full, not adding client %s", rm.id, clientID)
 		return nil, errors.New("Max room capacity reached")
 	}
-	rm.clients[clientID] = newClient(clientID)
+	rm.clients[clientID] = newClient(clientID, rm.id)
 	log.Printf("Added client %s to room %s", clientID, rm.id)
-
-	rm.timers[clientID] = time.NewTimer(time.Second * clientRegisterTimeoutInSeconds)
-	go func() {
-		<-rm.timers[clientID].C
-		rooms.removeIfUnregistered(rm.id, clientID)
-	}()
 
 	return rm.clients[clientID], nil
 }
@@ -59,7 +48,6 @@ func (rm *room) register(clientID string, rwc io.ReadWriteCloser) error {
 	if err = c.register(rwc); err != nil {
 		return err
 	}
-	rm.timers[clientID].Stop()
 
 	log.Printf("Client %s registered in room %s", clientID, rm.id)
 

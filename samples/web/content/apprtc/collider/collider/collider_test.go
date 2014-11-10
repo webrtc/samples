@@ -248,7 +248,7 @@ func TestRoomCleanedUpAfterTimeout(t *testing.T) {
 	if !waitForCondition(func() bool { return rooms.rooms[r] != nil }) {
 		t.Errorf("After a POST request to the room %q, rooms.rooms[%q] = nil, want non-nil", r, r)
 	}
-	time.Sleep((clientRegisterTimeoutInSeconds + 1) * time.Second)
+	time.Sleep((registerTimeoutSec + 1) * time.Second)
 
 	if l := len(rooms.rooms); l != 0 {
 		t.Errorf("After clientRegistereTimeoutInSeconds without registering the new client, len(rooms.rooms) = %d, want 0", l)

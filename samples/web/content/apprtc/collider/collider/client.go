@@ -9,21 +9,34 @@ import (
 	"errors"
 	"io"
 	"log"
+	"time"
 )
+
+const registerTimeoutSec = 5
 
 const maxQueuedMsgCount = 1024
 
 type client struct {
-	id string
+	id     string
+	roomID string
 	// rwc is the interface to access the websocket connection.
 	// It is set after the client registers with the server.
 	rwc io.ReadWriteCloser
 	// msgs is the queued messages sent from this client.
 	msgs []string
+	// timer is used to remove this client if unregistered after a timeout.
+	timer *time.Timer
 }
 
-func newClient(id string) *client {
-	return &client{id: id}
+func newClient(id string, rid string) *client {
+	c := client{id: id, roomID: rid, timer: time.NewTimer(time.Second * registerTimeoutSec)}
+
+	go func() {
+		<-c.timer.C
+		rooms.removeIfUnregistered(rid, id)
+	}()
+
+	return &c
 }
 
 // register binds the ReadWriteCloser to the client if it's not done yet.
@@ -32,6 +45,7 @@ func (c *client) register(rwc io.ReadWriteCloser) error {
 		log.Printf("Not registering because the client %s already has a connection", c.id)
 		return errors.New("Duplicated registration")
 	}
+	c.timer.Stop()
 	c.rwc = rwc
 	return nil
 }
@@ -39,7 +53,7 @@ func (c *client) register(rwc io.ReadWriteCloser) error {
 // Adds a message to the client's message queue.
 func (c *client) enqueue(msg string) error {
 	if len(c.msgs) >= maxQueuedMsgCount {
-		return errors.New("Out of memory")
+		return errors.New("Too many messages queued for the client")
 	}
 	c.msgs = append(c.msgs, msg)
 	return nil

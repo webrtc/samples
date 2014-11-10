@@ -78,6 +78,7 @@ func (rs *roomTable) removeIfUnregistered(roomID string, clientID string) {
 	if r := rs.rooms[roomID]; r != nil {
 		if c := r.clients[clientID]; c != nil {
 			if !c.registered() {
+				// Must release the lock before calling rs.remove.
 				rs.lock.Unlock()
 				rs.remove(roomID, clientID)
 
