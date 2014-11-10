@@ -77,7 +77,8 @@ core-toolbar.test span {
 }
 
 .test-output {
-  margin-left: 2em;
+  margin: 0 2em 0 2em;
+  word-wrap: break-word;
 }
 
 .test-progress {

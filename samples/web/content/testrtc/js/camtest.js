@@ -93,7 +93,7 @@ CamCaptureTest.prototype = {
     reportSuccess('getUserMedia succeeded.');
     var tracks = stream.getVideoTracks();
     if (tracks.length < 1) {
-      reportFatal('No video track in returned stream.');
+      reportError('No video track in returned stream.');
       return false;
     }
     var videoTrack = tracks[0];
@@ -119,35 +119,52 @@ CamCaptureTest.prototype = {
   },
 
   checkVideoFinish: function(video) {
-    expectEquals(this.constraints.video.mandatory.minWidth,
-        video.videoWidth, 'Incorrect width', 'Width OK');
-    expectEquals(this.constraints.video.mandatory.minHeight,
-        video.videoHeight, 'Incorrect height', 'Height OK');
-    if (this.stream.getVideoTracks()[0].readyState !== 'ended') {
-      expectEquals(false, this.isMuted, 'Your camera reported ' +
-                   'itself as muted! It is probably not delivering frames. ' +
-                   'Please try another webcam.', 'Camera is delivering frames');
-    }
-    // Check: amount of near-black frames should be 0.
-    expectEquals(0, this.numBlackFrames, 'Your camera seems to be ' +
-                 'delivering near-black frames. This might be all right or ' +
-                 'it could be a symptom of a camera in a bad state; if it\'s ' +
-                 'a USB WebCam, try plugging it out and in again. (FYI: It ' +
-                 'has produced ' + this.numBlackFrames + '/' + this.numFrames +
-                 ' near-black frames in total).', 'Camera is sending ' +
-                 'non-black frames.');
-    // Check: amount of frozen frames should be 0.
-    expectEquals(0, this.numFrozenFrames, 'Your camera seems to be ' +
-                 'delivering frozen frames. This might be a symptom of the ' +
-                 'camera in a bad state; if it\'s a USB WebCam, try plugging ' +
-                 'it out and in again. (FYI: It has produced ' +
-                 this.numFrozenFrames + '/' + (this.numFrames - 1) +
-                 ' analyzed frame-pairs in total).', 'Camera is sending ' +
-                 'non-frozen frames.');
+    // Gather all data where to base the expectations on.
+    var info = {};
+    info.videoWidth = video.videoWidth;
+    info.videoHeight = video.videoHeight;
+    info.isMuted = this.isMuted;
+    info.readyState = this.stream.getVideoTracks()[0].readyState;
+    info.mandatoryMinWidth = this.constraints.video.mandatory.minWidth;
+    info.mandatoryMinHeight = this.constraints.video.mandatory.minHeight;
+    info.testedFrames = this.numFrames;
+    info.blackFrames = this.numBlackFrames;
+    info.frozenFrames = this.numFrozenFrames;
+
+    this.testExpectations(info);
+
     this.stream.getVideoTracks()[0].onended = null;
     this.testActive = false;
     this.stream.getVideoTracks()[0].stop();
     testFinished();
+  },
+
+  testExpectations: function(info) {
+    reportInfo('Details: ' + JSON.stringify(info));
+
+    if (info.readyState !== 'live') {
+      reportError('Unexpected video state: ' + info.readyState);
+    }
+    if (info.isMuted === true) {
+      reportError('Camera repored itself as muted.');
+    }
+    if (info.videoWidth !== info.mandatoryMinWidth) {
+      reportError('Incorrect captured width.');
+    }
+    if (info.videoHeight !== info.mandatoryMinHeight) {
+      reportError('Incorrect captured height.');
+    }
+
+    if (info.testedFrames === 0) {
+      reportError('Could not analyze any video frame.');
+    } else {
+      if (info.blackFrames !== 0) {
+        reportError('Camera delivering near black frames.');
+      }
+      if (info.frozenFrames !== 0) {
+        reportError('Camera delivering frozen frames.');
+      }
+    }
   },
 
   setupCanvas: function() {
