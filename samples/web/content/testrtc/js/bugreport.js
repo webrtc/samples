@@ -11,9 +11,9 @@
 
 function reportBug() {
   // Detect browser and version.
-  var res = getBrowserNameAndVersion();
-  var browserName = res.name;
-  var browserVersion = res.version;
+  var result = getBrowserNameAndVersion();
+  var browserName = result.name;
+  var browserVersion = result.version;
   console.log('Detected browser: ' + browserName + ' ' + browserVersion);
 
   var description = 'Browser: ' + browserName + ' ' + browserVersion +
