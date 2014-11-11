@@ -9,25 +9,26 @@
 /* More information about these options at jshint.com/docs/options */
 
 // Directives for JSHint checking (see jshint.com/docs/options).
-// globals: variables defined in apprtc/index.html
+
+// Variables defined in and used from apprtc/index.html.
 /* globals params, setupStereoscopic */
-// exported: functions used in apprtc/index.html
 /* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
 
-// variables defined in util.js.
+// Variables defined in and used from util.js.
 /* globals doGetUserMedia, maybeRequestTurn */
 /* exported xmlhttp, onUserMediaSuccess, onUserMediaError */
 
-// variables defined in infobox.js.
+// Variables defined in and used from infobox.js.
 /* globals showInfoDiv, toggleInfoDiv, updateInfoDiv */
 /* exported getStatsTimer, infoDiv */
 
-// variables defined in stats.js.
+// Variables defined in and used from stats.js.
 /* exported stats */
 
-// variables defined in signaling.js.
+// Variables defined in and used from signaling.js.
 /* globals openChannel, maybeStart, sendMessage */
-/* exported channelReady, gatheredIceCandidateTypes, sdpConstraints, turnDone, onRemoteHangup, waitForRemoteVideo */
+/* exported channelReady, gatheredIceCandidateTypes, sdpConstraints, turnDone,
+   onRemoteHangup, waitForRemoteVideo */
 
 'use strict';
 

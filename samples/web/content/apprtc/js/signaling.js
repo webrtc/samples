@@ -8,7 +8,15 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals addCodecParam, channelReady:true, displayError, displayStatus, gatheredIceCandidateTypes, goog, hasLocalStream, iceCandidateType, localStream, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec, maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate, maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate, maybeSetVideoSendInitialBitRate, mergeConstraints, msgQueue, onRemoteHangup, params, pc:true, remoteStream:true, remoteVideo, sdpConstraints, sharingDiv, signalingReady:true, socket:true, startTime:true, started:true, transitionToActive, turnDone, updateInfoDiv, waitForRemoteVideo */
+/* globals addCodecParam, channelReady:true, displayError, displayStatus,
+   gatheredIceCandidateTypes, goog, hasLocalStream, iceCandidateType,
+   localStream, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
+   maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
+   maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
+   maybeSetVideoSendInitialBitRate, mergeConstraints, msgQueue, onRemoteHangup,
+   params, pc:true, remoteStream:true, remoteVideo, sdpConstraints, sharingDiv,
+   signalingReady:true, socket:true, startTime:true, started:true,
+   transitionToActive, turnDone, updateInfoDiv, waitForRemoteVideo */
 /* exported openChannel */
 
 'use strict';

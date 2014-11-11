@@ -8,7 +8,9 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* global computeE2EDelay, endTime, errorMessages, extractStatAsInt, extractStatAsInt, gatheredIceCandidateTypes, getStatsReport, getStatsTimer:true, infoDiv, pc, refreshStats, remoteVideo, startTime, stats */
+/* globals computeE2EDelay, endTime, errorMessages, extractStatAsInt,
+   gatheredIceCandidateTypes, getStatsReport, getStatsTimer:true, infoDiv, pc,
+   refreshStats, remoteVideo, startTime, stats */
 /* exported toggleInfoDiv, updateInfoDiv */
 
 'use strict';

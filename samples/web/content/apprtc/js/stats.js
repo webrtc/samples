@@ -8,10 +8,10 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-'use strict';
-
 /* globals pc, stats:true, updateInfoDiv */
 /* exported computeE2EDelay, extractStatAsInt, refreshStats */
+
+'use strict';
 
 function refreshStats() {
   if (pc) {
