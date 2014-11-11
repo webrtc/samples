@@ -146,7 +146,7 @@ CamCaptureTest.prototype = {
       reportError('Unexpected video state: ' + info.readyState);
     }
     if (info.isMuted === true) {
-      reportError('Camera repored itself as muted.');
+      reportError('Camera reported itself as muted.');
     }
     if (info.videoWidth !== info.mandatoryMinWidth) {
       reportError('Incorrect captured width.');
