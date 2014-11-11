@@ -17,13 +17,17 @@ module.exports = function(grunt) {
         options: {
           import: 2
         },
-        src: ['samples/web/content/**/*.css']
+        src: ['samples/web/content/**/*.css',
+              '!!samples/web/content/testrtc/polymer/**/*.css'
+        ]
       },
       lax: {
         options: {
           import: false
         },
-        src: ['samples/web/content/**/*.css']
+        src: ['samples/web/content/**/*.css',
+              '!!samples/web/content/testrtc/polymer/**/*.css'
+        ]
       }
     },
 
@@ -46,7 +50,8 @@ module.exports = function(grunt) {
         'samples/web/content/manual-test/**/*',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
-        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js'
+        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
+        'samples/web/content/testrtc/polymer/**'
         ],
         requireCurlyBraces: ['if']
       }
@@ -59,7 +64,8 @@ module.exports = function(grunt) {
         'samples/web/content/getusermedia/desktopcapture/**',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/apprtc/js/ga.js',
-        'samples/web/content/apprtc/js/vr.js'
+        'samples/web/content/apprtc/js/vr.js',
+        'samples/web/content/testrtc/polymer/**'
         ],
         // use default .jshintrc files
         jshintrc: true
