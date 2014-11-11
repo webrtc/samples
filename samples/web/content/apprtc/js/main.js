@@ -254,7 +254,7 @@ function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
       onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
-  sendMessage(sessionDescription);
+  //sendMessage(sessionDescription); send moved to setLocal successcallback
 }
 
 function setRemote(message) {
@@ -410,6 +410,7 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function onSetSessionDescriptionSuccess() {
+  sendMessage(pc.localDescription);
   trace('Set session description success.');
 }
 
