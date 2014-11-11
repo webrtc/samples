@@ -30,10 +30,10 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-          'samples/web/content/apprtc/index.html',
-          'samples/web/content/datachannel/index.html',
-          'samples/web/content/getusermedia/**/index.html',
-          'samples/web/content/peerconnection/**/index.html'
+        'samples/web/content/apprtc/index.html',
+        'samples/web/content/datachannel/index.html',
+        'samples/web/content/getusermedia/**/index.html',
+        'samples/web/content/peerconnection/**/index.html'
         ]
       }
     },
@@ -43,10 +43,10 @@ module.exports = function(grunt) {
       options: {
         config: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
-          'samples/web/content/manual-test/**/*',
-          'samples/web/content/apprtc/js/vr.js',
-          'samples/web/content/apprtc/js/stereoscopic.js',
-          'samples/web/content/getusermedia/desktopcapture/extension/content-script.js'
+        'samples/web/content/manual-test/**/*',
+        'samples/web/content/apprtc/js/vr.js',
+        'samples/web/content/apprtc/js/stereoscopic.js',
+        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js'
         ],
         requireCurlyBraces: ['if']
       }
@@ -55,11 +55,11 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         ignores: [
-          'samples/web/content/manual-test/**/*',
-          'samples/web/content/getusermedia/desktopcapture/**',
-          'samples/web/content/apprtc/js/stereoscopic.js',
-          'samples/web/content/apprtc/js/ga.js',
-          'samples/web/content/apprtc/js/vr.js'
+        'samples/web/content/manual-test/**/*',
+        'samples/web/content/getusermedia/desktopcapture/**',
+        'samples/web/content/apprtc/js/stereoscopic.js',
+        'samples/web/content/apprtc/js/ga.js',
+        'samples/web/content/apprtc/js/vr.js'
         ],
         // use default .jshintrc files
         jshintrc: true

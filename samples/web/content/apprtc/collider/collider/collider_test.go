@@ -6,9 +6,9 @@
 package collider
 
 import (
+	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
-	"go.net/websocket"
 	"net"
 	"net/http"
 	"net/url"
