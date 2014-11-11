@@ -7,7 +7,7 @@
 package collider
 
 import (
-	"go.net/websocket"
+	"code.google.com/p/go.net/websocket"
 	"io"
 	"log"
 	"net/http"
