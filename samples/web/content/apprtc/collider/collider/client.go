@@ -31,12 +31,14 @@ type client struct {
 func newClient(id string, rid string) *client {
 	c := client{id: id, roomID: rid, timer: time.NewTimer(time.Second * registerTimeoutSec)}
 
-	go func() {
-		<-c.timer.C
-		rooms.removeIfUnregistered(rid, id)
-	}()
+	go c.startTimer()
 
 	return &c
+}
+
+func (c *client) startTimer() {
+	<-c.timer.C
+	rooms.removeIfUnregistered(c.roomID, c.id)
 }
 
 // register binds the ReadWriteCloser to the client if it's not done yet.

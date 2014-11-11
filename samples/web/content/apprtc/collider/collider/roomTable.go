@@ -45,6 +45,11 @@ func (rs *roomTable) remove(roomID string, clientID string) {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 
+	rs.removeNoLock(roomID, clientID)
+}
+
+// removeNoLock removes the client without acquiring the lock. Used when the caller already acquired the lock.
+func (rs *roomTable) removeNoLock(roomID string, clientID string) {
 	if r := rs.rooms[roomID]; r != nil {
 		r.remove(clientID)
 		if r.empty() {
@@ -75,17 +80,16 @@ func (rs *roomTable) register(roomID string, clientID string, rwc io.ReadWriteCl
 // removeIfUnregistered removes the client if it has not registered.
 func (rs *roomTable) removeIfUnregistered(roomID string, clientID string) {
 	rs.lock.Lock()
+	defer rs.lock.Unlock()
+
 	if r := rs.rooms[roomID]; r != nil {
 		if c := r.clients[clientID]; c != nil {
 			if !c.registered() {
-				// Must release the lock before calling rs.remove.
-				rs.lock.Unlock()
-				rs.remove(roomID, clientID)
+				rs.removeNoLock(roomID, clientID)
 
 				log.Printf("Removed client %s from room %s due to timeout", clientID, roomID)
 				return
 			}
 		}
 	}
-	rs.lock.Unlock()
 }

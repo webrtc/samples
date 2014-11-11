@@ -38,6 +38,7 @@ func newConfig(t *testing.T, path string) *websocket.Config {
 
 func setup() {
 	once.Do(startServers)
+	rooms = newRoomTable()
 }
 
 func addWsClient(t *testing.T, roomID string, clientID string) *websocket.Conn {
@@ -234,7 +235,7 @@ func TestHttpHandlerDeleteConnection(t *testing.T) {
 	// Deletes the client.
 	postDel(t, "abc", "1")
 	expectConnectionClose(t, c)
-	if !waitForCondition(func() bool { return len(rooms.rooms) != 0 }) {
+	if !waitForCondition(func() bool { return len(rooms.rooms) == 0 }) {
 		t.Errorf("After deleting client %q from room %q, rooms.rooms = %v, want empty", cid, rid, rooms.rooms)
 	}
 }
