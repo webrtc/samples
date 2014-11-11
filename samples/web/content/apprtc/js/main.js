@@ -8,8 +8,6 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-// Directives for JSHint checking (see jshint.com/docs/options).
-
 // Variables defined in and used from apprtc/index.html.
 /* globals params, setupStereoscopic */
 /* exported doGetUserMedia, enterFullScreen, initialize, onHangup */

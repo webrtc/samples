@@ -8,10 +8,13 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-// Directives for JSHint checking (see jshint.com/docs/options).
-// globals: variables defined in apprtc/index.html and main.js.
-/* globals displayError, displayStatus, maybeStart, onUserMediaSuccess, onUserMediaError, params, turnDone:true, xmlhttp:true */
-/* exported addCodecParam, doGetUserMedia, iceCandidateType, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec, maybeRequestTurn, maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate, maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate, maybeSetVideoSendInitialBitRate, mergeConstraints */
+/* globals displayError, displayStatus, maybeStart, onUserMediaSuccess,
+   onUserMediaError, params, turnDone:true, xmlhttp:true */
+/* exported addCodecParam, doGetUserMedia, iceCandidateType,
+   maybePreferAudioReceiveCodec, maybePreferAudioSendCodec, maybeRequestTurn,
+   maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
+   maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
+   maybeSetVideoSendInitialBitRate, mergeConstraints */
 
 'use strict';
 
