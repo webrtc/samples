@@ -1,0 +1,33 @@
+{
+  "name": "polymer",
+  "version": "0.5.0",
+  "homepage": "https://www.polymer-project.org/",
+  "authors": [
+    "Polymer <polymer-dev@googlegroups.com>"
+  ],
+  "description": "Polymer makes it easier and faster to create anything from a button to a complete application across desktop, mobile, and beyond.",
+  "main": "polymer/webcomponentsjs/webcomponents.js",
+  "keywords": [
+    "polymer-project",
+    "webcomponents"
+  ],
+  "license": "BSD",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "polymer",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "webcomponentsjs": "polymer/webcomponentsjs#^0.5.0",
+    "core-toolbar": "polymer/core-toolbar#~0.5.0",
+    "core-icon-button": "polymer/core-icon-button#~0.5.0",
+    "core-icon": "polymer/core-icon#~0.5.0",
+    "core-collapse": "polymer/core-collapse#~0.5.0",
+    "paper-dialog": "polymer/paper-dialog#~0.5.0",
+    "paper-progress": "polymer/paper-progress#~0.5.0",
+    "paper-button": "polymer/paper-button#~0.5.0"
+  }
+}

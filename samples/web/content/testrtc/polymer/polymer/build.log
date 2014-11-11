@@ -1,0 +1,26 @@
+BUILD LOG
+---------
+Build Time: 2014-11-10T15:30:44
+
+NODEJS INFORMATION
+==================
+nodejs: v0.10.33
+grunt: 0.4.5
+grunt-audit: 1.0.0
+grunt-contrib-concat: 0.5.0
+grunt-contrib-copy: 0.7.0
+grunt-contrib-uglify: 0.6.0
+grunt-string-replace: 1.0.0
+web-component-tester: 1.5.1
+
+REPO REVISIONS
+==============
+polymer-expressions: 1288fe573dc57cde304f66f0833d0644c766158c
+polymer-gestures: 2b22c2b53b32eb8593fd911ec9f2980b1dabeb91
+polymer: 196a3929997b2214a881374b4c68c048c59ede59
+
+BUILD HASHES
+============
+dist/polymer.js: c5627d4b6daeeb60c715f6af356ea8f87d747012
+dist/polymer.min.js: aec0504f9ad997f252d7461a27aaca23214fe5dd
+dist/layout.html: 348d358a91712ecc2f8811efa430fcd954b4590c
