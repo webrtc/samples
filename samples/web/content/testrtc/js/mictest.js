@@ -16,23 +16,14 @@ function MicTest() {
   this.inputChannels = 6;
   this.outputChannels = 2;
   this.lowVolumeThreshold = -60;
-  // To be able to capture any data on Windows we need a large buffer size.
-  this.bufferSize = 8192;
-  this.activeChannels = [];
-  // TODO (jansson) Currently only getting mono on two channels, need to figure
-  // out how to fix that.
-  // Turning off all audio processing constraints enables stereo input.
-  this.constraints = { 
+  // Buffer size set to 0 to let Chrome choose based on the platform.
+  this.bufferSize = 0;
+  this.lastInputBuffer = [];
+  // Turning off echoCancellation constraint enables stereo input.
+  this.constraints = {
     audio: {
-      optional: [ 
-        { googEchoCancellation: false },
-        { googAutoGainControl:false},
-        { googNoiseSuppression:false},
-        { googHighpassFilter:false},
-        { googAudioMirroring:true},
-        { googNoiseSuppression2:false},
-        { googEchoCancellation2:false},
-        { googAutoGainControl2:false}
+      optional: [
+        { echoCancellation: false }
       ]
     }
   };
@@ -50,6 +41,20 @@ MicTest.prototype = {
     this.createAudioBuffer(stream);
   },
 
+  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
+    var start = new Date();
+    var updateProgressBar = setInterval(function () {
+      var now = new Date();
+      setTestProgress((now - start) * 100 / timeoutMs);
+    }, 100);
+
+    setTimeout(function () {
+      clearInterval(updateProgressBar);
+      setTestProgress(100);
+      timeoutCallback();
+    }, timeoutMs);
+  },
+
   checkAudioTracks: function(stream) {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
@@ -63,54 +68,69 @@ MicTest.prototype = {
 
   createAudioBuffer: function() {
     this.audioSource = audioContext.createMediaStreamSource(this.stream);
-    this.scriptNode = audioContext.createScriptProcessor(this.bufferSize, 
+    this.scriptNode = audioContext.createScriptProcessor(this.bufferSize,
         this.inputChannels, this.outputChannels);
     this.audioSource.connect(this.scriptNode);
     this.scriptNode.connect(audioContext.destination);
-    this.scriptNode.onaudioprocess = this.processAudio.bind(this);
+    this.scriptNode.onaudioprocess = this.collectAudio.bind(this);
+    this.setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 1000);
   },
 
-  processAudio: function(event) {
-    var inputBuffer = event.inputBuffer;
+  collectAudio: function(event) {
+    this.lastInputBuffer = event.inputBuffer;
+  },
+
+  stopCollectingAudio: function() {
     this.stream.stop();
     this.audioSource.disconnect(this.scriptNode);
     this.scriptNode.disconnect(audioContext.destination);
-    // Start analazying the audio buffer.
-    reportInfo('Audio input sample rate=' + inputBuffer.sampleRate);
-    this.testNumberOfActiveChannels(inputBuffer);
+    // Start analyzing the audio buffer.
+    this.testNumberOfActiveChannels(this.lastInputBuffer);
+    testFinished();
   },
 
   testNumberOfActiveChannels: function(buffer) {
+    var sampleData = [ [], [] ];
     var numberOfChannels = buffer.numberOfChannels;
+    var activeChannels = [];
     for (var channel = 0; channel < numberOfChannels; channel++) {
       var numberOfZeroSamples = 0;
       for (var sample = 0; sample < buffer.length; sample++) {
-        if (buffer.getChannelData(channel)[sample] === 0) {
+        if (buffer.getChannelData(channel)[sample] !== 0) {
+          sampleData[channel][sample] = buffer.getChannelData(channel)[sample];
+        } else {
           numberOfZeroSamples++;
         }
       }
-      if (numberOfZeroSamples !== buffer.length) {
-        this.activeChannels[channel] = numberOfZeroSamples;
-        this.testInputVolume(buffer, channel);
-      }        
-    }
-    if (this.activeChannels.length === 0) {
-      reportFatal('No active input channels detected. Microphone is most ' +
-                  'likely muted or broken, please check if muted in the ' +
-                  'sound settings or physically on the device.');
-      return;
-    } else {
-      reportSuccess('Audio input channels=' + this.activeChannels.length);
-    }
-    // TODO (jansson) Add logic to get stereo input to webaudio, currently
-    // always getting mono, e.g. same data on 2 channels.
-    // If two channel input compare zero data samples to determine if it's mono.
-    if (this.activeChannels.length === 2) {
-      if (this.activeChannels[0][0] === this.activeChannels[1][0]) {
-        reportInfo('Mono stream detected.');
+      if (numberOfZeroSamples !== buffer.length ) {
+        activeChannels[channel] = this.testInputVolume(buffer, channel);
       }
     }
-    testFinished();
+    // Validate the result.
+    if (activeChannels.length === 0) {
+      reportError('No active input channels detected. Microphone is most ' +
+                  'likely muted or broken, please check if muted in the ' +
+                  'sound settings or physically on the device. Then rerun ' +
+                  'the test.');
+    } else {
+      reportSuccess('Audio input channels=' + activeChannels.length);
+    }
+    // If two channel input compare samples on channel 0 and 1 to determine if
+    // it is a mono microphone.
+    if (activeChannels.length === 2) {
+      var samplesMatched = 0;
+      var epsilon = buffer.length * 0.15;
+      for (var i= 0; i < sampleData[0].length; i++) {
+        if (sampleData[0][i] === sampleData[1][i]) {
+          samplesMatched++;
+        }
+      }
+      if (samplesMatched > buffer.length - epsilon) {
+        reportInfo('Mono microphone detected.');
+      } else {
+        reportInfo('Stereo microphone detected.');
+      }
+    }
   },
 
   testInputVolume: function(buffer, channel) {
@@ -124,11 +144,12 @@ MicTest.prototype = {
 
     // Check input audio level.
     if (db < this.lowVolumeThreshold) {
-      reportError('Audio input level=' + db + ' db' + 'Microphone input ' +
-                  'level is low, increase input volume or move closer to the ' +
-                  'microphone.');
+      // Use Math.round to display up to two decimal places.
+      reportError('Audio input level = ' + Math.round(db * 1000) / 1000 + ' db' +
+                  'Microphone input level is low, increase input volume or' +
+                  'move closer to the microphone.');
     } else {
-      reportSuccess('Audio power for channel ' + channel + '=' + db + ' db');
+      reportSuccess('Audio power for channel ' + channel + '=' + Math.round(db * 1000) / 1000 + ' db');
     }
   }
 };
