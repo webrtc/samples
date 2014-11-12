@@ -78,16 +78,16 @@ func (rs *roomTable) register(roomID string, clientID string, rwc io.ReadWriteCl
 }
 
 // removeIfUnregistered removes the client if it has not registered.
-func (rs *roomTable) removeIfUnregistered(roomID string, clientID string) {
+func (rs *roomTable) removeIfUnregistered(rid string, c *client) {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 
-	if r := rs.rooms[roomID]; r != nil {
-		if c := r.clients[clientID]; c != nil {
+	if r := rs.rooms[rid]; r != nil {
+		if c == r.clients[c.id] {
 			if !c.registered() {
-				rs.removeNoLock(roomID, clientID)
+				rs.removeNoLock(rid, c.id)
 
-				log.Printf("Removed client %s from room %s due to timeout", clientID, roomID)
+				log.Printf("Removed client %s from room %s due to timeout", c.id, rid)
 				return
 			}
 		}

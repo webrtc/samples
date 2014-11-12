@@ -14,6 +14,8 @@ import (
 
 const maxRoomCapacity = 2
 
+const registerTimeoutSec = 5
+
 type room struct {
 	id string
 	// A mapping from the client ID to the client object.
@@ -33,10 +35,18 @@ func (rm *room) client(clientID string) (*client, error) {
 		log.Printf("Room %s is full, not adding client %s", rm.id, clientID)
 		return nil, errors.New("Max room capacity reached")
 	}
-	rm.clients[clientID] = newClient(clientID, rm.id)
+	rm.clients[clientID] = newClient(clientID)
 	log.Printf("Added client %s to room %s", clientID, rm.id)
 
+	go rm.startRegisterTimer(rm.clients[clientID])
+
 	return rm.clients[clientID], nil
+}
+
+// startRegisterTimer starts client's registration timer and handles the timeout.
+func (rm *room) startRegisterTimer(c *client) {
+	c.waitForTimer(registerTimeoutSec)
+	rooms.removeIfUnregistered(rm.id, c)
 }
 
 // register binds a client to the ReadWriteCloser.

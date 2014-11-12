@@ -12,13 +12,10 @@ import (
 	"time"
 )
 
-const registerTimeoutSec = 5
-
 const maxQueuedMsgCount = 1024
 
 type client struct {
-	id     string
-	roomID string
+	id string
 	// rwc is the interface to access the websocket connection.
 	// It is set after the client registers with the server.
 	rwc io.ReadWriteCloser
@@ -28,17 +25,15 @@ type client struct {
 	timer *time.Timer
 }
 
-func newClient(id string, rid string) *client {
-	c := client{id: id, roomID: rid, timer: time.NewTimer(time.Second * registerTimeoutSec)}
-
-	go c.startTimer()
-
+func newClient(id string) *client {
+	c := client{id: id, timer: time.NewTimer(0)}
 	return &c
 }
 
-func (c *client) startTimer() {
+// waitForTimer starts the timer and blocks execution until timer expires.
+func (c *client) waitForTimer(sec time.Duration) {
+	c.timer.Reset(time.Second * sec)
 	<-c.timer.C
-	rooms.removeIfUnregistered(c.roomID, c.id)
 }
 
 // register binds the ReadWriteCloser to the client if it's not done yet.

@@ -12,7 +12,7 @@ import (
 
 func TestNewClient(t *testing.T) {
 	id := "abc"
-	c := newClient(id, "room")
+	c := newClient(id)
 	if c.id != id {
 		t.Errorf("newClient(%q).id = %s, want %q", id, c.id, id)
 	}
@@ -27,7 +27,7 @@ func TestNewClient(t *testing.T) {
 // Tests that registering the client twice will fail.
 func TestClientRegister(t *testing.T) {
 	id := "abc"
-	c := newClient(id, "r")
+	c := newClient(id)
 	var rwc collidertest.MockReadWriteCloser
 	if err := c.register(&rwc); err != nil {
 		t.Errorf("newClient(%q).register(%v) got error: %s, want nil", id, &rwc, err.Error())
@@ -44,10 +44,10 @@ func TestClientRegister(t *testing.T) {
 
 // Tests that queued messages are delivered in sendQueued.
 func TestClientSendQueued(t *testing.T) {
-	src := newClient("abc", "r")
+	src := newClient("abc")
 	src.enqueue("hello")
 
-	dest := newClient("def", "r")
+	dest := newClient("def")
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 
 	dest.register(&rwc)
@@ -63,8 +63,8 @@ func TestClientSendQueued(t *testing.T) {
 
 // Tests that messages are queued when the other client is not registered, or delivered immediately otherwise.
 func TestClientSend(t *testing.T) {
-	src := newClient("abc", "r")
-	dest := newClient("def", "r")
+	src := newClient("abc")
+	dest := newClient("def")
 
 	// The message should be queued since dest has not registered.
 	m := "hello"
@@ -92,7 +92,7 @@ func TestClientSend(t *testing.T) {
 
 // Tests that closing the client will close the ReadWriteCloser.
 func TestClientClose(t *testing.T) {
-	c := newClient("abc", "r")
+	c := newClient("abc")
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 
 	c.register(&rwc)
@@ -103,7 +103,7 @@ func TestClientClose(t *testing.T) {
 }
 
 func TestClientMaxQueuedMsg(t *testing.T) {
-	c := newClient("abc", "r")
+	c := newClient("abc")
 	for i := 0; i < maxQueuedMsgCount; i++ {
 		if err := c.enqueue("msg"); err != nil {
 			t.Errorf("client.enqueue(...) got error %v after %d calls, want nil", err, i)
