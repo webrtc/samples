@@ -18,7 +18,7 @@ module.exports = function(grunt) {
           import: 2
         },
         src: ['samples/web/content/**/*.css',
-              '!!samples/web/content/testrtc/polymer/**/*.css'
+              '!samples/web/content/testrtc/polymer/**/*.css'
         ]
       },
       lax: {
@@ -26,7 +26,7 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
-              '!!samples/web/content/testrtc/polymer/**/*.css'
+              '!samples/web/content/testrtc/polymer/**/*.css'
         ]
       }
     },
