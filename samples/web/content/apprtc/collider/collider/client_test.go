@@ -90,13 +90,13 @@ func TestClientSend(t *testing.T) {
 	}
 }
 
-// Tests that closing the client will close the ReadWriteCloser.
-func TestClientClose(t *testing.T) {
+// Tests that deregistering the client will close the ReadWriteCloser.
+func TestClientDeregister(t *testing.T) {
 	c := newClient("abc", nil)
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 
 	c.register(&rwc)
-	c.close()
+	c.deregister()
 	if !rwc.Closed {
 		t.Errorf("After client.close(), rwc.Closed = %t, want true", rwc.Closed)
 	}
