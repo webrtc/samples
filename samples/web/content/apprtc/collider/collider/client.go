@@ -25,15 +25,9 @@ type client struct {
 	timer *time.Timer
 }
 
-func newClient(id string) *client {
-	c := client{id: id, timer: time.NewTimer(0)}
+func newClient(id string, t *time.Timer) *client {
+	c := client{id: id, timer: t}
 	return &c
-}
-
-// waitForTimer starts the timer and blocks execution until timer expires.
-func (c *client) waitForTimer(sec time.Duration) {
-	c.timer.Reset(time.Second * sec)
-	<-c.timer.C
 }
 
 // register binds the ReadWriteCloser to the client if it's not done yet.
@@ -42,7 +36,9 @@ func (c *client) register(rwc io.ReadWriteCloser) error {
 		log.Printf("Not registering because the client %s already has a connection", c.id)
 		return errors.New("Duplicated registration")
 	}
-	c.timer.Stop()
+	if c.timer != nil {
+		c.timer.Stop()
+	}
 	c.rwc = rwc
 	return nil
 }

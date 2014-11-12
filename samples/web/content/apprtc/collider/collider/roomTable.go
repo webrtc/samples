@@ -13,8 +13,8 @@ import (
 
 // A thread-safe map of rooms.
 type roomTable struct {
-	rooms map[string]*room
 	lock  sync.Mutex
+	rooms map[string]*room
 }
 
 func newRoomTable() *roomTable {
@@ -26,11 +26,11 @@ func (rs *roomTable) room(id string) *room {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 
-	return rs.roomNoLock(id)
+	return rs.roomLocked(id)
 }
 
-// roomNoLock gets or creates the room without acquiring the lock. Used when the caller already acquired the lock.
-func (rs *roomTable) roomNoLock(id string) *room {
+// roomLocked gets or creates the room without acquiring the lock. Used when the caller already acquired the lock.
+func (rs *roomTable) roomLocked(id string) *room {
 	if r, ok := rs.rooms[id]; ok {
 		return r
 	}
@@ -45,11 +45,11 @@ func (rs *roomTable) remove(roomID string, clientID string) {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 
-	rs.removeNoLock(roomID, clientID)
+	rs.removeLocked(roomID, clientID)
 }
 
-// removeNoLock removes the client without acquiring the lock. Used when the caller already acquired the lock.
-func (rs *roomTable) removeNoLock(roomID string, clientID string) {
+// removeLocked removes the client without acquiring the lock. Used when the caller already acquired the lock.
+func (rs *roomTable) removeLocked(roomID string, clientID string) {
 	if r := rs.rooms[roomID]; r != nil {
 		r.remove(clientID)
 		if r.empty() {
@@ -64,7 +64,7 @@ func (rs *roomTable) send(roomID string, srcClientID string, msg string) error {
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 
-	r := rs.roomNoLock(roomID)
+	r := rs.roomLocked(roomID)
 	return r.send(srcClientID, msg)
 }
 
@@ -73,7 +73,7 @@ func (rs *roomTable) register(roomID string, clientID string, rwc io.ReadWriteCl
 	rs.lock.Lock()
 	defer rs.lock.Unlock()
 
-	r := rs.roomNoLock(roomID)
+	r := rs.roomLocked(roomID)
 	return r.register(clientID, rwc)
 }
 
@@ -85,7 +85,7 @@ func (rs *roomTable) removeIfUnregistered(rid string, c *client) {
 	if r := rs.rooms[rid]; r != nil {
 		if c == r.clients[c.id] {
 			if !c.registered() {
-				rs.removeNoLock(rid, c.id)
+				rs.removeLocked(rid, c.id)
 
 				log.Printf("Removed client %s from room %s due to timeout", c.id, rid)
 				return
