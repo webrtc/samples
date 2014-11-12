@@ -1,21 +1,23 @@
 {
-  "name": "polymer",
-  "version": "0.5.0",
-  "homepage": "https://www.polymer-project.org/",
+  "name": "TestRTC",
+  "description": "TestRTC is a troubleshooting tool which runs various tests to try to determine issues with users setup.",
+  "homepage": "http://googlechrome.github.io/webrtc/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GoogleChrome/webrtc.git"
+  },
   "authors": [
-    "Polymer <polymer-dev@googlegroups.com>"
+    "The WebRTC project authors (http://www.webrtc.org/)"
   ],
-  "description": "Polymer makes it easier and faster to create anything from a button to a complete application across desktop, mobile, and beyond.",
-  "main": "polymer/webcomponentsjs/webcomponents.js",
+  "main": "samples/web/content/testrtc/index.html",
   "keywords": [
-    "polymer-project",
-    "webcomponents"
+    "WebRTC",
+    "TestRTC"
   ],
   "license": "BSD",
   "ignore": [
     "**/.*",
     "node_modules",
-    "polymer",
     "bower_components",
     "test",
     "tests"
