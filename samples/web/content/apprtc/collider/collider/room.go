@@ -10,9 +10,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 )
 
 const maxRoomCapacity = 2
+
+const registerTimeoutSec = 5
 
 type room struct {
 	id string
@@ -33,7 +36,11 @@ func (rm *room) client(clientID string) (*client, error) {
 		log.Printf("Room %s is full, not adding client %s", rm.id, clientID)
 		return nil, errors.New("Max room capacity reached")
 	}
-	rm.clients[clientID] = newClient(clientID)
+
+	rm.clients[clientID] = newClient(clientID, time.AfterFunc(time.Second*registerTimeoutSec, func() {
+		rooms.removeIfUnregistered(rm.id, rm.clients[clientID])
+	}))
+
 	log.Printf("Added client %s to room %s", clientID, rm.id)
 
 	return rm.clients[clientID], nil
@@ -48,6 +55,7 @@ func (rm *room) register(clientID string, rwc io.ReadWriteCloser) error {
 	if err = c.register(rwc); err != nil {
 		return err
 	}
+
 	log.Printf("Client %s registered in room %s", clientID, rm.id)
 
 	// Sends the queued messages from the other client of the room.
@@ -68,8 +76,7 @@ func (rm *room) send(srcClientID string, msg string) error {
 
 	// Queue the message if the other client has not joined.
 	if len(rm.clients) == 1 {
-		rm.clients[srcClientID].enqueue(msg)
-		return nil
+		return rm.clients[srcClientID].enqueue(msg)
 	}
 
 	// Send the message to the other client of the room.
@@ -86,8 +93,11 @@ func (rm *room) send(srcClientID string, msg string) error {
 // remove closes the client connection and removes the client specified by the |clientID|.
 func (rm *room) remove(clientID string) {
 	if c, ok := rm.clients[clientID]; ok {
-		c.rwc.Close()
+		if c.rwc != nil {
+			c.rwc.Close()
+		}
 		delete(rm.clients, clientID)
+		log.Printf("Removed client %s from room %s", clientID, rm.id)
 	}
 }
 
