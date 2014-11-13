@@ -17,6 +17,9 @@ handlers:
 - url: /css
   static_dir: css
 
+- url: /bower_components
+  static_dir: bower_components
+
 - url: /.*
   script: testrtc.app
   secure: always
