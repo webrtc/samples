@@ -12,7 +12,7 @@ import (
 
 func TestNewClient(t *testing.T) {
 	id := "abc"
-	c := newClient(id)
+	c := newClient(id, nil)
 	if c.id != id {
 		t.Errorf("newClient(%q).id = %s, want %q", id, c.id, id)
 	}
@@ -27,7 +27,7 @@ func TestNewClient(t *testing.T) {
 // Tests that registering the client twice will fail.
 func TestClientRegister(t *testing.T) {
 	id := "abc"
-	c := newClient(id)
+	c := newClient(id, nil)
 	var rwc collidertest.MockReadWriteCloser
 	if err := c.register(&rwc); err != nil {
 		t.Errorf("newClient(%q).register(%v) got error: %s, want nil", id, &rwc, err.Error())
@@ -44,10 +44,10 @@ func TestClientRegister(t *testing.T) {
 
 // Tests that queued messages are delivered in sendQueued.
 func TestClientSendQueued(t *testing.T) {
-	src := newClient("abc")
+	src := newClient("abc", nil)
 	src.enqueue("hello")
 
-	dest := newClient("def")
+	dest := newClient("def", nil)
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 
 	dest.register(&rwc)
@@ -63,8 +63,8 @@ func TestClientSendQueued(t *testing.T) {
 
 // Tests that messages are queued when the other client is not registered, or delivered immediately otherwise.
 func TestClientSend(t *testing.T) {
-	src := newClient("abc")
-	dest := newClient("def")
+	src := newClient("abc", nil)
+	dest := newClient("def", nil)
 
 	// The message should be queued since dest has not registered.
 	m := "hello"
@@ -92,12 +92,24 @@ func TestClientSend(t *testing.T) {
 
 // Tests that closing the client will close the ReadWriteCloser.
 func TestClientClose(t *testing.T) {
-	c := newClient("abc")
+	c := newClient("abc", nil)
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 
 	c.register(&rwc)
 	c.close()
 	if !rwc.Closed {
 		t.Errorf("After client.close(), rwc.Closed = %t, want true", rwc.Closed)
+	}
+}
+
+func TestClientMaxQueuedMsg(t *testing.T) {
+	c := newClient("abc", nil)
+	for i := 0; i < maxQueuedMsgCount; i++ {
+		if err := c.enqueue("msg"); err != nil {
+			t.Errorf("client.enqueue(...) got error %v after %d calls, want nil", err, i)
+		}
+	}
+	if err := c.enqueue("msg"); err == nil {
+		t.Error("client.enqueue(...) got no error after maxQueuedMsgCount + 1 calls, want error")
 	}
 }

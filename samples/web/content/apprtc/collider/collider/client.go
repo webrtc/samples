@@ -9,7 +9,10 @@ import (
 	"errors"
 	"io"
 	"log"
+	"time"
 )
+
+const maxQueuedMsgCount = 1024
 
 type client struct {
 	id string
@@ -18,10 +21,13 @@ type client struct {
 	rwc io.ReadWriteCloser
 	// msgs is the queued messages sent from this client.
 	msgs []string
+	// timer is used to remove this client if unregistered after a timeout.
+	timer *time.Timer
 }
 
-func newClient(id string) *client {
-	return &client{id: id}
+func newClient(id string, t *time.Timer) *client {
+	c := client{id: id, timer: t}
+	return &c
 }
 
 // register binds the ReadWriteCloser to the client if it's not done yet.
@@ -30,13 +36,20 @@ func (c *client) register(rwc io.ReadWriteCloser) error {
 		log.Printf("Not registering because the client %s already has a connection", c.id)
 		return errors.New("Duplicated registration")
 	}
+	if c.timer != nil {
+		c.timer.Stop()
+	}
 	c.rwc = rwc
 	return nil
 }
 
 // Adds a message to the client's message queue.
-func (c *client) enqueue(msg string) {
+func (c *client) enqueue(msg string) error {
+	if len(c.msgs) >= maxQueuedMsgCount {
+		return errors.New("Too many messages queued for the client")
+	}
 	c.msgs = append(c.msgs, msg)
+	return nil
 }
 
 // sendQueued the queued messages to the other client.
@@ -61,8 +74,7 @@ func (c *client) send(other *client, msg string) error {
 	if other.rwc != nil {
 		return sendServerMsg(other.rwc, msg)
 	}
-	c.enqueue(msg)
-	return nil
+	return c.enqueue(msg)
 }
 
 // close closes the ReadWriteCloser if it exists.
@@ -71,4 +83,9 @@ func (c *client) close() {
 		c.rwc.Close()
 		c.rwc = nil
 	}
+}
+
+// registered returns true if the client has registered.
+func (c *client) registered() bool {
+	return c.rwc != nil
 }

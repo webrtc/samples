@@ -7,7 +7,7 @@
 package collider
 
 import (
-	"go.net/websocket"
+	"code.google.com/p/go.net/websocket"
 	"io"
 	"log"
 	"net/http"
@@ -85,7 +85,7 @@ loop:
 				break loop
 			}
 			if msg.RoomID == "" || msg.ClientID == "" {
-				sendServerErr(ws, "Invalid register request: missing 'client' or 'room'.")
+				sendServerErr(ws, "Invalid register request: missing 'clientid' or 'roomid'.")
 				break loop
 			}
 			if err = rooms.register(msg.RoomID, msg.ClientID, ws); err != nil {
