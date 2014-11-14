@@ -154,12 +154,21 @@ function setRemote(message) {
 }
 
 function sendMessage(message) {
-  var msgString = JSON.stringify({
+  var wssMessage = {
     cmd: 'send',
     msg: JSON.stringify(message)
-  });
+  };
+  var msgString = JSON.stringify(wssMessage);
   trace('C->S: ' + msgString);
-  webSocket.send(msgString);
+  if (channelReady) {
+    webSocket.send(msgString);
+  } else {
+    var path = params.wssPostUrl + params.roomId + '/' + params.clientId;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', path, true);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.send('msg=' + encodeURIComponent(wssMessage.msg));
+ }
 }
 
 function processSignalingMessage(message) {
