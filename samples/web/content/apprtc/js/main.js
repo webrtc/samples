@@ -147,10 +147,16 @@ function disconnectFromServers() {
     webSocket.close();
     webSocket = null;
   }
+  // Clean up room in case where not registered but connection was attempted.
+  // TODO(tkchin): only call this when we know registration failed.
+  var path = params.wssPostUrl + params.roomId + '/' + params.clientId;
+  var xhr = new XMLHttpRequest();
+  xhr.open('DELETE', path, false);
+  xhr.send();
 
   // Send bye to GAE.
-  var path = '/bye/' + params.roomId + '/' + params.clientId;
-  var xhr = new XMLHttpRequest();
+  path = '/bye/' + params.roomId + '/' + params.clientId;
+  xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);
   xhr.send();
 }

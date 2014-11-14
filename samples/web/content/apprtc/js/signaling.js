@@ -203,6 +203,7 @@ function onSignalingChannelOpen() {
     clientid: params.clientId
   };
   webSocket.send(JSON.stringify(registerMessage));
+  // TODO(tkchin): better notion of whether registration succeeded.
   channelReady = true;
   maybeStart();
 }
