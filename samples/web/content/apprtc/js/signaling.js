@@ -17,17 +17,21 @@
    params, pc:true, remoteStream:true, remoteVideo, sdpConstraints, sharingDiv,
    signalingReady:true, webSocket:true, startTime:true, started:true,
    transitionToActive, turnDone, updateInfoDiv, waitForRemoteVideo */
-/* exported openChannel */
+/* exported openSignalingChannel */
 
 'use strict';
 
-function openChannel() {
+function openSignalingChannel() {
   trace('Opening channel.');
   webSocket = new WebSocket(params.wssUrl);
-  webSocket.onopen = onChannelOpened;
-  webSocket.onmessage = onChannelMessage;
-  webSocket.onerror = onChannelError;
-  webSocket.onclose = onChannelClosed;
+  webSocket.onopen = onSignalingChannelOpen;
+  webSocket.onmessage = onSignalingChannelMessage;
+  webSocket.onerror = onSignalingChannelError;
+  webSocket.onclose = onSignalingChannelClosed;
+
+  if (params.isLoopback) {
+    setupLoopback();
+  }
 }
 
 function createPeerConnection() {
@@ -190,22 +194,29 @@ function onAddIceCandidateError(error) {
   displayError('Failed to add remote candidate: ' + error.toString());
 }
 
-function onChannelOpened() {
+function onSignalingChannelOpen() {
   trace('Channel opened.');
   trace('Registering on Collider');
   var registerMessage = {
     cmd: 'register',
-    roomID: params.roomId,
-    clientID: params.clientId
+    roomid: params.roomId,
+    clientid: params.clientId
   };
   webSocket.send(JSON.stringify(registerMessage));
   channelReady = true;
   maybeStart();
 }
 
-function onChannelMessage(event) {
-  var wssMessage = JSON.parse(event.data);
-  var message = JSON.parse(wssMessage.msg);
+function onSignalingChannelMessage(event) {
+  var wssMessage;
+  var message;
+  try {
+    wssMessage = JSON.parse(event.data);
+    message = JSON.parse(wssMessage.msg);
+  } catch (e) {
+    trace('Error parsing JSON: ' + event.data); 
+    return;
+  }
   trace('S->C: ' + wssMessage.msg);
   // Since the turn response is async and also GAE might disorder the
   // Message delivery due to possible datastore query at server side,
@@ -226,12 +237,14 @@ function onChannelMessage(event) {
   }
 }
 
-function onChannelError() {
+function onSignalingChannelError() {
   displayError('Channel error.');
 }
 
-function onChannelClosed() {
+function onSignalingChannelClosed() {
+  // TODO(tkchin): reconnect to WSS.
   trace('Channel closed.');
+  channelReady = false;
   webSocket = null;
 }
 
@@ -300,4 +313,58 @@ function noteIceCandidate(location, type) {
     ++types[type];
   }
   updateInfoDiv();
+}
+
+var loopbackWebSocket = null;
+var LOOPBACK_CLIENT_ID = 'loopback_client_id';
+function setupLoopback() {
+  if (loopbackWebSocket) {
+    return;
+  }
+  // TODO(tkchin): merge duplicate code once SignalingChannel abstraction
+  // exists.
+  loopbackWebSocket = new WebSocket(params.wssUrl);
+
+  var sendLoopbackMessage = function(message) {
+    var msgString = JSON.stringify({
+      cmd: 'send',
+      msg: JSON.stringify(message)
+    });
+    loopbackWebSocket.send(msgString);
+  };
+
+  loopbackWebSocket.onopen = function() {
+    var registerMessage = {
+      cmd: 'register',
+      roomid: params.roomId,
+      clientid: LOOPBACK_CLIENT_ID
+    };
+    loopbackWebSocket.send(JSON.stringify(registerMessage));
+  };
+
+  loopbackWebSocket.onmessage = function(event) {
+    var wssMessage;
+    var message;
+    try {
+      wssMessage = JSON.parse(event.data);
+      message = JSON.parse(wssMessage.msg);
+    } catch (e) {
+      trace('Error parsing JSON: ' + event.data); 
+      return;
+    }
+    if (message.type === 'offer') {
+      var loopbackAnswer = wssMessage.msg;
+      loopbackAnswer = loopbackAnswer.replace('"offer"', '"answer"');
+      loopbackAnswer =
+          loopbackAnswer.replace('a=ice-options:google-ice\\r\\n', '');
+      sendLoopbackMessage(JSON.parse(loopbackAnswer));
+    } else if (message.type === 'candidate') {
+      sendLoopbackMessage(message);
+    }
+  };
+
+  loopbackWebSocket.onclose = function() {
+    // TODO(tkchin): try to reconnect.
+    loopbackWebSocket = null;
+  };
 }

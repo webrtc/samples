@@ -24,7 +24,7 @@
 /* exported stats */
 
 // Variables defined in and used from signaling.js.
-/* globals openChannel, maybeStart, sendMessage */
+/* globals openSignalingChannel, maybeStart, sendMessage */
 /* exported channelReady, gatheredIceCandidateTypes, sdpConstraints, turnDone,
    onRemoteHangup, waitForRemoteVideo */
 
@@ -90,7 +90,7 @@ function initialize() {
 
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
-  openChannel();
+  openSignalingChannel();
   maybeRequestTurn();
 
   // Caller is always ready to create peerConnection.
@@ -137,26 +137,22 @@ function hangup() {
   transitionToDone();
   localStream.stop();
   stop();
-  disconnectFromGAE();
-  disconnectFromWSS();
+  disconnectFromServers();
 }
 
-function disconnectFromGAE() {
-  // Send bye to GAE.
-  var path = '/message?r=' + params.roomId + '&u=' + params.clientId;
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', path, true);
-  xhr.send(JSON.stringify({ type: 'bye' }));
-}
-
-function disconnectFromWSS() {
+function disconnectFromServers() {
   // Send bye to other client.
-  if (!webSocket) {
-    return;
+  if (webSocket) {
+    sendMessage({ type: 'bye' });
+    webSocket.close();
+    webSocket = null;
   }
-  sendMessage({ type: 'bye' });
-  webSocket.close();
-  webSocket = null;
+
+  // Send bye to GAE.
+  var path = '/bye/' + params.roomId + '/' + params.clientId;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', path, false);
+  xhr.send();
 }
 
 function onRemoteHangup() {
@@ -324,8 +320,7 @@ document.onkeydown = function(event) {
 // Send a BYE on refreshing or leaving a page
 // to ensure the room is cleaned up for the next session.
 window.onbeforeunload = function() {
-  disconnectFromGAE();
-  disconnectFromWSS();
+  disconnectFromServers();
 };
 
 function displaySharingInfo() {

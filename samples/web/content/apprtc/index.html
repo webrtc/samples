@@ -49,6 +49,7 @@
   <script type="text/javascript">
     var params = {
       errorMessages: {{ error_messages }},
+      isLoopback: {{ is_loopback }},
 
       roomId: '{{ room_key }}',
       roomLink: '{{ room_link }}',
@@ -73,6 +74,7 @@
       videoSendInitialBitrate: '{{ vsibr }}',
       videoRecvBitrate: '{{ vrbr }}',
       wssUrl: '{{ wss_url }}',
+      wssPostUrl: '{{ wss_post_url }}'
     };
     setTimeout(initialize, 1);
   </script>

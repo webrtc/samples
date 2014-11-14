@@ -27,6 +27,7 @@ jinja_environment = jinja2.Environment(
 LOCK = threading.RLock()
 
 WSS_URL = 'wss://apprtc-ws.webrtc.org:8089/ws'
+WSS_POST_URL = 'https://apprtc-ws.webrtc.org:8089/'
 
 def generate_random(length):
   word = ''
@@ -74,11 +75,6 @@ def make_pc_config(stun_server, turn_server, ts_pwd, ice_transports):
   if ice_transports:
     config['iceTransports'] = ice_transports
   return config
-
-def make_loopback_answer(message):
-  message = message.replace("\"offer\"", "\"answer\"")
-  message = message.replace("a=ice-options:google-ice\\r\\n", "")
-  return message
 
 def add_media_track_constraint(track_constraints, constraint_string):
   tokens = constraint_string.split(':')
@@ -215,22 +211,17 @@ class Room(db.Model):
     else:
       self.delete()
 
-class MessagePage(webapp2.RequestHandler):
-  def post(self):
-    message = self.request.body
-    room_id = self.request.get('r')
-    client_id = self.request.get('u')
+class ByePage(webapp2.RequestHandler):
+  def post(self, room_id, client_id):
     with LOCK:
       room = Room.get_by_key_name(room_id)
       if not room:
         logging.warning('Unknown room' + room_id)
         return
-      message_obj = json.loads(message)
-      if message_obj['type'] == 'bye':
-        room.remove_user(client_id)
-        logging.info('User ' + client_id + ' quit from room ' + room_id)
-        logging.info('Room ' + room_id + ' has state ' + str(room))
-
+      room.remove_user(client_id)
+      logging.info('User ' + client_id + ' quit from room ' + room_id)
+      logging.info('Room ' + room_id + ' has state ' + str(room))
+          
 class MainPage(webapp2.RequestHandler):
   """The main UI page, renders the 'index.html' template."""
   def get(self):
@@ -424,6 +415,7 @@ class MainPage(webapp2.RequestHandler):
 
     params = {
       'error_messages': error_messages,
+      'is_loopback' : json.dumps(debug == 'loopback'),
       'me': user,
       'room_key': room_key,
       'room_link': room_link,
@@ -447,6 +439,7 @@ class MainPage(webapp2.RequestHandler):
       'include_vr_js': include_vr_js,
       'meta_viewport': meta_viewport,
       'wss_url': WSS_URL,
+      'wss_post_url': WSS_POST_URL
     }
 
     if unittest:
@@ -458,5 +451,5 @@ class MainPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/message', MessagePage),
+    ('/bye/(\w+)/(\w+)', ByePage)
   ], debug=True)
