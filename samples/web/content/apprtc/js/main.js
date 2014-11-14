@@ -67,7 +67,7 @@ var sdpConstraints = {
 };
 var endTime = null;
 var signalingReady = false;
-var socket;
+var webSocket;
 var started = false;
 var startTime;
 var stats;
@@ -137,8 +137,26 @@ function hangup() {
   transitionToDone();
   localStream.stop();
   stop();
-  // will trigger BYE from server
-  socket.close();
+  disconnectFromGAE();
+  disconnectFromWSS();
+}
+
+function disconnectFromGAE() {
+  // Send bye to GAE.
+  var path = '/message?r=' + params.roomId + '&u=' + params.clientId;
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', path, true);
+  xhr.send(JSON.stringify({ type: 'bye' }));
+}
+
+function disconnectFromWSS() {
+  // Send bye to other client.
+  if (!webSocket) {
+    return;
+  }
+  sendMessage({ type: 'bye' });
+  webSocket.close();
+  webSocket = null;
 }
 
 function onRemoteHangup() {
@@ -306,9 +324,8 @@ document.onkeydown = function(event) {
 // Send a BYE on refreshing or leaving a page
 // to ensure the room is cleaned up for the next session.
 window.onbeforeunload = function() {
-  sendMessage({
-    type: 'bye'
-  });
+  disconnectFromGAE();
+  disconnectFromWSS();
 };
 
 function displaySharingInfo() {

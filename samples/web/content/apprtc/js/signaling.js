@@ -9,13 +9,13 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals addCodecParam, channelReady:true, displayError, displayStatus,
-   gatheredIceCandidateTypes, goog, hasLocalStream, iceCandidateType,
-   localStream, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
+   gatheredIceCandidateTypes, hasLocalStream, iceCandidateType, localStream,
+   maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
    maybeSetVideoSendInitialBitRate, mergeConstraints, msgQueue, onRemoteHangup,
    params, pc:true, remoteStream:true, remoteVideo, sdpConstraints, sharingDiv,
-   signalingReady:true, socket:true, startTime:true, started:true,
+   signalingReady:true, webSocket:true, startTime:true, started:true,
    transitionToActive, turnDone, updateInfoDiv, waitForRemoteVideo */
 /* exported openChannel */
 
@@ -23,14 +23,11 @@
 
 function openChannel() {
   trace('Opening channel.');
-  var channel = new goog.appengine.Channel(params.channelToken);
-  var handler = {
-    'onopen': onChannelOpened,
-    'onmessage': onChannelMessage,
-    'onerror': onChannelError,
-    'onclose': onChannelClosed
-  };
-  socket = channel.open(handler);
+  webSocket = new WebSocket(params.wssUrl);
+  webSocket.onopen = onChannelOpened;
+  webSocket.onmessage = onChannelMessage;
+  webSocket.onerror = onChannelError;
+  webSocket.onclose = onChannelClosed;
 }
 
 function createPeerConnection() {
@@ -152,16 +149,13 @@ function setRemote(message) {
   }
 }
 
-
 function sendMessage(message) {
-  var msgString = JSON.stringify(message);
+  var msgString = JSON.stringify({
+    cmd: 'send',
+    msg: JSON.stringify(message)
+  });
   trace('C->S: ' + msgString);
-  // NOTE: AppRTCClient.java searches & parses this line; update there when
-  // changing here.
-  var path = '/message?r=' + params.roomId + '&u=' + params.clientId;
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', path, true);
-  xhr.send(msgString);
+  webSocket.send(msgString);
 }
 
 function processSignalingMessage(message) {
@@ -198,29 +192,37 @@ function onAddIceCandidateError(error) {
 
 function onChannelOpened() {
   trace('Channel opened.');
+  trace('Registering on Collider');
+  var registerMessage = {
+    cmd: 'register',
+    roomID: params.roomId,
+    clientID: params.clientId
+  };
+  webSocket.send(JSON.stringify(registerMessage));
   channelReady = true;
   maybeStart();
 }
 
-function onChannelMessage(message) {
-  trace('S->C: ' + message.data);
-  var msg = JSON.parse(message.data);
+function onChannelMessage(event) {
+  var wssMessage = JSON.parse(event.data);
+  var message = JSON.parse(wssMessage.msg);
+  trace('S->C: ' + wssMessage.msg);
   // Since the turn response is async and also GAE might disorder the
   // Message delivery due to possible datastore query at server side,
   // So callee needs to cache messages before peerConnection is created.
   if (!params.isInitiator && !started) {
-    if (msg.type === 'offer') {
+    if (message.type === 'offer') {
       // Add offer to the beginning of msgQueue, since we can't handle
       // Early candidates before offer at present.
-      msgQueue.unshift(msg);
+      msgQueue.unshift(message);
       // Callee creates PeerConnection
       signalingReady = true;
       maybeStart();
     } else {
-      msgQueue.push(msg);
+      msgQueue.push(message);
     }
   } else {
-    processSignalingMessage(msg);
+    processSignalingMessage(message);
   }
 }
 
@@ -230,6 +232,7 @@ function onChannelError() {
 
 function onChannelClosed() {
   trace('Channel closed.');
+  webSocket = null;
 }
 
 function onCreateSessionDescriptionError(error) {
