@@ -37,7 +37,6 @@
     <div id="status"></div>
   </footer>
 
-  <script type="text/javascript" src="/_ah/channel/jsapi"></script>
   <script src="/js/stats.js"></script>
   <script src="/js/signaling.js"></script>
   <script src="/js/infobox.js"></script>
@@ -50,7 +49,6 @@
   <script type="text/javascript">
     var params = {
       errorMessages: {{ error_messages }},
-      channelToken: '{{ token }}',
 
       roomId: '{{ room_key }}',
       roomLink: '{{ room_link }}',
@@ -74,6 +72,7 @@
       videoSendBitrate: '{{ vsbr }}',
       videoSendInitialBitrate: '{{ vsibr }}',
       videoRecvBitrate: '{{ vrbr }}',
+      wssUrl: '{{ wss_url }}',
     };
     setTimeout(initialize, 1);
   </script>
