@@ -1,5 +1,5 @@
 application: apprtc
-version: 6
+version: 8
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -20,9 +20,6 @@ handlers:
 - url: /.*
   script: apprtc.app
   secure: always
-
-inbound_services:
-- channel_presence
 
 libraries:
 - name: jinja2
