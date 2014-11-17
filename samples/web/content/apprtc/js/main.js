@@ -146,10 +146,11 @@ function disconnectFromServers() {
     sendMessage({ type: 'bye' });
     webSocket.close();
     webSocket = null;
+    channelReady = false;
   }
-  // Clean up room in case where not registered but connection was attempted.
-  // TODO(tkchin): only call this when we know registration failed.
-  var path = params.wssPostUrl + params.roomId + '/' + params.clientId;
+
+  // Tell WSS that we're done.
+  var path = params.wssPostUrl + '/' + params.roomId + '/' + params.clientId;
   var xhr = new XMLHttpRequest();
   xhr.open('DELETE', path, false);
   xhr.send();

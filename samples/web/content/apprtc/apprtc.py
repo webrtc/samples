@@ -27,7 +27,7 @@ jinja_environment = jinja2.Environment(
 LOCK = threading.RLock()
 
 WSS_URL = 'wss://apprtc-ws.webrtc.org:8089/ws'
-WSS_POST_URL = 'https://apprtc-ws.webrtc.org:8089/'
+WSS_POST_URL = 'https://apprtc-ws.webrtc.org:8089'
 
 def generate_random(length):
   word = ''
@@ -350,7 +350,10 @@ class MainPage(webapp2.RequestHandler):
     if debug == 'loopback':
       # Set dtls to false as DTLS does not work for loopback.
       dtls = 'false'
-
+      include_loopback_js = '<script src="/js/loopback.js"></script>'
+    else:
+      include_loopback_js = ''
+      
     unittest = self.request.get('unittest')
     if unittest:
       # Always create a new room for the unit tests.
@@ -436,6 +439,7 @@ class MainPage(webapp2.RequestHandler):
       'audio_send_codec': audio_send_codec,
       'audio_receive_codec': audio_receive_codec,
       'ssr': ssr,
+      'include_loopback_js' : include_loopback_js,
       'include_vr_js': include_vr_js,
       'meta_viewport': meta_viewport,
       'wss_url': WSS_URL,
