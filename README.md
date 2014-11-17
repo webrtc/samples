@@ -16,6 +16,10 @@ Patches and issues welcome!
 
 ## The demos ##
 
+### Video chat ###
+
+[Basic chat client](https://apprtc.appspot)
+
 ### getUserMedia ###
 
 [Basic getUserMedia demo](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/gum)
