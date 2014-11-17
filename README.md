@@ -18,7 +18,7 @@ Patches and issues welcome!
 
 ### Video chat ###
 
-[Basic chat client](https://apprtc.appspot)
+[Basic chat client](https://apprtc.appspot.com)
 
 ### getUserMedia ###
 
