@@ -1,0 +1,1 @@
+../../../samples/web/js/adapter.js
