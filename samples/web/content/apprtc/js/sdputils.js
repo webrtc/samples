@@ -162,17 +162,17 @@ function maybePreferAudioReceiveCodec(sdp) {
   return maybePreferCodec(sdp, 'audio', 'receive', params.audioRecvCodec);
 }
 
-// Promotes |audioSendCodec| to be the first in the m=audio line, if set.
+// Promotes |videoSendCodec| to be the first in the m=audio line, if set.
 function maybePreferVideoSendCodec(sdp) {
   return maybePreferCodec(sdp, 'video', 'send', params.videoSendCodec);
 }
 
-// Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
+// Promotes |videoRecvCodec| to be the first in the m=audio line, if set.
 function maybePreferVideoReceiveCodec(sdp) {
   return maybePreferCodec(sdp, 'video', 'receive', params.videoRecvCodec);
 }
 
-// Sets |codec| as the default audio codec if it's present.
+// Sets |codec| as the default |type| codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function maybePreferCodec(sdp, type, dir, codec) {
   var str = type + ' ' + dir + ' codec';
