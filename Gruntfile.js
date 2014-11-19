@@ -11,13 +11,14 @@ module.exports = function(grunt) {
 
     csslint: {
       options: {
-        csslintrc: 'samples/web/.csslintrc'
+        csslintrc: '.csslintrc'
       },
       strict: {
         options: {
           import: 2
         },
         src: ['samples/web/content/**/*.css',
+              'apprtc/webapp/**/*.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       },
@@ -26,6 +27,7 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
+              'apprtc/webapp/**/*.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       }
@@ -34,7 +36,7 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-        'samples/web/content/apprtc/index.html',
+        'apprtc/webapp/index.html',
         'samples/web/content/datachannel/index.html',
         'samples/web/content/getusermedia/**/index.html',
         'samples/web/content/peerconnection/**/index.html'
@@ -43,13 +45,15 @@ module.exports = function(grunt) {
     },
 
     jscs: {
-      src: 'samples/web/content/**/*.js',
+      src: ['samples/web/content/**/*.js',
+            'apprtc/webapp/**/*.js'
+      ],
       options: {
         config: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
         'samples/web/content/manual-test/**/*',
-        'samples/web/content/apprtc/js/vr.js',
-        'samples/web/content/apprtc/js/stereoscopic.js',
+        'apprtc/webapp/js/vr.js',
+        'apprtc/webapp/js/stereoscopic.js',
         'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
         'samples/web/content/testrtc/bower_components/**'
         ],
@@ -62,9 +66,9 @@ module.exports = function(grunt) {
         ignores: [
         'samples/web/content/manual-test/**/*',
         'samples/web/content/getusermedia/desktopcapture/**',
-        'samples/web/content/apprtc/js/stereoscopic.js',
-        'samples/web/content/apprtc/js/ga.js',
-        'samples/web/content/apprtc/js/vr.js',
+        'apprtc/webapp/js/stereoscopic.js',
+        'apprtc/webapp/js/ga.js',
+        'apprtc/webapp/js/vr.js',
         'samples/web/content/testrtc/bower_components/**'
         ],
         // use default .jshintrc files
@@ -73,7 +77,9 @@ module.exports = function(grunt) {
       // files to validate
       // can choose more than one name + array of paths
       // usage with this name: grunt jshint:files
-      files: ['samples/web/content/**/*.js']
+      files: ['samples/web/content/**/*.js',
+              'apprtc/webapp/**/*.js',
+      ]
     },
 
   });
