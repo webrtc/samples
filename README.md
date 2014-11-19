@@ -16,10 +16,6 @@ Patches and issues welcome!
 
 ## The demos ##
 
-### Video chat ###
-
-[Video chat client](https://apprtc.appspot.com)
-
 ### getUserMedia ###
 
 [Basic getUserMedia demo](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/gum)
@@ -67,4 +63,8 @@ Patches and issues welcome!
 ### RTCDataChannel ###
 
 [Data channels](https://googlechrome.github.io/webrtc/samples/web/content/datachannel)
+
+### Video chat ###
+
+[Complete video chat client (based on Google App Engine)](https://apprtc.appspot.com)
 
