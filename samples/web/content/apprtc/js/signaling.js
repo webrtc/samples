@@ -11,6 +11,7 @@
 /* globals addCodecParam, channelReady:true, displayError, displayStatus,
    gatheredIceCandidateTypes, goog, hasLocalStream, iceCandidateType,
    localStream, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
+   maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
    maybeSetVideoSendInitialBitRate, mergeConstraints, msgQueue, onRemoteHangup,
@@ -101,6 +102,7 @@ function doAnswer() {
 
 function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybePreferAudioReceiveCodec(sessionDescription.sdp);
+  sessionDescription.sdp = maybePreferVideoReceiveCodec(sessionDescription.sdp);
   sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp);
   sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
@@ -122,6 +124,7 @@ function setRemote(message) {
         params.opusMaxPbr);
   }
   message.sdp = maybePreferAudioSendCodec(message.sdp);
+  message.sdp = maybePreferVideoSendCodec(message.sdp);
   message.sdp = maybeSetAudioSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendBitRate(message.sdp);
   message.sdp = maybeSetVideoSendInitialBitRate(message.sdp);
