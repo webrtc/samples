@@ -12,6 +12,10 @@ body {
   padding: 1em;
 }
 
+.small-font {
+  font-size: 12px;
+}
+
 .title {
   height: 60px;
   line-height: 60px;
@@ -26,7 +30,64 @@ body {
 }
 
 paper-button {
-  background-color: #d84a38;
+  background-color: #9E9;
+}
+
+paper-button#run-test-suite {
+  background: #888;
+  color: #FFF;
+}
+
+paper-button#expert-mode {
+  background-color: #888;
+  color: white;
+  margin: 1em 0 0 0 ;
+}
+
+paper-button#user-start-button {
+  clear: right;
+  width: 10em;
+  height: 4em;
+  padding: 0.5em;
+  font-size: 1.5em;
+  font-weight: 500;
+  color: #FFF;
+}
+
+#camera {
+  color: #888;
+}
+
+#faces {
+  color: #9E9;
+  width: 4em;
+  height: 4em;
+}
+
+.gumOverlay {
+  top: 0;
+  position: fixed;
+  background: #FFF;
+  height: auto;
+  border-radius: 0.3em;
+  padding: 1em;
+}
+
+.top5 {
+  top: 5em;
+}
+
+h1 {
+  font-size: 30;
+}
+
+.pages {
+  text-align: center;
+  min-width: 40em;
+  margin: 0 auto 0 auto;
+  padding: 0 1.5em 1.3em 1.5em;
+  background: #FFF;
+  border-radius: 0.3em;
 }
 
 div#content {
@@ -57,12 +118,12 @@ core-toolbar.test-suite + core-collapse {
 
 core-toolbar.test-suite core-icon[icon="check"],
 core-toolbar.test core-icon[icon="check"] {
-  color: green;
+  color: #080;
 }
 
 core-toolbar.test-suite core-icon[icon="close"],
 core-toolbar.test core-icon[icon="close"] {
-  color: red;
+  color: #F00;
 }
 
 /* Test style */
