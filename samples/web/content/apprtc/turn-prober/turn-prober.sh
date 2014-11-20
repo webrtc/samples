@@ -37,7 +37,7 @@ cd $D
 CHROME_LOG_FILE="${D}/chrome_debug.log"
 touch $CHROME_LOG_FILE
 
-XVFB="xvfb-run -a -e $CHROME_LOG_FILE -s '-screen 0 1024x768x24'"
+XVFB="xvfb-run -a -e $CHROME_LOG_FILE -f $D/xauth -s '-screen 0 1024x768x24'"
 if [ -n "$DISPLAY" ]; then
   XVFB=""
 fi
