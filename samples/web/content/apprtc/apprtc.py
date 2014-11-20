@@ -26,8 +26,8 @@ jinja_environment = jinja2.Environment(
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
 
-WSS_URL = 'wss://apprtc-ws.webrtc.org:8089/ws'
-WSS_POST_URL = 'https://apprtc-ws.webrtc.org:8089'
+WSS_HOST = 'apprtc-ws.webrtc.org'
+WSS_PORT = '8089'
 
 def generate_random(length):
   word = ''
@@ -221,7 +221,7 @@ class ByePage(webapp2.RequestHandler):
       room.remove_user(client_id)
       logging.info('User ' + client_id + ' quit from room ' + room_id)
       logging.info('Room ' + room_id + ' has state ' + str(room))
-          
+
 class MainPage(webapp2.RequestHandler):
   """The main UI page, renders the 'index.html' template."""
   def get(self):
@@ -353,7 +353,7 @@ class MainPage(webapp2.RequestHandler):
       include_loopback_js = '<script src="/js/loopback.js"></script>'
     else:
       include_loopback_js = ''
-      
+
     unittest = self.request.get('unittest')
     if unittest:
       # Always create a new room for the unit tests.
@@ -416,6 +416,22 @@ class MainPage(webapp2.RequestHandler):
     media_constraints = make_media_stream_constraints(audio, video,
                                                       firefox_fake_device)
 
+    ws_host = self.request.get('wsh')
+    ws_port = self.request.get('wsp')
+    ws_tls = self.request.get('wstls')
+
+    if not ws_host:
+      ws_host = WSS_HOST
+    if not ws_port:
+      ws_port = WSS_PORT
+
+    if ws_tls and ws_tls == 'false':
+      wss_url = 'ws://' + ws_host + ':' + ws_port + '/ws'
+      wss_post_url = 'http://' + ws_host + ':' + ws_port
+    else:
+      wss_url = 'wss://' + ws_host + ':' + ws_port + '/ws'
+      wss_post_url = 'https://' + ws_host + ':' + ws_port
+
     params = {
       'error_messages': error_messages,
       'is_loopback' : json.dumps(debug == 'loopback'),
@@ -442,8 +458,8 @@ class MainPage(webapp2.RequestHandler):
       'include_loopback_js' : include_loopback_js,
       'include_vr_js': include_vr_js,
       'meta_viewport': meta_viewport,
-      'wss_url': WSS_URL,
-      'wss_post_url': WSS_POST_URL
+      'wss_url': wss_url,
+      'wss_post_url': wss_post_url
     }
 
     if unittest:
