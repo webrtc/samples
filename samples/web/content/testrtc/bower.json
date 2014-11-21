@@ -23,16 +23,6 @@
     "tests"
   ],
   "dependencies": {
-<<<<<<< HEAD
-    "webcomponentsjs": "polymer/webcomponentsjs#^0.5.0",
-    "core-toolbar": "polymer/core-toolbar#~0.5.0",
-    "core-icon-button": "polymer/core-icon-button#~0.5.0",
-    "core-icon": "polymer/core-icon#~0.5.0",
-    "core-collapse": "polymer/core-collapse#~0.5.0",
-    "paper-dialog": "polymer/paper-dialog#~0.5.0",
-    "paper-progress": "polymer/paper-progress#~0.5.0",
-    "paper-button": "polymer/paper-button#~0.5.0"
-=======
     "webcomponentsjs": "Polymer/webcomponentsjs#^0.5.0",
     "core-toolbar": "Polymer/core-toolbar#~0.5.0",
     "core-icon-button": "Polymer/core-icon-button#~0.5.0",
@@ -41,8 +31,6 @@
     "paper-dialog": "Polymer/paper-dialog#~0.5.0",
     "paper-progress": "Polymer/paper-progress#~0.5.0",
     "paper-button": "Polymer/paper-button#~0.5.0",
-    "core-pages": "Polymer/core-pages#~0.5.1",
-    "core-animated-pages": "Polymer/core-animated-pages#~0.5.1"
->>>>>>> initial
+    "core-pages": "Polymer/core-pages#~0.5.1"
   }
 }
