@@ -25,6 +25,118 @@ var testSuites = [];
 var testFilters = [];
 var currentTest;
 
+window.onload = function() {
+  var ui = new UiHandler();
+  ui.startUI();
+};
+
+function UiHandler() {
+  // Element definitions.
+  this.runTestSuite = document.getElementById('run-test-suite');
+  this.userStartButton = document.getElementById('user-start-button');
+  this.expertMode = document.getElementById('expert-mode');
+  this.gumErrorMessage = document.getElementById('gum-error-message');
+
+  this.setupOverlayProp = function(id) {
+    // Setup overlay properties.
+    document.getElementById(id).backdrop = true;
+    document.getElementById(id).autoCloseDisabled = true;
+    return document.getElementById(id);
+  };
+  this.greetingOverlay = this.setupOverlayProp('greeting-overlay');
+  this.gumRequestOverlay = this.setupOverlayProp('gum-request-overlay');
+  this.gumErrorOverlay = this.setupOverlayProp('gum-error-overlay');
+  this.runTestOverlay = this.setupOverlayProp('run-tests-overlay');
+
+  // Register events.
+  this.userStartButton.addEventListener('click', function () {
+    this.greetingOverlay.close();
+  }.bind(this));
+
+  this.greetingOverlay.addEventListener('core-overlay-close-completed', function() {
+    if (!this.expertModeEnabled) {
+      this.gumRequestOverlay.open();
+    }
+    if (this.initialGum()) {
+      this.runTestOverlay.open();
+    }
+  }.bind(this));
+
+  this.gumRequestOverlay.addEventListener('core-overlay-open-completed', function() {
+    this.initialGum();
+  }.bind(this));
+
+  this.gumRequestOverlay.addEventListener('core-overlay-close-completed', function() {
+    if (this.gumSuccess) {
+      this.runTestOverlay.open();
+    }
+  }.bind(this));
+
+ this.gumErrorOverlay.addEventListener('core-overlay-open-completed', function() {
+    this.gumRequestOverlay.close();
+    this.checkInitialGumOK();
+  }.bind(this));
+
+  this.gumErrorOverlay.addEventListener('core-overlay-close-completed', function() {
+    this.runTestOverlay.open();
+  }.bind(this));
+
+  this.runTestOverlay.addEventListener('core-overlay-close-completed', function() {
+    start();
+  }.bind(this));
+
+  this.runTestSuite.addEventListener('click', function() {
+    this.runTestOverlay.close();
+  }.bind(this));
+
+  this.expertMode.addEventListener('click', function() {
+    this.greetingOverlay.close();
+    this.expertModeEnabled = true;
+  }.bind(this));
+}
+
+UiHandler.prototype = {
+  startUI: function() {
+    this.greetingOverlay.open();
+  },
+
+  initialGum: function() {
+    this.gumSuccess = false;
+    this.pollingGum = false;
+
+    doGetUserMedia(
+      {audio: true, video: true},
+      function(stream) {
+        stream.stop();
+        this.gumSuccess = true;
+        this.gumRequestOverlay.close();
+        return true;
+      }.bind(this),
+      function(error) {
+        console.log(error);
+        this.gumErrorMessage.innerHTML = error.name;
+        if (!this.pollingGum) {
+          this.gumErrorOverlay.open();
+        }
+        return false;
+      }.bind(this)
+    );
+  },
+
+  checkInitialGumOK: function() {
+    var intervalCheck = setInterval(function() {
+      if (!this.gumSuccess) {
+        this.pollingGum = true;
+        this.initialGum();
+      } else {
+        clearInterval(intervalCheck);
+        this.pollingGum = false;
+        this.gumErrorOverlay.close();
+      }
+    }.bind(this), 2000);
+  }
+};
+
 // A test suite is a composition of many tests.
 function TestSuite(name, output) {
   this.name = name;
