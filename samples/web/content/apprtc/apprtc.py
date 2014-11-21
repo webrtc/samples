@@ -14,9 +14,8 @@ import random
 import re
 import json
 import jinja2
-import webapp2
 import threading
-from google.appengine.api import channel
+import webapp2
 from google.appengine.ext import db
 
 jinja_environment = jinja2.Environment(
@@ -26,6 +25,9 @@ jinja_environment = jinja2.Environment(
 # TODO(brave): keeping working on improving performance with thread syncing.
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
+
+WSS_HOST = 'apprtc-ws.webrtc.org'
+WSS_PORT = '8089'
 
 def generate_random(length):
   word = ''
@@ -73,61 +75,6 @@ def make_pc_config(stun_server, turn_server, ts_pwd, ice_transports):
   if ice_transports:
     config['iceTransports'] = ice_transports
   return config
-
-def create_channel(room, user, duration_minutes):
-  client_id = make_client_id(room, user)
-  return channel.create_channel(client_id, duration_minutes)
-
-def make_loopback_answer(message):
-  message = message.replace("\"offer\"", "\"answer\"")
-  message = message.replace("a=ice-options:google-ice\\r\\n", "")
-  return message
-
-def handle_message(room, user, message):
-  message_obj = json.loads(message)
-  other_user = room.get_other_user(user)
-  room_key = room.key().id_or_name()
-  if message_obj['type'] == 'bye':
-    # This would remove the other_user in loopback test too.
-    # So check its availability before forwarding Bye message.
-    room.remove_user(user)
-    logging.info('User ' + user + ' quit from room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-  if other_user and room.has_user(other_user):
-    if message_obj['type'] == 'offer':
-      # Special case the loopback scenario.
-      if other_user == user:
-        message = make_loopback_answer(message)
-    on_message(room, other_user, message)
-  else:
-    # For unittest
-    on_message(room, user, message)
-
-def get_saved_messages(client_id):
-  return Message.gql("WHERE client_id = :id", id=client_id)
-
-def delete_saved_messages(client_id):
-  messages = get_saved_messages(client_id)
-  for message in messages:
-    message.delete()
-    logging.info('Deleted the saved message for ' + client_id)
-
-def send_saved_messages(client_id):
-  messages = get_saved_messages(client_id)
-  for message in messages:
-    channel.send_message(client_id, message.msg)
-    logging.info('Delivered saved message to ' + client_id)
-    message.delete()
-
-def on_message(room, user, message):
-  client_id = make_client_id(room, user)
-  if room.is_connected(user):
-    channel.send_message(client_id, message)
-    logging.info('Delivered message to user ' + user)
-  else:
-    new_message = Message(client_id = client_id, msg = message)
-    new_message.put()
-    logging.info('Saved message for user ' + user)
 
 def add_media_track_constraint(track_constraints, constraint_string):
   tokens = constraint_string.split(':')
@@ -208,27 +155,17 @@ def write_response(response, response_type, target_page, params):
     content = template.render(params)
   response.out.write(content)
 
-# This database is to store the messages from the sender client when the
-# receiver client is not ready to receive the messages.
-# Use TextProperty instead of StringProperty for msg because
-# the session description can be more than 500 characters.
-class Message(db.Model):
-  client_id = db.StringProperty()
-  msg = db.TextProperty()
-
 class Room(db.Model):
   """All the data we store for a room"""
   user1 = db.StringProperty()
   user2 = db.StringProperty()
-  user1_connected = db.BooleanProperty(default=False)
-  user2_connected = db.BooleanProperty(default=False)
 
   def __str__(self):
     result = '['
     if self.user1:
-      result += "%s-%r" % (self.user1, self.user1_connected)
+      result += "%s" % (self.user1)
     if self.user2:
-      result += ", %s-%r" % (self.user2, self.user2_connected)
+      result += ", %s" % (self.user2)
     result += ']'
     return result
 
@@ -261,88 +198,29 @@ class Room(db.Model):
     self.put()
 
   def remove_user(self, user):
-    delete_saved_messages(make_client_id(self, user))
     if user == self.user2:
       self.user2 = None
-      self.user2_connected = False
     if user == self.user1:
       if self.user2:
         self.user1 = self.user2
-        self.user1_connected = self.user2_connected
         self.user2 = None
-        self.user2_connected = False
       else:
         self.user1 = None
-        self.user1_connected = False
     if self.get_occupancy() > 0:
       self.put()
     else:
       self.delete()
 
-  def set_connected(self, user):
-    if user == self.user1:
-      self.user1_connected = True
-    if user == self.user2:
-      self.user2_connected = True
-    self.put()
-
-  def is_connected(self, user):
-    if user == self.user1:
-      return self.user1_connected
-    if user == self.user2:
-      return self.user2_connected
-
-@db.transactional
-def connect_user_to_room(room_key, user):
-  room = Room.get_by_key_name(room_key)
-  # Check if room has user in case that disconnect message comes before
-  # connect message with unknown reason, observed with local AppEngine SDK.
-  if room and room.has_user(user):
-    room.set_connected(user)
-    logging.info('User ' + user + ' connected to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-  else:
-    logging.warning('Unexpected Connect Message to room ' + room_key)
-  return room
-
-class ConnectPage(webapp2.RequestHandler):
-  def post(self):
-    key = self.request.get('from')
-    room_key, user = key.split('/')
+class ByePage(webapp2.RequestHandler):
+  def post(self, room_id, client_id):
     with LOCK:
-      room = connect_user_to_room(room_key, user)
-      if room and room.has_user(user):
-        send_saved_messages(make_client_id(room, user))
-
-class DisconnectPage(webapp2.RequestHandler):
-  def post(self):
-    key = self.request.get('from')
-    room_key, user = key.split('/')
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if room and room.has_user(user):
-        other_user = room.get_other_user(user)
-        room.remove_user(user)
-        logging.info('User ' + user + ' removed from room ' + room_key)
-        logging.info('Room ' + room_key + ' has state ' + str(room))
-        if other_user and other_user != user:
-          channel.send_message(make_client_id(room, other_user),
-                               '{"type":"bye"}')
-          logging.info('Sent BYE to ' + other_user)
-    logging.warning('User ' + user + ' disconnected from room ' + room_key)
-
-
-class MessagePage(webapp2.RequestHandler):
-  def post(self):
-    message = self.request.body
-    room_key = self.request.get('r')
-    user = self.request.get('u')
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if room:
-        handle_message(room, user, message)
-      else:
-        logging.warning('Unknown room ' + room_key)
+      room = Room.get_by_key_name(room_id)
+      if not room:
+        logging.warning('Unknown room' + room_id)
+        return
+      room.remove_user(client_id)
+      logging.info('User ' + client_id + ' quit from room ' + room_id)
+      logging.info('Room ' + room_id + ' has state ' + str(room))
 
 class MainPage(webapp2.RequestHandler):
   """The main UI page, renders the 'index.html' template."""
@@ -472,12 +350,9 @@ class MainPage(webapp2.RequestHandler):
     if debug == 'loopback':
       # Set dtls to false as DTLS does not work for loopback.
       dtls = 'false'
-
-    # token_timeout for channel creation, default 30min, max 1 days, min 3min.
-    token_timeout = self.request.get_range('tt',
-                                           min_value = 3,
-                                           max_value = 1440,
-                                           default = 30)
+      include_loopback_js = '<script src="/js/loopback.js"></script>'
+    else:
+      include_loopback_js = ''
 
     unittest = self.request.get('unittest')
     if unittest:
@@ -535,16 +410,31 @@ class MainPage(webapp2.RequestHandler):
 
     room_link = base_url + '?r=' + room_key
     room_link = append_url_arguments(self.request, room_link)
-    token = create_channel(room, user, token_timeout)
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_stream_constraints(audio, video,
                                                       firefox_fake_device)
 
+    ws_host = self.request.get('wsh')
+    ws_port = self.request.get('wsp')
+    ws_tls = self.request.get('wstls')
+
+    if not ws_host:
+      ws_host = WSS_HOST
+    if not ws_port:
+      ws_port = WSS_PORT
+
+    if ws_tls and ws_tls == 'false':
+      wss_url = 'ws://' + ws_host + ':' + ws_port + '/ws'
+      wss_post_url = 'http://' + ws_host + ':' + ws_port
+    else:
+      wss_url = 'wss://' + ws_host + ':' + ws_port + '/ws'
+      wss_post_url = 'https://' + ws_host + ':' + ws_port
+
     params = {
       'error_messages': error_messages,
-      'token': token,
+      'is_loopback' : json.dumps(debug == 'loopback'),
       'me': user,
       'room_key': room_key,
       'room_link': room_link,
@@ -565,8 +455,11 @@ class MainPage(webapp2.RequestHandler):
       'audio_send_codec': audio_send_codec,
       'audio_receive_codec': audio_receive_codec,
       'ssr': ssr,
+      'include_loopback_js' : include_loopback_js,
       'include_vr_js': include_vr_js,
-      'meta_viewport': meta_viewport
+      'meta_viewport': meta_viewport,
+      'wss_url': wss_url,
+      'wss_post_url': wss_post_url
     }
 
     if unittest:
@@ -578,7 +471,5 @@ class MainPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/message', MessagePage),
-    ('/_ah/channel/connected/', ConnectPage),
-    ('/_ah/channel/disconnected/', DisconnectPage)
+    ('/bye/(\w+)/(\w+)', ByePage)
   ], debug=True)
