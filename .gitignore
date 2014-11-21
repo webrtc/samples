@@ -3,4 +3,3 @@ node_modules
 *.pyc
 validation-report.json
 validation-status.json
-bower_components

@@ -1,0 +1,23 @@
+{
+  "name": "paper-ripple",
+  "private": true,
+  "dependencies": {
+    "core-icon": "Polymer/core-icon#^0.5.0",
+    "core-icons": "Polymer/core-icons#^0.5.0",
+    "font-roboto": "Polymer/font-roboto#^0.5.0"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^1.0.0"
+  },
+  "version": "0.5.1",
+  "homepage": "https://github.com/Polymer/paper-ripple",
+  "_release": "0.5.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.5.1",
+    "commit": "682e20b9bed06cd4b6f58e5e9c51bc49632118f6"
+  },
+  "_source": "git://github.com/Polymer/paper-ripple.git",
+  "_target": "^0.5.0",
+  "_originalSource": "Polymer/paper-ripple"
+}

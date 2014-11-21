@@ -1,0 +1,9 @@
+{
+  "name": "core-toolbar",
+  "private": true,
+  "dependencies": {
+    "core-icon-button": "Polymer/core-icon-button#^0.5.0",
+    "core-media-query": "Polymer/core-media-query#^0.5.0"
+  },
+  "version": "0.5.1"
+}

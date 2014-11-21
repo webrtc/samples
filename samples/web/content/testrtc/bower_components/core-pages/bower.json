@@ -1,0 +1,8 @@
+{
+  "name": "core-pages",
+  "private": true,
+  "dependencies": {
+    "core-selector": "Polymer/core-selector#^0.5.0"
+  },
+  "version": "0.5.1"
+}

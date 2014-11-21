@@ -1,0 +1,12 @@
+{
+  "name": "paper-dialog",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.5.0",
+    "core-overlay": "Polymer/core-overlay#^0.5.0",
+    "core-transition": "Polymer/core-transition#^0.5.0",
+    "paper-button": "Polymer/paper-button#^0.5.0",
+    "paper-shadow": "Polymer/paper-shadow#^0.5.0"
+  },
+  "version": "0.5.1"
+}
