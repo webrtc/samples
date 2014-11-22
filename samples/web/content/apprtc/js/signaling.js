@@ -298,13 +298,15 @@ function filterIceCandidate(candidateObj) {
   var candidateStr = candidateObj.candidate;
 
   // Always eat TCP candidates. Not needed in this context.
-  if (candidateStr.indexOf('tcp') !== -1)
+  if (candidateStr.indexOf('tcp') !== -1) {
     return false;
+  }
 
   // If we're trying to eat non-relay candidates, do that.
   if (params.peerConnectionConfig.iceTransports === 'relay' &&
-      iceCandidateType(candidateStr) !== 'relay')
+      iceCandidateType(candidateStr) !== 'relay') {
     return false;
+  }
 
   return true;
 }
