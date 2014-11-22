@@ -91,7 +91,8 @@ function createConnection() {
   remoteConnection.onicecandidate = iceCallback2;
   remoteConnection.ondatachannel = receiveChannelCallback;
 
-  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError,
+    { mandatory: { OfferToReceiveAudio: false, OfferToReceiveVideo: false }});
   startButton.disabled = true;
   closeButton.disabled = false;
 }
