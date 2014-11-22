@@ -169,7 +169,8 @@ function waitForRemoteVideo() {
 }
 
 function transitionToActive() {
-  endTime = window.performance.now();
+  // Subtract out any elapsed video time when computing setup time.
+  endTime = window.performance.now() - remoteVideo.currentTime * 1000;
   trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
 
