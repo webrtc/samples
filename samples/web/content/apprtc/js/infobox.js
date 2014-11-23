@@ -91,7 +91,7 @@ function updateInfoDiv() {
 
   contents += '</pre>';
 
-  if (infoDiv.innerHTML != contents) {
+  if (infoDiv.innerHTML !== contents) {
     infoDiv.innerHTML = contents;
   }
 }

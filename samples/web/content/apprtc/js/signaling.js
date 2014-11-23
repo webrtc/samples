@@ -287,7 +287,7 @@ function onIceConnectionStateChanged() {
     trace('ICE connection state changed to: ' + pc.iceConnectionState);
     if (pc.iceConnectionState === 'completed') {
       trace('ICE complete time: ' +
-          (performance.now() - startTime).toFixed(0) + 'ms.');
+          (window.performance.now() - startTime).toFixed(0) + 'ms.');
     }
   }
   updateInfoDiv();
