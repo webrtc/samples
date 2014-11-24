@@ -14,7 +14,7 @@
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
-   maybeSetVideoSendInitialBitRate, mergeConstraints */
+   maybeSetVideoSendInitialBitRate, mergeConstraints, removeCodecParam */
 
 'use strict';
 
@@ -144,7 +144,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   }
 
   var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
-  var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
+  var vp8Payload = getCodecPayloadTypeFromLine(sdpLines[vp8RtpmapIndex]);
   var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
       params.videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
       maxBitrate.toString();
@@ -192,7 +192,7 @@ function maybePreferCodec(sdp, type, dir, codec) {
   }
 
   // If the codec is available, set it as the default in m line.
-  var payload = findCodecPayloadType(sdpLines, codec);
+  var payload = getCodecPayloadType(sdpLines, codec);
   if (payload) {
     sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
   }
@@ -203,7 +203,7 @@ function maybePreferCodec(sdp, type, dir, codec) {
 
 function findFmtpLine(sdpLines, codec) {
   // Find payload of codec.
-  var payload = findCodecPayloadType(sdpLines, codec);
+  var payload = getCodecPayloadType(sdpLines, codec);
   // Find the payload in fmtp line.
   return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
 }
@@ -273,7 +273,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 }
 
 // Gets the codec payload type from fmtp lines.
-function findCodecPayloadType(sdpLines, codec) {
+function getCodecPayloadType(sdpLines, codec) {
   var index = findLine(sdpLines, 'a=rtpmap', codec);
   return index ? getCodecPayloadTypeFromLine(sdpLines[index]) : null;
 }
