@@ -29,8 +29,8 @@ jinja_environment = jinja2.Environment(
 LOCK = threading.RLock()
 
 TURN_URL = 'https://computeengineondemand.appspot.com'
-WSS_URL = 'wss://apprtc-ws.webrtc.org:8089/ws'
-WSS_POST_URL = 'https://apprtc-ws.webrtc.org:8089'
+WSS_HOST = 'apprtc-ws.webrtc.org'
+WSS_PORT = '8089'
 
 def generate_random(length):
   word = ''
@@ -164,6 +164,24 @@ def delete_saved_messages(room_id, client_id):
     message.delete()
   logging.info('Deleted saved messages for ' + client_id + ' in room ' +
                room_id);
+
+def get_wss_parameters(request):
+  ws_host = request.get('wsh')
+  ws_port = request.get('wsp')
+  ws_tls = request.get('wstls')
+
+  if not ws_host:
+    ws_host = WSS_HOST
+  if not ws_port:
+    ws_port = WSS_PORT
+
+  if ws_tls and ws_tls == 'false':
+    wss_url = 'ws://' + ws_host + ':' + ws_port + '/ws'
+    wss_post_url = 'http://' + ws_host + ':' + ws_port
+  else:
+    wss_url = 'wss://' + ws_host + ':' + ws_port + '/ws'
+    wss_post_url = 'https://' + ws_host + ':' + ws_port
+  return (wss_url, wss_post_url)
 
 # Returns appropriate room parameters based on query parameters in the request.
 # TODO(tkchin): move query parameter parsing to JS code.
@@ -308,6 +326,7 @@ def get_room_parameters(request, room_id, client_id=None, is_initiator=None):
   offer_constraints = make_offer_constraints()
   media_constraints = make_media_stream_constraints(audio, video,
                                                     firefox_fake_device)
+  wss_url, wss_post_url = get_wss_parameters(request)
   params = {
     'error_messages': error_messages,
     'is_loopback' : json.dumps(debug == 'loopback'),
@@ -332,8 +351,8 @@ def get_room_parameters(request, room_id, client_id=None, is_initiator=None):
     'include_loopback_js' : include_loopback_js,
     'include_vr_js': include_vr_js,
     'meta_viewport': meta_viewport,
-    'wss_url': WSS_URL,
-    'wss_post_url': WSS_POST_URL
+    'wss_url': wss_url,
+    'wss_post_url': wss_post_url
   }
   if client_id is not None:
     params['client_id'] = client_id
@@ -457,7 +476,8 @@ class MessagePage(webapp2.RequestHandler):
     logging.info('Forwarding message to collider.')
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     payload = urllib.urlencode({ 'msg' : message_json })
-    url = WSS_POST_URL + '/' + room_id + '/' + client_id
+    wss_url, wss_post_url = get_wss_parameters(self.request)
+    url = wss_post_url + '/' + room_id + '/' + client_id
     result = urlfetch.fetch(url=url,
                             payload=payload,
                             method=urlfetch.POST,
