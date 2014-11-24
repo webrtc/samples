@@ -1,12 +1,14 @@
+[![Build Status](https://travis-ci.org/GoogleChrome/webrtc.svg)](https://travis-ci.org/GoogleChrome/webrtc)
+
 # WebRTC code samples #
 
-This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples.
+This is a repository for client-side WebRTC code samples and the [AppRTC](https://apprtc.appspot.com) video chat client.
 
-Many of the samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
+Some of the samples use new browser features. They may only work in Chrome Canary and/or Firefox Beta, and may require flags to be set.
 
 All of the samples use [adapter.js](https://github.com/GoogleChrome/webrtc/blob/master/samples/web/js/adapter.js), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/interop](http://www.webrtc.org/interop).
 
-NB: all samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.  See [What are some chromium command-line flags relevant to WebRTC development/testing?](http://www.webrtc.org/chrome#TOC-What-are-some-chromium-command-line-flags-relevant-to-WebRTC-development-testing-) for relevant flags.
+NB: all samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will result in a PermissionDeniedError NavigatorUserMediaError.  See [What are some chromium command-line flags relevant to WebRTC development/testing?](http://www.webrtc.org/chrome#TOC-What-are-some-chromium-command-line-flags-relevant-to-WebRTC-development-testing-) for relevant flags.
 
 For more information about WebRTC, we maintain a list of [WebRTC Resources](https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit). If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O [WebRTC presentation](http://www.youtube.com/watch?v=p2HzZkd2A40).
 
@@ -14,44 +16,55 @@ Patches and issues welcome!
 
 ## The demos ##
 
-[getUserMedia()](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia)
+### getUserMedia ###
 
-[getUserMedia() + Canvas](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-canvas)
+[Basic getUserMedia demo](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/gum)
 
-[getUserMedia() + Canvas + CSS Filters](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-filter)
+[getUserMedia + canvas](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/canvas)
 
-[getUserMedia() with resolution constraints](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-resolution)
+[getUserMedia + canvas + CSS Filters](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/filter)
 
-[getUserMedia() with camera/mic selection](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-source)
+[getUserMedia with resolution constraints](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution)
 
-[Audio-only getUserMedia() output to local audio element](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-audio)
+[getUserMedia with camera/mic selection](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/source)
 
-[Audio-only getUserMedia() displaying volume](http://googlechrome.github.io/webrtc/samples/web/content/getusermedia-volume)
+[Audio-only getUserMedia output to local audio element](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/audio)
 
-[Data channels](http://googlechrome.github.io/webrtc/samples/web/content/datachannel)
+[Audio-only getUserMedia displaying volume](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/volume)
 
-[Peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection)
+[Face tracking](https://googlechrome.github.io/webrtc/samples/web/content/getusermedia/face)
 
-[Audio-only peer connection](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-audio)
+### RTCPeerConnection ###
 
-[Multiple peer connections](http://googlechrome.github.io/webrtc/samples/web/content/multiple)
+[Basic peer connection](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pc1)
 
-[Multiple relay](http://googlechrome.github.io/webrtc/samples/web/content/multiple-relay)
+[Audio-only peer connection](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/audio)
 
-[Munge SDP](http://googlechrome.github.io/webrtc/samples/web/content/munge-sdp)
+[Multiple peer connections at once](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/multiple)
 
-[ICE candidate gathering](http://googlechrome.github.io/webrtc/samples/web/content/trickle-ice)
+[Forward output of one peer connection into another](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/multiple-relay)
 
-[Accept incoming peer connection](http://googlechrome.github.io/webrtc/samples/web/content/pr-answer)
+[Munge SDP parameters](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/munge-sdp)
 
-[Peer connection states](http://googlechrome.github.io/webrtc/samples/web/content/peerconnection-states)
+[Use pranswer when setting up a peer connection](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/pr-answer)
 
-[Web Audio output as input to peer connection](http://googlechrome.github.io/webrtc/samples/web/content/webaudio-input)
+[Adjust constraints, view stats](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/constraints)
 
-[Adjust constraints, view stats](http://googlechrome.github.io/webrtc/samples/web/content/constraints)
+[Display createOffer output](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/create-offer)
 
-[Display createOffer output](http://googlechrome.github.io/webrtc/samples/web/content/create-offer)
+[Use RTCDTMFSender](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/dtmf)
 
-[DTMF](http://googlechrome.github.io/webrtc/samples/web/content/dtmf)
+[Display peer connection states](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/states)
 
-[Face tracking](http://googlechrome.github.io/webrtc/samples/web/content/face)
+[ICE candidate gathering from STUN/TURN servers](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/trickle-ice)
+
+[Web Audio output as input to peer connection](https://googlechrome.github.io/webrtc/samples/web/content/peerconnection/webaudio-input)
+
+### RTCDataChannel ###
+
+[Data channels](https://googlechrome.github.io/webrtc/samples/web/content/datachannel)
+
+### Video chat ###
+
+[Complete video chat client (based on Google App Engine)](https://apprtc.appspot.com)
+

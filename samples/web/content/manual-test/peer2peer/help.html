@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+  <title>WebRTC PeerConnection Manual Test Help Page</title>
+  <link rel="stylesheet" type="text/css" href="../css/stylesheet.css">
+  <meta charset="utf-8">
+</head>
+<body>
+
+<h1>WebRTC PeerConnection Manual Test Help Page</h1>
+<p>
+  The test page is intended for testing WebRTC calls.
+
+  This is how you set up a normal call:
+</p>
+<ol>
+  <li>Open this page in two tabs.</li>
+  <li>Start the peerconnection server. Click on the question mark next
+    to the 'server' field for instruction on how to do that. The easiest
+    thing is to start it on localhost, but you can start it on any
+    machine you like and connect to hostname:8888.</li>
+  <li>Click the Connect button in both tabs.</li>
+  <li>Click the Call:Negotiate button in one of the tabs. You should see a bunch
+    of printouts when this happens. Note that no streams are sent to
+    begin with (although you could run steps 5-6 before this step to get streams
+    even in the initial call).</li>
+  <li>Grant media access using the checkboxes and Request button.</li>
+  <li>Add the local stream by clicking the "Add" button, in both tabs.</li>
+  <li>Now you must re-negotiate the call by clicking on Negotiate again.</li>
+  <li>You should now have a call up and both sides should be receiving
+    media data (depending on what access you granted on the respective
+    pages).</li>
+  <li>You can now choose to stop, re-request, re-send or disable streams
+    in any way you like, or hang up and re-start the call. You don't
+    need to disconnect: that's done automatically when you close the
+    page. Hanging up is NOT done automatically though.</li>
+</ol>
+
+<p>
+  To create a data channel:
+</p>
+<ol>
+  <li>Make sure Chrome is started with the --enable-data-channels flag.</li>
+  <li>Follow the instructions above to connect two tabs to a
+   peerconnection_server.</li>
+  <li>Click the Data channel: Create button in one tab. Notice the status
+  changes to "connecting".</li>
+  <li>Click the Call:Negotiate button. You should see the status change to
+  "open" in both tabs. </li>
+  <li>Enter text in the textbox next to the Send data button and then click Send
+   data. Notice the text is received in the remote tab in the Received on data
+  channel text box. Data can be sent in both direct.</li>
+  <li>To close the channel press the Close button followed by Negotiate. Notice
+  the status change to "closed"</li>
+</ol>
+
+<p>Detailed descriptions:</p>
+<ul>
+  <li>Connect - once a connection is established, you generally won't
+    need to click this button again. Connecting really isn't something
+    related to WebRTC as such, it's just the signalling solution.</li>
+  <li>Note that if more than two users/machines have established a
+    connection to the same PC server, you will get an error when
+    pressing this button. The test is hard-coded to only allow 2 peers
+    on the server at the same time.</li>
+  <li>Pressing the Add button for local streams will in effect add
+    the current local stream, such as it is, to the current
+    peerconnection.</li>
+  <li>If you request user media again, it will overwrite the current
+    local stream with the new one. This means that pressing Add will
+    add the stream you just got from the request. The code will not
+    attempt to stop or remove the previous stream from the
+    peerconnection, so depending on peerconnection's semantics the old
+    stream will remain with the peerconnection (perhaps the streams will
+    be sent simultaneously?)</li>
+  <li>Hang Up will clear away peer connections on both sides, and a new
+    call can be started if desired. The peers remain connected to the
+    peerconnection server.</li>
+  <li>The Toggle buttons will set the .enabled properties on the first
+    video and audio track for the local or remote stream, respectively.
+    This is effectively a temporary "mute" for the streams.</li>
+  <li>Stop terminates a stream, which means it will no longer send any
+    more data.</li>
+  <li>Remove will remove the current local stream from the current
+    peerconnection. For instance, you should be able to send a stream,
+    remove it, re-request a new stream and send that within the same
+    call. Note that re-requesting user media overwrites the current
+    media stream, so the reverse is not possible.</li>
+  <li>The PeerConnection constraints field can pass in constraints for the
+    peerconnection to be established. The code will attempt to eval the code
+    you write in and pass it whenever the code asks for constraints.
+    [experimental]</li>
+  <li>The Force Opus checkbox will remove all codecs except OPUS for all
+    outgoing messages sent by this page. Note that this ONLY means that
+    we are guaranteed to send Opus to the other side; it does NOT mean
+    that the other side will necessarily send Opus to us. To do that,
+    you need to check the box on the other side too. You can either
+    check the box before the call, or check the box and then re-send the
+    local stream.</li>
+</ul>
+
+
+
+</body>
+</html>

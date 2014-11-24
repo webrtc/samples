@@ -14,20 +14,19 @@ To run this test:
 
 <html>
 <head>
-<link rel="canonical" href="{{ room_link }}"/>
-<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
-<script src="/_ah/channel/jsapi"></script>
-<script type="text/javascript">
-  var channel;
-  var pc;
-  var socket;
-  var expected_message_num = 8;
-  var receive = 0;
-  var test_msg =
-      '01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  var msg_larger_than_500 = "";
+  <link rel="canonical" href="{{ room_link }}"/>
+  <script src="/_ah/channel/jsapi"></script>
+  <script type="text/javascript">
+    var channel;
+    var pc;
+    var socket;
+    var expected_message_num = 8;
+    var receive = 0;
+    var test_msg =
+    '01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var msg_larger_than_500 = "";
 
-  function trace(txt) {
+    function trace(txt) {
     // This function is used for logging.
     var elem = document.getElementById("debug");
     elem.innerHTML += txt + "<br>";
@@ -46,7 +45,7 @@ To run this test:
     for (i = 0; i < 9; ++i) {
       msg_larger_than_500 += test_msg;
     }
- 
+
     for (i = 0; i < 4; ++i) {
       sendMessage({type: 'test', msgid: i, msg: msg_larger_than_500});
     }
@@ -71,30 +70,30 @@ To run this test:
   }
   function onChannelMessage(message) {
     if (message.data != JSON.stringify({type: 'test', msgid: receive,
-                                        msg: msg_larger_than_500})) {
+        msg: msg_larger_than_500})) {
       trace('ERROR: Expect: ' + receive + ' Actual: ' + message.data);
-    } else {
-      trace('S->C: ' + message.data);
-    }
-    ++receive;
-    if (receive == expected_message_num) {
-      trace('Received all the ' + expected_message_num + ' messages.');
-      trace('Test passed!');
-    } else if (receive > expected_message_num) {
-      trace('Received more than expected message');
-      trace('Test failed!');
-    }
+  } else {
+    trace('S->C: ' + message.data);
   }
-  function onChannelError() {
-    trace('Channel error.');
+  ++receive;
+  if (receive == expected_message_num) {
+    trace('Received all the ' + expected_message_num + ' messages.');
+    trace('Test passed!');
+  } else if (receive > expected_message_num) {
+    trace('Received more than expected message');
+    trace('Test failed!');
   }
-  function onChannelClosed() {
-    trace('Channel closed.');
-  }
+}
+function onChannelError() {
+  trace('Channel error.');
+}
+function onChannelClosed() {
+  trace('Channel closed.');
+}
 
 </script>
 </head>
 <body onload="runTest()">
-<pre id="debug"></pre>
+  <pre id="debug"></pre>
 </body>
 </html>

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!--
  *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
  *
@@ -5,69 +6,90 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
 -->
-<!DOCTYPE html>
 <html>
+
 <head>
-<title>WebRTC Reference App</title>
 
-<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
-{{ meta_viewport }}
+  <title>WebRTC Reference App</title>
 
-<link rel="canonical" href="{{ room_link }}"/>
-<link rel="stylesheet" href="css/main.css" />
-
-<script type="text/javascript" src="/_ah/channel/jsapi"></script>
-<script src="/js/main.js"></script>
-{{ include_vr_js }}
-<!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-<script src="/js/adapter.js"></script>
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC reference app">
+  {{ meta_viewport }}
+  <link rel="canonical" href="{{ room_link }}">
+  <link rel="stylesheet" href="css/main.css">
 
 </head>
+
 <body>
-<script type="text/javascript">
-  var errorMessages = {{ error_messages }};
-  var channelToken = '{{ token }}';
-  var me = '{{ me }}';
-  var roomKey = '{{ room_key }}';
-  var roomLink = '{{ room_link }}';
-  var initiator = {{ initiator }};
-  var pcConfig = {{ pc_config | safe }};
-  var pcConstraints = {{ pc_constraints | safe }};
-  var offerConstraints = {{ offer_constraints | safe }};
-  var mediaConstraints = {{ media_constraints | safe }};
-  var turnUrl = '{{ turn_url }}';
-  var stereo = '{{ stereo }}';
-  var opusfec = '{{ opusfec }}';
-  var opusMaxPbr = '{{ opusmaxpbr }}';
-  var audioSendBitrate = '{{ asbr }}';
-  var audioRecvBitrate = '{{ arbr }}';
-  var videoSendBitrate = '{{ vsbr }}';
-  var videoRecvBitrate = '{{ vrbr }}';
-  var videoSendInitialBitrate = '{{ vsibr }}';
-  var stereoscopic = '{{ ssr }}';
-  var audioSendCodec = '{{ audio_send_codec }}';
-  var audioRecvCodec = '{{ audio_receive_codec }}';
-  setTimeout(initialize, 1);
-</script>
-<div id="container" ondblclick="enterFullScreen()" ontouchend="enterFullScreen()">
-  <div id="card">
-    <div id="local">
-      <video id="localVideo" autoplay="autoplay" muted="true"/>
-    </div>
-    <div id="remote">
-      <!-- Remote video is displayed in the canvas below when stereoscopic
-           rendering is requested (&ssr=true). -->
-      <canvas id="remoteCanvas" style="display: none;"></canvas>
-      <video id="remoteVideo" autoplay="autoplay">
-      </video>
-      <div id="mini">
-        <video id="miniVideo" autoplay="autoplay" muted="true"/>
-      </div>
-    </div>
+
+  <div id="videos">
+    <video id="mini-video" autoplay muted></video>
+    <canvas id="remote-canvas"></canvas>
+    <video id="remote-video" autoplay></video>
+    <video id="local-video" autoplay muted></video>
   </div>
-</div>
+
+  <footer>
+    <div id="sharing">
+      <div id="room-link">Waiting for someone to join this room: <a href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
+    </div>
+    <div id="info"></div>
+    <div id="status"></div>
+  </footer>
+
+  <script type="text/javascript" src="/_ah/channel/jsapi"></script>
+  <script src="/js/stats.js"></script>
+  <script src="/js/signaling.js"></script>
+  <script src="/js/infobox.js"></script>
+  <script src="/js/sdputils.js"></script>
+  <script src="/js/util.js"></script>
+  <script src="/js/main.js"></script>
+  {{ include_vr_js }}
+  <script src="/js/adapter.js"></script>
+
+  <script type="text/javascript">
+    var params = {
+      errorMessages: {{ error_messages }},
+      channelToken: '{{ token }}',
+
+      roomId: '{{ room_key }}',
+      roomLink: '{{ room_link }}',
+      clientId: '{{ me }}',
+      isInitiator: {{ initiator }},
+
+      mediaConstraints: {{ media_constraints | safe }},
+      offerConstraints: {{ offer_constraints | safe }},
+      peerConnectionConfig: {{ pc_config | safe }},
+      peerConnectionConstraints: {{ pc_constraints | safe }},
+      turnRequestUrl: '{{ turn_url }}',
+
+      audioSendBitrate: '{{ asbr }}',
+      audioSendCodec: '{{ audio_send_codec }}',
+      audioRecvBitrate: '{{ arbr }}',
+      audioRecvCodec: '{{ audio_receive_codec }}',
+      isStereoscopic: '{{ ssr }}',
+      opusMaxPbr: '{{ opusmaxpbr }}',
+      opusFec: '{{ opusfec }}',
+      opusStereo: '{{ stereo }}',
+      videoSendBitrate: '{{ vsbr }}',
+      videoSendInitialBitrate: '{{ vsibr }}',
+      videoSendCodec: '{{ video_send_codec }}',
+      videoRecvBitrate: '{{ vrbr }}',
+      videoRecvCodec: '{{ video_receive_codec }}',
+    };
+
+    initialize();
+  </script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-48530561-2', 'auto');
+    ga('send', 'pageview');
+  </script>
+
 </body>
-<footer id="status">
-</footer>
-<div id="infoDiv"></div>
 </html>

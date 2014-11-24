@@ -46,17 +46,6 @@ def get_default_stun_server(user_agent):
   # others you can try: stun.services.mozilla.com, stunserver.org
   return 'stun.l.google.com:19302'
 
-def get_preferred_audio_receive_codec():
-  return 'opus/48000'
-
-def get_preferred_audio_send_codec(user_agent):
-  # Empty string means no preference.
-  preferred_audio_send_codec = ''
-  # Prefer to send ISAC on Chrome for Android.
-  if is_chrome_for_android(user_agent):
-    preferred_audio_send_codec = 'ISAC/16000'
-  return preferred_audio_send_codec
-
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
 def get_hd_default(user_agent):
   if 'Android' in user_agent or not 'Chrome' in user_agent:
@@ -164,10 +153,12 @@ def make_media_track_constraints(constraints_string):
 
   return track_constraints
 
-def make_media_stream_constraints(audio, video):
+def make_media_stream_constraints(audio, video, firefox_fake_device):
   stream_constraints = (
       {'audio': make_media_track_constraints(audio),
        'video': make_media_track_constraints(video)})
+  if firefox_fake_device:
+    stream_constraints['fake'] = True
   logging.info('Applying media constraints: ' + str(stream_constraints))
   return stream_constraints
 
@@ -396,6 +387,10 @@ class MainPage(webapp2.RequestHandler):
     audio = self.request.get('audio')
     video = self.request.get('video')
 
+    # Pass firefox_fake_device=1 to pass fake: true in the media constraints,
+    # which will make Firefox use its built-in fake device.
+    firefox_fake_device = self.request.get('firefox_fake_device')
+
     # The hd parameter is a shorthand to determine whether to open the
     # camera at 720p. If no value is provided, use a platform-specific default.
     # When defaulting to HD, use optional constraints, in case the camera
@@ -416,35 +411,33 @@ class MainPage(webapp2.RequestHandler):
       logging.error(message)
       error_messages.append(message)
 
+    # Allow preferred audio and video codecs to be overridden.
     audio_send_codec = self.request.get('asc', default_value = '')
-    if not audio_send_codec:
-      audio_send_codec = get_preferred_audio_send_codec(user_agent)
-
     audio_receive_codec = self.request.get('arc', default_value = '')
-    if not audio_receive_codec:
-      audio_receive_codec = get_preferred_audio_receive_codec()
+    video_send_codec = self.request.get('vsc', default_value = '')
+    video_receive_codec = self.request.get('vrc', default_value = '')
 
-    # Read url param for stereo.
+    # Read url param controlling whether we send stereo.
     stereo = self.request.get('stereo', default_value = '')
 
-    # Read url param for opusfec.
-    opusfec = self.request.get('opusfec', default_value = '')
+    # Read url param controlling whether we send Opus FEC.
+    opusfec = self.request.get('opusfec', default_value = 'true')
 
-    # Read url param for opusmaxpbr
+    # Read url param for Opus max sample rate.
     opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
 
-    # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
+    # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr).
     asbr = self.request.get('asbr', default_value = '')
     arbr = self.request.get('arbr', default_value = '')
 
-    # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
+    # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr).
     vsbr = self.request.get('vsbr', default_value = '')
     vrbr = self.request.get('vrbr', default_value = '')
 
-    # Read url params for the initial video send bitrate (vsibr)
+    # Read url params for the initial video send bitrate (vsibr).
     vsibr = self.request.get('vsibr', default_value = '')
 
-    # Options for making pcConstraints
+    # Options for controlling various networking features.
     dtls = self.request.get('dtls')
     dscp = self.request.get('dscp')
     ipv6 = self.request.get('ipv6')
@@ -536,7 +529,8 @@ class MainPage(webapp2.RequestHandler):
     pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
     pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
     offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video)
+    media_constraints = make_media_stream_constraints(audio, video,
+                                                      firefox_fake_device)
 
     params = {
       'error_messages': error_messages,
@@ -560,6 +554,8 @@ class MainPage(webapp2.RequestHandler):
       'vsibr': vsibr,
       'audio_send_codec': audio_send_codec,
       'audio_receive_codec': audio_receive_codec,
+      'video_send_codec': video_send_codec,
+      'video_receive_codec': video_receive_codec,
       'ssr': ssr,
       'include_vr_js': include_vr_js,
       'meta_viewport': meta_viewport

@@ -9,7 +9,7 @@
   display: none;
 }
 
-* {
+body {
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
 }
@@ -199,6 +199,10 @@ h1 span {
 
 strong {
   font-weight: 500;
+}
+
+textarea {
+  font-family: 'Roboto', sans-serif;
 }
 
 video {

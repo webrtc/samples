@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript">
+  <meta name="description" content="Client-side WebRTC code samples.">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>Trickle ICE</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Trickle ICE</span></h1>
+
+    <section>
+
+      <p>This page tests the trickle ICE functionality in a WebRTC implementation. It creates a PeerConnection with the specified ICEServers, and then starts candidate gathering for a session with a single audio stream. As candidates are gathered, they are displayed in the text box below, along with an indication when candidate gathering is complete.</p>
+
+      <p>Individual STUN and TURN servers can be added using the Add server / Remove server controls below; in addition, the type of candidates released to the application can be controlled via the IceTransports constraint.</p>
+
+    </section>
+
+    <section id="iceServers">
+
+      <h2>ICE servers</h2>
+
+      <select id="servers" size="4">
+        <option value="{&quot;url&quot;:&quot;stun:stun.l.google.com:19302&quot;}">stun:stun.l.google.com:19302</option>
+      </select>
+
+      <div>
+        <label for="url">STUN or TURN URI:</label>
+        <input id="url">
+      </div>
+
+      <div>
+        <label for="username">TURN username:</label>
+        <input id="username">
+      </div>
+
+      <div>
+        <label for="password">TURN password:</label>
+        <input id="password">
+      </div>
+
+      <div>
+        <button id="add">Add Server</button>
+        <button id="remove">Remove Server</button>
+      </div>
+
+    </section>
+
+    <section id="iceOptions">
+
+      <h2>ICE options</h2>
+
+      <div id="iceTransports">
+        <span>IceTransports value:</span>
+        <input type="radio" name="transports" value="all" id="all" checked><label for="all">all</label>
+        <input type="radio" name="transports" value="relay" id="relay">
+        <label for="relay">relay</label>
+        <input type="radio" name="transports" value="none" id="none">
+        <label for="none">none</label>
+      </div>
+      <div>
+        <label for="ipv6">Gather IPv6 candidates:</label>
+        <input id="ipv6" type="checkbox" checked>
+      </div>
+      <div>
+        <label for="unbundle">Gather unbundled RTCP candidates:</label>
+        <input id="unbundle" type="checkbox" checked>
+      </div>
+
+    </section>
+
+    <section>
+
+      <table id="candidates">
+        <thead id="candidatesHead"><tr>
+          <th>Time</th><th>Component</th><th>Type</th><th>Foundation</th>
+          <th>Protocol</th><th>Address</th><th>Port</th><th>Priority</th>
+        </tr></thead>
+        <tbody id="candidatesBody"></tbody>
+      </table>
+      <button id="gather">Gather candidates</button>
+
+    </section>
+
+
+
+
+
+    <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection/trickle-ice" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+  </div>
+
+  <script src="../../../js/adapter.js"></script>
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+
+</body>
+</html>
