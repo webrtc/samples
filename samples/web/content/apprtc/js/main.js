@@ -24,9 +24,8 @@
 /* exported stats */
 
 // Variables defined in and used from signaling.js.
-/* globals isRegisteredWithGAE:true, isSignalingChannelReady:true,
-   isWebSocketOpen:true, messageQueue, sendWSSMessage,
-   setupCall, startSignalingIfReady */
+/* globals isSignalingChannelReady:true, messageQueue, sendWSSMessage,
+   setupCall, startSignaling */
 /* exported gatheredIceCandidateTypes, sdpConstraints, onRemoteHangup,
    waitForRemoteVideo */
 
@@ -125,14 +124,12 @@ function disconnectFromServers() {
   xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);
   xhr.send();
-  isRegisteredWithGAE = false;
 
   // Send bye to other client.
   if (webSocket) {
     sendWSSMessage({ type: 'bye' });
     webSocket.close();
     webSocket = null;
-    isWebSocketOpen = false;
     isSignalingChannelReady = false;
   }
 
@@ -149,7 +146,7 @@ function onRemoteHangup() {
   stop();
   // On remote hangup this client becomes the new initiator.
   params.isInitiator = true;
-  startSignalingIfReady();
+  startSignaling();
 }
 
 function stop() {

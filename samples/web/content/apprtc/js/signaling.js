@@ -22,64 +22,42 @@
 
 'use strict';
 
-var isRegisteredWithGAE = false;
-var isTurnComplete = false;
-var isUserMediaComplete = false;
-var isWebSocketOpen = false;
 var isSignalingChannelReady = false;
 var hasLocalStream = false;
 var messageQueue = [];
 
 function setupCall(roomId) {
-  // We only register with WSS if the web socket connection is open and if we're
-  // already registered with GAE.
-  var registerWithWSSIfReady = function() {
-    if (isWebSocketOpen && isRegisteredWithGAE) {
-      registerWithWSS(params.roomId, params.clientId);
-    }
-  };
-
-  // We only create a peer connection once we have media and TURN. We also wait
-  // for registration to complete since right now we send candidates as soon as
-  // the peer connection generates them.
-  // TODO(tkchin): create peer connection earlier, but only send candidates if
-  // registration has occurred.
-  var createPeerConnectionIfReady = function() {
-    if (isRegisteredWithGAE && isTurnComplete && isUserMediaComplete) {
-      startSignalingIfReady();
-    }
-  };
-
   // Asynchronously request user media if needed.
   hasLocalStream = !(params.mediaConstraints.audio === false &&
                      params.mediaConstraints.video === false);
+  var mediaPromise = null;
   if (hasLocalStream) {
-    requestUserMedia(params.mediaConstraints).then(function(stream) {
+    var mediaConstraints = params.mediaConstraints;
+    mediaPromise = requestUserMedia(mediaConstraints).then(function(stream) {
       trace('Got user media.');
       onUserMediaSuccess(stream);
     }).catch(function(error) {
       trace('Error getting user media. Continuing without stream.');
       hasLocalStream = false;
       onUserMediaError(error);
-    }).then(function() {
-      isUserMediaComplete = true;
-      createPeerConnectionIfReady();
     });
+  } else {
+    mediaPromise = Promise.resolve();
   }
 
   // Asynchronously open a WebSocket connection to WSS.
-  openSignalingChannel().then(function() {
-    isWebSocketOpen = true;
-    registerWithWSSIfReady();
-  }).catch(function(error) {
+  var channelPromise = openSignalingChannel().catch(function(error) {
     reportError(error.message);
+    return Promise.reject(error);
   });
 
   // Asynchronously request a TURN server if needed.
   var shouldRequestTurnServers = !hasTurnServer(params) &&
       (params.turnRequestUrl && params.turnRequestUrl.length > 0);
+  var turnPromise = null;
   if (shouldRequestTurnServers) {
-    requestTurnServers(params.turnRequestUrl).then(function(turnServers) {
+    var requestUrl = params.turnRequestUrl;
+    turnPromise = requestTurnServers(requestUrl).then(function(turnServers) {
       var iceServers = params.peerConnectionConfig.iceServers;
       params.peerConnectionConfig.iceServers = iceServers.concat(turnServers);
     }).catch(function(error) {
@@ -92,15 +70,13 @@ function setupCall(roomId) {
                     'subject=' + subject + '">' +
                     'report it to discuss-webrtc@googlegroups.com</a>.');
       trace(error.message);
-    }).then(function() {
-      isTurnComplete = true;
-      createPeerConnectionIfReady();
     });
+  } else {
+    turnPromise = Promise.resolve();
   }
 
   // Asynchronously register with GAE.
-  registerWithGAE(roomId).then(function(roomParams) {
-    isRegisteredWithGAE = true;
+  var registerPromise = registerWithGAE(roomId).then(function(roomParams) {
     // The only difference in parameters should be clientId and isInitiator,
     // and the turn servers that we requested.
     // TODO(tkchin): clean up response format. JSHint doesn't like it either.
@@ -110,10 +86,28 @@ function setupCall(roomId) {
     params.isInitiator = roomParams.is_initiator === 'true';
     /* jshint ignore:end */
     params.messages = roomParams.messages;
-    createPeerConnectionIfReady();
-    registerWithWSSIfReady();
   }).catch(function(error) {
     reportError(error.message);
+    return Promise.reject(error);
+  });
+
+  // We only register with WSS if the web socket connection is open and if we're
+  // already registered with GAE.
+  Promise.all([channelPromise, registerPromise]).then(function() {
+    registerWithWSS(params.roomId, params.clientId);
+  }).catch(function(error) {
+    reportError('Could not begin WSS registration: ' + error.message);
+  });
+
+  // We only create a peer connection once we have media and TURN. Since right
+  // now we send candidates as soon as the peer connection generates them we
+  // need to wait for registration as well.
+  // TODO(tkchin): create peer connection earlier, but only send candidates if
+  // registration has occurred.
+  Promise.all([registerPromise, turnPromise, mediaPromise]).then(function() {
+    startSignaling();
+  }).catch(function(error) {
+    reportError('Could not begin signaling: ' + error.message);
   });
 }
 
@@ -230,7 +224,6 @@ function onSignalingChannelClose(event) {
   // TODO(tkchin): reconnect to WSS.
   trace('Channel closed with code:' + event.code + ' reason:' + event.reason);
   isSignalingChannelReady = false;
-  isWebSocketOpen = false;
   webSocket = null;
 }
 
@@ -254,11 +247,8 @@ function createPeerConnection(config, constraints) {
   pc.oniceconnectionstatechange = onIceConnectionStateChanged;
 }
 
-function startSignalingIfReady() {
-  if (!isRegisteredWithGAE || !isTurnComplete || !isUserMediaComplete) {
-    trace('WARNING: attempted to start signaling before ready.');
-    return;
-  }
+function startSignaling() {
+  trace('Starting signaling.');
   startTime = window.performance.now();
   createPeerConnection(params.peerConnectionConfig,
                        params.peerConnectionConstraints);
