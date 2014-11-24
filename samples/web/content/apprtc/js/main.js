@@ -952,7 +952,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   }
 
   var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
-  var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
+  var vp8Payload = getCodecPayloadTypeFromLine(sdpLines[vp8RtpmapIndex]);
   var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
       videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
       maxBitrate.toString();
@@ -992,7 +992,7 @@ function preferAudioCodec(sdp, codec) {
   }
 
   // If the codec is available, set it as the default in m line.
-  var payload = findCodecPayloadType(sdpLines, codec);
+  var payload = getCodecPayloadType(sdpLines, codec);
   if (payload) {
     sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
   }
@@ -1003,7 +1003,7 @@ function preferAudioCodec(sdp, codec) {
 
 function findFmtpLine(sdpLines, codec) {
   // Find payload of codec.
-  var payload = findCodecPayloadType(sdpLines, codec);
+  var payload = getCodecPayloadType(sdpLines, codec);
   // Find the payload in fmtp line.
   return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
 }
@@ -1017,7 +1017,7 @@ function addCodecParam(sdp, codec, param) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
     if (index === null)
       return sdp;
-    var payload = getCodecPayloadType(sdpLines[index]);
+    var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
     sdpLines.splice(index + 1, 0, 'a=fmtp:' + payload.toString() + ' ' + param);
   } else if (sdpLines[fmtpLineIndex].match(param) === null) {
     sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
@@ -1071,13 +1071,13 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 }
 
 // Finds the codec payload type from fmtp lines.
-function findCodecPayloadType(sdpLines, codec) {
+function getCodecPayloadType(sdpLines, codec) {
   var index = findLine(sdpLines, 'a=rtpmap', codec);
-  return index ? getCodecPayloadType(sdpLines[index]) : null;
+  return index ? getCodecPayloadTypeFromLine(sdpLines[index]) : null;
 }
 
 // Gets the codec payload type from an a=rtpmap:X line.
-function getCodecPayloadType(sdpLine) {
+function getCodecPayloadTypeFromLine(sdpLine) {
   var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
   var result = sdpLine.match(pattern);
   return (result && result.length === 2) ? result[1] : null;
