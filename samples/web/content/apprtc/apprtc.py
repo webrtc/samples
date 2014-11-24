@@ -368,18 +368,14 @@ class Message(db.Model):
 class Room(db.Model):
   """All the data we store for a room"""
   user1 = db.StringProperty()
-  user1_offer = db.TextProperty()
   user2 = db.StringProperty()
-  user2_offer = db.TextProperty()
 
   def __str__(self):
     result = '['
     if self.user1:
       result += "%s" % (self.user1)
-      result += " offer" if self.user1_offer else ""
     if self.user2:
       result += ", %s" % (self.user2)
-      result += " offer" if self.user2_offer else ""
     result += ']'
     return result
 
@@ -414,16 +410,12 @@ class Room(db.Model):
   def remove_user(self, user):
     if user == self.user2:
       self.user2 = None
-      self.user2_offer = None
     if user == self.user1:
       if self.user2:
         self.user1 = self.user2
-        self.user1_offer = self.user2_offer
         self.user2 = None
-        self.user2_offer = None
       else:
         self.user1 = None
-        self.user1_offer = None
     if self.get_occupancy() > 0:
       self.put()
     else:
@@ -471,8 +463,8 @@ class MessagePage(webapp2.RequestHandler):
         self.write_response()
         return
     # Other client registered, forward to collider. Do this outside the lock.
-    # Note: this may fail in dev server due to not having the right certificate
-    # file locally for SSL validation.
+    # Note: this may fail in local dev server due to not having the right
+    # certificate file locally for SSL validation.
     logging.info('Forwarding message to collider.')
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     payload = urllib.urlencode({ 'msg' : message_json })
@@ -533,7 +525,6 @@ class RegisterPage(webapp2.RequestHandler):
     logging.info('User ' + client_id + ' registered.')
 
 class MainPage(webapp2.RequestHandler):
-  """The main UI page, renders the 'index.html' template."""
   def get(self):
     """Redirects to a room page."""
     room_id = generate_random(8)
@@ -550,7 +541,7 @@ class RoomPage(webapp2.RequestHandler):
 
   def get(self, room_id):
     """Renders index.html or full.html."""
-    # Check room for occupancy and offer.
+    # Check if room is full.
     is_full = False
     room_str = None
     with LOCK:

@@ -32,7 +32,6 @@ function requestTurnServers(turnRequestUrl) {
         return;
       }
       if (xhr.status !== 200) {
-        // On failure we continue without TURN.
         reject(Error('Request error: ' + xhr.status));
         return;
       }
