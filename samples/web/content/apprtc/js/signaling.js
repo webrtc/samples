@@ -111,13 +111,22 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 function setRemote(message) {
-  // Set Opus in Stereo, if stereo enabled.
-  if (params.isOpusStereo) {
+  // Set Opus in Stereo, if stereo is true, unset it, if stereo is false, and
+  // do nothing if otherwise.
+  if (params.opusStereo === 'true') {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo=1');
+  } else if (params.opusStereo === 'false') {
+    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'stereo=1');
   }
-  if (params.isOpus) {
+
+  // Set Opus FEC, if opusfec is true, unset it, if opusfec is false, and
+  // do nothing if otherwise.
+  if (params.opusFec === 'true') {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
+  } else if (params.opusFec === 'false') {
+    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'useinbandfec=1');
   }
+
   // Set Opus maxplaybackrate, if requested.
   if (params.opusMaxPbr) {
     message.sdp = addCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate=' +

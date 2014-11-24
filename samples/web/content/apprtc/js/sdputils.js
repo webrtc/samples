@@ -192,36 +192,58 @@ function maybePreferCodec(sdp, type, dir, codec) {
   }
 
   // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
-  if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
-    if (payload) {
-      sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
-    }
+  var payload = findCodecPayloadType(sdpLines, codec);
+  if (payload) {
+    sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
   }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
 
+function findFmtpLine(sdpLines, codec) {
+  // Find payload of codec.
+  var payload = findCodecPayloadType(sdpLines, codec);
+  // Find the payload in fmtp line.
+  return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
+}
+
 // Add fmtp param to specified codec in SDP.
 function addCodecParam(sdp, codec, param) {
   var sdpLines = sdp.split('\r\n');
 
-  // Find opus payload.
-  var index = findLine(sdpLines, 'a=rtpmap', codec);
-  var payload;
-  if (index) {
-    payload = getCodecPayloadType(sdpLines[index]);
+  var fmtpLineIndex = findFmtpLine(sdpLines, codec);
+  if (fmtpLineIndex === null) {
+    var index = findLine(sdpLines, 'a=rtpmap', codec);
+    if (index === null)
+      return sdp;
+    var payload = getCodecPayloadType(sdpLines[index]);
+    sdpLines.splice(index + 1, 0, 'a=fmtp:' + payload.toString() + ' ' + param);
+  } else if (sdpLines[fmtpLineIndex].match(param) === null) {
+    sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
   }
+  
+  sdp = sdpLines.join('\r\n');
+  return sdp;
+}
 
-  // Find the payload in fmtp line.
-  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + payload.toString());
+// If specified fmtp param exists, removes it from specified codec in SDP.
+function removeCodecParam(sdp, codec, param) {
+  var sdpLines = sdp.split('\r\n');
+
+  var fmtpLineIndex = findFmtpLine(sdpLines, codec);
   if (fmtpLineIndex === null) {
     return sdp;
   }
 
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
+  // Removes fmtp param, covers various cases.
+  // param does not appear first.
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace('; ' + param, '');
+  // param appears first, but is not the only parameter.
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(param + '; ', '');
+  // param is the only parameter.
+  if (sdpLines[fmtpLineIndex].indexOf(param) !== -1)
+    sdpLines.splice(fmtpLineIndex, 1);
 
   sdp = sdpLines.join('\r\n');
   return sdp;
@@ -248,8 +270,14 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
   return null;
 }
 
+// Gets the codec payload type from fmtp lines.
+function findCodecPayloadType(sdpLines, codec) {
+  var index = findLine(sdpLines, 'a=rtpmap', codec);
+  return index ? getCodecPayloadTypeFromLine(sdpLines[index]) : null;
+}
+
 // Gets the codec payload type from an a=rtpmap:X line.
-function getCodecPayloadType(sdpLine) {
+function getCodecPayloadTypeFromLine(sdpLine) {
   var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
   var result = sdpLine.match(pattern);
   return (result && result.length === 2) ? result[1] : null;
