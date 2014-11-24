@@ -215,8 +215,9 @@ function addCodecParam(sdp, codec, param) {
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
   if (fmtpLineIndex === null) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
-    if (index === null)
+    if (index === null) {
       return sdp;
+    }
     var payload = getCodecPayloadType(sdpLines[index]);
     sdpLines.splice(index + 1, 0, 'a=fmtp:' + payload.toString() + ' ' + param);
   } else if (sdpLines[fmtpLineIndex].match(param) === null) {
@@ -242,8 +243,9 @@ function removeCodecParam(sdp, codec, param) {
   // param appears first, but is not the only parameter.
   sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(param + '; ', '');
   // param is the only parameter.
-  if (sdpLines[fmtpLineIndex].indexOf(param) !== -1)
+  if (sdpLines[fmtpLineIndex].indexOf(param) !== -1) {
     sdpLines.splice(fmtpLineIndex, 1);
+  }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
