@@ -16,7 +16,7 @@
   <meta name="description" content="WebRTC reference app">
   {{ meta_viewport }}
   <link rel="canonical" href="{{ room_link }}">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="/css/main.css">
 
 </head>
 
@@ -52,10 +52,8 @@
       errorMessages: {{ error_messages }},
       isLoopback: {{ is_loopback }},
 
-      roomId: '{{ room_key }}',
+      roomId: '{{ room_id }}',
       roomLink: '{{ room_link }}',
-      clientId: '{{ me }}',
-      isInitiator: {{ initiator }},
 
       mediaConstraints: {{ media_constraints | safe }},
       offerConstraints: {{ offer_constraints | safe }},

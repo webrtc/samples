@@ -8,78 +8,81 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals displayError, displayStatus, maybeStart, onUserMediaSuccess,
-   onUserMediaError, params, turnDone:true, xmlhttp:true */
-/* exported doGetUserMedia, maybeRequestTurn */
+/* globals displayError, displayStatus */
+/* exported hasTurnServer, requestTurnServers, requestUserMedia */
 
 'use strict';
 
-function maybeRequestTurn() {
-  // Allow to skip turn by passing ts=false to apprtc.
-  if (params.turnRequestUrl === '') {
-    turnDone = true;
-    return;
-  }
-
+function hasTurnServer(params) {
   var iceServers = params.peerConnectionConfig.iceServers;
   for (var i = 0, len = iceServers.length; i < len; i++) {
     if (iceServers[i].urls.substr(0, 5) === 'turn:') {
-      turnDone = true;
-      return;
+      return true;
     }
   }
-
-  var currentDomain = document.domain;
-  if (currentDomain.search('localhost') === -1 &&
-      currentDomain.search('apprtc') === -1) {
-    // Not authorized domain. Try with default STUN instead.
-    turnDone = true;
-    return;
-  }
-
-  // No TURN server. Get one from computeengineondemand.appspot.com.
-  xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = onTurnResult;
-  xmlhttp.open('GET', params.turnRequestUrl, true);
-  xmlhttp.send();
+  return false;
 }
 
-function onTurnResult() {
-  if (xmlhttp.readyState !== 4) {
-    return;
-  }
+// Returns a list of turn servers after requesting it from CEOD.
+function requestTurnServers(turnRequestUrl) {
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+      if (xhr.status !== 200) {
+        // On failure we continue without TURN.
+        reject(Error('Request error: ' + xhr.status));
+        return;
+      }
+      var turnServerResponse = parseJSON(xhr.responseText);
+      if (!turnServerResponse) {
+        reject(Error('Error parsing response JSON: ' + xhr.responseText));
+        return;
+      }
+      var turnServers = createIceServers(turnServerResponse.uris,
+          turnServerResponse.username, turnServerResponse.password);
+      if (!turnServers) {
+        reject(Error('Error creating ICE servers from response.'));
+        return;
+      }
+      trace('Retrieved TURN server information.');
+      resolve(turnServers);
+    };
+    xhr.open('GET', turnRequestUrl, true);
+    xhr.send();
+  });
+}
 
-  if (xmlhttp.status === 200) {
-    var turnServer = JSON.parse(xmlhttp.responseText);
-    // Create turnUris using the polyfill (adapter.js).
-    var turnServers = createIceServers(turnServer.uris,
-        turnServer.username, turnServer.password);
-    if (turnServers !== null) {
-      var iceServers = params.peerConnectionConfig.iceServers;
-      params.peerConnectionConfig.iceServers = iceServers.concat(turnServers);
+// Returns a media stream after requesting it from user.
+function requestUserMedia(constraints) {
+  return new Promise(function(resolve, reject) {
+    var onSuccess = function(stream) {
+      resolve(stream);
+    };
+    var onError = function(error) {
+      reject(error);
+    };
+    // Call into getUserMedia via the polyfill (adapter.js).
+    try {
+      displayStatus('Calling getUserMedia()...');
+      getUserMedia(constraints, onSuccess, onError);
+      trace('Requested access to local media with mediaConstraints:\n' +
+          '  \'' + JSON.stringify(constraints) + '\'');
+    } catch (e) {
+      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
+      displayError('getUserMedia failed with exception: ' + e.message);
+      reject(e);
     }
-  } else {
-    var subject = encodeURIComponent('AppRTC demo TURN server not working');
-    displayStatus('No TURN server; unlikely that media will traverse networks. ' +
-        'If this persists please <a href="mailto:discuss-webrtc@googlegroups.com?' +
-        'subject=' + subject + '">' +
-        'report it to discuss-webrtc@googlegroups.com</a>.');
-  }
-  // If TURN request failed, continue the call with default STUN.
-  turnDone = true;
-  maybeStart();
+  });
 }
 
-function doGetUserMedia() {
-  // Call into getUserMedia via the polyfill (adapter.js).
+function parseJSON(json) {
   try {
-    displayStatus('Calling getUserMedia()...');
-    getUserMedia(params.mediaConstraints, onUserMediaSuccess, onUserMediaError);
-    trace('Requested access to local media with mediaConstraints:\n' +
-        '  \'' + JSON.stringify(params.mediaConstraints) + '\'');
+    return JSON.parse(json);
   } catch (e) {
-    alert('getUserMedia() failed. Is this a WebRTC capable browser?');
-    displayError('getUserMedia failed with exception: ' + e.message);
+    trace('Error parsing json: ' + json);
   }
+  return '';
 }
-
