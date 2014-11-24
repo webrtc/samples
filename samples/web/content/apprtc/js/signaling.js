@@ -15,9 +15,10 @@
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
    maybeSetVideoSendInitialBitRate, mergeConstraints, msgQueue, onRemoteHangup,
-   params, pc:true, remoteStream:true, remoteVideo, sdpConstraints, sharingDiv,
-   signalingReady:true, socket:true, startTime:true, started:true,
-   transitionToActive, turnDone, updateInfoDiv, waitForRemoteVideo */
+   params, pc:true, remoteStream:true, remoteVideo, removeCodecParam,
+   sdpConstraints, sharingDiv, signalingReady:true, socket:true, startTime:true,
+   started:true, transitionToActive, turnDone, updateInfoDiv,
+   waitForRemoteVideo */
 /* exported openChannel */
 
 'use strict';
