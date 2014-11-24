@@ -56,7 +56,6 @@ function updateInfoDiv() {
       for (var type in gatheredIceCandidateTypes[endpoint]) {
         types.push(type + ':' + gatheredIceCandidateTypes[endpoint][type]);
       }
-      //types.sort();
       contents += buildLine(endpoint, types.join(' '));
     }
 
