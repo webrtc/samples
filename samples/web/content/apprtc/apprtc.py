@@ -421,7 +421,7 @@ class MainPage(webapp2.RequestHandler):
     stereo = self.request.get('stereo', default_value = '')
 
     # Read url param controlling whether we send Opus FEC.
-    opusfec = self.request.get('opusfec', default_value = 'true')
+    opusfec = self.request.get('opusfec', default_value = '')
 
     # Read url param for Opus max sample rate.
     opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
