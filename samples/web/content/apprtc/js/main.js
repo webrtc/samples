@@ -160,17 +160,19 @@ function stop() {
 }
 
 function waitForRemoteVideo() {
-  // Wait for the actual video to start arriving before moving to the active call state.
-  if (remoteVideo.currentTime > 0) {
+  // Wait for the actual video to start arriving before moving to the active
+  // call state.
+  if (remoteVideo.readyState >= 2) {  // i.e. can play
+    remoteVideo.oncanplay = undefined;
+    trace("Remote video started; currentTime: " + remoteVideo.currentTime);
     transitionToActive();
   } else {
-    setTimeout(waitForRemoteVideo, 10);
+    remoteVideo.oncanplay = waitForRemoteVideo;
   }
 }
 
 function transitionToActive() {
-  // Subtract out any elapsed video time when computing setup time.
-  endTime = window.performance.now() - remoteVideo.currentTime * 1000;
+  endTime = window.performance.now();
   trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
 
