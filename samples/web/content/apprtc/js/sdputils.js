@@ -143,13 +143,12 @@ function maybeSetVideoSendInitialBitRate(sdp) {
     return sdp;
   }
 
-  var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
-  var vp8Payload = getCodecPayloadTypeFromLine(sdpLines[vp8RtpmapIndex]);
-  var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
-      params.videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
-      maxBitrate.toString();
-  sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
-  return sdpLines.join('\r\n');
+  sdp = addCodecParam(sdp, 'VP8/90000', 'x-google-min-bitrate',
+      params.videoSendInitialBitrate.toString());
+  sdp = addCodecParam(sdp, 'VP8/90000', 'x-google-max-bitrate',
+      maxBitrate.toString());
+
+  return sdp;
 }
 
 // Promotes |audioSendCodec| to be the first in the m=audio line, if set.
