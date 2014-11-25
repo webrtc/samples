@@ -242,23 +242,18 @@ function removeCodecParam(sdp, codec, param, value) {
     return sdp;
   }
 
-  var phrase = ' ' + param + '=' + value;
-  var separator = ';';
-  var phraseIndex = sdpLines[fmtpLineIndex].indexOf(phrase);
-  while (phraseIndex !== -1) {
-    var sepIndex = sdpLines[fmtpLineIndex].indexOf(separator, paramIndex);
-    if (sepIndex !== -1) {
-      // There should be other params after this one.
-      sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].substring(0, start) +
-          sdpLines[fmtpLineIndex].substring(sepIndex + separator.length + 1);
-    } else {
-      sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].substring(0, start);
-    }
-    phraseIndex = sdpLines[fmtpLineIndex].indexOf(phrase);
-  }
-
-  if (sdpLines[fmtpLineIndex].match(/\s+\S+=\S+/g) === null) {
-    // This fmtp line becomes empty.
+  // Removes fmtp param, covers various cases.
+  var phrase = param + '=' + (value !== '' ? value : '\\S+');
+  // param does not appear first.
+  var regExp = new RegExp(';\\s+' + phrase + '(?=;|$)', 'g');
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(regExp, '');
+  // param appears first, but is not the only one.
+  regExp = new RegExp('\\s+' + phrase + ';', 'g');
+  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(regExp, '');
+  // param is the only parameter. This must be performed after all previous
+  // replacing operations.
+  regExp = new RegExp('\\s+' + phrase, 'g');
+  if (sdpLines[fmtpLineIndex].match(regExp) !== null) {
     sdpLines.splice(fmtpLineIndex, 1);
   }
 
