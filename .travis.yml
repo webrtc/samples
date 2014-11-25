@@ -1,3 +1,13 @@
 language: node_js
 node_js:
   - 0.10
+
+language: python
+  - 2.5
+install:
+  - export FILE=google_appengine_$(curl https://appengine.google.com/api/updatecheck | grep release | grep -o '[0-9\.]*').zip
+  - curl -O https://storage.googleapis.com/appengine-sdks/featured/$FILE
+  - unzip -q $FILE
+
+script:
+  - python run_python_tests.py google_appengine/ samples/web/content/apprtc/
