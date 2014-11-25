@@ -201,35 +201,40 @@ function maybePreferCodec(sdp, type, dir, codec) {
   return sdp;
 }
 
-function findFmtpLine(sdpLines, codec) {
-  // Find payload of codec.
-  var payload = getCodecPayloadType(sdpLines, codec);
-  // Find the payload in fmtp line.
-  return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
-}
+// Add fmtp param to specified codec in SDP. If the param already exists, its
+// value will be updated.
+function addCodecParam(sdp, codec, param, value) {
+  // Remove the old param value.
+  sdp = removeCodecParam(sdp, codec, param, '');
 
-// Add fmtp param to specified codec in SDP.
-function addCodecParam(sdp, codec, param) {
   var sdpLines = sdp.split('\r\n');
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
+  var phrase = ' ' + param + '=' + value;
   if (fmtpLineIndex === null) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
     if (index === null) {
       return sdp;
     }
-    var payload = getCodecPayloadType(sdpLines[index]);
-    sdpLines.splice(index + 1, 0, 'a=fmtp:' + payload.toString() + ' ' + param);
-  } else if (sdpLines[fmtpLineIndex].match(param) === null) {
-    sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
+    var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
+    sdpLines.splice(index + 1, 0,
+        'a=fmtp:' + payload.toString() + phrase);
+  } else {
+    if (sdpLines[fmtpLineIndex].indexOf(phrase) === -1) {
+      // Due to the removal of old param at the beginning of this funtion, this
+      // should always be true.
+      sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(';', phrase);
+    }
   }
   
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
 
-// If specified fmtp param exists, removes it from specified codec in SDP.
-function removeCodecParam(sdp, codec, param) {
+// If specified fmtp param exists and equals the specified value, removes it
+// from specified codec in SDP. If value === '', remove the param regardless of
+// its value.
+function removeCodecParam(sdp, codec, param, value) {
   var sdpLines = sdp.split('\r\n');
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
@@ -237,18 +242,36 @@ function removeCodecParam(sdp, codec, param) {
     return sdp;
   }
 
-  // Removes fmtp param, covers various cases.
-  // param does not appear first.
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace('; ' + param, '');
-  // param appears first, but is not the only parameter.
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(param + '; ', '');
-  // param is the only parameter.
-  if (sdpLines[fmtpLineIndex].indexOf(param) !== -1) {
+  var phrase = ' ' + param + '=' + value;
+  var separator = ';';
+  var phraseIndex = sdpLines[fmtpLineIndex].indexOf(phrase);
+  while (phraseIndex !== -1) {
+    var sepIndex = sdpLines[fmtpLineIndex].indexOf(separator, paramIndex);
+    if (sepIndex !== -1) {
+      // There should be other params after this one.
+      sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].substring(0, start) +
+          sdpLines[fmtpLineIndex].substring(sepIndex + separator.length + 1);
+    } else {
+      sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].substring(0, start);
+    }
+    phraseIndex = sdpLines[fmtpLineIndex].indexOf(phrase);
+  }
+
+  if (sdpLines[fmtpLineIndex].match(/\s+\S+=\S+/g) === null) {
+    // This fmtp line becomes empty.
     sdpLines.splice(fmtpLineIndex, 1);
   }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
+}
+
+// Find fmtp attribute for |codec| in |sdpLines|.
+function findFmtpLine(sdpLines, codec) {
+  // Find payload of codec.
+  var payload = getCodecPayloadType(sdpLines, codec);
+  // Find the payload in fmtp line.
+  return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
 }
 
 // Find the line in sdpLines that starts with |prefix|, and, if specified,
