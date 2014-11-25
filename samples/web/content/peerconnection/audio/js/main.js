@@ -141,10 +141,12 @@ function forceChosenAudioCodec(sdp) {
 
   trace('Forcing codec to ' + codecPayloadType + ': ' + codecName);
 
-  // This code assumes Opus (111) is default.
-  sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
-                    'm=audio $1 RTP/SAVPF ' + codecPayloadType + '\r\n');
-  sdp = sdp.replace('a=fmtp:111 minptime=10',
-                    'a=fmtp:' + codecPayloadType + ' minptime=10');
+  // This code assumes Opus (111) is default. It will change the line with
+  // m=audio 1 <profile> 111 102 103... etc to m=audio 1 <profile> xxx, where
+  // xxx is the payload type for the desired codec.
+  sdp = sdp.replace(/m=audio (\d+) ([^ ]+)+ .*\r\n/g,
+                    'm=audio $1 $2 ' + codecPayloadType + '\r\n');
+  sdp = sdp.replace(/a=fmtp:111 (.*)\r\n/g,
+                    'a=fmtp:' + codecPayloadType + ' $1\r\n');
   return sdp;
 }
