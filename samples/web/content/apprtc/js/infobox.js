@@ -15,25 +15,22 @@
 
 'use strict';
 
-function buildLine(label, value) {
-  var columnWidth = 12;
-  var line = '';
-  if (label) {
-    line += label + ':';
-    while (line.length < columnWidth) {
-      line += ' ';
-    }
+function showInfoDiv() {
+  getStatsTimer = setInterval(refreshStats, 1000);
+  infoDiv.classList.add('active');
+}
 
-    if (value) {
-      line += value;
-    }
+function toggleInfoDiv() {
+  if (infoDiv.classList.contains('active')) {
+    clearInterval(getStatsTimer);
+    infoDiv.classList.remove('active');
+  } else {
+    showInfoDiv();
   }
-  line += '\n';
-  return line;
 }
 
 function updateInfoDiv() {
-  var contents = '<pre>';
+  var contents = '<pre id=\"stats\" style=\"line-height: initial\">';
 
   if (pc) {
     // Obtain any needed values from stats.
@@ -59,7 +56,6 @@ function updateInfoDiv() {
       for (var type in gatheredIceCandidateTypes[endpoint]) {
         types.push(type + ':' + gatheredIceCandidateTypes[endpoint][type]);
       }
-      types.sort();
       contents += buildLine(endpoint, types.join(' '));
     }
 
@@ -94,20 +90,26 @@ function updateInfoDiv() {
 
   contents += '</pre>';
 
-  infoDiv.innerHTML = contents;
-}
-
-function toggleInfoDiv() {
-  if (infoDiv.classList.contains('active')) {
-    clearInterval(getStatsTimer);
-    infoDiv.classList.remove('active');
-  } else {
-    showInfoDiv();
+  if (infoDiv.innerHTML !== contents) {
+    infoDiv.innerHTML = contents;
   }
 }
 
-function showInfoDiv() {
-  getStatsTimer = setInterval(refreshStats, 1000);
-  infoDiv.classList.add('active');
+function buildLine(label, value) {
+  var columnWidth = 12;
+  var line = '';
+  if (label) {
+    line += label + ':';
+    while (line.length < columnWidth) {
+      line += ' ';
+    }
+
+    if (value) {
+      line += value;
+    }
+  }
+  line += '\n';
+  return line;
 }
+
 

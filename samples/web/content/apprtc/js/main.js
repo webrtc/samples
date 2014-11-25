@@ -160,11 +160,14 @@ function stop() {
 }
 
 function waitForRemoteVideo() {
-  // Wait for the actual video to start arriving before moving to the active call state.
-  if (remoteVideo.currentTime > 0) {
+  // Wait for the actual video to start arriving before moving to the active
+  // call state.
+  if (remoteVideo.readyState >= 2) {  // i.e. can play
+    remoteVideo.oncanplay = undefined;
+    trace('Remote video started; currentTime: ' + remoteVideo.currentTime);
     transitionToActive();
   } else {
-    setTimeout(waitForRemoteVideo, 10);
+    remoteVideo.oncanplay = waitForRemoteVideo;
   }
 }
 

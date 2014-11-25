@@ -27,17 +27,8 @@ function mergeConstraints(cons1, cons2) {
   return merged;
 }
 
-function iceCandidateType(candidateSDP) {
-  switch (candidateSDP.split(' ')[7]) {
-    case 'host':
-      return 'HOST';
-    case 'srflx':
-      return 'STUN';
-    case 'relay':
-      return 'TURN';
-    default:
-      return 'UNKNOWN';
-  }
+function iceCandidateType(candidateStr) {
+  return candidateStr.split(' ')[7];
 }
 
 function maybeSetAudioSendBitRate(sdp) {
