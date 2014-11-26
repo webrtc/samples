@@ -8,19 +8,10 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals pc, stats:true, updateInfoDiv */
-/* exported computeE2EDelay, extractStatAsInt, refreshStats */
+/* exported computeBitrate, computeE2EDelay, computeRate,
+   extractStatAsInt, refreshStats */
 
 'use strict';
-
-function refreshStats() {
-  if (pc) {
-    pc.getStats(function(response) {
-      stats = response.result();
-      updateInfoDiv();
-    });
-  }
-}
 
 // Return the integer stat |statName| from the object with type |statObj| in
 // |stats|, or null if not present.
@@ -71,8 +62,25 @@ function getStatsReport(stats, statObj, statName, statVal) {
   }
 }
 
+// Takes two stats reports and determines the rate based on two counter readings
+// and the time between them (which is in units of milliseconds).
+function computeRate(newReport, oldReport, statName) {
+  var newVal = newReport.stat(statName);
+  var oldVal = (oldReport) ? oldReport.stat(statName) : null;
+  if (newVal === null || oldVal === null) {
+    return null;
+  }
+  return (newVal - oldVal) / (newReport.timestamp - oldReport.timestamp) * 1000;
+}
+
+// Convert a byte rate to a bit rate.
+function computeBitrate(newReport, oldReport, statName) {
+  return computeRate(newReport, oldReport, statName) * 8;
+}
+
+// Computes end to end delay based on the capture start time (in NTP format)
+// and the current render time (in seconds since start of render).
 function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
-  // Computes end to end delay.
   if (captureStart) {
     // Adding offset to get NTP time.
     var nowNTP = Date.now() + 2208988800000;

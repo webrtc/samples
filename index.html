@@ -14,6 +14,9 @@
       font-size: 1.5em;
       font-weight: 500;
     }
+    h3 {
+      border-top: none;
+    }
     section {
       border-bottom: 1px solid #eee;
       margin: 0 0 1.5em 0;
@@ -34,7 +37,7 @@
     <section>
 
 
-      <p>This is a repository for client-side HTML/CSS/JavaScript WebRTC code samples. The source for these samples is available at <a href="//github.com/GoogleChrome/webrtc" title="View Github repositry for these files">github.com/GoogleChrome/webrtc</a>.</p>
+      <p>This is a repository for client-side WebRTC code samples and the <a href="https://apprtc.appspot.com" title="AppRTC video chat client">AppRTC</a> video chat client. The source for these samples is available at <a href="//github.com/GoogleChrome/webrtc" title="View Github repositry for these files">github.com/GoogleChrome/webrtc</a>.</p>
 
       <p>Some of the samples use new browser features. They may only work in <a href="//www.google.co.uk/intl/en/chrome/browser/canary.html" title="Download Chrome Canary">Chrome Canary</a> and/or <a href="http://www.mozilla.org/firefox/beta/" title="Download Firefox Beta">Firefox Beta</a>, and may require flags to be set.</p>
 
@@ -52,60 +55,65 @@
 
       <h2 id="the-demos">The demos</h2>
 
-<!--     <p><a href="//apprtc.appspot.com" title="WebRTC video chat application">Video chat</a></p>
--->
-<h3 id="getusermedia">getUserMedia</h3>
-<p><a href="samples/web/content/getusermedia/gum">Basic getUserMedia demo</a></p>
+      <h3 id="getusermedia">getUserMedia</h3>
 
-<p><a href="samples/web/content/getusermedia/canvas">Use getUserMedia with canvas</a></p>
+      <p><a href="samples/web/content/getusermedia/gum">Basic getUserMedia demo</a></p>
 
-<p><a href="samples/web/content/getusermedia/filter">Use getUserMedia with canvas and CSS filters</a></p>
+      <p><a href="samples/web/content/getusermedia/canvas">Use getUserMedia with canvas</a></p>
 
-<p><a href="samples/web/content/getusermedia/resolution">Choose camera resolution</a></p>
+      <p><a href="samples/web/content/getusermedia/filter">Use getUserMedia with canvas and CSS filters</a></p>
 
-<p><a href="samples/web/content/getusermedia/source">Choose camera and microphone</a></p>
+      <p><a href="samples/web/content/getusermedia/resolution">Choose camera resolution</a></p>
 
-<p><a href="samples/web/content/getusermedia/audio">Audio-only getUserMedia() output to local audio element</a></p>
+      <p><a href="samples/web/content/getusermedia/source">Choose camera and microphone</a></p>
 
-<p><a href="samples/web/content/getusermedia/volume">Audio-only getUserMedia() displaying volume</a></p>
+      <p><a href="samples/web/content/getusermedia/audio">Audio-only getUserMedia() output to local audio element</a></p>
 
-<p><a href="samples/web/content/getusermedia/face">Face tracking, using getUserMedia and canvas</a></p>
+      <p><a href="samples/web/content/getusermedia/volume">Audio-only getUserMedia() displaying volume</a></p>
 
-<h3 id="peerconnection">RTCPeerConnection</h3>
-<p><a href="samples/web/content/peerconnection/pc1">Basic peer connection demo</a></p>
+      <p><a href="samples/web/content/getusermedia/face">Face tracking, using getUserMedia and canvas</a></p>
 
-<p><a href="samples/web/content/peerconnection/audio">Audio-only peer connection demo</a></p>
+      <h3 id="peerconnection">RTCPeerConnection</h3>
 
-<p><a href="samples/web/content/peerconnection/multiple">Multiple peer connections at once</a></p>
+      <p><a href="samples/web/content/peerconnection/pc1">Basic peer connection demo</a></p>
 
-<p><a href="samples/web/content/peerconnection/multiple-relay">Forward the output of one PC into another</a></p>
+      <p><a href="samples/web/content/peerconnection/audio">Audio-only peer connection demo</a></p>
 
-<p><a href="samples/web/content/peerconnection/munge-sdp">Munge SDP parameters</a></p>
+      <p><a href="samples/web/content/peerconnection/multiple">Multiple peer connections at once</a></p>
 
-<p><a href="samples/web/content/peerconnection/pr-answer">Use pranswer when setting up a peer connection</a></p>
+      <p><a href="samples/web/content/peerconnection/multiple-relay">Forward the output of one PC into another</a></p>
 
-<p><a href="samples/web/content/peerconnection/constraints">Constraints and stats</a></p>
+      <p><a href="samples/web/content/peerconnection/munge-sdp">Munge SDP parameters</a></p>
 
-<p><a href="samples/web/content/peerconnection/create-offer">Display createOffer output for various scenarios</a></p>
+      <p><a href="samples/web/content/peerconnection/pr-answer">Use pranswer when setting up a peer connection</a></p>
 
-<p><a href="samples/web/content/peerconnection/dtmf">Use RTCDTMFSender</a></p>
+      <p><a href="samples/web/content/peerconnection/constraints">Constraints and stats</a></p>
 
-<p><a href="samples/web/content/peerconnection/states">Display peer connection states</a></p>
+      <p><a href="samples/web/content/peerconnection/create-offer">Display createOffer output for various scenarios</a></p>
 
-<p><a href="samples/web/content/peerconnection/trickle-ice">ICE candidate gathering from STUN/TURN servers</a></p>
+      <p><a href="samples/web/content/peerconnection/dtmf">Use RTCDTMFSender</a></p>
 
-<p><a href="samples/web/content/peerconnection/webaudio-input">Web Audio output as input to peer connection</a></p>
+      <p><a href="samples/web/content/peerconnection/states">Display peer connection states</a></p>
 
-<h3 id="datachannel">RTCDataChannel</h3>
-<p><a href="samples/web/content/datachannel">Basic data channel demo</a></p>
+      <p><a href="samples/web/content/peerconnection/trickle-ice">ICE candidate gathering from STUN/TURN servers</a></p>
 
-</section>
+      <p><a href="samples/web/content/peerconnection/webaudio-input">Web Audio output as input to peer connection</a></p>
 
-<a href="//github.com/GoogleChrome/webrtc" title="View the repository" id="viewSource">github.com/GoogleChrome/webrtc</a>
+      <h3 id="datachannel">RTCDataChannel</h3>
 
-</div>
+      <p><a href="samples/web/content/datachannel">Basic data channel demo</a></p>
 
-<script src="samples/web/js/lib/ga.js"></script>
+      <h3 id="videoChat">Video chat</h3>
+
+      <p><a href="//apprtc.appspot.com">AppRTC video chat client (based on Google App Engine)</a></p>
+
+    </section>
+
+    <a href="//github.com/GoogleChrome/webrtc" title="View the repository" id="viewSource">github.com/GoogleChrome/webrtc</a>
+
+  </div>
+
+  <script src="samples/web/js/lib/ga.js"></script>
 
 </body>
 </html>

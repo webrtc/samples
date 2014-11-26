@@ -10,21 +10,19 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"time"
 )
 
-const maxRoomCapacity = 2
-
-const registerTimeoutSec = 5
-
 type room struct {
-	id string
+	parent *roomTable
+	id     string
 	// A mapping from the client ID to the client object.
 	clients map[string]*client
 }
 
-func newRoom(id string) *room {
-	return &room{id: id, clients: make(map[string]*client)}
+func newRoom(p *roomTable, id string) *room {
+	return &room{parent: p, id: id, clients: make(map[string]*client)}
 }
 
 // client returns the client, or creates it if it does not exist and the room is not full.
@@ -37,9 +35,15 @@ func (rm *room) client(clientID string) (*client, error) {
 		return nil, errors.New("Max room capacity reached")
 	}
 
-	rm.clients[clientID] = newClient(clientID, time.AfterFunc(time.Second*registerTimeoutSec, func() {
-		rooms.removeIfUnregistered(rm.id, rm.clients[clientID])
-	}))
+	var timer *time.Timer
+	if rm.parent != nil {
+		timer = time.AfterFunc(time.Second*registerTimeoutSec, func() {
+			if c := rm.clients[clientID]; c != nil {
+				rm.parent.removeIfUnregistered(rm.id, c)
+			}
+		})
+	}
+	rm.clients[clientID] = newClient(clientID, timer)
 
 	log.Printf("Added client %s to room %s", clientID, rm.id)
 
@@ -93,11 +97,15 @@ func (rm *room) send(srcClientID string, msg string) error {
 // remove closes the client connection and removes the client specified by the |clientID|.
 func (rm *room) remove(clientID string) {
 	if c, ok := rm.clients[clientID]; ok {
-		if c.rwc != nil {
-			c.rwc.Close()
-		}
+		c.deregister()
 		delete(rm.clients, clientID)
 		log.Printf("Removed client %s from room %s", clientID, rm.id)
+
+		// Send bye to the room Server.
+		_, err := http.Post(roomServerUrlBase+"/bye/"+rm.id+"/"+clientID, "text", nil)
+		if err != nil {
+			log.Printf("Failed to post BYE to room server %s: %v", roomServerUrlBase, err)
+		}
 	}
 }
 

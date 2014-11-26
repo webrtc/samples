@@ -73,7 +73,7 @@ MicTest.prototype = {
     this.audioSource.connect(this.scriptNode);
     this.scriptNode.connect(audioContext.destination);
     this.scriptNode.onaudioprocess = this.collectAudio.bind(this);
-    this.setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 1000);
+    this.setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 2000);
   },
 
   collectAudio: function(event) {

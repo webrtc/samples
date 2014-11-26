@@ -12,6 +12,7 @@
 /* exported addCodecParam, iceCandidateType,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
+   maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
    maybeSetVideoSendInitialBitRate, mergeConstraints */
 
@@ -26,17 +27,8 @@ function mergeConstraints(cons1, cons2) {
   return merged;
 }
 
-function iceCandidateType(candidateSDP) {
-  switch (candidateSDP.split(' ')[7]) {
-    case 'host':
-      return 'HOST';
-    case 'srflx':
-      return 'STUN';
-    case 'relay':
-      return 'TURN';
-    default:
-      return 'UNKNOWN';
-  }
+function iceCandidateType(candidateStr) {
+  return candidateStr.split(' ')[7];
 }
 
 function maybeSetAudioSendBitRate(sdp) {
@@ -153,31 +145,39 @@ function maybeSetVideoSendInitialBitRate(sdp) {
 
 // Promotes |audioSendCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioSendCodec(sdp) {
-  if (params.audioSendCodec === '') {
-    trace('No preference on audio send codec.');
-    return sdp;
-  }
-  trace('Prefer audio send codec: ' + params.audioSendCodec);
-  return preferAudioCodec(sdp, params.audioSendCodec);
+  return maybePreferCodec(sdp, 'audio', 'send', params.audioSendCodec);
 }
 
 // Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
 function maybePreferAudioReceiveCodec(sdp) {
-  if (params.audioRecvCodec === '') {
-    trace('No preference on audio receive codec.');
-    return sdp;
-  }
-  trace('Prefer audio receive codec: ' + params.audioRecvCodec);
-  return preferAudioCodec(sdp, params.audioRecvCodec);
+  return maybePreferCodec(sdp, 'audio', 'receive', params.audioRecvCodec);
 }
 
-// Sets |codec| as the default audio codec if it's present.
+// Promotes |videoSendCodec| to be the first in the m=audio line, if set.
+function maybePreferVideoSendCodec(sdp) {
+  return maybePreferCodec(sdp, 'video', 'send', params.videoSendCodec);
+}
+
+// Promotes |videoRecvCodec| to be the first in the m=audio line, if set.
+function maybePreferVideoReceiveCodec(sdp) {
+  return maybePreferCodec(sdp, 'video', 'receive', params.videoRecvCodec);
+}
+
+// Sets |codec| as the default |type| codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
-function preferAudioCodec(sdp, codec) {
+function maybePreferCodec(sdp, type, dir, codec) {
+  var str = type + ' ' + dir + ' codec';
+  if (codec === '') {
+    trace('No preference on ' + str + '.');
+    return sdp;
+  }
+
+  trace('Prefer ' + str + ': ' + codec);
+
   var sdpLines = sdp.split('\r\n');
 
   // Search for m line.
-  var mLineIndex = findLine(sdpLines, 'm=', 'audio');
+  var mLineIndex = findLine(sdpLines, 'm=', type);
   if (mLineIndex === null) {
     return sdp;
   }

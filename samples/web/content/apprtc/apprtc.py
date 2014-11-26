@@ -46,14 +46,6 @@ def get_default_stun_server(user_agent):
   # others you can try: stun.services.mozilla.com, stunserver.org
   return 'stun.l.google.com:19302'
 
-def get_preferred_audio_receive_codec():
-  return 'opus/48000'
-
-def get_preferred_audio_send_codec(user_agent):
-  # Empty string means no preference.
-  preferred_audio_send_codec = ''
-  return preferred_audio_send_codec
-
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
 def get_hd_default(user_agent):
   if 'Android' in user_agent or not 'Chrome' in user_agent:
@@ -236,21 +228,19 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     logging.error(message)
     error_messages.append(message)
 
+  # Allow preferred audio and video codecs to be overridden.
   audio_send_codec = request.get('asc', default_value = '')
-  if not audio_send_codec:
-    audio_send_codec = get_preferred_audio_send_codec(user_agent)
-
   audio_receive_codec = request.get('arc', default_value = '')
-  if not audio_receive_codec:
-    audio_receive_codec = get_preferred_audio_receive_codec()
+  video_send_codec = request.get('vsc', default_value = '')
+  video_receive_codec = request.get('vrc', default_value = '')
 
-  # Set stereo to false by default.
+  # Read url param controlling whether we send stereo.
   stereo = request.get('stereo', default_value = 'false')
 
-  # Set opusfec to false by default.
+  # Read url param controlling whether we send Opus FEC.
   opusfec = request.get('opusfec', default_value = 'true')
 
-  # Read url param for opusmaxpbr
+  # Read url param for Opus max sample rate.
   opusmaxpbr = request.get('opusmaxpbr', default_value = '')
 
   # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
@@ -264,7 +254,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # Read url params for the initial video send bitrate (vsibr)
   vsibr = request.get('vsibr', default_value = '')
 
-  # Options for making pcConstraints
+  # Options for controlling various networking features.
   dtls = request.get('dtls')
   dscp = request.get('dscp')
   ipv6 = request.get('ipv6')
@@ -331,6 +321,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'vsibr': vsibr,
     'audio_send_codec': audio_send_codec,
     'audio_receive_codec': audio_receive_codec,
+    'video_send_codec': video_send_codec,
+    'video_receive_codec': video_receive_codec,
     'ssr': ssr,
     'include_loopback_js' : include_loopback_js,
     'include_vr_js': include_vr_js,

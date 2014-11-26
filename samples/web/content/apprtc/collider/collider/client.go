@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const maxQueuedMsgCount = 1024
-
 type client struct {
 	id string
 	// rwc is the interface to access the websocket connection.
@@ -30,20 +28,38 @@ func newClient(id string, t *time.Timer) *client {
 	return &c
 }
 
+func (c *client) setTimer(t *time.Timer) {
+	if c.timer != nil {
+		c.timer.Stop()
+	}
+	c.timer = t
+}
+
 // register binds the ReadWriteCloser to the client if it's not done yet.
 func (c *client) register(rwc io.ReadWriteCloser) error {
 	if c.rwc != nil {
 		log.Printf("Not registering because the client %s already has a connection", c.id)
 		return errors.New("Duplicated registration")
 	}
-	if c.timer != nil {
-		c.timer.Stop()
-	}
+	c.setTimer(nil)
 	c.rwc = rwc
 	return nil
 }
 
-// Adds a message to the client's message queue.
+// deregister closes the ReadWriteCloser if it exists.
+func (c *client) deregister() {
+	if c.rwc != nil {
+		c.rwc.Close()
+		c.rwc = nil
+	}
+}
+
+// registered returns true if the client has registered.
+func (c *client) registered() bool {
+	return c.rwc != nil
+}
+
+// enqueue adds a message to the client's message queue.
 func (c *client) enqueue(msg string) error {
 	if len(c.msgs) >= maxQueuedMsgCount {
 		return errors.New("Too many messages queued for the client")
@@ -75,17 +91,4 @@ func (c *client) send(other *client, msg string) error {
 		return sendServerMsg(other.rwc, msg)
 	}
 	return c.enqueue(msg)
-}
-
-// close closes the ReadWriteCloser if it exists.
-func (c *client) close() {
-	if c.rwc != nil {
-		c.rwc.Close()
-		c.rwc = nil
-	}
-}
-
-// registered returns true if the client has registered.
-func (c *client) registered() bool {
-	return c.rwc != nil
 }
