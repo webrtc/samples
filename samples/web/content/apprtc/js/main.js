@@ -24,8 +24,8 @@
 /* exported stats */
 
 // Variables defined in and used from signaling.js.
-/* globals isSignalingChannelReady:true, messageQueue, sendWSSMessage,
-   setupCall, startSignaling */
+/* globals connectToRoom, hasReceivedOffer:true, isSignalingChannelReady:true,
+   messageQueue, sendWSSMessage, startSignaling */
 /* exported gatheredIceCandidateTypes, sdpConstraints, onRemoteHangup,
    waitForRemoteVideo */
 
@@ -82,7 +82,7 @@ function initialize() {
   }
   document.body.ondblclick = toggleFullScreen;
   trace('Initializing; room=' + params.roomId + '.');
-  setupCall(params.roomId);
+  connectToRoom(params.roomId);
   if (params.isLoopback && (typeof setupLoopback === 'function')) {
     setupLoopback();
   }
@@ -155,6 +155,7 @@ function stop() {
   pc.close();
   pc = null;
   remoteStream = null;
+  hasReceivedOffer = false;
   params.messages.length = 0;
   messageQueue.length = 0;
 }

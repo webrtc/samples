@@ -18,16 +18,68 @@
    remoteStream:true, remoteVideo, requestTurnServers, requestUserMedia,
    sdpConstraints, sharingDiv, webSocket:true, startTime:true,
    transitionToActive, updateInfoDiv, waitForRemoteVideo */
-/* exported openSignalingChannel, setupCall */
+/* exported connectToRoom, openSignalingChannel */
 
 'use strict';
 
 var isSignalingChannelReady = false;
 var hasLocalStream = false;
+var hasReceivedOffer = false;
 var messageQueue = [];
 
-function setupCall(roomId) {
-  // Asynchronously request user media if needed.
+// Connects client to the room. This happens by simultaneously requesting
+// media, requesting turn, and registering with GAE. Once all three of those
+// tasks is complete, the signaling process begins. At the same time, a
+// WebSocket connection is opened using |wss_url| followed by a subsequent
+// registration once GAE registration completes.
+function connectToRoom(roomId) {
+  var mediaPromise = getMediaIfNeeded();
+  var turnPromise = getTurnServersIfNeeded();
+
+  // Asynchronously open a WebSocket connection to WSS.
+  var channelPromise = openSignalingChannel().catch(function(error) {
+    displayError(error.message);
+    return Promise.reject(error);
+  });
+
+  // Asynchronously register with GAE.
+  var registerPromise = registerWithGAE(roomId).then(function(roomParams) {
+    // The only difference in parameters should be clientId and isInitiator,
+    // and the turn servers that we requested.
+    // TODO(tkchin): clean up response format. JSHint doesn't like it either.
+    /* jshint ignore:start */
+    params.clientId = roomParams.client_id;
+    params.roomId = roomParams.room_id;
+    params.isInitiator = roomParams.is_initiator === 'true';
+    /* jshint ignore:end */
+    params.messages = roomParams.messages;
+  }).catch(function(error) {
+    displayError(error.message);
+    return Promise.reject(error);
+  });
+
+  // We only register with WSS if the web socket connection is open and if we're
+  // already registered with GAE.
+  Promise.all([channelPromise, registerPromise]).then(function() {
+    registerWithWSS(params.roomId, params.clientId);
+  }).catch(function(error) {
+    displayError('Could not begin WSS registration: ' + error.message);
+  });
+
+  // We only create a peer connection once we have media and TURN. Since right
+  // now we send candidates as soon as the peer connection generates them we
+  // need to wait for registration as well.
+  // TODO(tkchin): create peer connection earlier, but only send candidates if
+  // registration has occurred.
+  Promise.all([registerPromise, turnPromise, mediaPromise]).then(function() {
+    startSignaling();
+  }).catch(function(error) {
+    displayError('Could not begin signaling: ' + error.message);
+  });
+}
+
+// Asynchronously request user media if needed.
+function getMediaIfNeeded() {
   hasLocalStream = !(params.mediaConstraints.audio === false &&
                      params.mediaConstraints.video === false);
   var mediaPromise = null;
@@ -44,14 +96,11 @@ function setupCall(roomId) {
   } else {
     mediaPromise = Promise.resolve();
   }
+  return mediaPromise;
+}
 
-  // Asynchronously open a WebSocket connection to WSS.
-  var channelPromise = openSignalingChannel().catch(function(error) {
-    reportError(error.message);
-    return Promise.reject(error);
-  });
-
-  // Asynchronously request a TURN server if needed.
+// Asynchronously request a TURN server if needed.
+function getTurnServersIfNeeded() {
   var shouldRequestTurnServers = !hasTurnServer(params) &&
       (params.turnRequestUrl && params.turnRequestUrl.length > 0);
   var turnPromise = null;
@@ -74,41 +123,7 @@ function setupCall(roomId) {
   } else {
     turnPromise = Promise.resolve();
   }
-
-  // Asynchronously register with GAE.
-  var registerPromise = registerWithGAE(roomId).then(function(roomParams) {
-    // The only difference in parameters should be clientId and isInitiator,
-    // and the turn servers that we requested.
-    // TODO(tkchin): clean up response format. JSHint doesn't like it either.
-    /* jshint ignore:start */
-    params.clientId = roomParams.client_id;
-    params.roomId = roomParams.room_id;
-    params.isInitiator = roomParams.is_initiator === 'true';
-    /* jshint ignore:end */
-    params.messages = roomParams.messages;
-  }).catch(function(error) {
-    reportError(error.message);
-    return Promise.reject(error);
-  });
-
-  // We only register with WSS if the web socket connection is open and if we're
-  // already registered with GAE.
-  Promise.all([channelPromise, registerPromise]).then(function() {
-    registerWithWSS(params.roomId, params.clientId);
-  }).catch(function(error) {
-    reportError('Could not begin WSS registration: ' + error.message);
-  });
-
-  // We only create a peer connection once we have media and TURN. Since right
-  // now we send candidates as soon as the peer connection generates them we
-  // need to wait for registration as well.
-  // TODO(tkchin): create peer connection earlier, but only send candidates if
-  // registration has occurred.
-  Promise.all([registerPromise, turnPromise, mediaPromise]).then(function() {
-    startSignaling();
-  }).catch(function(error) {
-    reportError('Could not begin signaling: ' + error.message);
-  });
+  return turnPromise;
 }
 
 // Registers with GAE and returns room parameters.
@@ -186,7 +201,7 @@ function openSignalingChannel() {
     };
     webSocket.onmessage = onSignalingChannelMessage;
     webSocket.onerror = function() {
-      reject(Error('WebSocket unknown error.'));
+      reject(Error('WebSocket error.'));
     };
     webSocket.onclose = onSignalingChannelClose;
   });
@@ -205,15 +220,16 @@ function onSignalingChannelMessage(event) {
   if (!message) {
     return;
   }
-  trace('S->C: ' + wssMessage.msg);
-  // It's possible that we finish registering and receiving messages from WSS
-  // before we create our peer connection. In this case we save them locally
-  // until our peer connection is created.
-  if (!pc) {
-    messageQueue.push(message);
+  trace('WSS->C: ' + wssMessage.msg);
+  var isOffer = message.type === 'offer';
+  hasReceivedOffer |= isOffer;
+  if (isOffer) {
+    // Always process offer before candidates.
+    messageQueue.unshift(message);
   } else {
-    processSignalingMessage(message);
+    messageQueue.push(message);
   }
+  drainMessageQueue();
 }
 
 function onSignalingChannelError() {
@@ -272,34 +288,26 @@ function doCall() {
 }
 
 function calleeStart() {
-  // Process messages provided by GAE in registration response.
-  // The GAE db query isn't ordered. We need to process offer before candidates
-  // so we explicitly look for the offer first.
+  // Convert received messages to JSON objects and add them to the message
+  // queue.
   var receivedMessages = params.messages;
-  var messages = [];
+  var message = null;
   for (var i = 0, len = receivedMessages.length; i < len; i++) {
     trace('GAE->C: ' + receivedMessages[i]);
-    var message = parseJSON(receivedMessages[i]);
+    message = parseJSON(receivedMessages[i]);
     if (!message) {
       continue;
     }
     if (message.type === 'offer') {
-      processSignalingMessage(message);
-      continue;
+      hasReceivedOffer = true;
+      // Always process offer before candidates.
+      messageQueue.unshift(message);
+    } else {
+      messageQueue.push(message);
     }
-    messages.push(message);
-  }
-  for (i = 0, len = messages.length; i < len; i++) {
-    processSignalingMessage(messages[i]);
   }
   params.messages = [];
-
-  // Process messages received before peer connection was created. WSS doesn't
-  // disorder messages so we don't need to search for offer here.
-  for (i = 0, len = messageQueue.length; i < len; i++) {
-    processSignalingMessage(messageQueue[i]);
-  }
-  messageQueue = [];
+  drainMessageQueue();
 }
 
 function doAnswer() {
@@ -370,11 +378,13 @@ function setRemote(message) {
 
 function sendGAEMessage(message) {
   var msgString = JSON.stringify(message);
-  var path = '/message/' + params.roomId + '/' + params.clientId;
+  // Must append query parameters in case we've specified alternate WSS url.
+  var path = '/message/' + params.roomId + '/' + params.clientId +
+      window.location.search;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
   xhr.send(msgString);
-  trace('C->S: ' + msgString);
+  trace('C->GAE: ' + msgString);
 }
 
 function sendWSSMessage(message) {
@@ -383,7 +393,7 @@ function sendWSSMessage(message) {
     msg: JSON.stringify(message)
   };
   var msgString = JSON.stringify(wssMessage);
-  trace('C->S: ' + wssMessage.msg);
+  trace('C->WSS: ' + wssMessage.msg);
   if (isSignalingChannelReady) {
     webSocket.send(msgString);
   } else {
@@ -418,6 +428,27 @@ function processSignalingMessage(message) {
   } else {
     trace('WARNING: unknown message: ' + JSON.stringify(message));
   }
+}
+
+// When we receive messages from GAE registration and from the WSS connection,
+// we add them to a queue and drain it if conditions are right.
+function drainMessageQueue() {
+  // It's possible that we finish registering and receiving messages from WSS
+  // before we create our peer connection. We need to wait for the peer
+  // connection to be created before processing messages.
+  //
+  // Also, the order of messages is in general not the same as the POST order
+  // from the other client because the POSTs are async and the server may handle
+  // some requests faster than others. We need to process offer before
+  // candidates so we wait for the offer to arrive first if we're answering.
+  // Offers are added to the front of the queue.
+  if (!pc || (!params.isInitiator && !hasReceivedOffer)) {
+    return;
+  }
+  for (var i = 0, len = messageQueue.length; i < len; i++) {
+    processSignalingMessage(messageQueue[i]);
+  }
+  messageQueue = [];
 }
 
 function onAddIceCandidateSuccess() {

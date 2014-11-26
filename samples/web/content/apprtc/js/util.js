@@ -83,5 +83,5 @@ function parseJSON(json) {
   } catch (e) {
     trace('Error parsing json: ' + json);
   }
-  return '';
+  return null;
 }

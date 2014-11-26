@@ -28,6 +28,11 @@ jinja_environment = jinja2.Environment(
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
 
+# To ensure strong consistency for clients, we create a ClientAncestor entity
+# sentinel. This global stores the key for that sentinel.
+ancestor_key = None
+
+LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
 TURN_URL = 'https://computeengineondemand.appspot.com'
 WSS_HOST = 'apprtc-ws.webrtc.org'
 WSS_PORT = '8089'
@@ -37,12 +42,6 @@ def generate_random(length):
   for _ in range(length):
     word += random.choice('0123456789')
   return word
-
-def sanitize(key):
-  return re.sub('[^a-zA-Z0-9\-]', '-', key)
-
-def make_client_id(room, user):
-  return room.key().id_or_name() + '/' + user
 
 def is_chrome_for_android(user_agent):
   return 'Android' in user_agent and 'Chrome' in user_agent
@@ -154,17 +153,6 @@ def append_url_arguments(request, link):
              cgi.escape(request.get(argument), True))
   return link
 
-def get_saved_messages(room_id, client_id):
-  return Message.gql("WHERE room_id=:rid AND client_id=:cid",
-                     rid=room_id, cid=client_id)
-
-def delete_saved_messages(room_id, client_id):
-  messages = get_saved_messages(room_id, client_id)
-  for message in messages:
-    message.delete()
-  logging.info('Deleted saved messages for ' + client_id + ' in room ' +
-               room_id);
-
 def get_wss_parameters(request):
   ws_host = request.get('wsh')
   ws_port = request.get('wsp')
@@ -185,7 +173,7 @@ def get_wss_parameters(request):
 
 # Returns appropriate room parameters based on query parameters in the request.
 # TODO(tkchin): move query parameter parsing to JS code.
-def get_room_parameters(request, room_id, client_id=None, is_initiator=None):
+def get_room_parameters(request, room_id, client_id, is_initiator):
   error_messages = []
   # Get the base url without arguments.
   base_url = request.path_url
@@ -360,112 +348,127 @@ def get_room_parameters(request, room_id, client_id=None, is_initiator=None):
     params['is_initiator'] = json.dumps(is_initiator)
   return params
 
-class Message(db.Model):
+# To ensure strong consistency for Client queries, we require all clients to
+# have the same ClientAncestor parent so that they all belong to the same
+# entity group.
+class ClientAncestor(db.Model):
+  pass
+
+# For now we have (room_id, client_id) pairs are 'unique' but client_ids are
+# not. Uniqueness is not enforced however and bad things may happen if RNG
+# generates non-unique numbers. We also have a special loopback client id.
+# TODO(tkchin): Generate room/client IDs in a unique way while handling
+# loopback scenario correctly.
+class Client(db.Model):
   room_id = db.StringProperty()
   client_id = db.StringProperty()
-  message = db.TextProperty()
+  messages = db.ListProperty(db.Text)
+  is_initiator = db.BooleanProperty()
 
-class Room(db.Model):
-  """All the data we store for a room"""
-  user1 = db.StringProperty()
-  user2 = db.StringProperty()
+def get_ancestor_key():
+  global ancestor_key
+  if ancestor_key is None:
+    ancestor = ClientAncestor()
+    ancestor.put()
+    ancestor_key = ancestor.key()
+  return ancestor_key
 
-  def __str__(self):
-    result = '['
-    if self.user1:
-      result += "%s" % (self.user1)
-    if self.user2:
-      result += ", %s" % (self.user2)
-    result += ']'
-    return result
+# Creates a new Client db object.
+def create_client(room_id, client_id, messages, is_initiator):
+  ancestor_key = get_ancestor_key()
+  client = Client(room_id=room_id,
+                  client_id=client_id,
+                  messages=messages,
+                  is_initiator=is_initiator,
+                  parent=ancestor_key)
+  client.put()
+  logging.info('Created client ' + client_id + ' in room ' + room_id)
+  return client
 
-  def get_occupancy(self):
-    occupancy = 0
-    if self.user1:
-      occupancy += 1
-    if self.user2:
-      occupancy += 1
-    return occupancy
+# Returns clients for room.
+def get_room_clients(room_id):
+  ancestor_key = get_ancestor_key()
+  return Client.gql("WHERE ANCESTOR IS:ancestor AND room_id=:rid",
+                    ancestor=ancestor_key, rid=room_id)
 
-  def get_other_user(self, user):
-    if user == self.user1:
-      return self.user2
-    elif user == self.user2:
-      return self.user1
-    else:
-      return None
-
-  def has_user(self, user):
-    return (user and (user == self.user1 or user == self.user2))
-
-  def add_user(self, user):
-    if not self.user1:
-      self.user1 = user
-    elif not self.user2:
-      self.user2 = user
-    else:
-      raise RuntimeError('room is full')
-    self.put()
-
-  def remove_user(self, user):
-    if user == self.user2:
-      self.user2 = None
-    if user == self.user1:
-      if self.user2:
-        self.user1 = self.user2
-        self.user2 = None
-      else:
-        self.user1 = None
-    if self.get_occupancy() > 0:
-      self.put()
-    else:
-      self.delete()
-
-  def is_initiator(self, user):
-    return (user is not None) and user == self.user1
+# Returns dictionary of client_id to Client.
+def get_room_client_map(room_id):
+  clients = get_room_clients(room_id)
+  client_map = {}
+  for client in clients:
+    # Sometimes datastore converts to unicode string. This converts it back
+    # to match string coming in from request handlers.
+    client_map[str(client.client_id)] = client
+  return client_map
 
 class ByePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
     with LOCK:
-      room = Room.get_by_key_name(room_id)
-      if not room:
+      client_map = get_room_client_map(room_id)
+      if len(client_map) == 0:
         logging.warning('Unknown room: ' + room_id)
         return
-      if room.has_user(client_id):
-        delete_saved_messages(room_id, client_id);
-        room.remove_user(client_id)
-        logging.info('User ' + client_id + ' quit from room ' + room_id)
-        logging.info('Room ' + room_id + ' has state ' + str(room))
+      if client_id not in client_map:
+        logging.warning('Unknown client ' + client_id + ' for room ' + room_id)
+        return
+      client = client_map.pop(client_id)
+      client.delete()
+      logging.info('Removed client ' + client_id + ' from room ' + room_id)
+      if LOOPBACK_CLIENT_ID in client_map:
+         loopback_client = client_map.pop(LOOPBACK_CLIENT_ID)
+         loopback_client.delete()
+         logging.info('Removed loopback client from room ' + room_id)
+      if len(client_map) > 0:
+        other_client = client_map.values()[0]
+        # Set other client to be new initiator.
+        other_client.is_initiator = True
+        # Clean out any pending messages from other client.
+        other_client.messages = []
+        # Commit changes.
+        other_client.put()
+      client_map = get_room_client_map(room_id)
+      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
 
 class MessagePage(webapp2.RequestHandler):
-  def write_response(self, result='SUCCESS'):
+  def write_response(self, result):
     content = json.dumps({ 'result' : result })
     self.response.write(content)
 
   def post(self, room_id, client_id):
     message_json = self.request.body
     with LOCK:
-      room = Room.get_by_key_name(room_id)
-      if not room:
+      client_map = get_room_client_map(room_id)
+      occupancy = len(client_map)
+      # Check that room exists.
+      if occupancy == 0:
+        logging.warning('Unknown room: ' + room_id)
         self.write_response('UNKNOWN_ROOM')
         return
-      if not room.has_user(client_id):
-        self.write_reponse('UNKNOWN_CLIENT')
+
+      # Check that client is registered.
+      if not client_id in client_map:
+        logging.warning('Unknown client: ' + client_id)
+        self.write_response('UNKNOWN_CLIENT')
         return
-      other_user = room.get_other_user(client_id)
-      # Save messages if other client is not registered yet.
-      if other_user is None:
-        logging.info('Saving message.')
-        message = Message(room_id=room_id,
-                          client_id=client_id,
-                          message=self.request.body)
-        message.put()
-        self.write_response()
+
+      # Check if other client is registered.
+      if occupancy == 1:
+        # No other client registered, save message.
+        logging.info('Saving message from client ' + client_id +
+                     ' for room ' + room_id)
+        client = client_map[client_id]
+        text = db.Text(message_json, encoding='utf-8')
+        client.messages.append(text)
+        client.put()
+        self.write_response('SUCCESS')
         return
     # Other client registered, forward to collider. Do this outside the lock.
     # Note: this may fail in local dev server due to not having the right
     # certificate file locally for SSL validation.
-    logging.info('Forwarding message to collider.')
+    # Note: loopback scenario follows this code path.
+    # TODO(tkchin): consider async fetch here.
+    logging.info('Forwarding message to collider for room ' + room_id +
+                 ' client ' + client_id)
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     payload = urllib.urlencode({ 'msg' : message_json })
     wss_url, wss_post_url = get_wss_parameters(self.request)
@@ -479,10 +482,10 @@ class MessagePage(webapp2.RequestHandler):
       # TODO(tkchin): better error handling.
       self.error(500)
       return
-    self.write_response()
+    self.write_response('SUCCESS')
 
 class RegisterPage(webapp2.RequestHandler):
-  def write_response(self, result='SUCCESS', params={}, messages=[]):
+  def write_response(self, result, params, messages):
     # TODO(tkchin): Clean up response format. For simplicity put everything in
     # params for now.
     params['messages'] = messages
@@ -494,35 +497,49 @@ class RegisterPage(webapp2.RequestHandler):
   def post(self, room_id):
     client_id = generate_random(8)
     is_loopback = self.request.get('debug') == 'loopback'
+    is_initiator = False
+    messages = []
+    params = {}
     with LOCK:
-      room = Room.get_by_key_name(room_id)
-      if not room:
+      client_map = get_room_client_map(room_id)
+      occupancy = len(client_map)
+      if occupancy == 0:
         # New room.
-        room = Room(key_name = room_id)
-        room.add_user(client_id)
+        # Create first client as initiator.
+        is_initiator = True
+        client = create_client(room_id, client_id, messages, is_initiator)
+        client_map[client_id] = client
         if is_loopback:
-          room.add_user(client_id)
-        # First client is initiator.
-        params = get_room_parameters(self.request, room_id, client_id, True)
-        self.write_response(params=params)
-      elif room.get_occupancy() >= 2:
+          # Loopback client is not initiator.
+          loopback_client = create_client(
+              room_id, LOOPBACK_CLIENT_ID, messages, False)
+          client_map[LOOPBACK_CLIENT_ID] = loopback_client
+        # Write room parameters response.
+        params = get_room_parameters(
+            self.request, room_id, client_id, is_initiator)
+        self.write_response('SUCCESS', params, messages)
+      elif occupancy == 1:
+        # Retrieve stored messages from first client.
+        other_client = client_map.values()[0]
+        messages = other_client.messages
+        # Create second client as not initiator.
+        is_initiator = False
+        client = create_client(room_id, client_id, messages, is_initiator)
+        client_map[client_id] = client
+        # Write room parameters response with any messages.
+        params = get_room_parameters(
+            self.request, room_id, client_id, is_initiator)
+        self.write_response('SUCCESS', params, messages)
+        # Delete the messages we've responded with.
+        other_client.messages = []
+        other_client.put()
+      elif occupancy >= 2:
         # Full room.
         logging.info('Room ' + room_id + ' is full.')
-        self.write_response('FULL')
-      else:
-        # One other client in room.
-        room.add_user(client_id)
-        other_client_id = room.get_other_user(client_id)
-        saved_messages = get_saved_messages(room_id, other_client_id)
-        messages = []
-        for saved_message in saved_messages:
-          messages.append(saved_message.message)
-          saved_message.delete()
-        # Second client does not initiate.
-        params = get_room_parameters(self.request, room_id, client_id, False)
-        self.write_response(params=params, messages=messages)
-      logging.info('Room ' + room_id + ' has state ' + str(room))
-    logging.info('User ' + client_id + ' registered.')
+        self.write_response('FULL', params, messages)
+        return
+      logging.info('User ' + client_id + ' registered in room ' + room_id)
+      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
@@ -542,20 +559,15 @@ class RoomPage(webapp2.RequestHandler):
   def get(self, room_id):
     """Renders index.html or full.html."""
     # Check if room is full.
-    is_full = False
-    room_str = None
     with LOCK:
-      room = Room.get_by_key_name(room_id)
-      if room:
-        is_full = room.get_occupancy() >= 2
-      room_str = str(room)
-    logging.info('Room ' + room_id + ' has state ' + room_str)
-    if is_full:
-      logging.info('Room ' + room_id + ' is full')
-      self.write_response('full.html')
-      return
+      client_map = get_room_client_map(room_id)
+      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
+      if len(client_map) >= 2:
+        logging.info('Room ' + room_id + ' is full')
+        self.write_response('full.html')
+        return
     # Parse out room parameters from request.
-    params = get_room_parameters(self.request, room_id)
+    params = get_room_parameters(self.request, room_id, None, None)
     self.write_response('index.html', params)
 
 app = webapp2.WSGIApplication([
