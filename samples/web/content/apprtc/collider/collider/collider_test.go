@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -82,11 +82,10 @@ func write(t *testing.T, conn *websocket.Conn, data interface{}) {
 
 func postSend(t *testing.T, roomID string, clientID string, msg string) {
 	urlstr := "http://" + serverAddr + "/" + roomID + "/" + clientID
-	formdata := url.Values{"msg": {msg}}
-
-	_, err := http.PostForm(urlstr, formdata)
+	r := strings.NewReader(msg)
+	_, err := http.Post(urlstr, "application/octet-stream", r)
 	if err != nil {
-		t.Errorf("http.PostForm(%q, %v) got error: %v, want nil", urlstr, formdata, err)
+		t.Errorf("http.Post(%q, %q) got error: %q, want nil", urlstr, msg, err)
 	}
 }
 

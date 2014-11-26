@@ -461,14 +461,11 @@ class MessagePage(webapp2.RequestHandler):
     # TODO(tkchin): consider async fetch here.
     logging.info('Forwarding message to collider for room ' + room_id +
                  ' client ' + client_id)
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    payload = urllib.urlencode({ 'msg' : message_json })
     wss_url, wss_post_url = get_wss_parameters(self.request)
     url = wss_post_url + '/' + room_id + '/' + client_id
     result = urlfetch.fetch(url=url,
-                            payload=payload,
-                            method=urlfetch.POST,
-                            headers=headers)
+                            payload=message_json,
+                            method=urlfetch.POST)
     if result.status_code != 200:
       logging.error('Failed to send message to collider.')
       # TODO(tkchin): better error handling.
