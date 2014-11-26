@@ -96,12 +96,23 @@ function updateInfoDiv() {
 function buildStatsSection() {
   var contents = buildLine('Stats');
 
-  // Obtain any needed values from stats.
+  // Obtain setup and latency stats.
   var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
   var captureStart = extractStatAsInt(stats, 'ssrc',
       'googCaptureStartNtpTimeMs');
   var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
+  if (endTime !== null) {
+    contents += buildLine('Setup time',
+        (endTime - startTime).toFixed(0).toString() + 'ms');
+  }
+  if (rtt !== null) {
+    contents += buildLine('RTT', rtt.toString() + 'ms');
+  }
+  if (e2eDelay !== null) {
+    contents += buildLine('End to end', e2eDelay.toString() + 'ms');
+  }
 
+  // Obtain resolution, framerate, and bitrate stats.
   // TODO(juberti): find a better way to tell these apart.
   var txAudio = getStatsReport(stats, 'ssrc', 'audioInputLevel');
   var rxAudio = getStatsReport(stats, 'ssrc', 'audioOutputLevel');
@@ -135,17 +146,6 @@ function buildStatsSection() {
     // TODO(juberti): this should ideally be obtained from the video element.
     rxVideoFps = rxVideo.stat('googFrameRateDecoded');
     rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
-  }
-
-  if (endTime !== null) {
-    contents += buildLine('Setup time',
-        (endTime - startTime).toFixed(0).toString() + 'ms');
-  }
-  if (rtt !== null) {
-    contents += buildLine('RTT', rtt.toString() + 'ms');
-  }
-  if (e2eDelay !== null) {
-    contents += buildLine('End to end', e2eDelay.toString() + 'ms');
   }
   contents += buildLine('Audio Tx', txAudioCodec + ', ' +
       formatBitrate(txAudioBitrate));
