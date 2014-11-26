@@ -28,10 +28,6 @@ jinja_environment = jinja2.Environment(
 # One possible method for near future is to reduce the message caching.
 LOCK = threading.RLock()
 
-# To ensure strong consistency for clients, we create a ClientAncestor entity
-# sentinel. This global stores the key for that sentinel.
-ancestor_key = None
-
 LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
 TURN_URL = 'https://computeengineondemand.appspot.com'
 WSS_HOST = 'apprtc-ws.webrtc.org'
@@ -348,10 +344,11 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     params['is_initiator'] = json.dumps(is_initiator)
   return params
 
-# To ensure strong consistency for Client queries, we require all clients to
-# have the same ClientAncestor parent so that they all belong to the same
-# entity group.
-class ClientAncestor(db.Model):
+# We want all clients that share a room id to have the same entity group. This
+# is important because strong consistency is only provided within an entity
+# group. We do this by having clients set the room with their shared room id
+# as their parent.
+class Room(db.Model):
   pass
 
 # For now we have (room_id, client_id) pairs are 'unique' but client_ids are
@@ -365,31 +362,23 @@ class Client(db.Model):
   messages = db.ListProperty(db.Text)
   is_initiator = db.BooleanProperty()
 
-def get_ancestor_key():
-  global ancestor_key
-  if ancestor_key is None:
-    ancestor = ClientAncestor()
-    ancestor.put()
-    ancestor_key = ancestor.key()
-  return ancestor_key
-
 # Creates a new Client db object.
 def create_client(room_id, client_id, messages, is_initiator):
-  ancestor_key = get_ancestor_key()
+  room = Room.get_or_insert(key_name=room_id)
   client = Client(room_id=room_id,
                   client_id=client_id,
                   messages=messages,
                   is_initiator=is_initiator,
-                  parent=ancestor_key)
+                  parent=room)
   client.put()
   logging.info('Created client ' + client_id + ' in room ' + room_id)
   return client
 
 # Returns clients for room.
 def get_room_clients(room_id):
-  ancestor_key = get_ancestor_key()
-  return Client.gql("WHERE ANCESTOR IS:ancestor AND room_id=:rid",
-                    ancestor=ancestor_key, rid=room_id)
+  room_key = db.Key.from_path('Room', room_id)
+  return Client.gql('WHERE ANCESTOR IS:ancestor AND room_id=:rid',
+                    ancestor=room_key, rid=room_id)
 
 # Returns dictionary of client_id to Client.
 def get_room_client_map(room_id):
@@ -418,15 +407,18 @@ class ByePage(webapp2.RequestHandler):
          loopback_client = client_map.pop(LOOPBACK_CLIENT_ID)
          loopback_client.delete()
          logging.info('Removed loopback client from room ' + room_id)
-      if len(client_map) > 0:
+      if len(client_map) == 0:
+        # Delete the room now that it's empty.
+        room = Room.get_by_key_name(room_id)
+        room.delete()
+      else:
         other_client = client_map.values()[0]
         # Set other client to be new initiator.
         other_client.is_initiator = True
-        # Clean out any pending messages from other client.
+        # This should already be empty, but set it anyway.
         other_client.messages = []
         # Commit changes.
         other_client.put()
-      client_map = get_room_client_map(room_id)
       logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
 
 class MessagePage(webapp2.RequestHandler):
@@ -524,7 +516,7 @@ class RegisterPage(webapp2.RequestHandler):
         messages = other_client.messages
         # Create second client as not initiator.
         is_initiator = False
-        client = create_client(room_id, client_id, messages, is_initiator)
+        client = create_client(room_id, client_id, [], is_initiator)
         client_map[client_id] = client
         # Write room parameters response with any messages.
         params = get_room_parameters(
