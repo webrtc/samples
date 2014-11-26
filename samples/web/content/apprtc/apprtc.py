@@ -344,13 +344,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     params['is_initiator'] = json.dumps(is_initiator)
   return params
 
-# We want all clients that share a room id to have the same entity group. This
-# is important because strong consistency is only provided within an entity
-# group. We do this by having clients set the room with their shared room id
-# as their parent.
-class Room(db.Model):
-  pass
-
 # For now we have (room_id, client_id) pairs are 'unique' but client_ids are
 # not. Uniqueness is not enforced however and bad things may happen if RNG
 # generates non-unique numbers. We also have a special loopback client id.
@@ -362,21 +355,27 @@ class Client(db.Model):
   messages = db.ListProperty(db.Text)
   is_initiator = db.BooleanProperty()
 
+# Constructs the db key for the room. We use this key to create entity groups
+# for clients in the same room, so that clients in the same room will be
+# strongly consistent.
+def get_room_key(room_id):
+  return db.Key.from_path('Room', room_id)
+
 # Creates a new Client db object.
 def create_client(room_id, client_id, messages, is_initiator):
-  room = Room.get_or_insert(key_name=room_id)
+  room_key = get_room_key(room_id)
   client = Client(room_id=room_id,
                   client_id=client_id,
                   messages=messages,
                   is_initiator=is_initiator,
-                  parent=room)
+                  parent=room_key)
   client.put()
   logging.info('Created client ' + client_id + ' in room ' + room_id)
   return client
 
 # Returns clients for room.
 def get_room_clients(room_id):
-  room_key = db.Key.from_path('Room', room_id)
+  room_key = get_room_key(room_id)
   return Client.gql('WHERE ANCESTOR IS:ancestor AND room_id=:rid',
                     ancestor=room_key, rid=room_id)
 
@@ -407,11 +406,7 @@ class ByePage(webapp2.RequestHandler):
          loopback_client = client_map.pop(LOOPBACK_CLIENT_ID)
          loopback_client.delete()
          logging.info('Removed loopback client from room ' + room_id)
-      if len(client_map) == 0:
-        # Delete the room now that it's empty.
-        room = Room.get_by_key_name(room_id)
-        room.delete()
-      else:
+      if len(client_map) > 0:
         other_client = client_map.values()[0]
         # Set other client to be new initiator.
         other_client.is_initiator = True
