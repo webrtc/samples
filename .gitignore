@@ -4,4 +4,3 @@ node_modules
 validation-report.json
 validation-status.json
 bower_components
-google_appengine*
