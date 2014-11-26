@@ -400,7 +400,7 @@ function sendWSSMessage(message) {
     var path = params.wssPostUrl + '/' + params.roomId + '/' + params.clientId;
     var xhr = new XMLHttpRequest();
     xhr.open('POST', path, true);
-    xhr.send(wssMessage.msg)
+    xhr.send(wssMessage.msg);
  }
 }
 
