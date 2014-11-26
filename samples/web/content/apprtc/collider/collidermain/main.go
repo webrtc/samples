@@ -12,8 +12,9 @@ import (
 
 var tls = flag.Bool("tls", true, "whether TLS is used")
 var port = flag.Int("port", 8089, "The TCP port that the server listens on")
+var roomSrv = flag.String("room-server", "https://apprtc.appspot.com", "The origin of the room server")
 
 func main() {
 	flag.Parse()
-	collider.Start(*tls, *port)
+	collider.Start(*tls, *port, *roomSrv)
 }

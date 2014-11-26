@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -21,7 +21,7 @@ var serverAddr string
 var once sync.Once
 
 func startServers() {
-	go Start(false, 8089)
+	go Start(false, 8089, "http://localhost")
 	serverAddr = "localhost:8089"
 	fmt.Println("Test WebSocket server listening on ", serverAddr)
 }
@@ -82,11 +82,10 @@ func write(t *testing.T, conn *websocket.Conn, data interface{}) {
 
 func postSend(t *testing.T, roomID string, clientID string, msg string) {
 	urlstr := "http://" + serverAddr + "/" + roomID + "/" + clientID
-	formdata := url.Values{"msg": {msg}}
-
-	_, err := http.PostForm(urlstr, formdata)
+	r := strings.NewReader(msg)
+	_, err := http.Post(urlstr, "application/octet-stream", r)
 	if err != nil {
-		t.Errorf("http.PostForm(%q, %v) got error: %v, want nil", urlstr, formdata, err)
+		t.Errorf("http.Post(%q, %q) got error: %q, want nil", urlstr, msg, err)
 	}
 }
 
@@ -252,6 +251,65 @@ func TestRoomCleanedUpAfterTimeout(t *testing.T) {
 	time.Sleep((registerTimeoutSec + 1) * time.Second)
 
 	if l := len(rooms.rooms); l != 0 {
-		t.Errorf("After clientRegistereTimeoutInSeconds without registering the new client, len(rooms.rooms) = %d, want 0", l)
+		t.Errorf("After timeout without registering the new client, len(rooms.rooms) = %d, want 0", l)
+	}
+}
+
+func TestDeregisteredClientNotRemovedUntilTimeout(t *testing.T) {
+	setup()
+
+	rid, cid := "abc", "1"
+	conn := addWsClient(t, rid, cid)
+	c, _ := rooms.room(rid).client(cid)
+
+	conn.Close()
+
+	// Waits for the client to deregister.
+	if !waitForCondition(func() bool { return !c.registered() }) {
+		t.Errorf("After websockt.Connection.Close(), client.registered() = true, want false")
+	}
+
+	// Checks that the client is still in the room.
+	if actual, _ := rooms.room(rid).client(cid); actual != c {
+		t.Errorf("After websockt.Connection.Close(), rooms.room[rid].client[cid] = %v, want %v", actual, c)
+	}
+
+	// Checks that the client and room are removed after the timeout.
+	time.Sleep((registerTimeoutSec + 1) * time.Second)
+	if l := len(rooms.rooms); l != 0 {
+		t.Errorf("After timeout without re-registering the new client, len(rooms.rooms) = %d, want 0", l)
+	}
+}
+
+func TestReregisterClientBeforeTimeout(t *testing.T) {
+	setup()
+
+	rid, cid := "abc", "1"
+	conn := addWsClient(t, rid, cid)
+	c, _ := rooms.room(rid).client(cid)
+
+	conn.Close()
+
+	// Waits for the client to deregister.
+	if !waitForCondition(func() bool { return !c.registered() }) {
+		t.Errorf("After websockt.Connection.Close(), client.registered() = true, want false")
+	}
+
+	// Checks that the client is still in the room.
+	if actual, _ := rooms.room(rid).client(cid); actual != c {
+		t.Errorf("After websockt.Connection.Close(), rooms.room[rid].client[cid] = %v, want %v", actual, c)
+	}
+
+	// Reregister the client.
+	conn = addWsClient(t, rid, cid)
+
+	// Waits for the client to be registered.
+	if !waitForCondition(func() bool { return c.registered() }) {
+		t.Errorf("After addWsClient(...) again, client.registered() = false, want true")
+	}
+
+	// Checks that the timer has been stopped.
+	if c.timer != nil {
+		t.Errorf("After addWsClient() again, client.timer = %v, want nil", c.timer)
 	}
 }

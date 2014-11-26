@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"sync"
+	"time"
 )
 
 // A thread-safe map of rooms.
@@ -22,72 +23,94 @@ func newRoomTable() *roomTable {
 }
 
 // room returns the room specified by |id|, or creates the room if it does not exist.
-func (rs *roomTable) room(id string) *room {
-	rs.lock.Lock()
-	defer rs.lock.Unlock()
+func (rt *roomTable) room(id string) *room {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
 
-	return rs.roomLocked(id)
+	return rt.roomLocked(id)
 }
 
 // roomLocked gets or creates the room without acquiring the lock. Used when the caller already acquired the lock.
-func (rs *roomTable) roomLocked(id string) *room {
-	if r, ok := rs.rooms[id]; ok {
+func (rt *roomTable) roomLocked(id string) *room {
+	if r, ok := rt.rooms[id]; ok {
 		return r
 	}
-	rs.rooms[id] = newRoom(id)
+	rt.rooms[id] = newRoom(rt, id)
 	log.Printf("Created room %s", id)
 
-	return rs.rooms[id]
+	return rt.rooms[id]
 }
 
 // remove removes the client. If the room becomes empty, it also removes the room.
-func (rs *roomTable) remove(roomID string, clientID string) {
-	rs.lock.Lock()
-	defer rs.lock.Unlock()
+func (rt *roomTable) remove(rid string, cid string) {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
 
-	rs.removeLocked(roomID, clientID)
+	rt.removeLocked(rid, cid)
 }
 
 // removeLocked removes the client without acquiring the lock. Used when the caller already acquired the lock.
-func (rs *roomTable) removeLocked(roomID string, clientID string) {
-	if r := rs.rooms[roomID]; r != nil {
-		r.remove(clientID)
+func (rt *roomTable) removeLocked(rid string, cid string) {
+	if r := rt.rooms[rid]; r != nil {
+		r.remove(cid)
 		if r.empty() {
-			delete(rs.rooms, roomID)
-			log.Printf("Removed room %s", roomID)
+			delete(rt.rooms, rid)
+			log.Printf("Removed room %s", rid)
 		}
 	}
 }
 
 // send forwards the message to the room. If the room does not exist, it will create one.
-func (rs *roomTable) send(roomID string, srcClientID string, msg string) error {
-	rs.lock.Lock()
-	defer rs.lock.Unlock()
+func (rt *roomTable) send(rid string, srcID string, msg string) error {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
 
-	r := rs.roomLocked(roomID)
-	return r.send(srcClientID, msg)
+	r := rt.roomLocked(rid)
+	return r.send(srcID, msg)
 }
 
 // register forwards the register request to the room. If the room does not exist, it will create one.
-func (rs *roomTable) register(roomID string, clientID string, rwc io.ReadWriteCloser) error {
-	rs.lock.Lock()
-	defer rs.lock.Unlock()
+func (rt *roomTable) register(rid string, cid string, rwc io.ReadWriteCloser) error {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
 
-	r := rs.roomLocked(roomID)
-	return r.register(clientID, rwc)
+	r := rt.roomLocked(rid)
+	return r.register(cid, rwc)
+}
+
+// deregister clears the client's websocket registration.
+// We keep the client around until after a timeout, so that users roaming between networks can seamlessly reconnect.
+func (rt *roomTable) deregister(rid string, cid string) {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
+
+	if r := rt.rooms[rid]; r != nil {
+		if c := r.clients[cid]; c != nil {
+			if c.registered() {
+				c.deregister()
+
+				c.setTimer(time.AfterFunc(time.Second*registerTimeoutSec, func() {
+					rt.removeIfUnregistered(rid, c)
+				}))
+
+				log.Printf("Deregistered client %s from room %s", c.id, rid)
+				return
+			}
+		}
+	}
 }
 
 // removeIfUnregistered removes the client if it has not registered.
-func (rs *roomTable) removeIfUnregistered(rid string, c *client) {
-	rs.lock.Lock()
-	defer rs.lock.Unlock()
+func (rt *roomTable) removeIfUnregistered(rid string, c *client) {
+	log.Printf("Removing client %s from room %s due to timeout", c.id, rid)
 
-	if r := rs.rooms[rid]; r != nil {
+	rt.lock.Lock()
+	defer rt.lock.Unlock()
+
+	if r := rt.rooms[rid]; r != nil {
 		if c == r.clients[c.id] {
 			if !c.registered() {
-				rs.removeLocked(rid, c.id)
-
-				log.Printf("Removed client %s from room %s due to timeout", c.id, rid)
+				rt.removeLocked(rid, c.id)
 				return
 			}
 		}

@@ -9,11 +9,18 @@ package collider
 import (
 	"code.google.com/p/go.net/websocket"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 )
+
+const maxQueuedMsgCount = 1024
+const maxRoomCapacity = 2
+const registerTimeoutSec = 5
+
+var roomServerUrlBase string
 
 var rooms *roomTable
 
@@ -37,9 +44,14 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "POST":
-		m := r.FormValue("msg")
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+			return
+		}
+		m := string(body)
 		if m == "" {
-			http.Error(w, "Missing msg", http.StatusBadRequest)
+			http.Error(w, "Empty request body", http.StatusBadRequest)
 			return
 		}
 		if err := rooms.send(rid, cid, m); err != nil {
@@ -56,7 +68,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // wsHandler is a WebSocket server that handles requests from the WebSocket client in the form of:
-// 1. { 'cmd': 'register', 'room': $ROOM, 'client': $CLIENT' },
+// 1. { 'cmd': 'register', 'roomid': $ROOM, 'clientid': $CLIENT' },
 // which binds the WebSocket client to a client ID and room ID.
 // A client should send this message only once right after the connection is open.
 // or
@@ -67,6 +79,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 // Unexpected messages will cause the WebSocket connection to be closed.
 func wsHandler(ws *websocket.Conn) {
 	var rid, cid string
+
 	registered := false
 
 	var msg wsClientMsg
@@ -94,7 +107,7 @@ loop:
 			}
 			registered, rid, cid = true, msg.RoomID, msg.ClientID
 
-			defer rooms.remove(msg.RoomID, msg.ClientID)
+			defer rooms.deregister(rid, cid)
 			break
 		case "send":
 			if !registered {
@@ -114,8 +127,10 @@ loop:
 	}
 }
 
-func Start(tls bool, port int) {
-	log.Printf("Starting servers: tls = %t, port = %d", tls, port)
+func Start(tls bool, port int, roomSrv string) {
+	log.Printf("Starting servers: tls = %t, port = %d, room-server=%s", tls, port, roomSrv)
+
+	roomServerUrlBase = roomSrv
 
 	http.Handle("/ws", websocket.Handler(wsHandler))
 	http.HandleFunc("/", httpHandler)

@@ -13,20 +13,24 @@
 /* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
 
 // Variables defined in and used from util.js.
-/* globals doGetUserMedia, maybeRequestTurn */
-/* exported xmlhttp, onUserMediaSuccess, onUserMediaError */
+/* globals doGetUserMedia */
+/* exported onUserMediaSuccess, onUserMediaError */
 
 // Variables defined in and used from infobox.js.
 /* globals showInfoDiv, toggleInfoDiv, updateInfoDiv */
 /* exported getStatsTimer, infoDiv */
 
 // Variables defined in and used from stats.js.
-/* exported stats */
+/* exported prevStats, stats */
 
 // Variables defined in and used from signaling.js.
-/* globals openSignalingChannel, maybeStart, sendMessage */
-/* exported channelReady, gatheredIceCandidateTypes, sdpConstraints, turnDone,
-   onRemoteHangup, waitForRemoteVideo */
+/* globals connectToRoom, hasReceivedOffer:true, isSignalingChannelReady:true,
+   messageQueue, sendWSSMessage, startSignaling */
+/* exported gatheredIceCandidateTypes, sdpConstraints, onRemoteHangup,
+   waitForRemoteVideo */
+
+// Variables defined in and used from loopback.js.
+/* globals setupLoopback */
 
 'use strict';
 
@@ -39,19 +43,16 @@ var sharingDiv = document.querySelector('#sharing');
 var statusDiv = document.querySelector('#status');
 var videosDiv = document.querySelector('#videos');
 
-var channelReady = false;
 // Types of gathered ICE Candidates.
 var gatheredIceCandidateTypes = {
   Local: {},
   Remote: {}
 };
 var getStatsTimer;
-var hasLocalStream;
 var errorMessages = [];
 var isAudioMuted = false;
 var isVideoMuted = false;
 var localStream;
-var msgQueue = [];
 var pc = null;
 var remoteStream;
 // Set up audio and video regardless of what devices are present.
@@ -65,14 +66,12 @@ var sdpConstraints = {
     'VoiceActivityDetection': false
   }]
 };
-var endTime = null;
-var signalingReady = false;
+
 var webSocket;
-var started = false;
 var startTime;
+var endTime;
 var stats;
-var turnDone = false;
-var xmlhttp;
+var prevStats;
 
 function initialize() {
   var roomErrors = params.errorMessages;
@@ -83,26 +82,11 @@ function initialize() {
     }
     return;
   }
-
   document.body.ondblclick = toggleFullScreen;
-
   trace('Initializing; room=' + params.roomId + '.');
-
-  // NOTE: AppRTCClient.java searches & parses this line; update there when
-  // changing here.
-  openSignalingChannel();
-  maybeRequestTurn();
-
-  // Caller is always ready to create peerConnection.
-  signalingReady = params.isInitiator;
-
-  if (params.mediaConstraints.audio === false &&
-      params.mediaConstraints.video === false) {
-    hasLocalStream = false;
-    maybeStart();
-  } else {
-    hasLocalStream = true;
-    doGetUserMedia();
+  connectToRoom(params.roomId);
+  if (params.isLoopback && (typeof setupLoopback === 'function')) {
+    setupLoopback();
   }
 }
 
@@ -113,9 +97,8 @@ function onUserMediaSuccess(stream) {
   attachMediaStream(localVideo, stream);
   localStream = stream;
   // Caller creates PeerConnection.
-  maybeStart();
   displayStatus('');
-  if (params.isInitiator === 0) {
+  if (params.isInitiator) {
     displaySharingInfo();
   }
   localVideo.classList.add('active');
@@ -126,9 +109,6 @@ function onUserMediaError(error) {
       error.name + '. Continuing without sending a stream.';
   displayError(errorMessage);
   alert(errorMessage);
-
-  hasLocalStream = false;
-  maybeStart();
 }
 
 function hangup() {
@@ -141,12 +121,21 @@ function hangup() {
 }
 
 function disconnectFromServers() {
+  // Send bye to GAE. This must complete before saying BYE to other client.
+  // When the other client sees BYE it attempts to post offer and candidates to
+  // GAE. GAE needs to know that we're disconnected at that point otherwise
+  // it will forward messages to this client instead of storing them.
+  path = '/bye/' + params.roomId + '/' + params.clientId;
+  xhr = new XMLHttpRequest();
+  xhr.open('POST', path, false);
+  xhr.send();
+
   // Send bye to other client.
   if (webSocket) {
-    sendMessage({ type: 'bye' });
+    sendWSSMessage({ type: 'bye' });
     webSocket.close();
     webSocket = null;
-    channelReady = false;
+    isSignalingChannelReady = false;
   }
 
   // Tell WSS that we're done.
@@ -154,42 +143,42 @@ function disconnectFromServers() {
   var xhr = new XMLHttpRequest();
   xhr.open('DELETE', path, false);
   xhr.send();
-
-  // Send bye to GAE.
-  path = '/bye/' + params.roomId + '/' + params.clientId;
-  xhr = new XMLHttpRequest();
-  xhr.open('POST', path, false);
-  xhr.send();
 }
 
 function onRemoteHangup() {
   displayStatus('The remote side hung up.');
-  params.isInitiator = 0;
   transitionToWaiting();
   stop();
+  // On remote hangup this client becomes the new initiator.
+  params.isInitiator = true;
+  startSignaling();
 }
 
 function stop() {
-  started = false;
-  signalingReady = false;
   isAudioMuted = false;
   isVideoMuted = false;
   pc.close();
   pc = null;
   remoteStream = null;
-  msgQueue.length = 0;
+  hasReceivedOffer = false;
+  params.messages.length = 0;
+  messageQueue.length = 0;
 }
 
 function waitForRemoteVideo() {
-  // Wait for the actual video to start arriving before moving to the active call state.
-  if (remoteVideo.currentTime > 0) {
+  // Wait for the actual video to start arriving before moving to the active
+  // call state.
+  if (remoteVideo.readyState >= 2) {  // i.e. can play
+    trace('Remote video started; currentTime: ' + remoteVideo.currentTime);
     transitionToActive();
   } else {
-    setTimeout(waitForRemoteVideo, 10);
+    remoteVideo.oncanplay = waitForRemoteVideo;
   }
 }
 
 function transitionToActive() {
+  // Stop waiting for remote video.
+  remoteVideo.oncanplay = undefined;
   endTime = window.performance.now();
   trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
@@ -215,11 +204,15 @@ function transitionToActive() {
 }
 
 function transitionToWaiting() {
+   // Stop waiting for remote video.
+  remoteVideo.oncanplay = undefined;
   startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
   videosDiv.classList.remove('active');
   setTimeout(function() {
-    localVideo.src = miniVideo.src;
+    if (miniVideo.src) {
+      localVideo.src = miniVideo.src;
+    }
     miniVideo.src = '';
     remoteVideo.src = '';
   }, 800);
@@ -231,6 +224,8 @@ function transitionToWaiting() {
 }
 
 function transitionToDone() {
+   // Stop waiting for remote video.
+  remoteVideo.oncanplay = undefined;
   localVideo.classList.remove('active');
   remoteVideo.classList.remove('active');
   miniVideo.classList.remove('active');
