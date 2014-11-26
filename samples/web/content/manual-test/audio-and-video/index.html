@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!--
+  Copyright (c) 2012 The WebRTC project authors. All Rights Reserved.
+
+  Use of this source code is governed by a BSD-style license
+  that can be found in the LICENSE file in the root of the source
+  tree. An additional intellectual property rights grant can be found
+  in the file PATENTS.  All contributing project authors may
+  be found in the AUTHORS file in the root of the source tree.
+-->
+<html>
+<head>
+  <title>Single Local Preview (Video and Audio)</title>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script src="adapter.js"></script>
+  <script type="text/javascript">
+  function requestVideoAndAudio() {
+    // Call into getUserMedia via the polyfill (adapter.js).
+    getUserMedia({video: true, audio: true},
+                         getUserMediaOkCallback,
+                         getUserMediaFailedCallback);
+  }
+
+  function getUserMediaFailedCallback(error) {
+    alert("User media request denied with error code " + error.code);
+  }
+
+  function getUserMediaOkCallback(stream) {
+    attachMediaStream(document.getElementById("view1"), stream);
+    attachMediaStream(document.getElementById("audio1"), stream);
+  }
+  </script>
+</head>
+<body onload="requestVideoAndAudio();">
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="view1"
+          autoplay="autoplay"></video></td>
+      <td><audio id="audio1" autoplay="autoplay"></audio></td>
+    </tr>
+  </table>
+</body>
+</html>

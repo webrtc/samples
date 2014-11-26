@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!--
+  Copyright (c) 2012 The WebRTC project authors. All Rights Reserved.
+
+  Use of this source code is governed by a BSD-style license
+  that can be found in the LICENSE file in the root of the source
+  tree. An additional intellectual property rights grant can be found
+  in the file PATENTS.  All contributing project authors may
+  be found in the AUTHORS file in the root of the source tree.
+-->
+<html>
+<head>
+  <title>Single Local Preview (Video Only)</title>
+  <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+   <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script src="adapter.js"></script>
+  <script type="text/javascript">
+  function requestVideo(target) {
+   // Call into getUserMedia via the polyfill (adapter.js).
+    getUserMedia({video: true, audio: false},
+                         function(stream) {
+                           getUserMediaOkCallback(stream, target);
+                         },
+                         getUserMediaFailedCallback);
+  }
+
+  function getUserMediaFailedCallback(error) {
+    alert("User media request denied with error code " + error.code);
+  }
+
+  function getUserMediaOkCallback(stream, target) {
+     // Call the polyfill wrapper to attach the media stream to this element.
+     attachMediaStream(document.getElementById("view1"), stream);
+     attachMediaStream(document.getElementById("view2"), stream);
+  }
+  </script>
+</head>
+<body onload="requestVideo('view1'); requestVideo('view2');">
+  <table border="0">
+    <tr>
+      <td>Local Preview</td>
+    </tr>
+    <tr>
+      <td><video width="320" height="240" id="view1"
+          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="view2"
+          autoplay="autoplay"></video></td>
+    </tr>
+  </table>
+</body>
+</html>
