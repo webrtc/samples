@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals displayError, params, maybePreferCodec */
+/* globals displayError, params, maybePreferCodec, findLine, findLineInRange,
+   getCodecPayloadType */
 /* exported iceCandidateType,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,

@@ -9,7 +9,8 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals trace */
-/* exported maybePreferCodec, addCodecParam */
+/* exported maybePreferCodec, addCodecParam, findLine, fineLineInRange,
+   getCodecPayloadType */
 
 'use strict';
 
