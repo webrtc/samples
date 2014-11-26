@@ -120,6 +120,9 @@ function hangup() {
 
 function disconnectFromServers() {
   // Send bye to GAE. This must complete before saying BYE to other client.
+  // When the other client sees BYE it attempts to post offer and candidates to
+  // GAE. GAE needs to know that we're disconnected at that point otherwise
+  // it will forward messages to this client instead of storing them.
   path = '/bye/' + params.roomId + '/' + params.clientId;
   xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);

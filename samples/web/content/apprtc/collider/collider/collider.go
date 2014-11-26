@@ -44,6 +44,10 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		m := string(body)
+		if m == "" {
+			http.Error(w, "Empty request body", http.StatusBadRequest)
+			return
+		}
 		if err := rooms.send(rid, cid, m); err != nil {
 			http.Error(w, "Failed to send the message: "+err.Error(), http.StatusBadRequest)
 			return
