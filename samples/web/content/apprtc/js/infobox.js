@@ -8,9 +8,10 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals computeE2EDelay, endTime, errorMessages, extractStatAsInt,
-   gatheredIceCandidateTypes, getStatsReport, getStatsTimer:true, infoDiv, pc,
-   refreshStats, remoteVideo, startTime, stats */
+/* globals computeBitrate, computeE2EDelay, endTime, errorMessages,
+   extractStatAsInt, gatheredIceCandidateTypes, getStatsReport,
+   getStatsTimer:true, infoDiv, pc,
+   prevStats:true, remoteVideo, startTime, stats:true */
 /* exported toggleInfoDiv, updateInfoDiv */
 
 'use strict';
@@ -29,23 +30,20 @@ function toggleInfoDiv() {
   }
 }
 
+function refreshStats() {
+  if (pc) {
+    pc.getStats(function(response) {
+      prevStats = stats;
+      stats = response.result();
+      updateInfoDiv();
+    });
+  }
+}
+
 function updateInfoDiv() {
   var contents = '<pre id=\"stats\" style=\"line-height: initial\">';
 
-  if (pc) {
-    // Obtain any needed values from stats.
-    var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
-    var captureStart = extractStatAsInt(stats, 'ssrc',
-        'googCaptureStartNtpTimeMs');
-    var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
-    var activeCandPair = getStatsReport(stats, 'googCandidatePair',
-        'googActiveConnection', 'true');
-    var localAddr, remoteAddr;
-    if (activeCandPair) {
-      localAddr = activeCandPair.stat('googLocalAddress');
-      remoteAddr = activeCandPair.stat('googRemoteAddress');
-    }
-
+  if (stats) {
     // Build the display.
     contents += buildLine('States');
     contents += buildLine('Signaling', pc.signalingState);
@@ -59,24 +57,24 @@ function updateInfoDiv() {
       contents += buildLine(endpoint, types.join(' '));
     }
 
+    var activeCandPair = getStatsReport(stats, 'googCandidatePair',
+        'googActiveConnection', 'true');
+    var localAddr, remoteAddr, localAddrType, remoteAddrType;
+    if (activeCandPair) {
+      localAddr = activeCandPair.stat('googLocalAddress');
+      remoteAddr = activeCandPair.stat('googRemoteAddress');
+      localAddrType = activeCandPair.stat('googLocalCandidateType');
+      remoteAddrType = activeCandPair.stat('googRemoteCandidateType');
+    }
     if (localAddr && remoteAddr) {
-      contents += buildLine('LocalAddr', localAddr);
-      contents += buildLine('RemoteAddr', remoteAddr);
+      contents += buildLine('LocalAddr', localAddr +
+          ' (' + localAddrType + ')');
+      contents += buildLine('RemoteAddr', remoteAddr +
+          ' (' + remoteAddrType + ')');
     }
     contents += buildLine();
 
-    contents += buildLine('Stats');
-
-    if (endTime !== null) {
-      contents += buildLine('Setup time',
-          (endTime - startTime).toFixed(0).toString() + 'ms');
-    }
-    if (rtt !== null) {
-      contents += buildLine('RTT', rtt.toString() + 'ms');
-    }
-    if (e2eDelay !== null) {
-      contents += buildLine('End to end', e2eDelay.toString() + 'ms');
-    }
+    contents += buildStatsSection();
   }
 
   if (errorMessages.length) {
@@ -93,6 +91,73 @@ function updateInfoDiv() {
   if (infoDiv.innerHTML !== contents) {
     infoDiv.innerHTML = contents;
   }
+}
+
+function buildStatsSection() {
+  var contents = buildLine('Stats');
+
+  // Obtain any needed values from stats.
+  var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
+  var captureStart = extractStatAsInt(stats, 'ssrc',
+      'googCaptureStartNtpTimeMs');
+  var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
+
+  // TODO(juberti): find a better way to tell these apart.
+  var txAudio = getStatsReport(stats, 'ssrc', 'audioInputLevel');
+  var rxAudio = getStatsReport(stats, 'ssrc', 'audioOutputLevel');
+  var txVideo = getStatsReport(stats, 'ssrc', 'googFirsReceived');
+  var rxVideo = getStatsReport(stats, 'ssrc', 'googFirsSent');
+  var txPrevAudio = getStatsReport(prevStats, 'ssrc', 'audioInputLevel');
+  var rxPrevAudio = getStatsReport(prevStats, 'ssrc', 'audioOutputLevel');
+  var txPrevVideo = getStatsReport(prevStats, 'ssrc', 'googFirsReceived');
+  var rxPrevVideo = getStatsReport(prevStats, 'ssrc', 'googFirsSent');
+  var txAudioCodec, txAudioBitrate;
+  var rxAudioCodec, rxAudioBitrate;
+  var txVideoHeight, txVideoFps, txVideoCodec, txVideoBitrate;
+  var rxVideoHeight, rxVideoFps, rxVideoCodec, rxVideoBitrate;
+  if (txAudio) {
+    txAudioCodec = txAudio.stat('googCodecName');
+    txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
+  }
+  if (rxAudio) {
+    rxAudioCodec = rxAudio.stat('googCodecName');
+    rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
+  }
+  if (txVideo) {
+    txVideoCodec = txVideo.stat('googCodecName');
+    txVideoHeight = txVideo.stat('googFrameHeightSent');
+    txVideoFps = txVideo.stat('googFrameRateSent');
+    txVideoBitrate = computeBitrate(txVideo, txPrevVideo, 'bytesSent');
+  }
+  if (rxVideo) {
+    rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
+    rxVideoHeight = remoteVideo.videoHeight;
+    // TODO(juberti): this should ideally be obtained from the video element.
+    rxVideoFps = rxVideo.stat('googFrameRateDecoded');
+    rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
+  }
+
+  if (endTime !== null) {
+    contents += buildLine('Setup time',
+        (endTime - startTime).toFixed(0).toString() + 'ms');
+  }
+  if (rtt !== null) {
+    contents += buildLine('RTT', rtt.toString() + 'ms');
+  }
+  if (e2eDelay !== null) {
+    contents += buildLine('End to end', e2eDelay.toString() + 'ms');
+  }
+  contents += buildLine('Audio Tx', txAudioCodec + ', ' +
+      formatBitrate(txAudioBitrate));
+  contents += buildLine('Audio Rx', rxAudioCodec + ', ' +
+      formatBitrate(rxAudioBitrate));
+  contents += buildLine('Video Tx',
+      txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
+      txVideoFps.toString() + ', ' + formatBitrate(txVideoBitrate));
+  contents += buildLine('Video Rx',
+      rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
+      rxVideoFps.toString() + ', ' + formatBitrate(rxVideoBitrate));
+  return contents;
 }
 
 function buildLine(label, value) {
@@ -112,4 +177,18 @@ function buildLine(label, value) {
   return line;
 }
 
+function formatBitrate(value) {
+  var suffix;
+  if (value < 1000) {
+    suffix = 'bps';
+  } else if (value < 1000000) {
+    suffix = 'kbps';
+    value /= 1000;
+  } else {
+    suffix = 'Mbps';
+    value /= 1000000;
+  }
 
+  var str = value.toPrecision(3) + ' ' + suffix;
+  return str;
+}
