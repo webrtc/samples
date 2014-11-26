@@ -27,6 +27,7 @@ body {
 
 paper-button {
   background-color: #9E9;
+  color: #000;
 }
 
 div#content {
