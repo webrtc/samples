@@ -25,16 +25,13 @@ var testSuites = [];
 var testFilters = [];
 var currentTest;
 
-window.onload = function() {
-  var ui = new UiHandler();
-  ui.startUI();
-};
+window.addEventListener('polymer-ready', function() {
+  var gum = new GumHandler();
+  gum.probePermissions();
+});
 
-function UiHandler() {
+function GumHandler() {
   // Element definitions.
-  this.runTestSuite = document.getElementById('run-test-suite');
-  this.userStartButton = document.getElementById('user-start-button');
-  this.expertMode = document.getElementById('expert-mode');
   this.gumErrorMessage = document.getElementById('gum-error-message');
 
   this.setupOverlayProp = function(id) {
@@ -43,97 +40,51 @@ function UiHandler() {
     document.getElementById(id).autoCloseDisabled = true;
     return document.getElementById(id);
   };
-  this.greetingOverlay = this.setupOverlayProp('greeting-overlay');
   this.gumRequestOverlay = this.setupOverlayProp('gum-request-overlay');
   this.gumErrorOverlay = this.setupOverlayProp('gum-error-overlay');
-  this.runTestOverlay = this.setupOverlayProp('run-tests-overlay');
-
-  // Register events.
-  this.userStartButton.addEventListener('click', function () {
-    this.greetingOverlay.close();
-  }.bind(this));
-
-  this.greetingOverlay.addEventListener('core-overlay-close-completed', function() {
-    if (!this.expertModeEnabled) {
-      this.gumRequestOverlay.open();
-    }
-    if (this.initialGum()) {
-      this.runTestOverlay.open();
-    }
-  }.bind(this));
-
-  this.gumRequestOverlay.addEventListener('core-overlay-open-completed', function() {
-    this.initialGum();
-  }.bind(this));
-
-  this.gumRequestOverlay.addEventListener('core-overlay-close-completed', function() {
-    if (this.gumSuccess) {
-      this.runTestOverlay.open();
-    }
-  }.bind(this));
-
- this.gumErrorOverlay.addEventListener('core-overlay-open-completed', function() {
-    this.gumRequestOverlay.close();
-    this.checkInitialGumOK();
-  }.bind(this));
-
-  this.gumErrorOverlay.addEventListener('core-overlay-close-completed', function() {
-    this.runTestOverlay.open();
-  }.bind(this));
-
-  this.runTestOverlay.addEventListener('core-overlay-close-completed', function() {
-    start();
-  }.bind(this));
-
-  this.runTestSuite.addEventListener('click', function() {
-    this.runTestOverlay.close();
-  }.bind(this));
-
-  this.expertMode.addEventListener('click', function() {
-    this.greetingOverlay.close();
-    this.expertModeEnabled = true;
-  }.bind(this));
 }
 
-UiHandler.prototype = {
-  startUI: function() {
-    this.greetingOverlay.open();
+GumHandler.prototype = {
+  probePermissions: function() {
+    this.gumProbe = true;
+    this.pollInitialGum();
   },
 
   initialGum: function() {
-    this.gumSuccess = false;
-    this.pollingGum = false;
-
-    doGetUserMedia(
-      {audio: true, video: true},
+    doGetUserMedia({audio: true, video: true},
       function(stream) {
         stream.stop();
-        this.gumSuccess = true;
-        this.gumRequestOverlay.close();
-        return true;
+        this.gumState = 'allowed';    
       }.bind(this),
       function(error) {
-        console.log(error);
+        this.gumState = 'denied';
         this.gumErrorMessage.innerHTML = error.name;
-        if (!this.pollingGum) {
-          this.gumErrorOverlay.open();
-        }
-        return false;
       }.bind(this)
     );
   },
 
-  checkInitialGumOK: function() {
+  pollInitialGum: function() {
     var intervalCheck = setInterval(function() {
-      if (!this.gumSuccess) {
-        this.pollingGum = true;
+      if (this.gumState === 'denied') {
+        if (!this.gumErrorOverlay.opened) {
+          this.gumErrorOverlay.open();
+        }
         this.initialGum();
-      } else {
+      } else if (this.gumState === 'allowed') {
+        if (this.gumRequestOverlay.opened) {
+          this.gumRequestOverlay.close();  
+        } else if (this.gumErrorOverlay.opened) {
+          this.gumErrorOverlay.close();
+        }
         clearInterval(intervalCheck);
-        this.pollingGum = false;
-        this.gumErrorOverlay.close();
+      } else {
+        if (!this.gumProbe) {
+          this.gumRequestOverlay.open();
+        }
+        this.initialGum();
+        this.gumProbe = false;
       }
-    }.bind(this), 2000);
+    }.bind(this), 1000);
   }
 };
 

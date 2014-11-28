@@ -31,17 +31,12 @@ body {
 
 paper-button {
   background-color: #9E9;
+  color: #000;
 }
 
 paper-button#run-test-suite {
   background: #888;
   color: #FFF;
-}
-
-paper-button#expert-mode {
-  background-color: #888;
-  color: white;
-  margin: 1em 0 0 0 ;
 }
 
 paper-button#user-start-button {
@@ -51,7 +46,7 @@ paper-button#user-start-button {
   padding: 0.5em;
   font-size: 1.5em;
   font-weight: 500;
-  color: #FFF;
+  color: #000;
 }
 
 #camera {
