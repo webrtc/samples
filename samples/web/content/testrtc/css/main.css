@@ -30,6 +30,36 @@ paper-button {
   color: #000;
 }
 
+#camera {
+  color: #888;
+}
+
+.gumOverlay {
+  top: 0;
+  position: fixed;
+  background: #FFF;
+  height: auto;
+  border-radius: 0.3em;
+  padding: 1em;
+}
+
+.top5 {
+  top: 5em;
+}
+
+h1 {
+  font-size: 30;
+}
+
+.pages {
+  text-align: center;
+  min-width: 40em;
+  margin: 0 auto 0 auto;
+  padding: 0 1.5em 1.3em 1.5em;
+  background: #FFF;
+  border-radius: 0.3em;
+}
+
 div#content {
   margin: 0 auto 0 auto;
   max-width: 40em;

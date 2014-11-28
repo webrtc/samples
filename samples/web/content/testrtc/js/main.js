@@ -25,6 +25,69 @@ var testSuites = [];
 var testFilters = [];
 var currentTest;
 
+window.addEventListener('polymer-ready', function() {
+  var gum = new GumHandler();
+  gum.probePermissions();
+});
+
+function GumHandler() {
+  // Element definitions.
+  this.gumErrorMessage = document.getElementById('gum-error-message');
+
+  this.setupOverlayProp = function(id) {
+    // Setup overlay properties.
+    document.getElementById(id).backdrop = true;
+    document.getElementById(id).autoCloseDisabled = true;
+    return document.getElementById(id);
+  };
+  this.gumRequestOverlay = this.setupOverlayProp('gum-request-overlay');
+  this.gumErrorOverlay = this.setupOverlayProp('gum-error-overlay');
+}
+
+GumHandler.prototype = {
+  probePermissions: function() {
+    this.gumProbe = true;
+    this.pollInitialGum();
+  },
+
+  initialGum: function() {
+    doGetUserMedia({audio: true, video: true},
+      function(stream) {
+        stream.stop();
+        this.gumState = 'allowed';
+      }.bind(this),
+      function(error) {
+        this.gumState = 'denied';
+        this.gumErrorMessage.innerHTML = error.name;
+      }.bind(this)
+    );
+  },
+
+  pollInitialGum: function() {
+    var intervalCheck = setInterval(function() {
+      if (this.gumState === 'denied') {
+        if (!this.gumErrorOverlay.opened) {
+          this.gumErrorOverlay.open();
+        }
+        this.initialGum();
+      } else if (this.gumState === 'allowed') {
+        if (this.gumRequestOverlay.opened) {
+          this.gumRequestOverlay.close();
+        } else if (this.gumErrorOverlay.opened) {
+          this.gumErrorOverlay.close();
+        }
+        clearInterval(intervalCheck);
+      } else {
+        if (!this.gumProbe) {
+          this.gumRequestOverlay.open();
+        }
+        this.initialGum();
+        this.gumProbe = false;
+      }
+    }.bind(this), 1000);
+  }
+};
+
 // A test suite is a composition of many tests.
 function TestSuite(name, output) {
   this.name = name;

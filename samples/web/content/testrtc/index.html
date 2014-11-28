@@ -23,30 +23,51 @@
   <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
   <link rel="import" href="bower_components/core-icon-button/core-icon-button.html">
   <link rel="import" href="bower_components/core-icon/core-icon.html">
+  <link rel="Import" href="bower_components/core-icons/av-icons.html">
   <link rel="import" href="bower_components/core-collapse/core-collapse.html">
+  <link rel="import" href="bower_components/core-overlay/core-overlay.html">
   <link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
   <link rel="import" href="bower_components/paper-dialog/paper-dialog-transition.html">
   <link rel="import" href="bower_components/paper-progress/paper-progress.html">
   <link rel="import" href="bower_components/paper-button/paper-button.html">
 </head>
 <body unresolved>
-  <!-- Title toolbar -->
-  <core-toolbar class="title">
-    <span flex>WebRTC Troubleshooter</span>
-    <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
-    <core-icon-button icon="bug-report" id="bug-button" onclick="reportBug()"></core-icon-button>
-    <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
-  </core-toolbar>
 
-  <!-- Placeholder for dynamically generated test suites. -->
-  <div id="content"></div>
+  <core-overlay id="gum-request-overlay" class="gumOverlay">
+    <div class="pages">
+      <h1>Welcome to TestRTC</h1>
+      <h2>In order to test of your webcam, microphone, and
+        speakers we need permission to use your camera and microphone by
+        clicking “Allow”.</h2>
+    </div>
+  </core-overlay>
 
-  <!-- Settings dialog -->
-  <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
-    <br>
-    <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
-    <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
-  </paper-dialog>
+  <core-overlay id="gum-error-overlay" class="gumOverlay">
+    <div class"pages">
+      <h2>Click the <core-icon icon="av:videocam-off" id="camera"></core-icon>
+        icon in the URL bar above to give TestRTC access to your computer's
+        camera and microphone.</h2>
+      <label>GetUserMedia Error reason: <span id="gum-error-message"></span></label>
+    </div>
+  </core-overlay>
+
+  <div cross-fade>
+     <!-- Title toolbar -->
+    <core-toolbar class="title">
+      <span flex>WebRTC Troubleshooter</span>
+      <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
+      <core-icon-button icon="bug-report" id="bug-button" onclick="reportBug()"></core-icon-button>
+      <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
+    </core-toolbar>
+        <!-- Placeholder for dynamically generated test suites. -->
+    <div id="content"></div>
+    <!-- Settings dialog -->
+    <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
+      <br>
+      <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
+      <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
+    </paper-dialog>
+  </div>
 
   <!-- Add common files after this line. -->
   <script src="js/adapter.js"></script>
