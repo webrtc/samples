@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals addCodecParam, channelReady:true, displayError, displayStatus,
+/* globals setCodecParam, channelReady:true, displayError, displayStatus,
    gatheredIceCandidateTypes, goog, hasLocalStream, iceCandidateType,
    localStream, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
@@ -115,23 +115,22 @@ function setRemote(message) {
   // Set Opus in Stereo, if stereo is true, unset it, if stereo is false, and
   // do nothing if otherwise.
   if (params.opusStereo === 'true') {
-    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'stereo', '1');
+    message.sdp = setCodecParam(message.sdp, 'opus/48000', 'stereo', '1');
   } else if (params.opusStereo === 'false') {
-    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'stereo', '1');
+    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'stereo');
   }
 
   // Set Opus FEC, if opusfec is true, unset it, if opusfec is false, and
   // do nothing if otherwise.
   if (params.opusFec === 'true') {
-    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'useinbandfec', '1');
+    message.sdp = setCodecParam(message.sdp, 'opus/48000', 'useinbandfec', '1');
   } else if (params.opusFec === 'false') {
-    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'useinbandfec',
-        '1');
+    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'useinbandfec');
   }
 
   // Set Opus maxplaybackrate, if requested.
   if (params.opusMaxPbr) {
-    message.sdp = addCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate',
+    message.sdp = setCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate',
         params.opusMaxPbr);
   }
   message.sdp = maybePreferAudioSendCodec(message.sdp);

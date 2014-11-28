@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals displayError, params */
-/* exported addCodecParam, iceCandidateType,
+/* exported setCodecParam, iceCandidateType,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
@@ -134,9 +134,9 @@ function maybeSetVideoSendInitialBitRate(sdp) {
     return sdp;
   }
 
-  sdp = addCodecParam(sdp, 'VP8/90000', 'x-google-min-bitrate',
+  sdp = setCodecParam(sdp, 'VP8/90000', 'x-google-min-bitrate',
       params.videoSendInitialBitrate.toString());
-  sdp = addCodecParam(sdp, 'VP8/90000', 'x-google-max-bitrate',
+  sdp = setCodecParam(sdp, 'VP8/90000', 'x-google-max-bitrate',
       maxBitrate.toString());
 
   return sdp;
@@ -191,40 +191,34 @@ function maybePreferCodec(sdp, type, dir, codec) {
   return sdp;
 }
 
-// Add fmtp param to specified codec in SDP. If the param already exists, its
-// value will be updated.
-function addCodecParam(sdp, codec, param, value) {
-  // Remove the old param value.
-  sdp = removeCodecParam(sdp, codec, param, '');
-
+// Set fmtp param to specific codec in SDP. If param does not exists, add it.
+function setCodecParam(sdp, codec, param, value) {
   var sdpLines = sdp.split('\r\n');
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
-  var phrase = ' ' + param + '=' + value;
+
+  var map = {};
   if (fmtpLineIndex === null) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
     if (index === null) {
       return sdp;
     }
     var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
-    sdpLines.splice(index + 1, 0,
-        'a=fmtp:' + payload.toString() + phrase);
+    map['header'] = 'a=fmtp:' + payload.toString();
+    map[param] = value;
+    sdpLines.splice(index + 1, 0, generateFmtpLine(map));
   } else {
-    if (sdpLines[fmtpLineIndex].indexOf(phrase) === -1) {
-      // Due to the removal of old param at the beginning of this funtion, this
-      // should always be true.
-      sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat(';', phrase);
-    }
+    map = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
+    map[param] = value;
+    sdpLines[fmtpLineIndex] = generateFmtpLine(map);
   }
-  
+
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
 
-// If specified fmtp param exists and equals the specified value, removes it
-// from specified codec in SDP. If value === '', remove the param regardless of
-// its value.
-function removeCodecParam(sdp, codec, param, value) {
+// Remove fmtp param if it exists.
+function removeCodecParam(sdp, codec, param) {
   var sdpLines = sdp.split('\r\n');
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
@@ -232,23 +226,52 @@ function removeCodecParam(sdp, codec, param, value) {
     return sdp;
   }
 
-  // Removes fmtp param, covers various cases.
-  var phrase = param + '=' + (value !== '' ? value : '\\S+');
-  // param does not appear first.
-  var regExp = new RegExp(';\\s+' + phrase + '(?=;|$)', 'g');
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(regExp, '');
-  // param appears first, but is not the only one.
-  regExp = new RegExp('\\s+' + phrase + ';', 'g');
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].replace(regExp, '');
-  // param is the only parameter. This must be performed after all previous
-  // replacing operations.
-  regExp = new RegExp('\\s+' + phrase, 'g');
-  if (sdpLines[fmtpLineIndex].match(regExp) !== null) {
+  var codecParams = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
+  delete codecParams[param];
+
+  var newLine = generateFmtpLine(codecParams);
+  if (newLine === null) {
     sdpLines.splice(fmtpLineIndex, 1);
+  } else {
+    sdpLines[fmtpLineIndex] = newLine;
   }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
+}
+
+// Split an fmtp line into an object including 'header' and codec parameters.
+function analyzeFmtpLine(fmtpLine) {
+  var headerIndex = fmtpLine.indexOf(' ');
+  var params = fmtpLine.substring(headerIndex + 1).split('; ');
+  var map = {};
+  map['header'] = fmtpLine.substring(0, headerIndex);
+  for (var i = 0; i < params.length; ++i) {
+    var pair = params[i].split('=');
+    if (pair.length === 2) {
+      map[pair[0]] = pair[1];
+    }
+  }
+  return map;
+}
+
+// Generate an fmtp line from an object including 'header' and codec parameters.
+function generateFmtpLine(map) {
+  if (!map.hasOwnProperty('header')) {
+    return null;
+  }
+  var header = map['header'];
+  delete map['header'];
+  var params = new Array();
+  var i = 0;
+  for (var param in map) {
+    params[i] = param + '=' + map[param];
+    ++i;
+  }
+  if (i == 0) {
+    return null;
+  }
+  return header + ' ' + params.join('; ');
 }
 
 // Find fmtp attribute for |codec| in |sdpLines|.
