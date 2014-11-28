@@ -204,7 +204,7 @@ function setCodecParam(sdp, codec, param, value) {
       return sdp;
     }
     var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
-    map['header'] = 'a=fmtp:' + payload.toString();
+    map.header = 'a=fmtp:' + payload.toString();
     map[param] = value;
     sdpLines.splice(index + 1, 0, generateFmtpLine(map));
   } else {
@@ -245,7 +245,7 @@ function analyzeFmtpLine(fmtpLine) {
   var headerIndex = fmtpLine.indexOf(' ');
   var params = fmtpLine.substring(headerIndex + 1).split('; ');
   var map = {};
-  map['header'] = fmtpLine.substring(0, headerIndex);
+  map.header = fmtpLine.substring(0, headerIndex);
   for (var i = 0; i < params.length; ++i) {
     var pair = params[i].split('=');
     if (pair.length === 2) {
@@ -260,15 +260,15 @@ function generateFmtpLine(map) {
   if (!map.hasOwnProperty('header')) {
     return null;
   }
-  var header = map['header'];
-  delete map['header'];
-  var params = new Array();
+  var header = map.header;
+  delete map.header;
+  var params = [];
   var i = 0;
   for (var param in map) {
     params[i] = param + '=' + map[param];
     ++i;
   }
-  if (i == 0) {
+  if (i === 0) {
     return null;
   }
   return header + ' ' + params.join('; ');
