@@ -21,7 +21,7 @@
 /* exported getStatsTimer, infoDiv */
 
 // Variables defined in and used from stats.js.
-/* exported stats */
+/* exported prevStats, stats */
 
 // Variables defined in and used from signaling.js.
 /* globals openChannel, maybeStart, sendMessage */
@@ -65,12 +65,14 @@ var sdpConstraints = {
     'VoiceActivityDetection': false
   }]
 };
-var endTime = null;
+
 var signalingReady = false;
 var socket;
 var started = false;
 var startTime;
+var endTime;
 var stats;
+var prevStats;
 var turnDone = false;
 var xmlhttp;
 
@@ -159,15 +161,19 @@ function stop() {
 }
 
 function waitForRemoteVideo() {
-  // Wait for the actual video to start arriving before moving to the active call state.
-  if (remoteVideo.currentTime > 0) {
+  // Wait for the actual video to start arriving before moving to the active
+  // call state.
+  if (remoteVideo.readyState >= 2) {  // i.e. can play
+    trace('Remote video started; currentTime: ' + remoteVideo.currentTime);
     transitionToActive();
   } else {
-    setTimeout(waitForRemoteVideo, 10);
+    remoteVideo.oncanplay = waitForRemoteVideo;
   }
 }
 
 function transitionToActive() {
+  // Stop waiting for remote video.
+  remoteVideo.oncanplay = undefined;
   endTime = window.performance.now();
   trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
@@ -193,6 +199,8 @@ function transitionToActive() {
 }
 
 function transitionToWaiting() {
+   // Stop waiting for remote video.
+  remoteVideo.oncanplay = undefined;
   startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
   videosDiv.classList.remove('active');
@@ -209,6 +217,8 @@ function transitionToWaiting() {
 }
 
 function transitionToDone() {
+   // Stop waiting for remote video.
+  remoteVideo.oncanplay = undefined;
   localVideo.classList.remove('active');
   remoteVideo.classList.remove('active');
   miniVideo.classList.remove('active');
