@@ -88,7 +88,7 @@ module.exports = function(grunt) {
         port: 9876,
       },
       files: [
-        "samples/web/content/apprtc/jsTestDriver.conf",
+        "samples/web/content/apprtc/js_test_driver.conf",
       ]},
   });
 

@@ -12,7 +12,7 @@
 
 'use strict';
 
-var SDP_WITH_AUDIO_CODECS = 
+var SDP_WITH_AUDIO_CODECS =
     ['v=0',
      'm=audio 1 RTP/SAVPF 111 103 104 0 8',
      'a=rtcp-mux',
