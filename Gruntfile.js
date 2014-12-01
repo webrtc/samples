@@ -76,6 +76,14 @@ module.exports = function(grunt) {
       files: ['samples/web/content/**/*.js']
     },
 
+    jstdPhantom: {  
+      options: {
+        useLatest : true,
+        port: 9876,
+      },
+      files: [
+        "samples/web/content/apprtc/jsTestDriver.conf",
+      ]},
   });
 
   // enable plugins
@@ -83,9 +91,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
+                     'jstdPhantom']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
