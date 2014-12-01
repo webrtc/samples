@@ -76,13 +76,13 @@ module.exports = function(grunt) {
       files: ['samples/web/content/**/*.js']
     },
 
-    jstdPhantom: {  
+    jstdPhantom: {
       options: {
         useLatest : true,
         port: 9876,
       },
       files: [
-        "samples/web/content/apprtc/jsTestDriver.conf",
+        "samples/web/content/apprtc/js_test_driver.conf",
       ]},
   });
 
