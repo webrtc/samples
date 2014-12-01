@@ -74,6 +74,11 @@ var stats;
 var prevStats;
 
 function initialize() {
+  if (document.webkitVisibilityState === 'prerender') {
+    document.addEventListener('webkitvisibilitychange', onVisibilityChange);
+    return;
+  }
+
   var roomErrors = params.errorMessages;
   if (roomErrors.length > 0) {
     console.log(roomErrors);
@@ -90,6 +95,13 @@ function initialize() {
   }
 }
 
+function onVisibilityChange() {
+  if (document.webkitVisibilityState === 'prerender') {
+    return;
+  }
+  document.removeEventListener('webkitvisibilitychange', onVisibilityChange);
+  initialize();
+}
 
 function onUserMediaSuccess(stream) {
   trace('User has granted access to local media.');
