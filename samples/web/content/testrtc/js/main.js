@@ -46,46 +46,54 @@ function GumHandler() {
 
 GumHandler.prototype = {
   probePermissions: function() {
-    this.gumProbe = true;
+    this.timeout = 0;
+    startButton.setAttribute('disabled', null);
     this.pollInitialGum();
   },
 
   initialGum: function() {
     doGetUserMedia({audio: true, video: true},
-      function(stream) {
-        stream.stop();
-        this.gumState = 'allowed';
-      }.bind(this),
-      function(error) {
-        this.gumState = 'denied';
-        this.gumErrorMessage.innerHTML = error.name;
-      }.bind(this)
-    );
+        function(stream) {
+          stream.stop();
+          this.gumState = 'allowed';
+          if (this.gumRequestOverlay.opened) {
+            this.gumRequestOverlay.close();
+          } else if (this.gumErrorOverlay.opened) {
+            this.gumErrorOverlay.close();
+          }
+        }.bind(this),
+        function(error) {
+          this.gumState = 'denied';
+          this.gumErrorMessage.innerHTML = error.name;
+          if (!this.gumErrorOverlay.opened) {
+            this.gumErrorOverlay.open();
+          }
+          if (this.gumRequestOverlay.opened) {
+            this.gumRequestOverlay.close();
+          }
+        }.bind(this)
+      );
+    this.gumFired = true;
   },
 
   pollInitialGum: function() {
-    var intervalCheck = setInterval(function() {
-      if (this.gumState === 'denied') {
-        if (!this.gumErrorOverlay.opened) {
-          this.gumErrorOverlay.open();
-        }
-        this.initialGum();
-      } else if (this.gumState === 'allowed') {
-        if (this.gumRequestOverlay.opened) {
-          this.gumRequestOverlay.close();
-        } else if (this.gumErrorOverlay.opened) {
-          this.gumErrorOverlay.close();
-        }
-        clearInterval(intervalCheck);
-      } else {
-        if (!this.gumProbe) {
-          this.gumRequestOverlay.open();
-        }
-        this.initialGum();
-        this.gumProbe = false;
+    if (this.gumState === 'allowed') {
+      startButton.removeAttribute('disabled');
+      return;
+    }
+    if (typeof this.gumState === 'undefined' && !this.gumFired) {
+      this.timeout = 300;
+      this.initialGum();
+    } else if (this.gumState === 'denied') {
+      this.timeout = 1000;
+      this.initialGum();
+    } else {
+      if (!this.gumRequestOverlay.opened) {
+            this.gumRequestOverlay.open();
       }
-    }.bind(this), 1000);
-  }
+    }
+    setTimeout(this.pollInitialGum.bind(this), this.timeout);
+  },
 };
 
 // A test suite is a composition of many tests.
