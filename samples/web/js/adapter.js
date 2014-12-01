@@ -26,9 +26,9 @@ function trace(text) {
     text = text.substring(0, text.length - 1);
   }
   var now = '???';
-  if (window.performance)
+  if (window.performance) {
     now = (window.performance.now() / 1000).toFixed(3);
-
+  }
   console.log(now + ': ' + text);
 }
 
