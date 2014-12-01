@@ -8,36 +8,245 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals addCodecParam, channelReady:true, displayError, displayStatus,
-   gatheredIceCandidateTypes, goog, hasLocalStream, iceCandidateType,
-   localStream, maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
+/* globals addCodecParam, displayError, displayStatus,
+   gatheredIceCandidateTypes, hasTurnServer, iceCandidateType, localStream,
+   maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
-   maybeSetVideoSendInitialBitRate, mergeConstraints, msgQueue, onRemoteHangup,
-   params, pc:true, remoteStream:true, remoteVideo, sdpConstraints, sharingDiv,
-   signalingReady:true, socket:true, startTime:true, started:true,
-   transitionToActive, turnDone, updateInfoDiv, waitForRemoteVideo */
-/* exported openChannel */
+   maybeSetVideoSendInitialBitRate, mergeConstraints, onRemoteHangup,
+   onUserMediaError, onUserMediaSuccess, params, parseJSON, pc:true,
+   remoteStream:true, remoteVideo, requestTurnServers, requestUserMedia,
+   sdpConstraints, sharingDiv, webSocket:true, startTime:true,
+   transitionToActive, updateInfoDiv, waitForRemoteVideo */
+/* exported connectToRoom, openSignalingChannel */
 
 'use strict';
 
-function openChannel() {
-  trace('Opening channel.');
-  var channel = new goog.appengine.Channel(params.channelToken);
-  var handler = {
-    'onopen': onChannelOpened,
-    'onmessage': onChannelMessage,
-    'onerror': onChannelError,
-    'onclose': onChannelClosed
-  };
-  socket = channel.open(handler);
+var isSignalingChannelReady = false;
+var hasLocalStream = false;
+var hasReceivedOffer = false;
+var messageQueue = [];
+
+// Connects client to the room. This happens by simultaneously requesting
+// media, requesting turn, and registering with GAE. Once all three of those
+// tasks is complete, the signaling process begins. At the same time, a
+// WebSocket connection is opened using |wss_url| followed by a subsequent
+// registration once GAE registration completes.
+function connectToRoom(roomId) {
+  var mediaPromise = getMediaIfNeeded();
+  var turnPromise = getTurnServersIfNeeded();
+
+  // Asynchronously open a WebSocket connection to WSS.
+  var channelPromise = openSignalingChannel().catch(function(error) {
+    displayError(error.message);
+    return Promise.reject(error);
+  });
+
+  // Asynchronously register with GAE.
+  var registerPromise = registerWithGAE(roomId).then(function(roomParams) {
+    // The only difference in parameters should be clientId and isInitiator,
+    // and the turn servers that we requested.
+    // TODO(tkchin): clean up response format. JSHint doesn't like it either.
+    /* jshint ignore:start */
+    params.clientId = roomParams.client_id;
+    params.roomId = roomParams.room_id;
+    params.isInitiator = roomParams.is_initiator === 'true';
+    /* jshint ignore:end */
+    params.messages = roomParams.messages;
+  }).catch(function(error) {
+    displayError(error.message);
+    return Promise.reject(error);
+  });
+
+  // We only register with WSS if the web socket connection is open and if we're
+  // already registered with GAE.
+  Promise.all([channelPromise, registerPromise]).then(function() {
+    registerWithWSS(params.roomId, params.clientId);
+  }).catch(function(error) {
+    displayError('Could not begin WSS registration: ' + error.message);
+  });
+
+  // We only create a peer connection once we have media and TURN. Since right
+  // now we send candidates as soon as the peer connection generates them we
+  // need to wait for registration as well.
+  // TODO(tkchin): create peer connection earlier, but only send candidates if
+  // registration has occurred.
+  Promise.all([registerPromise, turnPromise, mediaPromise]).then(function() {
+    startSignaling();
+  }).catch(function(error) {
+    displayError('Could not begin signaling: ' + error.message);
+  });
 }
 
-function createPeerConnection() {
+// Asynchronously request user media if needed.
+function getMediaIfNeeded() {
+  hasLocalStream = !(params.mediaConstraints.audio === false &&
+                     params.mediaConstraints.video === false);
+  var mediaPromise = null;
+  if (hasLocalStream) {
+    var mediaConstraints = params.mediaConstraints;
+    mediaPromise = requestUserMedia(mediaConstraints).then(function(stream) {
+      trace('Got user media.');
+      onUserMediaSuccess(stream);
+    }).catch(function(error) {
+      trace('Error getting user media. Continuing without stream.');
+      hasLocalStream = false;
+      onUserMediaError(error);
+    });
+  } else {
+    mediaPromise = Promise.resolve();
+  }
+  return mediaPromise;
+}
+
+// Asynchronously request a TURN server if needed.
+function getTurnServersIfNeeded() {
+  var shouldRequestTurnServers = !hasTurnServer(params) &&
+      (params.turnRequestUrl && params.turnRequestUrl.length > 0);
+  var turnPromise = null;
+  if (shouldRequestTurnServers) {
+    var requestUrl = params.turnRequestUrl;
+    turnPromise = requestTurnServers(requestUrl).then(function(turnServers) {
+      var iceServers = params.peerConnectionConfig.iceServers;
+      params.peerConnectionConfig.iceServers = iceServers.concat(turnServers);
+    }).catch(function(error) {
+      // Error retrieving TURN servers.
+      var subject =
+          encodeURIComponent('AppRTC demo TURN server not working');
+      displayStatus('No TURN server; unlikely that media will traverse' +
+                    'networks. If this persists please ' +
+                    '<a href="mailto:discuss-webrtc@googlegroups.com?' +
+                    'subject=' + subject + '">' +
+                    'report it to discuss-webrtc@googlegroups.com</a>.');
+      trace(error.message);
+    });
+  } else {
+    turnPromise = Promise.resolve();
+  }
+  return turnPromise;
+}
+
+// Registers with GAE and returns room parameters.
+function registerWithGAE(roomId) {
+  return new Promise(function(resolve, reject) {
+    if (!roomId) {
+      reject(Error('Missing room id.'));
+    }
+    var xhr = new XMLHttpRequest();
+    var path = '/register/' + roomId + window.location.search;
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+      var errorString = null;
+      if (xhr.status !== 200) {
+        errorString = 'Failed to register with GAE. Response: ' +
+            xhr.responseText;
+        reject(Error(errorString));
+        return;
+      }
+      var response = parseJSON(xhr.response);
+      if (!response) {
+        reject(Error('Error parsing response JSON.'));
+        return;
+      }
+      if (response.result !== 'SUCCESS') {
+        reject(Error('Registration error: ' + response.result));
+        return;
+      }
+      trace('Registered with GAE.');
+      resolve(response.params);
+    };
+    xhr.open('POST', path, true);
+    xhr.send();
+  });
+}
+
+function registerWithWSS(roomId, clientId) {
+  if (!roomId) {
+    trace('ERROR: missing roomId.');
+  }
+  if (!clientId) {
+    trace('ERROR: missing clientId.');
+  }
+  if (!webSocket) {
+    trace('ERROR: Attempted to register without websocket.');
+    return;
+  }
+  if (webSocket.readyState !== WebSocket.OPEN) {
+    trace('ERROR: WebSocket is not open.');
+    return;
+  }
+  trace('Registering with WSS.');
+  var registerMessage = {
+    cmd: 'register',
+    roomid: roomId,
+    clientid: clientId
+  };
+  webSocket.send(JSON.stringify(registerMessage));
+  // TODO(tkchin): Better notion of whether registration succeeded. Basically
+  // check that we don't get an error message back from the socket.
+  trace('Registered with WSS.');
+  isSignalingChannelReady = true;
+}
+
+function openSignalingChannel() {
+  trace('Opening signaling channel.');
+  return new Promise(function(resolve, reject) {
+    webSocket = new WebSocket(params.wssUrl);
+    webSocket.onopen = function() {
+      trace('Signaling channel opened.');
+      webSocket.onerror = onSignalingChannelError;
+      resolve();
+    };
+    webSocket.onmessage = onSignalingChannelMessage;
+    webSocket.onerror = function() {
+      reject(Error('WebSocket error.'));
+    };
+    webSocket.onclose = onSignalingChannelClose;
+  });
+}
+
+function onSignalingChannelMessage(event) {
+  var wssMessage = parseJSON(event.data);
+  if (!wssMessage) {
+    return;
+  }
+  if (wssMessage.error) {
+    trace('WSS error: ' + wssMessage.error);
+    return;
+  }
+  var message = parseJSON(wssMessage.msg);
+  if (!message) {
+    return;
+  }
+  trace('WSS->C: ' + wssMessage.msg);
+  var isOffer = message.type === 'offer';
+  hasReceivedOffer |= isOffer;
+  if (isOffer) {
+    // Always process offer before candidates.
+    messageQueue.unshift(message);
+  } else {
+    messageQueue.push(message);
+  }
+  drainMessageQueue();
+}
+
+function onSignalingChannelError() {
+  displayError('Channel error.');
+}
+
+function onSignalingChannelClose(event) {
+  // TODO(tkchin): reconnect to WSS.
+  trace('Channel closed with code:' + event.code + ' reason:' + event.reason);
+  isSignalingChannelReady = false;
+  webSocket = null;
+}
+
+function createPeerConnection(config, constraints) {
+  trace('Creating peer connection.');
   try {
-    var config = params.peerConnectionConfig;
-    var constraints = params.peerConnectionConstraints;
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     pc = new RTCPeerConnection(config, constraints);
     pc.onicecandidate = onIceCandidate;
@@ -55,27 +264,19 @@ function createPeerConnection() {
   pc.oniceconnectionstatechange = onIceConnectionStateChanged;
 }
 
-function maybeStart() {
-  if (!started && signalingReady && channelReady && turnDone &&
-      (localStream || !hasLocalStream)) {
-    startTime = window.performance.now();
-    displayStatus('Connecting...');
-    trace('Creating PeerConnection.');
-    createPeerConnection();
-
-    if (hasLocalStream) {
-      trace('Adding local stream.');
-      pc.addStream(localStream);
-    } else {
-      trace('Not sending any stream.');
-    }
-    started = true;
-
-    if (params.isInitiator) {
-      doCall();
-    } else {
-      calleeStart();
-    }
+function startSignaling() {
+  trace('Starting signaling.');
+  startTime = window.performance.now();
+  createPeerConnection(params.peerConnectionConfig,
+                       params.peerConnectionConstraints);
+  if (hasLocalStream) {
+    trace('Adding local stream.');
+    pc.addStream(localStream);
+  }
+  if (params.isInitiator) {
+    doCall();
+  } else {
+    calleeStart();
   }
 }
 
@@ -88,10 +289,26 @@ function doCall() {
 }
 
 function calleeStart() {
-  // Callee starts to process cached offer and other messages.
-  while (msgQueue.length > 0) {
-    processSignalingMessage(msgQueue.shift());
+  // Convert received messages to JSON objects and add them to the message
+  // queue.
+  var receivedMessages = params.messages;
+  var message = null;
+  for (var i = 0, len = receivedMessages.length; i < len; i++) {
+    trace('GAE->C: ' + receivedMessages[i]);
+    message = parseJSON(receivedMessages[i]);
+    if (!message) {
+      continue;
+    }
+    if (message.type === 'offer') {
+      hasReceivedOffer = true;
+      // Always process offer before candidates.
+      messageQueue.unshift(message);
+    } else {
+      messageQueue.push(message);
+    }
   }
+  params.messages = [];
+  drainMessageQueue();
 }
 
 function doAnswer() {
@@ -107,7 +324,14 @@ function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
       onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
-  sendMessage(sessionDescription);
+  if (params.isInitiator) {
+    // Initiator posts all messages to GAE. GAE will either store the messages
+    // until the other client connects, or forward the message to Collider if
+    // the other client is already connected.
+    sendGAEMessage(sessionDescription);
+  } else {
+    sendWSSMessage(sessionDescription);
+  }
 }
 
 function setRemote(message) {
@@ -155,24 +379,39 @@ function setRemote(message) {
   }
 }
 
-
-function sendMessage(message) {
+function sendGAEMessage(message) {
   var msgString = JSON.stringify(message);
-  trace('C->S: ' + msgString);
-  // NOTE: AppRTCClient.java searches & parses this line; update there when
-  // changing here.
-  var path = '/message?r=' + params.roomId + '&u=' + params.clientId;
+  // Must append query parameters in case we've specified alternate WSS url.
+  var path = '/message/' + params.roomId + '/' + params.clientId +
+      window.location.search;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
   xhr.send(msgString);
+  trace('C->GAE: ' + msgString);
+}
+
+function sendWSSMessage(message) {
+  var wssMessage = {
+    cmd: 'send',
+    msg: JSON.stringify(message)
+  };
+  var msgString = JSON.stringify(wssMessage);
+  trace('C->WSS: ' + wssMessage.msg);
+  if (isSignalingChannelReady) {
+    webSocket.send(msgString);
+  } else {
+    var path = params.wssPostUrl + '/' + params.roomId + '/' + params.clientId;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', path, true);
+    xhr.send(wssMessage.msg);
+ }
 }
 
 function processSignalingMessage(message) {
-  if (!started) {
+  if (!pc) {
     displayError('peerConnection has not been created yet!');
     return;
   }
-
   if (message.type === 'offer') {
     setRemote(message);
     doAnswer();
@@ -188,7 +427,30 @@ function processSignalingMessage(message) {
         onAddIceCandidateSuccess, onAddIceCandidateError);
   } else if (message.type === 'bye') {
     onRemoteHangup();
+  } else {
+    trace('WARNING: unknown message: ' + JSON.stringify(message));
   }
+}
+
+// When we receive messages from GAE registration and from the WSS connection,
+// we add them to a queue and drain it if conditions are right.
+function drainMessageQueue() {
+  // It's possible that we finish registering and receiving messages from WSS
+  // before we create our peer connection. We need to wait for the peer
+  // connection to be created before processing messages.
+  //
+  // Also, the order of messages is in general not the same as the POST order
+  // from the other client because the POSTs are async and the server may handle
+  // some requests faster than others. We need to process offer before
+  // candidates so we wait for the offer to arrive first if we're answering.
+  // Offers are added to the front of the queue.
+  if (!pc || (!params.isInitiator && !hasReceivedOffer)) {
+    return;
+  }
+  for (var i = 0, len = messageQueue.length; i < len; i++) {
+    processSignalingMessage(messageQueue[i]);
+  }
+  messageQueue = [];
 }
 
 function onAddIceCandidateSuccess() {
@@ -197,42 +459,6 @@ function onAddIceCandidateSuccess() {
 
 function onAddIceCandidateError(error) {
   displayError('Failed to add remote candidate: ' + error.toString());
-}
-
-function onChannelOpened() {
-  trace('Channel opened.');
-  channelReady = true;
-  maybeStart();
-}
-
-function onChannelMessage(message) {
-  trace('S->C: ' + message.data);
-  var msg = JSON.parse(message.data);
-  // Since the turn response is async and also GAE might disorder the
-  // Message delivery due to possible datastore query at server side,
-  // So callee needs to cache messages before peerConnection is created.
-  if (!params.isInitiator && !started) {
-    if (msg.type === 'offer') {
-      // Add offer to the beginning of msgQueue, since we can't handle
-      // Early candidates before offer at present.
-      msgQueue.unshift(msg);
-      // Callee creates PeerConnection
-      signalingReady = true;
-      maybeStart();
-    } else {
-      msgQueue.push(msg);
-    }
-  } else {
-    processSignalingMessage(msg);
-  }
-}
-
-function onChannelError() {
-  displayError('Channel error.');
-}
-
-function onChannelClosed() {
-  trace('Channel closed.');
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -251,12 +477,17 @@ function onIceCandidate(event) {
   if (event.candidate) {
     // Eat undesired candidates.
     if (filterIceCandidate(event.candidate)) {
-      sendMessage({
+      var message = {
         type: 'candidate',
         label: event.candidate.sdpMLineIndex,
         id: event.candidate.sdpMid,
         candidate: event.candidate.candidate
-      });
+      };
+      if (params.isInitiator) {
+        sendGAEMessage(message);
+      } else {
+        sendWSSMessage(message);
+      }
       recordIceCandidate('Local', event.candidate);
     }
   } else {
