@@ -74,6 +74,15 @@ var stats;
 var prevStats;
 
 function initialize() {
+  // We don't want to continue if this is triggered from Chrome prerendering,
+  // since it will register the user to GAE without cleaning it up, causing
+  // the real navigation to get a "full room" error. Instead we'll initialize
+  // once the visibility state changes to non-prerender.
+  if (document.webkitVisibilityState === 'prerender') {
+    document.addEventListener('webkitvisibilitychange', onVisibilityChange);
+    return;
+  }
+
   var roomErrors = params.errorMessages;
   if (roomErrors.length > 0) {
     console.log(roomErrors);
@@ -90,6 +99,13 @@ function initialize() {
   }
 }
 
+function onVisibilityChange() {
+  if (document.webkitVisibilityState === 'prerender') {
+    return;
+  }
+  document.removeEventListener('webkitvisibilitychange', onVisibilityChange);
+  initialize();
+}
 
 function onUserMediaSuccess(stream) {
   trace('User has granted access to local media.');
