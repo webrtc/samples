@@ -76,6 +76,11 @@ module.exports = function(grunt) {
       files: ['samples/web/content/**/*.js']
     },
 
+    shell: {
+      runPythonTests: {
+        command: './run_python_tests.sh'
+      },
+    },
   });
 
   // enable plugins
@@ -83,9 +88,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-shell');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
+                     'shell:runPythonTests']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
