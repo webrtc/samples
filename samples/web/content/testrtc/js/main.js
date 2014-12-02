@@ -89,7 +89,7 @@ GumHandler.prototype = {
       this.initialGum();
     } else {
       if (!this.gumRequestOverlay.opened) {
-            this.gumRequestOverlay.open();
+        this.gumRequestOverlay.open();
       }
     }
     setTimeout(this.pollInitialGum.bind(this), this.timeout);
