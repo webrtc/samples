@@ -228,55 +228,37 @@ function transitionToDone() {
 }
 
 function toggleVideoMute() {
-  // Call the getVideoTracks method via adapter.js.
   var videoTracks = localStream.getVideoTracks();
-
   if (videoTracks.length === 0) {
     trace('No local video available.');
     return;
   }
 
+  var newMuted = !isVideoMuted;
   trace('Toggling video mute state.');
-  var i;
-  if (isVideoMuted) {
-    for (i = 0; i < videoTracks.length; i++) {
-      videoTracks[i].enabled = true;
-    }
-    trace('Video unmuted.');
-  } else {
-    for (i = 0; i < videoTracks.length; i++) {
-      videoTracks[i].enabled = false;
-    }
-    trace('Video muted.');
+  for (var i = 0; i < videoTracks.length; ++i) {
+    videoTracks[i].enabled = !newMuted;
   }
 
-  isVideoMuted = !isVideoMuted;
+  isVideoMuted = newMuted;
+  trace('Video ' + isVideoMuted ? 'muted.' : 'unmuted.');
 }
 
 function toggleAudioMute() {
-  // Call the getAudioTracks method via adapter.js.
   var audioTracks = localStream.getAudioTracks();
-
   if (audioTracks.length === 0) {
     trace('No local audio available.');
     return;
   }
 
+  var newMuted = !isAudioMuted;
   trace('Toggling audio mute state.');
-  var i;
-  if (isAudioMuted) {
-    for (i = 0; i < audioTracks.length; i++) {
-      audioTracks[i].enabled = true;
-    }
-    trace('Audio unmuted.');
-  } else {
-    for (i = 0; i < audioTracks.length; i++) {
-      audioTracks[i].enabled = false;
-    }
-    trace('Audio muted.');
+  for (var i = 0; i < audioTracks.length; ++i) {
+    audioTracks[i].enabled = !newMuted;
   }
 
-  isAudioMuted = !isAudioMuted;
+  isAudioMuted = newMuted;
+  trace('Audio ' + isVideoMuted ? 'muted.' : 'unmuted.');
 }
 
 // Spacebar, or m: toggle audio mute.
@@ -285,22 +267,22 @@ function toggleAudioMute() {
 // i: toggle info panel.
 // q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
-document.onkeydown = function(event) {
-  switch (event.keyCode) {
-    case 32:  // 'space'
-    case 78:  // 'm'
+document.onkeypress = function(event) {
+  switch (String.fromCharCode(event.charCode)) {
+    case ' ':
+    case 'm':
       toggleAudioMute();
       return false;
-    case 67:  // 'c'
+    case 'c':
       toggleVideoMute();
       return false;
-    case 70:  // 'f'
+    case 'f':
       toggleFullScreen();
       return false;
-    case 73:  // 'i'
+    case 'i':
       toggleInfoDiv();
       return false;
-    case 81:  // 'q'
+    case 'q':
       hangup();
       return false;
     default:
