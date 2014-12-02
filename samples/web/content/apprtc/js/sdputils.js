@@ -197,19 +197,19 @@ function setCodecParam(sdp, codec, param, value) {
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
 
+  var map = {};
   if (fmtpLineIndex === null) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
     if (index === null) {
       return sdp;
     }
     var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
-    var map = {};
     map.header = 'a=fmtp:' + payload.toString();
     map.params = {};
     map.params[param] = value;
     sdpLines.splice(index + 1, 0, generateFmtpLine(map));
   } else {
-    var map = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
+    map = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
     map.params[param] = value;
     sdpLines[fmtpLineIndex] = generateFmtpLine(map);
   }
