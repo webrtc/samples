@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!-- This sample demonstrates calling createOffer to get a SDP blob that
-     indicates the capabilities of the PeerConnection. -->
+<!-- This sample demonstrates transforming between various styles of
+     constraints - "January 2014" and "April 2014" specifically. -->
 <title>Show createOffer Output Demo</title>
 <script src="../../js/adapter.js"></script>
 <script src="adaptconstraints.js"></script>
+<script src="main.js"></script>
+<link rel="stylesheet" href="../../css/main.css" />
 <style>
-button {
-  font: 18px sans-serif;
-  padding: 8px;
-}
 textarea {
   font-family: monospace;
   margin: 2px;
@@ -44,39 +42,7 @@ transformed versions will appear in the lower areas.
 <textarea id="outputjan"></textarea>
 <textarea id="outputapril"></textarea>
 <script>
-function inputToOutput() {
-  trace("Transforming " + inputtext.value);
-  var constraint;
-  try {
-    // NOTE: Use of eval is dangerous - this is unchecked access to
-    // everything in this page! - but required to allow unquoted
-    // lefthand sides of fields.
-    eval("constraint = " + inputtext.value);
-  } catch(err) {
-    outputjan.textContent = 'Parse Error:' + err.message;
-    return;
-  }
-  trace("Transformed to " + constraint);
-  if (constraint === undefined) {
-    outputjan.textContent = 'Evaluated to undefined';
-    return;
-  }
-  try {
-    var result = transformToJan(constraint);
-    outputjan.textContent = JSON.stringify(result, undefined, 2);
-  } catch(err) {
-    outputjan.textContent = 'Transform error: ' + err;
-  }
-  try {
-    outputapril.textContent = JSON.stringify(transformToApril(constraint),
-                                             undefined, 2);
-  } catch(err) {
-    outputapril.textContent = 'Transform error: ' + err.message;
-  }
-}
 </script>
 
 </body>
 </html>
-
-
