@@ -197,19 +197,20 @@ function setCodecParam(sdp, codec, param, value) {
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
 
-  var map = {};
   if (fmtpLineIndex === null) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
     if (index === null) {
       return sdp;
     }
     var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
+    var map = {};
     map.header = 'a=fmtp:' + payload.toString();
-    map[param] = value;
+    map.params = {};
+    map.params[param] = value;
     sdpLines.splice(index + 1, 0, generateFmtpLine(map));
   } else {
-    map = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
-    map[param] = value;
+    var map = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
+    map.params[param] = value;
     sdpLines[fmtpLineIndex] = generateFmtpLine(map);
   }
 
@@ -226,10 +227,10 @@ function removeCodecParam(sdp, codec, param) {
     return sdp;
   }
 
-  var codecParams = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
-  delete codecParams[param];
+  var map = analyzeFmtpLine(sdpLines[fmtpLineIndex]);
+  delete map.params[param];
 
-  var newLine = generateFmtpLine(codecParams);
+  var newLine = generateFmtpLine(map);
   if (newLine === null) {
     sdpLines.splice(fmtpLineIndex, 1);
   } else {
@@ -240,38 +241,41 @@ function removeCodecParam(sdp, codec, param) {
   return sdp;
 }
 
-// Split an fmtp line into an object including 'header' and codec parameters.
+// Split an fmtp line into an object including 'header' and 'params'.
 function analyzeFmtpLine(fmtpLine) {
   var headerIndex = fmtpLine.indexOf(' ');
-  var params = fmtpLine.substring(headerIndex + 1).split('; ');
-  var map = {};
-  map.header = fmtpLine.substring(0, headerIndex);
-  for (var i = 0; i < params.length; ++i) {
-    var pair = params[i].split('=');
+  var paramLines = fmtpLine.substring(headerIndex + 1).split('; ');
+  var header = fmtpLine.substring(0, headerIndex);
+  var params = {};
+  for (var i = 0; i < paramLines.length; ++i) {
+    var pair = paramLines[i].split('=');
     if (pair.length === 2) {
-      map[pair[0]] = pair[1];
+      params[pair[0]] = pair[1];
     }
   }
+  var map = {};
+  map.header = header;
+  map.params = params;
   return map;
 }
 
-// Generate an fmtp line from an object including 'header' and codec parameters.
+// Generate an fmtp line from an object including 'header' and 'params'.
 function generateFmtpLine(map) {
-  if (!map.hasOwnProperty('header')) {
+  if (!map.hasOwnProperty('header') || !map.hasOwnProperty('params')) {
     return null;
   }
   var header = map.header;
-  delete map.header;
-  var params = [];
+  var params = map.params;
+  var paramLines = [];
   var i = 0;
-  for (var param in map) {
-    params[i] = param + '=' + map[param];
+  for (var key in params) {
+    paramLines[i] = key + '=' + params[key];
     ++i;
   }
   if (i === 0) {
     return null;
   }
-  return header + ' ' + params.join('; ');
+  return header + ' ' + paramLines.join('; ');
 }
 
 // Find fmtp attribute for |codec| in |sdpLines|.
