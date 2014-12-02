@@ -136,6 +136,7 @@ label {
   height: 100%;
   max-height: 100%;
   max-width: 100%;
+  object-fit: cover;  // no letterboxing
   transition: opacity 1s;
   -moz-transform: scale(-1, 1);
   -ms-transform: scale(-1, 1);
@@ -146,11 +147,12 @@ label {
 }
 
 #mini-video {
+  border: 1px solid gray;
   bottom: 20px;
   left: 20px;
   /* video div is flipped horizontally when active*/
-  max-height: 25%;
-  max-width: 25%;
+  max-height: 17%;
+  max-width: 17%;
   opacity: 0;
   position: absolute;
   transition: opacity 1s;
@@ -166,6 +168,7 @@ label {
   height: 100%;
   max-height: 100%;
   max-width: 100%;
+  object-fit: cover;  // no letterboxing
   opacity: 0;
   position: absolute;
   -moz-transform: rotateY(180deg);

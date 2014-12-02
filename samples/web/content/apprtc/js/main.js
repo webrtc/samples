@@ -279,34 +279,29 @@ function toggleAudioMute() {
   isAudioMuted = !isAudioMuted;
 }
 
-// Mac: hotkey is Command.
-// Non-Mac: hotkey is Control.
-// <hotkey>-D: toggle audio mute.
-// <hotkey>-E: toggle video mute.
-// <hotkey>-H: hang up.
-// <hotkey>-I: toggle info display.
+// Spacebar, or m: toggle audio mute.
+// c: toggle camera(video) mute.
+// f: toggle fullscreen.
+// i: toggle info panel.
+// q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 document.onkeydown = function(event) {
-  var hotkey = event.ctrlKey;
-  if (navigator.appVersion.indexOf('Mac') !== -1) {
-    hotkey = event.metaKey;
-  }
-  if (!hotkey) {
-    return;
-  }
   switch (event.keyCode) {
-    case 68:
+    case 32:  // 'space'
+    case 78:  // 'm'
       toggleAudioMute();
-      toggleRemoteVideoElementMuted();
       return false;
-    case 69:
+    case 67:  // 'c'
       toggleVideoMute();
       return false;
-    case 72:
-      hangup();
+    case 70:  // 'f'
+      toggleFullScreen();
       return false;
-    case 73:
+    case 73:  // 'i'
       toggleInfoDiv();
+      return false;
+    case 81:  // 'q'
+      hangup();
       return false;
     default:
       return;
@@ -323,20 +318,6 @@ window.onbeforeunload = function() {
 
 function displaySharingInfo() {
   sharingDiv.classList.add('active');
-}
-
-function toggleRemoteVideoElementMuted() {
-  setRemoteVideoElementMuted(!remoteVideo.muted);
-}
-
-function setRemoteVideoElementMuted(mute) {
-  if (mute) {
-    remoteVideo.muted = true;
-    remoteVideo.title = 'Unmute audio';
-  } else {
-    remoteVideo.muted = false;
-    remoteVideo.title = 'Mute audio';
-  }
 }
 
 function displayStatus(status) {
@@ -361,7 +342,7 @@ function toggleFullScreen() {
     if (document.webkitIsFullScreen) {
       document.webkitCancelFullScreen();
     } else {
-      remoteVideo.webkitRequestFullScreen();
+      videosDiv.webkitRequestFullScreen();
       remoteCanvas.webkitRequestFullScreen();
     }
   } catch (event) {
