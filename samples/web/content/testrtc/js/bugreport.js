@@ -17,7 +17,7 @@ function reportBug() {
   console.log('Detected browser: ' + browserName + ' ' + browserVersion);
 
   var description = 'Browser: ' + browserName + ' ' + browserVersion +
-      ' (' + navigator.platform + ')\n\n' +
+      ' (' + navigator.platform + ')\n' + 'Last GetUserMedia error: ' + lastGetUserMediaError + '\n\n' +
       'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
       'Please replace this text with the copy+pasted output from test page!';
 

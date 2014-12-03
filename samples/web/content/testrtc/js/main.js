@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog */
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, lastGetUserMediaError */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -24,6 +24,7 @@ var PREFIX_FAILED  = '[ FAILED ]';
 var testSuites = [];
 var testFilters = [];
 var currentTest;
+var lastGetUserMediaError;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
@@ -289,6 +290,7 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
     // caller.
     var errorMessage = 'Failed to get access to local media. Error name was ' +
         error.name;
+    lastGetUserMediaError = error.name;
     return reportFatal(errorMessage);
   };
   try {

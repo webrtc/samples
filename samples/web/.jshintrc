@@ -23,6 +23,7 @@
     "getUserMedia": true,
     "getUserMedia": true,
     "GumHandler": true,
+    "lastGetUserMediaError": true:,
     "MediaStreamTrack": true,
     "reattachMediaStream": true,
     "reportBug": true,
