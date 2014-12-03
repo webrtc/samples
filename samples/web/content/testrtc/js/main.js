@@ -25,6 +25,11 @@ var testSuites = [];
 var testFilters = [];
 var currentTest;
 
+window.addEventListener('polymer-ready', function() {
+  var gum = new GumHandler();
+  gum.start();
+});
+
 // A test suite is a composition of many tests.
 function TestSuite(name, output) {
   this.name = name;
