@@ -27,79 +27,8 @@ var currentTest;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
-  gum.probePermissions();
+  gum.start();
 });
-
-function GumHandler() {
-  // Element definitions.
-  this.gumErrorMessage = document.getElementById('gum-error-message');
-  this.gumRequestOverlay = document.getElementById('gum-request-overlay');
-  this.gumErrorOverlay = document.getElementById('gum-error-overlay');
-  this.setupOverlayProp(this.gumRequestOverlay);
-  this.setupOverlayProp(this.gumErrorOverlay);
-}
-
-GumHandler.prototype = {
-  setupOverlayProp: function(element) {
-    // Setup overlay properties.
-    element.backdrop = true;
-    element.autoCloseDisabled = true;
-    return;
-  },
-
-  probePermissions: function() {
-    startButton.disabled = true;
-    this.pollInitialGum();
-  },
-
-  pollInitialGum: function() {
-    // Default timeout, not 0 because DOM needs time to load in order for
-    // overlay's to get correct dimensions.
-    var timeout = 300;
-    if (this.gumState === 'allowed') {
-      startButton.disabled = false;
-      return;
-    }
-    if (typeof this.gumState === 'undefined' && !this.gumFired) {
-      // First time users will hit this, i.e. no permissions set.
-      this.initialGum();
-    } else if (this.gumState === 'denied') {
-      timeout = 1000;
-      this.initialGum();
-    } else {
-      if (!this.gumRequestOverlay.opened) {
-        this.gumRequestOverlay.open();
-      }
-    }
-    setTimeout(this.pollInitialGum.bind(this), timeout);
-  },
-
-  initialGum: function() {
-    doGetUserMedia({audio: true, video: true}, this.gotStream.bind(this),
-        this.gotError.bind(this));
-    this.gumFired = true;
-  },
-
-  gotStream: function() {
-    this.gumState = 'allowed';
-    if (this.gumRequestOverlay.opened) {
-      this.gumRequestOverlay.close();
-    } else if (this.gumErrorOverlay.opened) {
-      this.gumErrorOverlay.close();
-    }
-  },
-
-  gotError: function(error) {
-    this.gumState = 'denied';
-    this.gumErrorMessage.innerHTML = error.name;
-    if (!this.gumErrorOverlay.opened) {
-      this.gumErrorOverlay.open();
-    }
-    if (this.gumRequestOverlay.opened) {
-      this.gumRequestOverlay.close();
-    }
-  }
-};
 
 // A test suite is a composition of many tests.
 function TestSuite(name, output) {

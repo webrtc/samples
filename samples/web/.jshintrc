@@ -22,6 +22,7 @@
     "expectEquals": true,
     "getUserMedia": true,
     "getUserMedia": true,
+    "GumHandler": true,
     "MediaStreamTrack": true,
     "reattachMediaStream": true,
     "reportBug": true,

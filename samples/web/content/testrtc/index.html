@@ -33,21 +33,18 @@
 </head>
 <body unresolved>
 
-  <core-overlay id="gum-request-overlay" class="gumOverlay">
-    <div class="pages">
-      <h1>Welcome to WebRTC Troubleshooter</h1>
-      <h2>To test your webcam, microphone, and speakers we need permission to
-          them selecting by “Allow”.</h2>
-    </div>
+  <core-overlay id="gum-request-overlay" backdrop autoCloseDisabled class="gumOverlay">
+    <h1>Welcome to WebRTC Troubleshooter</h1>
+    <p>To test your webcam, microphone, and speakers we need permission to
+        them selecting by “Allow”.</p>
   </core-overlay>
 
-  <core-overlay id="gum-error-overlay" class="gumOverlay">
-    <div class"pages">
-      <h2>Click the <core-icon icon="av:videocam-off" id="camera"></core-icon>
-        icon in the URL bar above to give TestRTC access to your computer's
-        camera and microphone.</h2>
-      <label>GetUserMedia Error reason: <span id="gum-error-message"></span></label>
-    </div>
+  <core-overlay id="gum-error-overlay" backdrop autoCloseDisabled class="gumOverlay">
+    <h1>Welcome to WebRTC Troubleshooter</h1>
+    <p>Click the <core-icon icon="av:videocam-off" id="camera"></core-icon>
+      icon in the URL bar above to give TestRTC access to your computer's
+      camera and microphone.</p>
+    <label>GetUserMedia Error reason: <span id="gum-error-message"></span></label>
   </core-overlay>
 
   <div cross-fade>
@@ -75,6 +72,7 @@
   <script src="js/call.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/ssim.js"></script>
+  <script src="js/gumhandler.js"></script>
   <!-- TODO(juberti): Add analytics script src="js/lib/ga.js" -->
 
   <!-- Add tests after this line. -->
