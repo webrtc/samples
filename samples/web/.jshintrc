@@ -35,6 +35,7 @@
     "RTCSessionDescription": true,
     "setTestProgress": true,
     "Ssim": true,
+    "startButton": true,
     "StatisticsAggregate": true,
     "testFinished": true,
     "trace": true,
