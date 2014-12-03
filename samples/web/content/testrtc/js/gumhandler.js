@@ -33,7 +33,11 @@ GumHandler.prototype = {
         this.gotError_.bind(this));
   },
 
-  gotStream_: function() {
+  gotStream_: function(stream) {
+    // Stop all tracks to ensure the camera and audio devices are shutdown directly.
+    for (var i in stream.getTracks()) {
+      stream.getTracks()[i].stop();
+    }
     if (this.gumRequestOverlay_.opened) {
       this.gumRequestOverlay_.close();
     } else if (this.gumErrorOverlay_.opened) {
