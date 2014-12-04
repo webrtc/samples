@@ -81,8 +81,8 @@ module.exports = function(grunt) {
         command: './run_python_tests.sh'
       },
     },
-    
-    jstdPhantom: {  
+
+    jstdPhantom: {
       options: {
         useLatest : true,
         port: 9876,
