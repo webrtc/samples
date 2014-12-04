@@ -34,7 +34,7 @@ paper-button {
   color: #888;
 }
 
-.gumOverlay {
+html /deep/ paper-dialog {
   top: 2em;
   position: fixed;
   background: #FFF;
