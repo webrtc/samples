@@ -45,7 +45,6 @@ GumHandler.prototype = {
 
   gotError_: function(error) {
     this.gumErrorMessage_.innerHTML = error.name;
-    lastGetUserMediaError = error.name;
     if (!this.gumErrorOverlay_.opened) {
       this.gumErrorOverlay_.open();
     }

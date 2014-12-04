@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, lastGetUserMediaError */
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -24,7 +24,6 @@ var PREFIX_FAILED  = '[ FAILED ]';
 var testSuites = [];
 var testFilters = [];
 var currentTest;
-var lastGetUserMediaError;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
@@ -157,10 +156,14 @@ Test.prototype = {
   done: function() {
     this.setProgress(null);
     if (this.errorCount === 0 && this.successCount > 0) {
+      report.logTestRunResult(this.name, 'Success');
       this.statusIcon_.setAttribute('icon', 'check');
       // On success, always close the details.
       this.output_.opened = false;
     } else {
+      if (!this.isDisabled) {
+        report.logTestRunResult(this.name, 'Failure');
+      }
       this.statusIcon_.setAttribute('icon', 'close');
       // Only close the details if there is only one expectations in which
       // case the test name should provide enough information.
@@ -290,7 +293,6 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
     // caller.
     var errorMessage = 'Failed to get access to local media. Error name was ' +
         error.name;
-    lastGetUserMediaError = error.name;
     return reportFatal(errorMessage);
   };
   try {
