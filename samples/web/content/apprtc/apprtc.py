@@ -521,7 +521,7 @@ class MainPage(webapp2.RequestHandler):
   def get(self):
     """Redirects to a room page."""
     room_id = generate_random(8)
-    redirect = '/room/' + room_id
+    redirect = '/r/' + room_id
     redirect = append_url_arguments(self.request, redirect)
     self.redirect(redirect)
     logging.info('Redirecting visitor to base URL to ' + redirect)
@@ -551,5 +551,7 @@ app = webapp2.WSGIApplication([
     ('/bye/(\w+)/(\w+)', ByePage),
     ('/message/(\w+)/(\w+)', MessagePage),
     ('/register/(\w+)', RegisterPage),
-    ('/room/(\w+)', RoomPage)
+    # TODO(jiayl): Remove support of /room/ when all clients are updated.
+    ('/room/(\w+)', RoomPage),
+    ('/r/(\w+)', RoomPage),
 ], debug=True)
