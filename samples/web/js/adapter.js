@@ -75,12 +75,12 @@ if (navigator.mozGetUserMedia) {
   MediaStreamTrack.getSources = function(successCb) {
     setTimeout(function() {
       var infos = [
-        { kind: "audio", id: "default" },
-        { kind: "video", id: "default" }
+        { kind: 'audio', id: 'default' },
+        { kind: 'video', id: 'default' }
       ];
       successCb(infos);
     })
-  }
+  };
 
   // Creates ICE server from the URL for FF.
   window.createIceServer = function(url, username, password) {
