@@ -156,10 +156,14 @@ Test.prototype = {
   done: function() {
     this.setProgress(null);
     if (this.errorCount === 0 && this.successCount > 0) {
+      report.logTestRunResult(this.name, 'Success');
       this.statusIcon_.setAttribute('icon', 'check');
       // On success, always close the details.
       this.output_.opened = false;
     } else {
+      if (!this.isDisabled) {
+        report.logTestRunResult(this.name, 'Failure');
+      }
       this.statusIcon_.setAttribute('icon', 'close');
       // Only close the details if there is only one expectations in which
       // case the test name should provide enough information.
