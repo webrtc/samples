@@ -228,85 +228,62 @@ function transitionToDone() {
 }
 
 function toggleVideoMute() {
-  // Call the getVideoTracks method via adapter.js.
   var videoTracks = localStream.getVideoTracks();
-
   if (videoTracks.length === 0) {
     trace('No local video available.');
     return;
   }
 
+  var newMuted = !isVideoMuted;
   trace('Toggling video mute state.');
-  var i;
-  if (isVideoMuted) {
-    for (i = 0; i < videoTracks.length; i++) {
-      videoTracks[i].enabled = true;
-    }
-    trace('Video unmuted.');
-  } else {
-    for (i = 0; i < videoTracks.length; i++) {
-      videoTracks[i].enabled = false;
-    }
-    trace('Video muted.');
+  for (var i = 0; i < videoTracks.length; ++i) {
+    videoTracks[i].enabled = !newMuted;
   }
 
-  isVideoMuted = !isVideoMuted;
+  isVideoMuted = newMuted;
+  trace('Video ' + isVideoMuted ? 'muted.' : 'unmuted.');
 }
 
 function toggleAudioMute() {
-  // Call the getAudioTracks method via adapter.js.
   var audioTracks = localStream.getAudioTracks();
-
   if (audioTracks.length === 0) {
     trace('No local audio available.');
     return;
   }
 
+  var newMuted = !isAudioMuted;
   trace('Toggling audio mute state.');
-  var i;
-  if (isAudioMuted) {
-    for (i = 0; i < audioTracks.length; i++) {
-      audioTracks[i].enabled = true;
-    }
-    trace('Audio unmuted.');
-  } else {
-    for (i = 0; i < audioTracks.length; i++) {
-      audioTracks[i].enabled = false;
-    }
-    trace('Audio muted.');
+  for (var i = 0; i < audioTracks.length; ++i) {
+    audioTracks[i].enabled = !newMuted;
   }
 
-  isAudioMuted = !isAudioMuted;
+  isAudioMuted = newMuted;
+  trace('Audio ' + isVideoMuted ? 'muted.' : 'unmuted.');
 }
 
-// Mac: hotkey is Command.
-// Non-Mac: hotkey is Control.
-// <hotkey>-D: toggle audio mute.
-// <hotkey>-E: toggle video mute.
-// <hotkey>-H: hang up.
-// <hotkey>-I: toggle info display.
+// Spacebar, or m: toggle audio mute.
+// c: toggle camera(video) mute.
+// f: toggle fullscreen.
+// i: toggle info panel.
+// q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
-document.onkeydown = function(event) {
-  var hotkey = event.ctrlKey;
-  if (navigator.appVersion.indexOf('Mac') !== -1) {
-    hotkey = event.metaKey;
-  }
-  if (!hotkey) {
-    return;
-  }
-  switch (event.keyCode) {
-    case 68:
+document.onkeypress = function(event) {
+  switch (String.fromCharCode(event.charCode)) {
+    case ' ':
+    case 'm':
       toggleAudioMute();
-      toggleRemoteVideoElementMuted();
       return false;
-    case 69:
+    case 'c':
       toggleVideoMute();
       return false;
-    case 72:
-      hangup();
+    case 'f':
+      toggleFullScreen();
       return false;
-    case 73:
+    case 'i':
       toggleInfoDiv();
+      return false;
+    case 'q':
+      hangup();
       return false;
     default:
       return;
@@ -323,20 +300,6 @@ window.onbeforeunload = function() {
 
 function displaySharingInfo() {
   sharingDiv.classList.add('active');
-}
-
-function toggleRemoteVideoElementMuted() {
-  setRemoteVideoElementMuted(!remoteVideo.muted);
-}
-
-function setRemoteVideoElementMuted(mute) {
-  if (mute) {
-    remoteVideo.muted = true;
-    remoteVideo.title = 'Unmute audio';
-  } else {
-    remoteVideo.muted = false;
-    remoteVideo.title = 'Mute audio';
-  }
 }
 
 function displayStatus(status) {
@@ -361,7 +324,7 @@ function toggleFullScreen() {
     if (document.webkitIsFullScreen) {
       document.webkitCancelFullScreen();
     } else {
-      remoteVideo.webkitRequestFullScreen();
+      videosDiv.webkitRequestFullScreen();
       remoteCanvas.webkitRequestFullScreen();
     }
   } catch (event) {
