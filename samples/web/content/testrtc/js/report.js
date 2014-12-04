@@ -5,37 +5,52 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* More information about these options at jshint.com/docs/options */
-/* exported reportBug */
+/* exported report */
 'use strict';
 
-function reportBug() {
-  // Detect browser and version.
-  var result = getBrowserNameAndVersion();
-  var browserName = result.name;
-  var browserVersion = result.version;
-  console.log('Detected browser: ' + browserName + ' ' + browserVersion);
+function Report() {}
 
-  var description = 'Browser: ' + browserName + ' ' + browserVersion +
-      ' (' + navigator.platform + ')\n\n' +
-      'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
-      'Please replace this text with the copy+pasted output from test page!';
+Report.prototype = {
+  createChromiumBug: function () {
+    // Detect browser and version.
+    var result = Report.getBrowserNameAndVersion();
+    var browserName = result.name;
+    var browserVersion = result.version;
+    console.log('Detected browser: ' + browserName + ' ' + browserVersion);
 
-  // Labels for the bug to be filed.
-  var osLabel = 'OS-';
-  if (navigator.platform.indexOf('Win') !== -1) { osLabel += 'Windows'; }
-  if (navigator.platform.indexOf('Mac') !== -1) { osLabel += 'Mac'; }
-  if (navigator.platform.match('iPhone|iPad|iPod|iOS')) { osLabel += 'iOS'; }
-  if (navigator.platform.indexOf('Linux') !== -1) { osLabel += 'Linux'; }
-  if (navigator.platform.indexOf('Android') !== -1) { osLabel += 'Android'; }
+    var description = 'Browser: ' + browserName + ' ' + browserVersion +
+        ' (' + navigator.platform + ')\n\n' +
+        'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
+        'Please replace this text with the copy+pasted output from test page!';
 
-  var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
-  var url = 'https://code.google.com/p/chromium/issues/entry?' +
-      'comment=' + encodeURIComponent(description) +
-      '&labels=' + encodeURIComponent(labels);
-  console.log('Navigating to: ' + url);
-  window.open(url);
-}
+    // Labels for the bug to be filed.
+    var osLabel = 'OS-';
+    if (navigator.platform.indexOf('Win') !== -1) { osLabel += 'Windows'; }
+    if (navigator.platform.indexOf('Mac') !== -1) { osLabel += 'Mac'; }
+    if (navigator.platform.match('iPhone|iPad|iPod|iOS')) { osLabel += 'iOS'; }
+    if (navigator.platform.indexOf('Linux') !== -1) { osLabel += 'Linux'; }
+    if (navigator.platform.indexOf('Android') !== -1) { osLabel += 'Android'; }
+
+    var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
+    var url = 'https://code.google.com/p/chromium/issues/entry?' +
+        'comment=' + encodeURIComponent(description) +
+        '&labels=' + encodeURIComponent(labels);
+    console.log('Navigating to: ' + url);
+    window.open(url);
+  },
+
+  logTestRunResult: function (testName, status) {
+    // Google Analytics event for the test result to allow to track how the
+    // test is doing in the wild.
+    ga('send', {
+        'hitType': 'event',
+        'eventCategory': 'Test',
+        'eventAction': status,
+        'eventLabel': testName,
+        'nonInteraction': 1
+    });
+  }
+};
 
 /*
  * Detects the running browser name and version.
@@ -43,7 +58,7 @@ function reportBug() {
  * @return {!Object.<string, string>} Object containing the browser name and
  *     version (mapped to the keys "name" and "version").
  */
-function getBrowserNameAndVersion() {
+Report.getBrowserNameAndVersion = function () {
   // Code inspired by http://goo.gl/9dZZqE with
   // added support of modern Internet Explorer versions (Trident).
   var agent = navigator.userAgent;
@@ -83,6 +98,7 @@ function getBrowserNameAndVersion() {
   if ((ix = version.indexOf(' ')) !== -1) {
     version = version.substring(0, ix);
   }
-
   return { 'name': browserName, 'version': version };
-}
+};
+
+var report = new Report();
