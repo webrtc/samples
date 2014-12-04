@@ -25,11 +25,12 @@ function trace(text) {
   if (text[text.length - 1] === '\n') {
     text = text.substring(0, text.length - 1);
   }
-  var now = '???';
   if (window.performance) {
-    now = (window.performance.now() / 1000).toFixed(3);
+    var now = (window.performance.now() / 1000).toFixed(3);
+    console.log(now + ': ' + text);
+  } else {
+    console.log(text);
   }
-  console.log(now + ': ' + text);
 }
 
 function maybeFixConfiguration(pcConfig) {
