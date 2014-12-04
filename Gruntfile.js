@@ -97,12 +97,19 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+<<<<<<< HEAD
   grunt.loadNpmTasks('grunt-shell');
+=======
+>>>>>>> 974438d2c2b65b84f604f6118daf217ca75c136b
   grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
 
   // set default tasks to run when grunt is called without parameters
   grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
+<<<<<<< HEAD
                      'shell:runPythonTests', 'jstdPhantom']);
+=======
+                     'jstdPhantom']);
+>>>>>>> 974438d2c2b65b84f604f6118daf217ca75c136b
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
