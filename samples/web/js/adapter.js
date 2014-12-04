@@ -79,7 +79,7 @@ if (navigator.mozGetUserMedia) {
         { kind: 'video', id: 'default' }
       ];
       successCb(infos);
-    })
+    });
   };
 
   // Creates ICE server from the URL for FF.
