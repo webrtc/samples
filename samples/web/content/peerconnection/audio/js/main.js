@@ -6,11 +6,16 @@
  *  tree.
  */
 
+/* More information about these options at jshint.com/docs/options */
+
+/* globals maybePreferCodec */
+
 'use strict';
 
 var audio2 = document.querySelector('audio#audio2');
 var callButton = document.querySelector('button#callButton');
 var hangupButton = document.querySelector('button#hangupButton');
+var codecSelector = document.querySelector('select#codec');
 hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
@@ -46,6 +51,7 @@ function onCreateSessionDescriptionError(error) {
 function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
+  codecSelector.disabled = true;
   trace('Starting call');
   var servers = null;
   var pcConstraints = {
@@ -70,20 +76,25 @@ function call() {
 }
 
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
+  desc.sdp = forceChosenAudioCodec(desc.sdp);
   trace('Offer from pc1 \n' + desc.sdp);
-  pc2.setRemoteDescription(desc);
-  // Since the 'remote' side has no media stream we need
-  // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-    sdpConstraints);
+  pc1.setLocalDescription(desc, function() {
+    pc2.setRemoteDescription(desc, function() {
+      // Since the 'remote' side has no media stream we need
+      // to pass in the right constraints in order for it to
+      // accept the incoming offer of audio.
+      pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
+                       sdpConstraints);
+    });
+  });
 }
 
 function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
-  trace('Answer from pc2 \n' + desc.sdp);
-  pc1.setRemoteDescription(desc);
+  desc.sdp = forceChosenAudioCodec(desc.sdp);
+  pc2.setLocalDescription(desc, function () {
+    trace('Answer from pc2 \n' + desc.sdp);
+    pc1.setRemoteDescription(desc);
+  });
 }
 
 function hangup() {
@@ -94,6 +105,7 @@ function hangup() {
   pc2 = null;
   hangupButton.disabled = true;
   callButton.disabled = false;
+  codecSelector.disabled = false;
 }
 
 function gotRemoteStream(e) {
@@ -124,4 +136,8 @@ function onAddIceCandidateSuccess() {
 
 function onAddIceCandidateError(error) {
   trace('Failed to add ICE Candidate: ' + error.toString());
+}
+
+function forceChosenAudioCodec(sdp) {
+  return maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
 }
