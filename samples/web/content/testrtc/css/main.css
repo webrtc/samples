@@ -34,17 +34,6 @@ paper-button {
   color: #888;
 }
 
-html /deep/ paper-dialog {
-  top: 2em;
-  position: fixed;
-  background: #FFF;
-  height: auto;
-  max-width: 90%;
-  text-align: center;
-  border-radius: 0.3em;
-  padding: inherit;
-}
-
 div#content {
   margin: 0 auto 0 auto;
   max-width: 40em;
