@@ -18,6 +18,7 @@
 
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
   <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/main_nolint.css" />
 
   <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
@@ -25,8 +26,8 @@
   <link rel="import" href="bower_components/core-icon/core-icon.html">
   <link rel="Import" href="bower_components/core-icons/av-icons.html">
   <link rel="import" href="bower_components/core-collapse/core-collapse.html">
-  <link rel="import" href="bower_components/core-overlay/core-overlay.html">
   <link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+  <link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
   <link rel="import" href="bower_components/paper-dialog/paper-dialog-transition.html">
   <link rel="import" href="bower_components/paper-progress/paper-progress.html">
   <link rel="import" href="bower_components/paper-button/paper-button.html">
@@ -41,39 +42,41 @@
   </script>
 </head>
 <body unresolved>
+  <!-- Title toolbar -->
+  <core-toolbar class="title">
+    <span flex>WebRTC Troubleshooter</span>
+    <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
+    <core-icon-button icon="bug-report" onclick="report.createChromiumBug()"></core-icon-button>
+    <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
+  </core-toolbar>
 
-  <core-overlay id="gum-request-overlay" backdrop autoCloseDisabled class="gumOverlay">
-    <h1>Welcome to WebRTC Troubleshooter</h1>
+  <!-- Placeholder for dynamically generated test suites. -->
+  <div id="content"></div>
+
+  <!-- GetUserMedia pending dialog -->
+  <paper-dialog id="gum-pending-dialog"
+                heading="Welcome to WebRTC Troubleshooter"
+                backdrop autoCloseDisabled>
     <p>To test your webcam, microphone, and speakers we need permission to
         them selecting by “Allow”.</p>
-  </core-overlay>
+  </paper-dialog>
 
-  <core-overlay id="gum-error-overlay" backdrop autoCloseDisabled class="gumOverlay">
-    <h1>Welcome to WebRTC Troubleshooter</h1>
-    <p>Click the <core-icon icon="av:videocam-off" id="camera"></core-icon>
+  <!-- GetUserMedia error dialog -->
+  <paper-dialog id="gum-error-dialog"
+                heading="Welcome to WebRTC Troubleshooter"
+                backdrop autoCloseDisabled>
+    <p>Click the <core-icon icon="av:videocam-off"></core-icon>
       icon in the URL bar above to give TestRTC access to your computer's
       camera and microphone.</p>
-    <label>GetUserMedia Error reason: <span id="gum-error-message"></span></label>
-    <core-icon-button icon="bug-report" id="bug-button" onclick="report.createChromiumBug()"></core-icon-button>
-  </core-overlay>
+    <p>GetUserMedia reason: <span id="gum-error-message"></span></p>
+    <core-icon-button icon="bug-report" onclick="report.createChromiumBug()">File a bug</core-icon-button>
+  </paper-dialog>
 
-  <div cross-fade>
-     <!-- Title toolbar -->
-    <core-toolbar class="title">
-      <span flex>WebRTC Troubleshooter</span>
-      <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
-      <core-icon-button icon="bug-report" id="bug-button" onclick="report.createChromiumBug()"></core-icon-button>
-      <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
-    </core-toolbar>
-        <!-- Placeholder for dynamically generated test suites. -->
-    <div id="content"></div>
-    <!-- Settings dialog -->
-    <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
-      <br>
-      <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
-      <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
-    </paper-dialog>
-  </div>
+  <!-- Settings dialog -->
+  <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
+    <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
+    <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
+  </paper-dialog>
 
   <!-- Add common files after this line. -->
   <script src="js/adapter.js"></script>
@@ -83,7 +86,6 @@
   <script src="js/stats.js"></script>
   <script src="js/ssim.js"></script>
   <script src="js/gumhandler.js"></script>
-  <!-- TODO(juberti): Add analytics script src="js/lib/ga.js" -->
 
   <!-- Add tests after this line. -->
   <script src="js/mictest.js"></script>

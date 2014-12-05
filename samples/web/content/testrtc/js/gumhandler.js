@@ -11,9 +11,9 @@
 'use strict';
 
 function GumHandler() {
+  this.gumPendingDialog_ = document.getElementById('gum-pending-dialog');
+  this.gumErrorDialog_ = document.getElementById('gum-error-dialog');
   this.gumErrorMessage_ = document.getElementById('gum-error-message');
-  this.gumRequestOverlay_ = document.getElementById('gum-request-overlay');
-  this.gumErrorOverlay_ = document.getElementById('gum-error-overlay');
   this.firstUserCheck_ = null;
 }
 
@@ -25,7 +25,7 @@ GumHandler.prototype = {
   },
 
   firstTimeUser_: function() {
-    this.gumRequestOverlay_.open();
+    this.gumPendingDialog_.open();
   },
 
   getUserMedia_: function() {
@@ -34,28 +34,22 @@ GumHandler.prototype = {
   },
 
   gotStream_: function(stream) {
+    clearTimeout(this.firstUserCheck_);
+
     // Stop all tracks to ensure the camera and audio devices are shutdown directly.
     for (var i = 0; i < stream.getTracks().length; i++) {
       stream.getTracks()[i].stop();
     }
-    if (this.gumRequestOverlay_.opened) {
-      this.gumRequestOverlay_.close();
-    } else if (this.gumErrorOverlay_.opened) {
-      this.gumErrorOverlay_.close();
-    }
-    clearTimeout(this.firstUserCheck_);
+    this.gumPendingDialog_.close();
+    this.gumErrorDialog_.close();
     startButton.removeAttribute('disabled');
   },
 
   gotError_: function(error) {
-    this.gumErrorMessage_.innerHTML = error.name;
-    if (!this.gumErrorOverlay_.opened) {
-      this.gumErrorOverlay_.open();
-    }
-    if (this.gumRequestOverlay_.opened) {
-      this.gumRequestOverlay_.close();
-    }
-    setTimeout(this.getUserMedia_.bind(this), 1000);
     clearTimeout(this.firstUserCheck_);
+    this.gumPendingDialog_.close();
+    this.gumErrorMessage_.innerHTML = error.name;
+    this.gumErrorDialog_.open();
+    setTimeout(this.getUserMedia_.bind(this), 1000);
   }
 };
