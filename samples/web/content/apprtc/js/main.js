@@ -241,7 +241,7 @@ function toggleVideoMute() {
   }
 
   isVideoMuted = newMuted;
-  trace('Video ' + isVideoMuted ? 'muted.' : 'unmuted.');
+  trace('Video ' + (isVideoMuted ? 'muted.' : 'unmuted.'));
 }
 
 function toggleAudioMute() {
@@ -258,7 +258,7 @@ function toggleAudioMute() {
   }
 
   isAudioMuted = newMuted;
-  trace('Audio ' + isVideoMuted ? 'muted.' : 'unmuted.');
+  trace('Audio ' + (isAudioMuted ? 'muted.' : 'unmuted.'));
 }
 
 // Spacebar, or m: toggle audio mute.
