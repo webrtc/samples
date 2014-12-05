@@ -18,7 +18,7 @@ window.onload = function() {
 
 function getSources_() {
   if (typeof MediaStreamTrack.getSources === 'undefined') {
-    alert('Your browser does not support getSources, aborting.')
+    alert('Your browser does not support getSources, aborting.');
     return;
   }
   MediaStreamTrack.getSources(function(devices) {
@@ -42,7 +42,7 @@ function requestVideo_(id) {
 }
 
 function getUserMediaFailedCallback_(error) {
-  alert("User media request denied with error code " + error.code);
+  alert("User media request denied with error: " + error.name);
 }
 
 function getUserMediaOkCallback_(stream) {
