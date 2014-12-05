@@ -27,6 +27,7 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
+              '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       }
