@@ -81,7 +81,7 @@ MicTest.prototype = {
   },
 
   stopCollectingAudio: function() {
-    this.stream.stop();
+    this.stream.getAudioTracks()[0].stop();
     this.audioSource.disconnect(this.scriptNode);
     this.scriptNode.disconnect(audioContext.destination);
     // Start analyzing the audio buffer.
