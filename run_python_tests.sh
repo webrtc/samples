@@ -1,5 +1,7 @@
 #!/bin/bash
-FILE=google_appengine_$(curl -sS https://appengine.google.com/api/updatecheck | grep release | grep -o '[0-9\.]*').zip
+VERSION_REGEX='[0-9]*\.[0-9]*\.[0-9]*'
+VERSION=$(curl -sS https://appengine.google.com/api/updatecheck | grep release | grep -o $VERSION_REGEX)
+FILE=google_appengine_$VERSION.zip
 URL=https://storage.googleapis.com/appengine-sdks/featured/$FILE
 
 if [ -f $FILE ]; then
