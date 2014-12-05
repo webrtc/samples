@@ -7,6 +7,10 @@
  */
 /* File to keep rules that fail to parse in csslint, so one can keep the main
  * style file under check. */
+html /deep/ core-icon[icon="av:videocam-off"] {
+  color: #888;
+}
+
 html /deep/ paper-dialog {
   top: 2em;
 }

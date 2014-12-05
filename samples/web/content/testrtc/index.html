@@ -65,11 +65,11 @@
   <paper-dialog id="gum-error-dialog"
                 heading="Welcome to WebRTC Troubleshooter"
                 backdrop autoCloseDisabled>
-    <p>Click the <core-icon icon="av:videocam-off" id="camera"></core-icon>
+    <p>Click the <core-icon icon="av:videocam-off"></core-icon>
       icon in the URL bar above to give TestRTC access to your computer's
       camera and microphone.</p>
     <p>GetUserMedia reason: <span id="gum-error-message"></span></p>
-    <core-icon-button icon="bug-report" id="bug-button" onclick="report.createChromiumBug()">File a bug</core-icon-button>
+    <core-icon-button icon="bug-report" onclick="report.createChromiumBug()">File a bug</core-icon-button>
   </paper-dialog>
 
   <!-- Settings dialog -->
