@@ -5,7 +5,6 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-/* exported getUserMedia attachMediaStream MediaStreamTrack */
 
 'use strict';
 
@@ -14,10 +13,10 @@ var counter = 0;
 var checkGum;
 
 window.onload = function() {
-  getSources();
+  getSources_();
 }
 
-function getSources() {
+function getSources_() {
   if (typeof MediaStreamTrack.getSources === 'undefined') {
     alert('Your browser does not support getSources, aborting.')
     return;
@@ -26,27 +25,27 @@ function getSources() {
     for (var i = 0; i < devices.length; i++) {
       if (devices[i].kind === 'video') {
         deviceList[i] = devices[i];
-        requestVideo(deviceList[i].id);
+        requestVideo_(deviceList[i].id);
       }
     }
   });
 }
 
-function requestVideo(id) {
+function requestVideo_(id) {
   getUserMedia( {
       video: { optional: [ { sourceId: id } ] },
       audio: false},
       function(stream) {
-         getUserMediaOkCallback(stream);
+         getUserMediaOkCallback_(stream);
       },
-      getUserMediaFailedCallback);
+      getUserMediaFailedCallback_);
 }
 
-function getUserMediaFailedCallback(error) {
+function getUserMediaFailedCallback_(error) {
   alert("User media request denied with error code " + error.code);
 }
 
-function getUserMediaOkCallback(stream) {
+function getUserMediaOkCallback_(stream) {
   var videoArea = document.getElementById('videoArea');
   var video = document.createElement('video');
   var div = document.createElement('div');
@@ -62,12 +61,12 @@ function getUserMediaOkCallback(stream) {
     deviceLabel.innerHTML = stream.getVideoTracks()[0].label;
     div.appendChild(deviceLabel);
   }
-  stream.getVideoTracks()[0].addEventListener('ended', errorMessage);
+  stream.getVideoTracks()[0].addEventListener('ended', errorMessage_);
   attachMediaStream(document.getElementById("view" + counter), stream);
   counter++;
 }
 
-var errorMessage = function(event) {
+var errorMessage_ = function(event) {
   var message = 'getUserMedia successful but ' + event.type + ' event fired ' +
                 'from camera. Most likely too many cameras on the same USB ' +
                 'bus/hub. Verify this by disconnecting one of the cameras ' +
