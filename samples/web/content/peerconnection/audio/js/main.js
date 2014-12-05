@@ -6,10 +6,6 @@
  *  tree.
  */
 
-/* More information about these options at jshint.com/docs/options */
-
-/* globals maybePreferCodec */
-
 'use strict';
 
 var audio2 = document.querySelector('audio#audio2');
