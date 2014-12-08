@@ -14,7 +14,6 @@ body {
 
 .title {
   height: 60px;
-  line-height: 60px;
   font-size: 18px;
   font-weight: 500;
   background-color: #4F7DC9;
@@ -28,6 +27,10 @@ body {
 paper-button {
   background-color: #9E9;
   color: #000;
+}
+
+#start-button {
+  line-height: 3em;
 }
 
 div#content {

@@ -22,7 +22,6 @@
 
   <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
-  <link rel="import" href="bower_components/core-icon-button/core-icon-button.html">
   <link rel="import" href="bower_components/core-icon/core-icon.html">
   <link rel="Import" href="bower_components/core-icons/av-icons.html">
   <link rel="import" href="bower_components/core-collapse/core-collapse.html">
@@ -31,6 +30,7 @@
   <link rel="import" href="bower_components/paper-dialog/paper-dialog-transition.html">
   <link rel="import" href="bower_components/paper-progress/paper-progress.html">
   <link rel="import" href="bower_components/paper-button/paper-button.html">
+  <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -45,8 +45,8 @@
   <!-- Title toolbar -->
   <core-toolbar class="title">
     <span flex>WebRTC Troubleshooter</span>
-    <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
-    <core-icon-button icon="bug-report" onclick="report.open()"></core-icon-button>
+    <paper-icon-button icon="menu" onclick="settingsDialog.toggle()"></paper-icon-button>
+    <paper-icon-button icon="bug-report" onclick="report.open()"></paper-icon-button>
     <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
   </core-toolbar>
 
@@ -69,7 +69,7 @@
       icon in the URL bar above to give TestRTC access to your computer's
       camera and microphone.</p>
     <p>GetUserMedia reason: <span id="gum-error-message"></span></p>
-    <core-icon-button icon="bug-report" onclick="report.open()">File a bug</core-icon-button>
+    <paper-icon-button icon="bug-report" onclick="report.open()">File a bug</paper-icon-button>
   </paper-dialog>
 
   <!-- Settings dialog -->
