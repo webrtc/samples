@@ -11,15 +11,21 @@
 <html>
 <head>
   <title>Multiple device test (Video Only)</title>
-   <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-  <script src="../../../js/adapter.js"></script>
-  <script src="js/main.js"></script>
+  <style>
+    #messages {
+      color: #DC143C;
+      clear: both;
+    }
+  </style>
 </head>
 <body>
   <h2>Opens all cameras available and attaches the video stream to indiviual video elements.</h2>
   <div>
     <span id="videoArea"></span>
   </div>
-  <div style="color:red" id="messages"></div>
+  <div id="messages"></div>
+   <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <script src="../../../js/adapter.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

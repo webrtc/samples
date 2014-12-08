@@ -70,6 +70,7 @@ var errorMessage_ = function(event) {
   var message = 'getUserMedia successful but ' + event.type + ' event fired ' +
                 'from camera. Most likely too many cameras on the same USB ' +
                 'bus/hub. Verify this by disconnecting one of the cameras ' +
-                'and try again';
-  document.getElementById('messages').innerHTML += message + '<br>';
+                'and try again.';
+  document.getElementById('messages').innerHTML += event.target.label + ': ' +
+                                                   message + '<br><br>';
 }
