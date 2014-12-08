@@ -46,7 +46,7 @@
   <core-toolbar class="title">
     <span flex>WebRTC Troubleshooter</span>
     <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
-    <core-icon-button icon="bug-report" onclick="report.createChromiumBug()"></core-icon-button>
+    <core-icon-button icon="bug-report" onclick="report.open()"></core-icon-button>
     <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
   </core-toolbar>
 
@@ -69,7 +69,7 @@
       icon in the URL bar above to give TestRTC access to your computer's
       camera and microphone.</p>
     <p>GetUserMedia reason: <span id="gum-error-message"></span></p>
-    <core-icon-button icon="bug-report" onclick="report.createChromiumBug()">File a bug</core-icon-button>
+    <core-icon-button icon="bug-report" onclick="report.open()">File a bug</core-icon-button>
   </paper-dialog>
 
   <!-- Settings dialog -->
@@ -77,6 +77,15 @@
     <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
     <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
   </paper-dialog>
+
+  <!-- Report dialog -->
+  <paper-action-dialog id="report-dialog" heading="Bug Report" backdrop autoCloseDisabled transition="paper-dialog-transision-center">
+    <div>
+      <p>Please file a bug in the <a id="report-link">Chromium bug tracker</a> and attach the report from this page.</p>
+      <paper-button flex id="report-download" onclick="report.downloadReport()">Download Report</paper-button>
+      <paper-button affirmative>Close</paper-button>
+    </div>
+  </paper-action-dialog>
 
   <!-- Add common files after this line. -->
   <script src="js/adapter.js"></script>

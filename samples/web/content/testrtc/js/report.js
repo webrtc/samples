@@ -8,38 +8,39 @@
 /* exported report */
 'use strict';
 
-function Report() {}
+function Report() {
+  this.output_ = [ 'TestRTC-Diagnose v0.1' ];
+
+  // Hook console.log into the report, since that is the most common debug tool.
+  this.nativeLog_ = console.log.bind(console);
+  console.log = this.logHook_.bind(this);
+
+  // Hook up window.onerror logs into the report.
+  window.addEventListener('error', this.onWindowError_.bind(this));
+
+  this.traceEventInstant('system_info', Report.getSystemInfo());
+}
 
 Report.prototype = {
-  createChromiumBug: function () {
-    // Detect browser and version.
-    var result = Report.getBrowserNameAndVersion();
-    var browserName = result.name;
-    var browserVersion = result.version;
-    console.log('Detected browser: ' + browserName + ' ' + browserVersion);
+  open: function () {
+    document.getElementById('report-link').href = this.linkToChromiumBug_();
+    document.getElementById('report-dialog').open();
+  },
 
-    var description = 'Browser: ' + browserName + ' ' + browserVersion +
-        ' (' + navigator.platform + ')\n\n' +
-        'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
-        'Please replace this text with the copy+pasted output from test page!';
+  downloadReport: function () {
+    var content = encodeURIComponent(this.getContent_());
+    var link = document.createElement('a');
+    link.setAttribute('href', 'data:text/plain;charset=utf-8,' + content);
+    link.click();
+  },
 
-    // Labels for the bug to be filed.
-    var osLabel = 'OS-';
-    if (navigator.platform.indexOf('Win') !== -1) { osLabel += 'Windows'; }
-    if (navigator.platform.indexOf('Mac') !== -1) { osLabel += 'Mac'; }
-    if (navigator.platform.match('iPhone|iPad|iPod|iOS')) { osLabel += 'iOS'; }
-    if (navigator.platform.indexOf('Linux') !== -1) { osLabel += 'Linux'; }
-    if (navigator.platform.indexOf('Android') !== -1) { osLabel += 'Android'; }
-
-    var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
-    var url = 'https://code.google.com/p/chromium/issues/entry?' +
-        'comment=' + encodeURIComponent(description) +
-        '&labels=' + encodeURIComponent(labels);
-    console.log('Navigating to: ' + url);
-    window.open(url);
+  traceEventInstant: function (name, args) {
+    var now = (new Date()).getTime();
+    this.output_.push(now + ': ' + name + ': ' + JSON.stringify(args));
   },
 
   logTestRunResult: function (testName, status) {
+    this.traceEventInstant('test', { name: testName, result: status });
     // Google Analytics event for the test result to allow to track how the
     // test is doing in the wild.
     ga('send', {
@@ -49,16 +50,50 @@ Report.prototype = {
         'eventLabel': testName,
         'nonInteraction': 1
     });
+  },
+
+  linkToChromiumBug_: function () {
+    var info = Report.getSystemInfo();
+
+    var description = 'Browser: ' + info.browserName + ' ' + info.browserVersion +
+        ' (' + info.platform + ')\n\n' +
+        'Output from the troubleshooting page at http://test.webrtc.org:\n\n' +
+        'Please replace this text with the copy+pasted output from test page!';
+
+    // Labels for the bug to be filed.
+    var osLabel = 'OS-';
+    if (info.platform.indexOf('Win') !== -1) { osLabel += 'Windows'; }
+    if (info.platform.indexOf('Mac') !== -1) { osLabel += 'Mac'; }
+    if (info.platform.match('iPhone|iPad|iPod|iOS')) { osLabel += 'iOS'; }
+    if (info.platform.indexOf('Linux') !== -1) { osLabel += 'Linux'; }
+    if (info.platform.indexOf('Android') !== -1) { osLabel += 'Android'; }
+
+    var labels = 'webrtc-troubleshooter,Cr-Blink-WebRTC,' + osLabel;
+    var url = 'https://code.google.com/p/chromium/issues/entry?' +
+        'comment=' + encodeURIComponent(description) +
+        '&labels=' + encodeURIComponent(labels);
+    return url;
+  },
+
+  getContent_: function () {
+    return this.output_.join('\n');
+  },
+
+  onWindowError_: function (error) {
+    this.traceEventInstant('error', {'message':error.message,
+                                     'filename': error.filename + ':' + error.lineno });
+  },
+
+  logHook_: function () {
+    this.traceEventInstant('log', arguments);
+    this.nativeLog_.apply(null, arguments);
   }
 };
 
 /*
- * Detects the running browser name and version.
- *
- * @return {!Object.<string, string>} Object containing the browser name and
- *     version (mapped to the keys "name" and "version").
+ * Detects the running browser name, version and platform.
  */
-Report.getBrowserNameAndVersion = function () {
+Report.getSystemInfo = function () {
   // Code inspired by http://goo.gl/9dZZqE with
   // added support of modern Internet Explorer versions (Trident).
   var agent = navigator.userAgent;
@@ -98,7 +133,9 @@ Report.getBrowserNameAndVersion = function () {
   if ((ix = version.indexOf(' ')) !== -1) {
     version = version.substring(0, ix);
   }
-  return { 'name': browserName, 'version': version };
+  return { 'browserName': browserName,
+           'browserVersion': version,
+           'platform': navigator.platform };
 };
 
 var report = new Report();
