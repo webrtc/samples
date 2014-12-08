@@ -289,29 +289,6 @@ function onIceConnectionStateChanged() {
       trace('ICE complete time: ' +
           (window.performance.now() - startTime).toFixed(0) + 'ms.');
     }
-    if (pc.iceConnectionState === 'connected') {
-      pc.getStats(function (response) {
-        var stats = response.result();
-        var activeCandPair = getStatsReport(stats, 'googCandidatePair',
-          'googActiveConnection', 'true');
-        if (activeCandPair) {
-          var localAddress = activeCandPair.stat('googLocalAddress');
-          pc.localDescription.sdp.split('\r\n').filter(function (line) {
-            return line.indexOf('a=candidate:') === 0;
-          }).forEach(function (line) {
-            var fields = line.split(' ');
-            if (fields[1] === '1' && // we dont really care about RTCP
-                [fields[4], fields[5]].join(':') === localAddress) {
-              // happens more than once with bundled candidates
-              // not sure if it can be different...
-              // for relay candidates: 2=>udp, 1=>tcp, 0=>tls
-              trace('Local active candidate priority ' + (fields[3] >> 24));
-              return;
-            }
-          });
-        }
-      });
-    }
   }
   updateInfoDiv();
 }
