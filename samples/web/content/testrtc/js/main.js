@@ -285,25 +285,26 @@ function start() {
 function doGetUserMedia(constraints, onSuccess, onFail) {
   // Call into getUserMedia via the polyfill (adapter.js).
   var successFunc = function(stream) {
-    trace('User has granted access to local media.');
-    onSuccess(stream);
+    report.traceEventInstant('getusermedia-success', {});
+    onSuccess.apply(this, arguments);
   };
-  var failFunc = onFail || function(error) {
-    // If onFail function is provided error callback is propagated to the
-    // caller.
-    var errorMessage = 'Failed to get access to local media. Error name was ' +
-        error.name;
-    return reportFatal(errorMessage);
+  var failFunc = function(error) {
+    report.traceEventInstant('getusermedia-fail', error);
+    if (onFail) {
+      onFail.apply(this, arguments);
+    } else {
+      reportFatal('Failed to get access to local media. Error name was ' + error.name);
+    }
   };
   try {
     // Append the constraints with the getSource constraints.
     appendSourceId(audioSelect.value, 'audio', constraints);
     appendSourceId(videoSelect.value, 'video', constraints);
 
+    report.traceEventInstant('getusermedia', constraints);
     getUserMedia(constraints, successFunc, failFunc);
-    trace('Requested access to local media with constraints:\n' +
-        '  \'' + JSON.stringify(constraints) + '\'');
   } catch (e) {
+    console.log(e.message);
     return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
 }

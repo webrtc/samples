@@ -11,6 +11,12 @@ html /deep/ core-icon[icon="av:videocam-off"] {
   color: #888;
 }
 
-html /deep/ paper-dialog {
+html /deep/ paper-dialog,
+html /deep/ paper-action-dialog {
   top: 2em;
+}
+
+html /deep/ #report-content {
+  font-size: xx-small;
+  min-height: 10em;
 }
