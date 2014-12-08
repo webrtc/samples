@@ -284,7 +284,7 @@ function start() {
 
 function doGetUserMedia(constraints, onSuccess, onFail) {
   // Call into getUserMedia via the polyfill (adapter.js).
-  var successFunc = function(stream) {
+  var successFunc = function() {
     report.traceEventInstant('getusermedia-success', {});
     onSuccess.apply(this, arguments);
   };

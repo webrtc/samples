@@ -36,7 +36,7 @@ Report.prototype = {
 
   traceEventInstant: function (name, args) {
     var now = (new Date()).getTime();
-    this.output_.push(now + ": " + name + ": " + JSON.stringify(args));
+    this.output_.push(now + ': ' + name + ': ' + JSON.stringify(args));
   },
 
   logTestRunResult: function (testName, status) {
@@ -85,8 +85,7 @@ Report.prototype = {
   },
 
   logHook_: function () {
-    var message = JSON.stringify(arguments).substring(0, 1024);
-    this.traceEventInstant('log', arguments); // message);
+    this.traceEventInstant('log', arguments);
     this.nativeLog_.apply(null, arguments);
   }
 };
