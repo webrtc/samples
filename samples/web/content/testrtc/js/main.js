@@ -132,7 +132,7 @@ function Test(suite, name, func) {
   this.doneCallback_ = null;
 
   this.isDisabled = testIsDisabled(name);
-  this.reportInfo('Test not run yet.');
+  this.reportMessage_(PREFIX_INFO, 'Test not run yet.');
 }
 
 Test.prototype = {
@@ -145,6 +145,7 @@ Test.prototype = {
     this.setProgress(null);
 
     currentTest = this;
+    report.traceEventInstant('test-start', {name: this.name});
     if (!this.isDisabled) {
       this.func();
     } else {
@@ -155,6 +156,7 @@ Test.prototype = {
 
   done: function() {
     this.setProgress(null);
+    report.traceEventInstant('test-end', {name: this.name});
     if (this.errorCount === 0 && this.successCount > 0) {
       report.logTestRunResult(this.name, 'Success');
       this.statusIcon_.setAttribute('icon', 'check');
@@ -196,21 +198,25 @@ Test.prototype = {
   },
 
   reportSuccess: function(str) {
+    report.traceEventInstant('report-success', str);
     this.reportMessage_(PREFIX_OK, str);
     this.successCount++;
   },
 
   reportError: function(str) {
+    report.traceEventInstant('report-error', str);
     this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
     this.errorCount++;
   },
 
   reportInfo: function(str) {
+    report.traceEventInstant('report-info', str);
     this.reportMessage_(PREFIX_INFO, str);
   },
 
   reportFatal: function(str) {
+    report.traceEventInstant('report-fatal', str);
     this.reportError(str);
     this.done();
   },
