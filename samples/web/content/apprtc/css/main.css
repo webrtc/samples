@@ -65,6 +65,7 @@ div.warning {
 }
 
 #videos {
+  font-size: 0; /* to fix whitespace/scrollbars problem */
   height: 100%;
   pointer-events: none;
   position: absolute;

@@ -451,12 +451,6 @@ class MainPage(webapp2.RequestHandler):
       include_vr_js = ('<script src="/js/vr.js"></script>\n' +
                        '<script src="/js/stereoscopic.js"></script>')
 
-    # Disable pinch-zoom scaling since we manage video real-estate explicitly
-    # (via full-screen) and don't want devicePixelRatios changing dynamically.
-    meta_viewport = ''
-    if is_chrome_for_android(user_agent):
-      meta_viewport = ('<meta name="viewport" content="width=device-width, ' +
-                       'user-scalable=no, initial-scale=1, maximum-scale=1">')
 
     debug = self.request.get('debug')
     if debug == 'loopback':
@@ -557,8 +551,7 @@ class MainPage(webapp2.RequestHandler):
       'video_send_codec': video_send_codec,
       'video_receive_codec': video_receive_codec,
       'ssr': ssr,
-      'include_vr_js': include_vr_js,
-      'meta_viewport': meta_viewport
+      'include_vr_js': include_vr_js
     }
 
     if unittest:
