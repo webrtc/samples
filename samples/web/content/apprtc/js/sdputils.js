@@ -244,8 +244,12 @@ function removeCodecParam(sdp, codec, param) {
 // Split an fmtp line into an object including 'pt' and 'params'.
 function parseFmtpLine(fmtpLine) {
   var fmtpObj = {};
-  var pattern = new RegExp('a=fmtp:(\\d+) ');
-  var result = fmtpLine.match(pattern);
+  var ptIndex = fmtpLine.indexOf(' ');
+  var ptLine = fmtpLine.substring(0, ptIndex);
+  var paramLines = fmtpLine.substring(ptIndex + 1).split('; ');
+
+  var pattern = new RegExp('a=fmtp:(\\d+)');
+  var result = ptLine.match(pattern);
   if (result && result.length === 2) {
     fmtpObj.pt = result[1];
   }
@@ -253,9 +257,6 @@ function parseFmtpLine(fmtpLine) {
     return null;
   }
 
-  var ptIndex = fmtpLine.indexOf(' ');
-  var paramLines = fmtpLine.substring(ptIndex + 1).split('; ');
-  var pt = fmtpLine.substring(0, ptIndex);
   var params = {};
   for (var i = 0; i < paramLines.length; ++i) {
     var pair = paramLines[i].split('=');
