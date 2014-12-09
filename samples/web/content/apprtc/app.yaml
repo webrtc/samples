@@ -1,5 +1,5 @@
 application: apprtc
-version: 8
+version: 1
 runtime: python27
 threadsafe: true
 api_version: 1

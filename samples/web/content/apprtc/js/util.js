@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals displayError, displayStatus */
-/* exported hasTurnServer, requestTurnServers, requestUserMedia */
+/* exported hasTurnServer, requestTurnServers */
 
 'use strict';
 
@@ -51,29 +51,6 @@ function requestTurnServers(turnRequestUrl) {
     };
     xhr.open('GET', turnRequestUrl, true);
     xhr.send();
-  });
-}
-
-// Returns a media stream after requesting it from user.
-function requestUserMedia(constraints) {
-  return new Promise(function(resolve, reject) {
-    var onSuccess = function(stream) {
-      resolve(stream);
-    };
-    var onError = function(error) {
-      reject(error);
-    };
-    // Call into getUserMedia via the polyfill (adapter.js).
-    try {
-      displayStatus('Calling getUserMedia()...');
-      getUserMedia(constraints, onSuccess, onError);
-      trace('Requested access to local media with mediaConstraints:\n' +
-          '  \'' + JSON.stringify(constraints) + '\'');
-    } catch (e) {
-      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
-      displayError('getUserMedia failed with exception: ' + e.message);
-      reject(e);
-    }
   });
 }
 

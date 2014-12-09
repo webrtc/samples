@@ -214,3 +214,27 @@ if (navigator.mozGetUserMedia) {
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
 }
+
+// Returns the result of getUserMedia as a Promise.
+function requestUserMedia(constraints) {
+  return new Promise(function(resolve, reject) {
+    var onSuccess = function(stream) {
+      resolve(stream);
+    };
+    var onError = function(error) {
+      reject(error);
+    };
+
+    try {
+      displayStatus('Calling getUserMedia()...');
+      getUserMedia(constraints, onSuccess, onError);
+      trace('Requested access to local media with mediaConstraints:\n' +
+          '  \'' + JSON.stringify(constraints) + '\'');
+    } catch (e) {
+      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
+      displayError('getUserMedia failed with exception: ' + e.message);
+      reject(e);
+    }
+  });
+}
+

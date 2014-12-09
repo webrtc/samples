@@ -94,7 +94,7 @@ function initialize() {
   document.body.ondblclick = toggleFullScreen;
   trace('Initializing; room=' + params.roomId + '.');
   connectToRoom(params.roomId);
-  if (params.isLoopback && (typeof setupLoopback === 'function')) {
+  if (params.isLoopback) {
     setupLoopback();
   }
 }
@@ -133,10 +133,10 @@ function hangup() {
   transitionToDone();
   localStream.stop();
   stop();
-  disconnectFromServers();
+  disconnectFromRoom();
 }
 
-function disconnectFromServers() {
+function disconnectFromRoom() {
   // Send bye to GAE. This must complete before saying BYE to other client.
   // When the other client sees BYE it attempts to post offer and candidates to
   // GAE. GAE needs to know that we're disconnected at that point otherwise
@@ -338,7 +338,7 @@ document.onkeydown = function(event) {
 // Send a BYE on refreshing or leaving a page
 // to ensure the room is cleaned up for the next session.
 window.onbeforeunload = function() {
-  disconnectFromServers();
+  disconnectFromRoom();
 };
 
 function displaySharingInfo() {

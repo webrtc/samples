@@ -81,8 +81,8 @@ function connectToRoom(roomId) {
 
 // Asynchronously request user media if needed.
 function getMediaIfNeeded() {
-  hasLocalStream = !(params.mediaConstraints.audio === false &&
-                     params.mediaConstraints.video === false);
+  hasLocalStream = (params.mediaConstraints.audio === true ||
+                    params.mediaConstraints.video === true);
   var mediaPromise = null;
   if (hasLocalStream) {
     var mediaConstraints = params.mediaConstraints;
@@ -255,7 +255,8 @@ function createPeerConnection(config, constraints) {
         '  constraints: \'' + JSON.stringify(constraints) + '\'.');
   } catch (e) {
     displayError('Failed to create PeerConnection, exception: ' + e.message);
-    alert('Cannot create RTCPeerConnection object; WebRTC is not supported by this browser.');
+    alert('Cannot create RTCPeerConnection; ' +
+        'WEBRTC is not supported by this browser.');
     return;
   }
   pc.onaddstream = onRemoteStreamAdded;
@@ -324,14 +325,7 @@ function setLocalAndSendMessage(sessionDescription) {
   sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription,
       onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
-  if (params.isInitiator) {
-    // Initiator posts all messages to GAE. GAE will either store the messages
-    // until the other client connects, or forward the message to Collider if
-    // the other client is already connected.
-    sendGAEMessage(sessionDescription);
-  } else {
-    sendWSSMessage(sessionDescription);
-  }
+  sendSignalingMessage(sessionDescription);
 }
 
 function setRemote(message) {
@@ -405,6 +399,17 @@ function sendWSSMessage(message) {
     xhr.open('POST', path, true);
     xhr.send(wssMessage.msg);
  }
+}
+
+function sendSignalingMessage(message) {
+  if (params.isInitiator) {
+    // Initiator posts all messages to GAE. GAE will either store the messages
+    // until the other client connects, or forward the message to Collider if
+    // the other client is already connected.
+    sendGAEMessage(message);
+  } else {
+    sendWSSMessage(message);
+  }
 }
 
 function processSignalingMessage(message) {
@@ -483,11 +488,7 @@ function onIceCandidate(event) {
         id: event.candidate.sdpMid,
         candidate: event.candidate.candidate
       };
-      if (params.isInitiator) {
-        sendGAEMessage(message);
-      } else {
-        sendWSSMessage(message);
-      }
+      sendSignalingMessage(message);
       recordIceCandidate('Local', event.candidate);
     }
   } else {

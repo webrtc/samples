@@ -32,6 +32,7 @@ LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
 TURN_URL = 'https://computeengineondemand.appspot.com'
 WSS_HOST = 'apprtc-ws.webrtc.org'
 WSS_PORT = '8089'
+CEOD_KEY = '4080218913'
 
 def generate_random(length):
   word = ''
@@ -291,7 +292,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     # but we don't provide client_id until a register. For now just generate
     # a random id, but we should make this better.
     username = client_id if client_id is not None else generate_random(9)
-    turn_url = '%s/turn?username=%s&key=4080218913' % (TURN_URL, username)
+    turn_url = '%s/turn?username=%s&key=%s' % (TURN_URL, username, CEOD_KEY)
 
   room_link = request.host_url + '/room/' + room_id
   room_link = append_url_arguments(request, room_link)
@@ -382,6 +383,10 @@ def get_room_client_map(room_id):
   return client_map
 
 class ByePage(webapp2.RequestHandler):
+  def remove_client(self, client_map, client_id):
+    client = client_map.pop(client_id)
+    client.delete()
+
   def post(self, room_id, client_id):
     with LOCK:
       client_map = get_room_client_map(room_id)
@@ -391,13 +396,13 @@ class ByePage(webapp2.RequestHandler):
       if client_id not in client_map:
         logging.warning('Unknown client ' + client_id + ' for room ' + room_id)
         return
-      client = client_map.pop(client_id)
-      client.delete()
+
+      self.remove_client(client_map, client_id)
       logging.info('Removed client ' + client_id + ' from room ' + room_id)
       if LOOPBACK_CLIENT_ID in client_map:
-         loopback_client = client_map.pop(LOOPBACK_CLIENT_ID)
-         loopback_client.delete()
-         logging.info('Removed loopback client from room ' + room_id)
+        self.remove_client(client_map, LOOPBACK_CLIENT_ID)
+        logging.info('Removed loopback client from room ' + room_id)
+
       if len(client_map) > 0:
         other_client = client_map.values()[0]
         # Set other client to be new initiator.
@@ -412,6 +417,21 @@ class MessagePage(webapp2.RequestHandler):
   def write_response(self, result):
     content = json.dumps({ 'result' : result })
     self.response.write(content)
+
+  def send_message_to_collider(self, room_id, client_id, message):
+    logging.info('Forwarding message to collider for room ' + room_id +
+                 ' client ' + client_id)
+    wss_url, wss_post_url = get_wss_parameters(self.request)
+    url = wss_post_url + '/' + room_id + '/' + client_id
+    result = urlfetch.fetch(url=url,
+                            payload=message,
+                            method=urlfetch.POST)
+    if result.status_code != 200:
+      logging.error('Failed to send message to collider: ' + result.status_code)
+      # TODO(tkchin): better error handling.
+      self.error(500)
+      return
+    self.write_response('SUCCESS')
 
   def post(self, room_id, client_id):
     message_json = self.request.body
@@ -446,19 +466,7 @@ class MessagePage(webapp2.RequestHandler):
     # certificate file locally for SSL validation.
     # Note: loopback scenario follows this code path.
     # TODO(tkchin): consider async fetch here.
-    logging.info('Forwarding message to collider for room ' + room_id +
-                 ' client ' + client_id)
-    wss_url, wss_post_url = get_wss_parameters(self.request)
-    url = wss_post_url + '/' + room_id + '/' + client_id
-    result = urlfetch.fetch(url=url,
-                            payload=message_json,
-                            method=urlfetch.POST)
-    if result.status_code != 200:
-      logging.error('Failed to send message to collider.')
-      # TODO(tkchin): better error handling.
-      self.error(500)
-      return
-    self.write_response('SUCCESS')
+    self.send_message_to_collider(room_id, client_id, message_json)
 
 class RegisterPage(webapp2.RequestHandler):
   def write_response(self, result, params, messages):
@@ -469,6 +477,14 @@ class RegisterPage(webapp2.RequestHandler):
       'result': result,
       'params': params
     }))
+
+  def add_client(self, client_map, room_id, client_id, messages, is_initiator):
+    client = create_client(room_id, client_id, messages, is_initiator)
+    client_map[client_id] = client
+
+  def write_room_parameters(self, room_id, client_id, messages, is_initiator):
+    params = get_room_parameters(self.request, room_id, client_id, is_initiator)
+    self.write_response('SUCCESS', params, messages)
 
   def post(self, room_id):
     client_id = generate_random(8)
@@ -483,29 +499,22 @@ class RegisterPage(webapp2.RequestHandler):
         # New room.
         # Create first client as initiator.
         is_initiator = True
-        client = create_client(room_id, client_id, messages, is_initiator)
-        client_map[client_id] = client
+        self.add_client(client_map, room_id, client_id, messages, is_initiator)
         if is_loopback:
-          # Loopback client is not initiator.
-          loopback_client = create_client(
-              room_id, LOOPBACK_CLIENT_ID, messages, False)
-          client_map[LOOPBACK_CLIENT_ID] = loopback_client
+          self.add_client(
+              client_map, room_id, LOOPBACK_CLIENT_ID, messages, False)
         # Write room parameters response.
-        params = get_room_parameters(
-            self.request, room_id, client_id, is_initiator)
-        self.write_response('SUCCESS', params, messages)
+        self.write_room_parameters(room_id, client_id, messages, is_initiator)
+
       elif occupancy == 1:
         # Retrieve stored messages from first client.
         other_client = client_map.values()[0]
         messages = other_client.messages
         # Create second client as not initiator.
         is_initiator = False
-        client = create_client(room_id, client_id, [], is_initiator)
-        client_map[client_id] = client
+        self.add_client(client_map, room_id, client_id, [], is_initiator)
         # Write room parameters response with any messages.
-        params = get_room_parameters(
-            self.request, room_id, client_id, is_initiator)
-        self.write_response('SUCCESS', params, messages)
+        self.write_room_parameters(room_id, client_id, messages, is_initiator)
         # Delete the messages we've responded with.
         other_client.messages = []
         other_client.put()
