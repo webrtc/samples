@@ -197,21 +197,21 @@ function setCodecParam(sdp, codec, param, value) {
 
   var fmtpLineIndex = findFmtpLine(sdpLines, codec);
 
-  var map = {};
+  var fmtpObj = {};
   if (fmtpLineIndex === null) {
     var index = findLine(sdpLines, 'a=rtpmap', codec);
     if (index === null) {
       return sdp;
     }
     var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
-    map.pt = 'a=fmtp:' + payload.toString();
-    map.params = {};
-    map.params[param] = value;
-    sdpLines.splice(index + 1, 0, writeFmtpLine(map));
+    fmtpObj.pt = payload.toString();
+    fmtpObj.params = {};
+    fmtpObj.params[param] = value;
+    sdpLines.splice(index + 1, 0, writeFmtpLine(fmtpObj));
   } else {
-    map = parseFmtpLine(sdpLines[fmtpLineIndex]);
-    map.params[param] = value;
-    sdpLines[fmtpLineIndex] = writeFmtpLine(map);
+    fmtpObj = parseFmtpLine(sdpLines[fmtpLineIndex]);
+    fmtpObj.params[param] = value;
+    sdpLines[fmtpLineIndex] = writeFmtpLine(fmtpObj);
   }
 
   sdp = sdpLines.join('\r\n');
@@ -243,6 +243,16 @@ function removeCodecParam(sdp, codec, param) {
 
 // Split an fmtp line into an object including 'pt' and 'params'.
 function parseFmtpLine(fmtpLine) {
+  var fmtpObj = {};
+  var pattern = new RegExp('a=fmtp:(\\d+) ');
+  var result = fmtpLine.match(pattern);
+  if (result && result.length === 2) {
+    fmtpObj.pt = result[1];
+  }
+  else {
+    return null;
+  }
+
   var ptIndex = fmtpLine.indexOf(' ');
   var paramLines = fmtpLine.substring(ptIndex + 1).split('; ');
   var pt = fmtpLine.substring(0, ptIndex);
@@ -253,19 +263,18 @@ function parseFmtpLine(fmtpLine) {
       params[pair[0]] = pair[1];
     }
   }
-  var map = {};
-  map.pt = pt;
-  map.params = params;
-  return map;
+  fmtpObj.params = params;
+
+  return fmtpObj;
 }
 
 // Generate an fmtp line from an object including 'pt' and 'params'.
-function writeFmtpLine(map) {
-  if (!map.hasOwnProperty('pt') || !map.hasOwnProperty('params')) {
+function writeFmtpLine(fmtpObj) {
+  if (!fmtpObj.hasOwnProperty('pt') || !fmtpObj.hasOwnProperty('params')) {
     return null;
   }
-  var pt = map.pt;
-  var params = map.params;
+  var pt = fmtpObj.pt;
+  var params = fmtpObj.params;
   var paramLines = [];
   var i = 0;
   for (var key in params) {
@@ -275,7 +284,7 @@ function writeFmtpLine(map) {
   if (i === 0) {
     return null;
   }
-  return pt + ' ' + paramLines.join('; ');
+  return 'a=fmtp:' + pt.toString() + ' ' + paramLines.join('; ');
 }
 
 // Find fmtp attribute for |codec| in |sdpLines|.
@@ -307,7 +316,7 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
   return null;
 }
 
-// Gets the codec payload type from fmtp lines.
+// Gets the codec payload type from sdp lines.
 function getCodecPayloadType(sdpLines, codec) {
   var index = findLine(sdpLines, 'a=rtpmap', codec);
   return index ? getCodecPayloadTypeFromLine(sdpLines[index]) : null;
