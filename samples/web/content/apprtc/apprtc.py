@@ -354,8 +354,8 @@ class Client(db.Model):
 def get_room_key(room_id):
   return db.Key.from_path('Room', room_id)
 
-# Creates a new Client db object.
-def create_client(room_id, client_id, messages, is_initiator):
+# Creates a new Client db object and adds it to |client_map|.
+def add_client(client_map, room_id, client_id, messages, is_initiator):
   room_key = get_room_key(room_id)
   client = Client(room_id=room_id,
                   client_id=client_id,
@@ -363,8 +363,13 @@ def create_client(room_id, client_id, messages, is_initiator):
                   is_initiator=is_initiator,
                   parent=room_key)
   client.put()
-  logging.info('Created client ' + client_id + ' in room ' + room_id)
-  return client
+  client_map[client_id] = client
+  logging.info('Added client ' + client_id + ' in room ' + room_id)
+
+# Removes a client from |client_map| and the datastore.
+def remove_client(client_map, client_id):
+    client = client_map.pop(client_id)
+    client.delete()
 
 # Returns clients for room.
 def get_room_clients(room_id):
@@ -383,10 +388,6 @@ def get_room_client_map(room_id):
   return client_map
 
 class ByePage(webapp2.RequestHandler):
-  def remove_client(self, client_map, client_id):
-    client = client_map.pop(client_id)
-    client.delete()
-
   def post(self, room_id, client_id):
     with LOCK:
       client_map = get_room_client_map(room_id)
@@ -397,10 +398,10 @@ class ByePage(webapp2.RequestHandler):
         logging.warning('Unknown client ' + client_id + ' for room ' + room_id)
         return
 
-      self.remove_client(client_map, client_id)
+      remove_client(client_map, client_id)
       logging.info('Removed client ' + client_id + ' from room ' + room_id)
       if LOOPBACK_CLIENT_ID in client_map:
-        self.remove_client(client_map, LOOPBACK_CLIENT_ID)
+        remove_client(client_map, LOOPBACK_CLIENT_ID)
         logging.info('Removed loopback client from room ' + room_id)
 
       if len(client_map) > 0:
@@ -478,10 +479,6 @@ class RegisterPage(webapp2.RequestHandler):
       'params': params
     }))
 
-  def add_client(self, client_map, room_id, client_id, messages, is_initiator):
-    client = create_client(room_id, client_id, messages, is_initiator)
-    client_map[client_id] = client
-
   def write_room_parameters(self, room_id, client_id, messages, is_initiator):
     params = get_room_parameters(self.request, room_id, client_id, is_initiator)
     self.write_response('SUCCESS', params, messages)
@@ -499,9 +496,9 @@ class RegisterPage(webapp2.RequestHandler):
         # New room.
         # Create first client as initiator.
         is_initiator = True
-        self.add_client(client_map, room_id, client_id, messages, is_initiator)
+        add_client(client_map, room_id, client_id, messages, is_initiator)
         if is_loopback:
-          self.add_client(
+          add_client(
               client_map, room_id, LOOPBACK_CLIENT_ID, messages, False)
         # Write room parameters response.
         self.write_room_parameters(room_id, client_id, messages, is_initiator)
@@ -512,7 +509,7 @@ class RegisterPage(webapp2.RequestHandler):
         messages = other_client.messages
         # Create second client as not initiator.
         is_initiator = False
-        self.add_client(client_map, room_id, client_id, [], is_initiator)
+        add_client(client_map, room_id, client_id, [], is_initiator)
         # Write room parameters response with any messages.
         self.write_room_parameters(room_id, client_id, messages, is_initiator)
         # Delete the messages we've responded with.

@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 /* global mozRTCIceCandidate, mozRTCPeerConnection,
 mozRTCSessionDescription, webkitRTCPeerConnection */
-/* exported trace */
+/* exported trace,requestUserMedia */
 
 'use strict';
 
@@ -226,13 +226,8 @@ function requestUserMedia(constraints) {
     };
 
     try {
-      displayStatus('Calling getUserMedia()...');
       getUserMedia(constraints, onSuccess, onError);
-      trace('Requested access to local media with mediaConstraints:\n' +
-          '  \'' + JSON.stringify(constraints) + '\'');
     } catch (e) {
-      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
-      displayError('getUserMedia failed with exception: ' + e.message);
       reject(e);
     }
   });

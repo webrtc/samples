@@ -16,8 +16,8 @@
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
    maybeSetVideoSendInitialBitRate, mergeConstraints, onRemoteHangup,
    onUserMediaError, onUserMediaSuccess, params, parseJSON, pc:true,
-   remoteStream:true, remoteVideo, requestTurnServers, requestUserMedia,
-   sdpConstraints, sharingDiv, webSocket:true, startTime:true,
+   remoteStream:true, remoteVideo, requestTurnServers, sendAsyncUrlRequest,
+   requestUserMedia, sdpConstraints, sharingDiv, webSocket:true, startTime:true,
    transitionToActive, updateInfoDiv, waitForRemoteVideo */
 /* exported connectToRoom, openSignalingChannel */
 
@@ -81,16 +81,21 @@ function connectToRoom(roomId) {
 
 // Asynchronously request user media if needed.
 function getMediaIfNeeded() {
-  hasLocalStream = (params.mediaConstraints.audio === true ||
-                    params.mediaConstraints.video === true);
+  // params.mediaConstraints.audio and params.mediaConstraints.video could be
+  // objects, so check '!=== false' instead of '=== true'.
+  hasLocalStream = (params.mediaConstraints.audio !== false ||
+                    params.mediaConstraints.video !== false);
   var mediaPromise = null;
   if (hasLocalStream) {
     var mediaConstraints = params.mediaConstraints;
     mediaPromise = requestUserMedia(mediaConstraints).then(function(stream) {
-      trace('Got user media.');
+      trace('Got access to local media with mediaConstraints:\n' +
+          '  \'' + JSON.stringify(mediaConstraints) + '\'');
       onUserMediaSuccess(stream);
     }).catch(function(error) {
-      trace('Error getting user media. Continuing without stream.');
+      trace('Error getting user media: ' + error.message);
+      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
+
       hasLocalStream = false;
       onUserMediaError(error);
     });
@@ -133,33 +138,24 @@ function registerWithGAE(roomId) {
     if (!roomId) {
       reject(Error('Missing room id.'));
     }
-    var xhr = new XMLHttpRequest();
     var path = '/register/' + roomId + window.location.search;
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) {
-        return;
-      }
-      var errorString = null;
-      if (xhr.status !== 200) {
-        errorString = 'Failed to register with GAE. Response: ' +
-            xhr.responseText;
-        reject(Error(errorString));
-        return;
-      }
-      var response = parseJSON(xhr.response);
-      if (!response) {
+
+    sendAsyncUrlRequest('POST', path).then(function(response) {
+      var responseObj = parseJSON(response);
+      if (!responseObj) {
         reject(Error('Error parsing response JSON.'));
         return;
       }
-      if (response.result !== 'SUCCESS') {
-        reject(Error('Registration error: ' + response.result));
+      if (responseObj.result !== 'SUCCESS') {
+        reject(Error('Registration error: ' + responseObj.result));
         return;
       }
       trace('Registered with GAE.');
-      resolve(response.params);
-    };
-    xhr.open('POST', path, true);
-    xhr.send();
+      resolve(responseObj.params);
+    }).catch(function(error) {
+      reject(Error('Failed to register with GAE: ' + error.message));
+      return;
+    });
   });
 }
 

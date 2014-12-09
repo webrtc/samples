@@ -8,10 +8,29 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals displayError, displayStatus */
-/* exported hasTurnServer, requestTurnServers */
+/* exported hasTurnServer, requestTurnServers, sendAsyncUrlRequest */
 
 'use strict';
+
+// Sends the URL request and returns a Promise as the result.
+function sendAsyncUrlRequest(method, url) {
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+      if (xhr.status !== 200) {
+        reject(
+            Error('Status=' + xhr.status + ', response=' + xhr.responseText));
+        return;
+      }
+      resolve(xhr.responseText);
+    };
+    xhr.open(method, url, true);
+    xhr.send();
+  });
+}
 
 function hasTurnServer(params) {
   var iceServers = params.peerConnectionConfig.iceServers;
@@ -26,18 +45,10 @@ function hasTurnServer(params) {
 // Returns a list of turn servers after requesting it from CEOD.
 function requestTurnServers(turnRequestUrl) {
   return new Promise(function(resolve, reject) {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4) {
-        return;
-      }
-      if (xhr.status !== 200) {
-        reject(Error('Request error: ' + xhr.status));
-        return;
-      }
-      var turnServerResponse = parseJSON(xhr.responseText);
+    sendAsyncUrlRequest('GET', turnRequestUrl).then(function(response) {
+      var turnServerResponse = parseJSON(response);
       if (!turnServerResponse) {
-        reject(Error('Error parsing response JSON: ' + xhr.responseText));
+        reject(Error('Error parsing response JSON: ' + response));
         return;
       }
       var turnServers = createIceServers(turnServerResponse.uris,
@@ -48,9 +59,10 @@ function requestTurnServers(turnRequestUrl) {
       }
       trace('Retrieved TURN server information.');
       resolve(turnServers);
-    };
-    xhr.open('GET', turnRequestUrl, true);
-    xhr.send();
+    }).catch(function(error) {
+      reject(Error('TURN server request error: ' + error.message));
+      return;
+    });
   });
 }
 
