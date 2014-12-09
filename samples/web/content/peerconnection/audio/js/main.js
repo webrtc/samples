@@ -205,10 +205,15 @@ function setDefaultCodec(mLine, payload) {
   var elements = mLine.split(' ');
   var newLine = [];
   var index = 0;
-  for (var i = 0; i < elements.length; i++) {
-    if (index === 3) { // Format of media starts from the fourth.
-      newLine[index++] = payload; // Put target payload to the first.
-    }
+
+  // Just copy the first three parameters; codec order starts on fourth.
+  newLine[index++] = elements[0];
+  newLine[index++] = elements[1];
+  newLine[index++] = elements[2];
+
+  // Put target payload first and copy in the rest.
+  newLine[index++] = payload;
+  for (var i = 3; i < elements.length; i++) {
     if (elements[i] !== payload) {
       newLine[index++] = elements[i];
     }
