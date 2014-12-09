@@ -9,7 +9,8 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals computeBitrate, computeE2EDelay, endTime, errorMessages,
-   extractStatAsInt, gatheredIceCandidateTypes, getStatsReport,
+   extractStatAsInt, formatTypePreference, gatheredIceCandidateTypes,
+   getCandidateTypePreference, getStatsReport,
    getStatsTimer:true, infoDiv, pc,
    prevStats:true, remoteVideo, startTime, stats:true */
 /* exported toggleInfoDiv, updateInfoDiv */
@@ -40,19 +41,6 @@ function refreshStats() {
   }
 }
 
-function formatTypePreference(pref) {
-  switch(pref) {
-    case 0:
-      return 'TURN/TLS';
-    case 1:
-      return 'TURN/TCP';
-    case 2:
-      return 'TURN/UDP';
-  }
-  return '';
-}
-
-
 function updateInfoDiv() {
   var contents = '<pre id=\"stats\" style=\"line-height: initial\">';
 
@@ -72,35 +60,22 @@ function updateInfoDiv() {
 
     var activeCandPair = getStatsReport(stats, 'googCandidatePair',
         'googActiveConnection', 'true');
-    var localAddr, remoteAddr, localAddrType, remoteAddrType,
-      ipv6, localTypePreference;
+    var localAddr, remoteAddr, localAddrType, remoteAddrType;
     if (activeCandPair) {
       localAddr = activeCandPair.stat('googLocalAddress');
       remoteAddr = activeCandPair.stat('googRemoteAddress');
       localAddrType = activeCandPair.stat('googLocalCandidateType');
       remoteAddrType = activeCandPair.stat('googRemoteCandidateType');
-      ipv6 = localAddr.indexOf('[') === 0;
-      pc.localDescription.sdp.split('\r\n').filter(function (line) {
-        return line.indexOf('a=candidate:') === 0;
-      }).forEach(function (line) {
-        var fields = line.split(' ');
-        var candidateAddr = (ipv6 ? ['[', fields[4], ']:', fields[5]]
-             : [fields[4], ':', fields[5]]).join('');
-        if (fields[1] === '1' && // we dont really care about RTCP
-            candidateAddr === localAddr) {
-          localTypePreference = fields[3] >> 24;
-        }
-      });
     }
     if (localAddr && remoteAddr) {
+      var localTypePref = getCandidateTypePreference(pc, activeCandPair);
+      var remoteTypePref = getCandidateTypePreference(pc, activeCandPair, true);
       contents += buildLine('LocalAddr', localAddr +
-          ' (' + localAddrType + ')');
+          ' (' + localAddrType + (localAddrType === 'relay' ?
+            ' ' + formatTypePreference(localTypePref) : '') + ')');
       contents += buildLine('RemoteAddr', remoteAddr +
-          ' (' + remoteAddrType + ')');
-    }
-    if (localTypePreference >= 0 && localTypePreference <= 2) {
-      contents += buildLine('TURN type', 
-          formatTypePreference(localTypePreference));
+          ' (' + remoteAddrType + (remoteAddrType === 'relay' ?
+            ' ' + formatTypePreference(remoteTypePref) : '') + ')');
     }
     contents += buildLine();
 
