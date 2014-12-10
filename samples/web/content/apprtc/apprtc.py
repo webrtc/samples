@@ -269,13 +269,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     include_vr_js = ('<script src="/js/vr.js"></script>\n' +
                      '<script src="/js/stereoscopic.js"></script>')
 
-  # Disable pinch-zoom scaling since we manage video real-estate explicitly
-  # (via full-screen) and don't want devicePixelRatios changing dynamically.
-  meta_viewport = ''
-  if is_chrome_for_android(user_agent):
-    meta_viewport = ('<meta name="viewport" content="width=device-width, ' +
-                     'user-scalable=no, initial-scale=1, maximum-scale=1">')
-
   debug = request.get('debug')
   if debug == 'loopback':
     # Set dtls to false as DTLS does not work for loopback.
@@ -327,7 +320,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'ssr': ssr,
     'include_loopback_js' : include_loopback_js,
     'include_vr_js': include_vr_js,
-    'meta_viewport': meta_viewport,
     'wss_url': wss_url,
     'wss_post_url': wss_post_url
   }
@@ -428,7 +420,8 @@ class MessagePage(webapp2.RequestHandler):
                             payload=message,
                             method=urlfetch.POST)
     if result.status_code != 200:
-      logging.error('Failed to send message to collider: ' + result.status_code)
+      logging.error(
+          'Failed to send message to collider: %d' % (result.status_code))
       # TODO(tkchin): better error handling.
       self.error(500)
       return

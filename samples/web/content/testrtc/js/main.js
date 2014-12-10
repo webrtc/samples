@@ -25,6 +25,11 @@ var testSuites = [];
 var testFilters = [];
 var currentTest;
 
+window.addEventListener('polymer-ready', function() {
+  var gum = new GumHandler();
+  gum.start();
+});
+
 // A test suite is a composition of many tests.
 function TestSuite(name, output) {
   this.name = name;
@@ -127,7 +132,7 @@ function Test(suite, name, func) {
   this.doneCallback_ = null;
 
   this.isDisabled = testIsDisabled(name);
-  this.reportInfo('Test not run yet.');
+  this.reportMessage_(PREFIX_INFO, 'Test not run yet.');
 }
 
 Test.prototype = {
@@ -140,6 +145,7 @@ Test.prototype = {
     this.setProgress(null);
 
     currentTest = this;
+    report.traceEventInstant('test-start', {name: this.name});
     if (!this.isDisabled) {
       this.func();
     } else {
@@ -150,11 +156,16 @@ Test.prototype = {
 
   done: function() {
     this.setProgress(null);
+    report.traceEventInstant('test-end', {name: this.name});
     if (this.errorCount === 0 && this.successCount > 0) {
+      report.logTestRunResult(this.name, 'Success');
       this.statusIcon_.setAttribute('icon', 'check');
       // On success, always close the details.
       this.output_.opened = false;
     } else {
+      if (!this.isDisabled) {
+        report.logTestRunResult(this.name, 'Failure');
+      }
       this.statusIcon_.setAttribute('icon', 'close');
       // Only close the details if there is only one expectations in which
       // case the test name should provide enough information.
@@ -187,21 +198,25 @@ Test.prototype = {
   },
 
   reportSuccess: function(str) {
+    report.traceEventInstant('report-success', str);
     this.reportMessage_(PREFIX_OK, str);
     this.successCount++;
   },
 
   reportError: function(str) {
+    report.traceEventInstant('report-error', str);
     this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
     this.errorCount++;
   },
 
   reportInfo: function(str) {
+    report.traceEventInstant('report-info', str);
     this.reportMessage_(PREFIX_INFO, str);
   },
 
   reportFatal: function(str) {
+    report.traceEventInstant('report-fatal', str);
     this.reportError(str);
     this.done();
   },
@@ -275,26 +290,27 @@ function start() {
 
 function doGetUserMedia(constraints, onSuccess, onFail) {
   // Call into getUserMedia via the polyfill (adapter.js).
-  var successFunc = function(stream) {
-    trace('User has granted access to local media.');
-    onSuccess(stream);
+  var successFunc = function() {
+    report.traceEventInstant('getusermedia-success', {});
+    onSuccess.apply(this, arguments);
   };
-  var failFunc = onFail || function(error) {
-    // If onFail function is provided error callback is propagated to the
-    // caller.
-    var errorMessage = 'Failed to get access to local media. Error name was ' +
-        error.name;
-    return reportFatal(errorMessage);
+  var failFunc = function(error) {
+    report.traceEventInstant('getusermedia-fail', error);
+    if (onFail) {
+      onFail.apply(this, arguments);
+    } else {
+      reportFatal('Failed to get access to local media. Error name was ' + error.name);
+    }
   };
   try {
     // Append the constraints with the getSource constraints.
     appendSourceId(audioSelect.value, 'audio', constraints);
     appendSourceId(videoSelect.value, 'video', constraints);
 
+    report.traceEventInstant('getusermedia', constraints);
     getUserMedia(constraints, successFunc, failFunc);
-    trace('Requested access to local media with constraints:\n' +
-        '  \'' + JSON.stringify(constraints) + '\'');
   } catch (e) {
+    console.log(e.message);
     return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
 }

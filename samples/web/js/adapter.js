@@ -25,7 +25,12 @@ function trace(text) {
   if (text[text.length - 1] === '\n') {
     text = text.substring(0, text.length - 1);
   }
-  console.log((window.performance.now() / 1000).toFixed(3) + ': ' + text);
+  if (window.performance) {
+    var now = (window.performance.now() / 1000).toFixed(3);
+    console.log(now + ': ' + text);
+  } else {
+    console.log(text);
+  }
 }
 
 function maybeFixConfiguration(pcConfig) {
@@ -65,6 +70,17 @@ if (navigator.mozGetUserMedia) {
   // Code from Adam Barth.
   getUserMedia = navigator.mozGetUserMedia.bind(navigator);
   navigator.getUserMedia = getUserMedia;
+
+  // Shim for MediaStreamTrack.getSources.
+  MediaStreamTrack.getSources = function(successCb) {
+    setTimeout(function() {
+      var infos = [
+        { kind: 'audio', id: 'default', label:'', facing:'' },
+        { kind: 'video', id: 'default', label:'', facing:'' }
+      ];
+      successCb(infos);
+    }, 0);
+  };
 
   // Creates ICE server from the URL for FF.
   window.createIceServer = function(url, username, password) {
@@ -159,34 +175,17 @@ if (navigator.mozGetUserMedia) {
     return iceServer;
   };
 
-  // Creates iceServers from the urls for Chrome M34 and above.
+  // Creates an ICEServer object from multiple URLs.
   window.createIceServers = function(urls, username, password) {
-    var iceServers = [];
-    if (webrtcDetectedVersion >= 34) {
-      // .urls is supported since Chrome M34.
-      iceServers = {
-        'urls': urls,
-        'credential': password,
-        'username': username
-      };
-    } else {
-      for (var i = 0; i < urls.length; i++) {
-        var iceServer =
-          window.createIceServer(urls[i], username, password);
-        if (iceServer !== null) {
-          iceServers.push(iceServer);
-        }
-      }
-    }
-    return iceServers;
+    return {
+      'urls': urls,
+      'credential': password,
+      'username': username
+    };
   };
 
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
-    // .urls is supported since Chrome M34.
-    if (webrtcDetectedVersion < 34) {
-      maybeFixConfiguration(pcConfig);
-    }
     return new webkitRTCPeerConnection(pcConfig, pcConstraints);
   };
 

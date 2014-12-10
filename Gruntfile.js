@@ -18,6 +18,7 @@ module.exports = function(grunt) {
           import: 2
         },
         src: ['samples/web/content/**/*.css',
+              '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       },
@@ -26,6 +27,7 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
+              '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       }
@@ -81,6 +83,15 @@ module.exports = function(grunt) {
         command: './run_python_tests.sh'
       },
     },
+
+    jstdPhantom: {
+      options: {
+        useLatest : true,
+        port: 9876,
+      },
+      files: [
+        "samples/web/content/apprtc/js_test_driver.conf",
+      ]},
   });
 
   // enable plugins
@@ -89,10 +100,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
 
   // set default tasks to run when grunt is called without parameters
   grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
-                     'shell:runPythonTests']);
+                     'shell:runPythonTests', 'jstdPhantom']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };

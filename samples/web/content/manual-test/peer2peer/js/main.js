@@ -43,6 +43,7 @@ window.onload = function() {
   }
   // Checks if the mobile UI should be used.
   registerResButtonsEvents();
+  screenCaptureExtensionHandler_()
 };
 
 // Disconnect before the tab is closed.
@@ -259,19 +260,6 @@ function updateGetUserMediaConstraints() {
     }
   }
 
-  if ($('screencapture').checked) {
-      global.constraints = {
-        audio: $('audio').checked,
-        video: {mandatory: {chromeMediaSource: 'screen',
-                            maxWidth: screen.width,
-                            maxHeight: screen.height}}
-      };
-    if ($('audio').checked) {
-      warning_('Audio for screencapture is not implemented yet, please ' +
-               'try to set audio = false prior requesting screencapture');
-    }
-  }
-
   $('getusermedia-constraints').value = JSON.stringify(global.constraints,
       null, ' ');
   $('getusermedia-constraints').addEventListener('change', function() {
@@ -384,6 +372,59 @@ function getDevices() {
   });
 
   checkIfDeviceDropdownsArePopulated_();
+}
+
+function screenCaptureExtensionHandler_() {
+  // Copied and modifed from desktopcapture example.
+  var extensionInstalled = false;
+  document.getElementById('start-screencapture').addEventListener('click',
+      function() {
+        // send screen-sharer request to content-script
+        if (!extensionInstalled) {
+          var message = 'Please install the extension:\n' +
+                        '1. Go to chrome://extensions\n' +
+                        '2. Check: "Enable Developer mode"\n' +
+                        '3. Click: "Load the unpacked extension..."\n' +
+                        '4. Choose "extension" folder from the repository:\n' +
+                        '(Can be dowloaded from here http://goo.gl/FGw6uk)\n' +
+                        '5. Reload this page';
+          alert(message);
+        }
+        window.postMessage({ type: 'SS_UI_REQUEST', text: 'start' }, '*');
+      });
+
+  // listen for messages from the content-script
+  window.addEventListener('message', function (event) {
+    if (event.origin !== window.location.origin) {
+        return;
+    }
+
+    // content-script will send a 'SS_PING' msg if extension is installed
+    if (event.data.type && (event.data.type === 'SS_PING')) {
+      extensionInstalled = true;
+    }
+
+    // user chose a stream
+    if (event.data.type && (event.data.type === 'SS_DIALOG_SUCCESS')) {
+      var constraints = {
+        audio: false,
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: event.data.streamId,
+            maxWidth: window.screen.width,
+            maxHeight: window.screen.height
+          }
+        }
+      }
+      doGetUserMedia_(JSON.stringify(constraints));
+    }
+
+    // user clicked on 'cancel' in choose media dialog
+    if (event.data.type && (event.data.type === 'SS_DIALOG_CANCEL')) {
+      warning_('User cancelled!');
+    }
+  });
 }
 
 // Sets the transform to apply just before setting the local description and

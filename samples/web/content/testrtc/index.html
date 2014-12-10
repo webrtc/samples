@@ -18,44 +18,83 @@
 
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
   <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/main_nolint.css" />
 
   <script src="bower_components/webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
-  <link rel="import" href="bower_components/core-icon-button/core-icon-button.html">
   <link rel="import" href="bower_components/core-icon/core-icon.html">
+  <link rel="Import" href="bower_components/core-icons/av-icons.html">
   <link rel="import" href="bower_components/core-collapse/core-collapse.html">
   <link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+  <link rel="import" href="bower_components/paper-dialog/paper-action-dialog.html">
   <link rel="import" href="bower_components/paper-dialog/paper-dialog-transition.html">
   <link rel="import" href="bower_components/paper-progress/paper-progress.html">
   <link rel="import" href="bower_components/paper-button/paper-button.html">
+  <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-48530561-3', 'auto');
+    ga('send', 'pageview');
+  </script>
 </head>
 <body unresolved>
   <!-- Title toolbar -->
   <core-toolbar class="title">
     <span flex>WebRTC Troubleshooter</span>
-    <core-icon-button icon="menu" onclick="settingsDialog.toggle()"></core-icon-button>
-    <core-icon-button icon="bug-report" id="bug-button" onclick="reportBug()"></core-icon-button>
+    <paper-icon-button icon="menu" onclick="settingsDialog.toggle()"></paper-icon-button>
+    <paper-icon-button icon="bug-report" onclick="report.open()"></paper-icon-button>
     <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
   </core-toolbar>
 
   <!-- Placeholder for dynamically generated test suites. -->
   <div id="content"></div>
 
+  <!-- GetUserMedia pending dialog -->
+  <paper-dialog id="gum-pending-dialog"
+                heading="Welcome to WebRTC Troubleshooter"
+                backdrop autoCloseDisabled>
+    <p>To test your webcam, microphone, and speakers we need permission to
+        them selecting by “Allow”.</p>
+  </paper-dialog>
+
+  <!-- GetUserMedia error dialog -->
+  <paper-dialog id="gum-error-dialog"
+                heading="Welcome to WebRTC Troubleshooter"
+                backdrop autoCloseDisabled>
+    <p>Click the <core-icon icon="av:videocam-off"></core-icon>
+      icon in the URL bar above to give TestRTC access to your computer's
+      camera and microphone.</p>
+    <p>GetUserMedia reason: <span id="gum-error-message"></span></p>
+    <paper-icon-button icon="bug-report" onclick="report.open()">File a bug</paper-icon-button>
+  </paper-dialog>
+
   <!-- Settings dialog -->
   <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
-    <br>
     <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
     <div class="select"><label>Video source: <select id="videoSource"></select></label></div>
   </paper-dialog>
 
+  <!-- Report dialog -->
+  <paper-action-dialog id="report-dialog" heading="Bug Report" backdrop autoCloseDisabled transition="paper-dialog-transision-center">
+    <div>
+      <p>Please file a bug in the <a id="report-link">Chromium bug tracker</a> and attach the report from this page.</p>
+      <paper-button flex id="report-download" onclick="report.downloadReport()">Download Report</paper-button>
+      <paper-button affirmative>Close</paper-button>
+    </div>
+  </paper-action-dialog>
+
   <!-- Add common files after this line. -->
   <script src="js/adapter.js"></script>
-  <script src="js/bugreport.js"></script>
+  <script src="js/report.js"></script>
   <script src="js/main.js"></script>
   <script src="js/call.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/ssim.js"></script>
-  <!-- TODO(juberti): Add analytics script src="js/lib/ga.js" -->
+  <script src="js/gumhandler.js"></script>
 
   <!-- Add tests after this line. -->
   <script src="js/mictest.js"></script>
