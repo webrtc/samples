@@ -244,12 +244,11 @@ function removeCodecParam(sdp, codec, param) {
 // Split an fmtp line into an object including 'pt' and 'params'.
 function parseFmtpLine(fmtpLine) {
   var fmtpObj = {};
-  var ptIndex = fmtpLine.indexOf(' ');
-  var ptLine = fmtpLine.substring(0, ptIndex);
-  var paramLines = fmtpLine.substring(ptIndex + 1).split('; ');
+  var spacePos = fmtpLine.indexOf(' ');
+  var keyValues = fmtpLine.substring(spacePos + 1).split('; ');
 
   var pattern = new RegExp('a=fmtp:(\\d+)');
-  var result = ptLine.match(pattern);
+  var result = fmtpLine.match(pattern);
   if (result && result.length === 2) {
     fmtpObj.pt = result[1];
   }
@@ -258,8 +257,8 @@ function parseFmtpLine(fmtpLine) {
   }
 
   var params = {};
-  for (var i = 0; i < paramLines.length; ++i) {
-    var pair = paramLines[i].split('=');
+  for (var i = 0; i < keyValues.length; ++i) {
+    var pair = keyValues[i].split('=');
     if (pair.length === 2) {
       params[pair[0]] = pair[1];
     }
@@ -276,16 +275,16 @@ function writeFmtpLine(fmtpObj) {
   }
   var pt = fmtpObj.pt;
   var params = fmtpObj.params;
-  var paramLines = [];
+  var keyValues = [];
   var i = 0;
   for (var key in params) {
-    paramLines[i] = key + '=' + params[key];
+    keyValues[i] = key + '=' + params[key];
     ++i;
   }
   if (i === 0) {
     return null;
   }
-  return 'a=fmtp:' + pt.toString() + ' ' + paramLines.join('; ');
+  return 'a=fmtp:' + pt.toString() + ' ' + keyValues.join('; ');
 }
 
 // Find fmtp attribute for |codec| in |sdpLines|.
