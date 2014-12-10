@@ -14,7 +14,6 @@ body {
 
 .title {
   height: 60px;
-  line-height: 60px;
   font-size: 18px;
   font-weight: 500;
   background-color: #4F7DC9;
@@ -30,19 +29,8 @@ paper-button {
   color: #000;
 }
 
-#camera {
-  color: #888;
-}
-
-.gumOverlay {
-  top: 2em;
-  position: fixed;
-  background: #FFF;
-  height: auto;
-  max-width: 90%;
-  text-align: center;
-  border-radius: 0.3em;
-  padding: inherit;
+#start-button {
+  line-height: 3em;
 }
 
 div#content {
