@@ -251,8 +251,7 @@ function parseFmtpLine(fmtpLine) {
   var result = fmtpLine.match(pattern);
   if (result && result.length === 2) {
     fmtpObj.pt = result[1];
-  }
-  else {
+  } else {
     return null;
   }
 
