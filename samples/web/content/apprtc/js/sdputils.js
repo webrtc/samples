@@ -249,19 +249,15 @@ function getCodecPayloadType(sdpLine) {
 // Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
   var elements = mLine.split(' ');
-  var newLine = [];
-  var index = 0;
 
   // Just copy the first three parameters; codec order starts on fourth.
-  newLine[index++] = elements[0];
-  newLine[index++] = elements[1];
-  newLine[index++] = elements[2];
+  var newLine = elements.slice(0, 3);
 
   // Put target payload first and copy in the rest.
-  newLine[index++] = payload;
+  newLine.push(payload);
   for (var i = 3; i < elements.length; i++) {
     if (elements[i] !== payload) {
-      newLine[index++] = elements[i];
+      newLine.push(elements[i]);
     }
   }
   return newLine.join(' ');
