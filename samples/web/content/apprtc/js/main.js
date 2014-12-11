@@ -108,7 +108,6 @@ function initialize() {
   }
 }
 
-
 function onUserMediaSuccess(stream) {
   trace('User has granted access to local media.');
   // Call the polyfill wrapper to attach the media stream to this element.

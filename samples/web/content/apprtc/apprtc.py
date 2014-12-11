@@ -418,10 +418,10 @@ class MainPage(webapp2.RequestHandler):
     video_receive_codec = self.request.get('vrc', default_value = '')
 
     # Read url param controlling whether we send stereo.
-    stereo = self.request.get('stereo', default_value = 'false')
+    stereo = self.request.get('stereo', default_value = '')
 
     # Read url param controlling whether we send Opus FEC.
-    opusfec = self.request.get('opusfec', default_value = 'true')
+    opusfec = self.request.get('opusfec', default_value = '')
 
     # Read url param for Opus max sample rate.
     opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
