@@ -10,6 +10,7 @@
 
 /* globals displayError, params */
 /* exported addCodecParam, iceCandidateType,
+   formatTypePreference, getCandidateTypePreference,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
@@ -29,6 +30,41 @@ function mergeConstraints(cons1, cons2) {
 
 function iceCandidateType(candidateStr) {
   return candidateStr.split(' ')[7];
+}
+
+// Turns the local type preference into a human-readable string.
+// Note that this mapping is browser-specific.
+function formatTypePreference(pref) {
+  switch(pref) {
+    case 0:
+      return 'TURN/TLS';
+    case 1:
+      return 'TURN/TCP';
+    case 2:
+      return 'TURN/UDP';
+  }
+  return '';
+}
+
+// Look up the local or remote candidate associated with a candidate pair
+// and return its type preference.
+function getCandidateTypePreference(pc, candPair, remote) {
+  var addr = candPair.stat(remote ? 'googRemoteAddress' : 'googLocalAddress');
+  var desc = remote ? pc.remoteDescription : pc.localDescription;
+  var ipv6 = addr.indexOf('[') === 0;
+  var typePref = null;
+  desc.sdp.split('\r\n').filter(function (line) {
+    return line.indexOf('a=candidate:') === 0;
+  }).forEach(function (line) {
+    var fields = line.split(' ');
+    var candidateAddr = (ipv6 ? ['[', fields[4], ']:', fields[5]]
+         : [fields[4], ':', fields[5]]).join('');
+    if (fields[1] === '1' && // we dont really care about RTCP
+        candidateAddr === addr) {
+      typePref = fields[3] >> 24;
+    }
+  });
+  return typePref;
 }
 
 function maybeSetAudioSendBitRate(sdp) {

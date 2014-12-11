@@ -9,7 +9,8 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals computeBitrate, computeE2EDelay, endTime, errorMessages,
-   extractStatAsInt, gatheredIceCandidateTypes, getStatsReport,
+   extractStatAsInt, formatTypePreference, gatheredIceCandidateTypes,
+   getCandidateTypePreference, getStatsReport,
    getStatsTimer:true, infoDiv, pc,
    prevStats:true, remoteVideo, startTime, stats:true */
 /* exported toggleInfoDiv, updateInfoDiv */
@@ -67,10 +68,14 @@ function updateInfoDiv() {
       remoteAddrType = activeCandPair.stat('googRemoteCandidateType');
     }
     if (localAddr && remoteAddr) {
+      var localTypePref = getCandidateTypePreference(pc, activeCandPair);
+      var remoteTypePref = getCandidateTypePreference(pc, activeCandPair, true);
       contents += buildLine('LocalAddr', localAddr +
-          ' (' + localAddrType + ')');
+          ' (' + localAddrType + (localAddrType === 'relay' ?
+            ' ' + formatTypePreference(localTypePref) : '') + ')');
       contents += buildLine('RemoteAddr', remoteAddr +
-          ' (' + remoteAddrType + ')');
+          ' (' + remoteAddrType + (remoteAddrType === 'relay' ?
+            ' ' + formatTypePreference(remoteTypePref) : '') + ')');
     }
     contents += buildLine();
 
