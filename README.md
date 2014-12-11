@@ -82,6 +82,8 @@ Patches and issues welcome!
 
 [Multiple peerconnections](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-peerconnections)
 
+[Multiple video devices](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-video-devices)
+
 [Multiple video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-video)
 
 [Peer2peer](https://googlechrome.github.io/webrtc/samples/web/content/manual/peer2peer)
@@ -92,4 +94,4 @@ Patches and issues welcome!
 
 [Single video stream](https://googlechrome.github.io/webrtc/samples/web/content/manual/single-video)
 
-[Two video devices](https://googlechrome.github.io/webrtc/samples/web/content/manual/two-video-devices)
+
