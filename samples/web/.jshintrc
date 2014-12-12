@@ -20,6 +20,7 @@
     "createIceServer": true,
     "doGetUserMedia": true,
     "expectEquals": true,
+    "GetStats": true,
     "getUserMedia": true,
     "getUserMedia": true,
     "ga": true,

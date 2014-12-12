@@ -44,14 +44,16 @@ function CamResolutionsTest() {
   this.counter = 0;
   this.supportedResolutions = 0;
   this.unsupportedResolutions = 0;
+  this.currentResolutionForCheckEncodeTime = null;
+  this.collectStatsDuration = 5000;
 }
 
 CamResolutionsTest.prototype = {
   run: function() {
-    this.triggerGetUserMedia(this.resolutions[0]);
+    this.triggerGetUserMedia_(this.resolutions[0]);
   },
 
-  triggerGetUserMedia: function(resolution) {
+  triggerGetUserMedia_: function(resolution) {
     var constraints = {
       audio: false,
       video: {
@@ -64,22 +66,67 @@ CamResolutionsTest.prototype = {
       }
     };
     try {
-      doGetUserMedia(constraints, this.successFunc.bind(this),
-          this.failFunc.bind(this));
+      doGetUserMedia(constraints, this.successFunc_.bind(this),
+          this.failFunc_.bind(this));
     } catch (e) {
       reportFatal('GetUserMedia failed.');
     }
   },
 
-  successFunc: function(stream) {
+  successFunc_: function(stream) {
     this.supportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
+    // Check stats for mandatory resolutions only.
+    if (theResolution[2]) {
+      this.currentResolutionForCheckEncodeTime = theResolution;
+      this.getEncodeTime = new GetStats();
+      this.getEncodeTime.start(stream, 'googAvgEncodeMs',
+          this.collectStat_.bind(this), this.collectStatsDuration);
+      this.stream = stream;
+      // Not sure on how to this with the progress bar properly.
+      setTimeoutWithProgressBar(function() { return; },
+          this.collectStatsDuration);
+      return;
+    }
     reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
     stream.getVideoTracks()[0].stop();
-    this.finishTestOrRetrigger();
+    this.finishTestOrRetrigger_();
+    return;
   },
 
-  failFunc: function() {
+  collectStat_: function(stats) {
+    this.analyzeStats_(stats);
+    this.stream.getVideoTracks()[0].stop();
+    this.finishTestOrRetrigger_();
+  },
+
+  analyzeStats_: function(stats) {
+    var currentRes = this.currentResolutionForCheckEncodeTime;
+    if (stats.length === 0) {
+      // Consider making this an error in the future.
+      reportInfo('Supported ' + currentRes[0] + 'x' +  currentRes[1] +
+          ' - Stats are empty indicating the camera is not delivering video.');
+      return;
+    }
+    // Taken from http://javascriptexample.net/extobjects81.php.
+    Math.average = function() {
+      var cnt, tot, i;
+      cnt = arguments.length;
+      tot = i = 0;
+      while (i < cnt) {
+        tot += arguments[i++];
+      }
+      return tot / cnt;
+    };
+    var average = Math.average.apply(Math, stats);
+    var max = Math.max.apply(Math, stats);
+    var min = Math.min.apply(Math, stats);
+    reportInfo('Supported ' + currentRes[0] + 'x' + currentRes[1] +
+               ' Average: ' + Math.floor(average) + ' Max: ' +  max + ' Min: ' +
+               min + ' encode time (ms)');
+  },
+
+  failFunc_: function() {
     this.unsupportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     if (theResolution[2]) {
@@ -90,10 +137,10 @@ CamResolutionsTest.prototype = {
       reportInfo('NOT supported ' + theResolution[0] + 'x' +
                  theResolution[1]);
     }
-    this.finishTestOrRetrigger();
+    this.finishTestOrRetrigger_();
   },
 
-  finishTestOrRetrigger: function() {
+  finishTestOrRetrigger_: function() {
     if (this.counter === this.numResolutions) {
       if (this.mandatoryUnsupportedResolutions === 0) {
         if (this.supportedResolutions) {
@@ -106,7 +153,8 @@ CamResolutionsTest.prototype = {
       }
       testFinished();
     } else {
-      this.triggerGetUserMedia(this.resolutions[this.counter]);
+      this.triggerGetUserMedia_(this.resolutions[this.counter]);
     }
   }
+
 };
