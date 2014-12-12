@@ -366,6 +366,20 @@ function testIsDisabled(testName) {
   return true;
 }
 
+function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
+  var start = new Date();
+  var updateProgressBar = setInterval(function () {
+    var now = new Date();
+    setTestProgress((now - start) * 100 / timeoutMs);
+  }, 100);
+
+  setTimeout(function () {
+    clearInterval(updateProgressBar);
+    setTestProgress(100);
+    timeoutCallback();
+  }, timeoutMs);
+}
+
 // Parse URL parameters and configure test filters.
 {
   var parseUrlParameters = function() {
