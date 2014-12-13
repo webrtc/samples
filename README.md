@@ -68,3 +68,30 @@ Patches and issues welcome!
 
 [Complete video chat client (based on Google App Engine)](https://apprtc.appspot.com)
 
+## Test pages ##
+
+[Audio and Video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/audio-and-video)
+
+[Constraints](https://googlechrome.github.io/webrtc/samples/web/content/manual/constraints)
+
+[Iframe apprtc](https://googlechrome.github.io/webrtc/samples/web/content/manual/iframe-apprtc)
+
+[Iframe video](https://googlechrome.github.io/webrtc/samples/web/content/manual/iframe-video)
+
+[Multiple audio streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-audio)
+
+[Multiple peerconnections](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-peerconnections)
+
+[Multiple video devices](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-video-devices)
+
+[Multiple video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-video)
+
+[Peer2peer](https://googlechrome.github.io/webrtc/samples/web/content/manual/peer2peer)
+
+[Peer2peer iframe](https://googlechrome.github.io/webrtc/samples/web/content/manual/peer2peer-iframe)
+
+[Single audio stream](https://googlechrome.github.io/webrtc/samples/web/content/manual/single-audio)
+
+[Single video stream](https://googlechrome.github.io/webrtc/samples/web/content/manual/single-video)
+
+

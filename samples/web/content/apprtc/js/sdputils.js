@@ -9,12 +9,12 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals displayError, params */
-/* exported addCodecParam, iceCandidateType,
+/* exported setCodecParam, iceCandidateType,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendBitRate,
-   maybeSetVideoSendInitialBitRate, mergeConstraints */
+   maybeSetVideoSendInitialBitRate, mergeConstraints, removeCodecParam */
 
 'use strict';
 
@@ -134,13 +134,12 @@ function maybeSetVideoSendInitialBitRate(sdp) {
     return sdp;
   }
 
-  var vp8RtpmapIndex = findLine(sdpLines, 'a=rtpmap', 'VP8/90000');
-  var vp8Payload = getCodecPayloadType(sdpLines[vp8RtpmapIndex]);
-  var vp8Fmtp = 'a=fmtp:' + vp8Payload + ' x-google-min-bitrate=' +
-      params.videoSendInitialBitrate.toString() + '; x-google-max-bitrate=' +
-      maxBitrate.toString();
-  sdpLines.splice(vp8RtpmapIndex + 1, 0, vp8Fmtp);
-  return sdpLines.join('\r\n');
+  sdp = setCodecParam(sdp, 'VP8/90000', 'x-google-min-bitrate',
+      params.videoSendInitialBitrate.toString());
+  sdp = setCodecParam(sdp, 'VP8/90000', 'x-google-max-bitrate',
+      maxBitrate.toString());
+
+  return sdp;
 }
 
 // Promotes |audioSendCodec| to be the first in the m=audio line, if set.
@@ -183,39 +182,116 @@ function maybePreferCodec(sdp, type, dir, codec) {
   }
 
   // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
-  if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
-    if (payload) {
-      sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
-    }
+  var payload = getCodecPayloadType(sdpLines, codec);
+  if (payload) {
+    sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
   }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
 }
 
-// Add fmtp param to specified codec in SDP.
-function addCodecParam(sdp, codec, param) {
+// Set fmtp param to specific codec in SDP. If param does not exists, add it.
+function setCodecParam(sdp, codec, param, value) {
   var sdpLines = sdp.split('\r\n');
 
-  // Find opus payload.
-  var index = findLine(sdpLines, 'a=rtpmap', codec);
-  var payload;
-  if (index) {
-    payload = getCodecPayloadType(sdpLines[index]);
+  var fmtpLineIndex = findFmtpLine(sdpLines, codec);
+
+  var fmtpObj = {};
+  if (fmtpLineIndex === null) {
+    var index = findLine(sdpLines, 'a=rtpmap', codec);
+    if (index === null) {
+      return sdp;
+    }
+    var payload = getCodecPayloadTypeFromLine(sdpLines[index]);
+    fmtpObj.pt = payload.toString();
+    fmtpObj.params = {};
+    fmtpObj.params[param] = value;
+    sdpLines.splice(index + 1, 0, writeFmtpLine(fmtpObj));
+  } else {
+    fmtpObj = parseFmtpLine(sdpLines[fmtpLineIndex]);
+    fmtpObj.params[param] = value;
+    sdpLines[fmtpLineIndex] = writeFmtpLine(fmtpObj);
   }
 
-  // Find the payload in fmtp line.
-  var fmtpLineIndex = findLine(sdpLines, 'a=fmtp:' + payload.toString());
+  sdp = sdpLines.join('\r\n');
+  return sdp;
+}
+
+// Remove fmtp param if it exists.
+function removeCodecParam(sdp, codec, param) {
+  var sdpLines = sdp.split('\r\n');
+
+  var fmtpLineIndex = findFmtpLine(sdpLines, codec);
   if (fmtpLineIndex === null) {
     return sdp;
   }
 
-  sdpLines[fmtpLineIndex] = sdpLines[fmtpLineIndex].concat('; ', param);
+  var map = parseFmtpLine(sdpLines[fmtpLineIndex]);
+  delete map.params[param];
+
+  var newLine = writeFmtpLine(map);
+  if (newLine === null) {
+    sdpLines.splice(fmtpLineIndex, 1);
+  } else {
+    sdpLines[fmtpLineIndex] = newLine;
+  }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
+}
+
+// Split an fmtp line into an object including 'pt' and 'params'.
+function parseFmtpLine(fmtpLine) {
+  var fmtpObj = {};
+  var spacePos = fmtpLine.indexOf(' ');
+  var keyValues = fmtpLine.substring(spacePos + 1).split('; ');
+
+  var pattern = new RegExp('a=fmtp:(\\d+)');
+  var result = fmtpLine.match(pattern);
+  if (result && result.length === 2) {
+    fmtpObj.pt = result[1];
+  } else {
+    return null;
+  }
+
+  var params = {};
+  for (var i = 0; i < keyValues.length; ++i) {
+    var pair = keyValues[i].split('=');
+    if (pair.length === 2) {
+      params[pair[0]] = pair[1];
+    }
+  }
+  fmtpObj.params = params;
+
+  return fmtpObj;
+}
+
+// Generate an fmtp line from an object including 'pt' and 'params'.
+function writeFmtpLine(fmtpObj) {
+  if (!fmtpObj.hasOwnProperty('pt') || !fmtpObj.hasOwnProperty('params')) {
+    return null;
+  }
+  var pt = fmtpObj.pt;
+  var params = fmtpObj.params;
+  var keyValues = [];
+  var i = 0;
+  for (var key in params) {
+    keyValues[i] = key + '=' + params[key];
+    ++i;
+  }
+  if (i === 0) {
+    return null;
+  }
+  return 'a=fmtp:' + pt.toString() + ' ' + keyValues.join('; ');
+}
+
+// Find fmtp attribute for |codec| in |sdpLines|.
+function findFmtpLine(sdpLines, codec) {
+  // Find payload of codec.
+  var payload = getCodecPayloadType(sdpLines, codec);
+  // Find the payload in fmtp line.
+  return payload ? findLine(sdpLines, 'a=fmtp:' + payload.toString()) : null;
 }
 
 // Find the line in sdpLines that starts with |prefix|, and, if specified,
@@ -239,8 +315,14 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
   return null;
 }
 
+// Gets the codec payload type from sdp lines.
+function getCodecPayloadType(sdpLines, codec) {
+  var index = findLine(sdpLines, 'a=rtpmap', codec);
+  return index ? getCodecPayloadTypeFromLine(sdpLines[index]) : null;
+}
+
 // Gets the codec payload type from an a=rtpmap:X line.
-function getCodecPayloadType(sdpLine) {
+function getCodecPayloadTypeFromLine(sdpLine) {
   var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
   var result = sdpLine.match(pattern);
   return (result && result.length === 2) ? result[1] : null;
@@ -249,14 +331,15 @@ function getCodecPayloadType(sdpLine) {
 // Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
   var elements = mLine.split(' ');
-  var newLine = [];
-  var index = 0;
-  for (var i = 0; i < elements.length; i++) {
-    if (index === 3) { // Format of media starts from the fourth.
-      newLine[index++] = payload; // Put target payload to the first.
-    }
+
+  // Just copy the first three parameters; codec order starts on fourth.
+  var newLine = elements.slice(0, 3);
+
+  // Put target payload first and copy in the rest.
+  newLine.push(payload);
+  for (var i = 3; i < elements.length; i++) {
     if (elements[i] !== payload) {
-      newLine[index++] = elements[i];
+      newLine.push(elements[i]);
     }
   }
   return newLine.join(' ');
