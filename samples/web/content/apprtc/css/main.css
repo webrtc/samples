@@ -40,6 +40,25 @@ body {
   width: 100%;
 }
 
+button {
+  border: none;
+  border-radius: 2px;
+  font-family: 'Roboto', 'Lucida Grande', sans-serif;
+  position: relative;
+}
+
+button:active {
+  background-color: #444;
+}
+
+button:hover {
+  background-color: #aaa;
+}
+
+button[disabled] {
+  color: white;
+}
+
 div.warning {
   background-color: #a80202;
   color: black;
@@ -65,6 +84,7 @@ div.warning {
 }
 
 #videos {
+  font-size: 0; /* to fix whitespace/scrollbars problem */
   height: 100%;
   pointer-events: none;
   position: absolute;
@@ -100,32 +120,95 @@ footer > div.active {
   opacity: .8;
 }
 
-@-webkit-keyframes rotate {
-  0% {
-    -webkit-transform: rotateY(0);
-    transform: rotateY(0);
-  }
-
-  100% {
-    -webkit-transform: rotateY(180deg);
-    transform: rotateY(180deg);
-  }
+header div {
+  background-color: black;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  border-radius: 2px;
+  display: inline-block;
+  height: 40px;
+  margin: 0 20px 0 0;
+  opacity: 1;
+  width: 40px;
 }
 
-@keyframes rotate {
-  0% {
-    transform: rotateY(0);
+@media screen and (max-width: 450px) {
+  header div {
+    margin: 0 30px 0 0;
   }
+}
+header div:last-of-type {
+  margin: 0 20px 0 0;
+}
 
-  100% {
-    transform: rotateY(180deg);
-  }
+header div:hover {
+  background-color: #333;
+  opacity: 1;
+}
+
+header div#camera {
+  background-image: url(../images/camera.png);
+}
+
+header div#camera.activated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+header div#hangup {
+  background-image: url(../images/hangupRed.png);
+}
+
+header div#hangup:hover {
+  background-image: url(../images/hangupWhite.png);
+  background-color: #dd4b39;
+}
+
+header div#mute {
+  background-image: url(../images/mute.png);
+}
+
+header div#mute.active {
+  background-color: #dd4b39;
+}
+
+header div#toggleInfo {
+  background-image: url(../images/toggleInfo.png);
+}
+
+header div#toggleInfo.active {
+  background-color: #dd4b39;
+}
+
+header {
+  background-color: black;
+  display: block;
+  opacity: 0;
+  padding: 20px 10px 20px 10px;
+  position: absolute;
+  text-align: center;
+  transition: all 0.7s;
+  width: calc(100% - 20px);
+  z-index: 1;
+}
+
+header.active {
+  opacity: 0.8;
 }
 
 html {
   height: 100%;
   margin: 0;
   width: 100%;
+}
+
+header img {
+  margin: 0 5% 0 0;
+  opacity: 0.8;
+}
+
+header img:hover {
+  opacity: 1;
 }
 
 label {
@@ -183,4 +266,26 @@ label {
 #remote-video.active {
   opacity: 1;
   z-index: 1;
+}
+
+@-webkit-keyframes rotate {
+  0% {
+    -webkit-transform: rotateY(0);
+    transform: rotateY(0);
+  }
+
+  100% {
+    -webkit-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotateY(0);
+  }
+
+  100% {
+    transform: rotateY(180deg);
+  }
 }

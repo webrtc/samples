@@ -30,13 +30,18 @@
 
 'use strict';
 
+var cameraIcon = document.querySelector('div#camera');
+var hangupIcon = document.querySelector('div#hangup');
+var header = document.querySelector('header');
 var infoDiv = document.querySelector('#info');
 var localVideo = document.querySelector('#local-video');
 var miniVideo = document.querySelector('#mini-video');
+var muteIcon = document.querySelector('div#mute');
 var remoteCanvas = document.querySelector('#remote-canvas');
 var remoteVideo = document.querySelector('#remote-video');
 var sharingDiv = document.querySelector('#sharing');
 var statusDiv = document.querySelector('#status');
+var toggleInfoIcon = document.querySelector('div#toggleInfo');
 var videosDiv = document.querySelector('#videos');
 
 var channelReady = false;
@@ -85,6 +90,11 @@ function initialize() {
     }
     return;
   }
+
+  cameraIcon.onclick = changeCamera;
+  hangupIcon.onclick = hangup;
+  muteIcon.onclick = toggleRemoteVideoElementMuted;
+  toggleInfoIcon.onclick = toggleInfoDiv;
 
   document.body.ondblclick = toggleFullScreen;
 
@@ -191,6 +201,7 @@ function transitionToActive() {
   // Transition opacity from 0 to 1 for the remote and mini videos.
   remoteVideo.classList.add('active');
   miniVideo.classList.add('active');
+  header.classList.remove('hidden');
   // Transition opacity from 1 to 0 for the local video.
   localVideo.classList.remove('active');
   localVideo.src = '';
@@ -205,6 +216,7 @@ function transitionToWaiting() {
   startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
   videosDiv.classList.remove('active');
+  header.classList.add('hidden');
   setTimeout(function() {
     localVideo.src = miniVideo.src;
     miniVideo.src = '';
@@ -223,6 +235,7 @@ function transitionToDone() {
   localVideo.classList.remove('active');
   remoteVideo.classList.remove('active');
   miniVideo.classList.remove('active');
+  header.classList.add('hidden');
   displayStatus('You have left the call. <a href=\'' + params.roomLink +
       '\'>Click here</a> to rejoin.');
 }
@@ -261,16 +274,12 @@ function toggleAudioMute() {
   trace('Audio ' + isVideoMuted ? 'muted.' : 'unmuted.');
 }
 
-// Spacebar, or m: toggle audio mute.
-// c: toggle camera(video) mute.
-// f: toggle fullscreen.
-// i: toggle info panel.
-// q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 document.onkeypress = function(event) {
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
+      showHeader();
       toggleAudioMute();
       return false;
     case 'c':
@@ -330,4 +339,102 @@ function toggleFullScreen() {
   } catch (event) {
     trace(event);
   }
+}
+
+function toggleRemoteVideoElementMuted() {
+  setRemoteVideoElementMuted(!remoteVideo.muted);
+}
+
+function setRemoteVideoElementMuted(mute) {
+  if (mute) {
+    remoteVideo.muted = true;
+    remoteVideo.title = 'Unmute audio';
+    muteIcon.classList.add('active');
+    localStorage.setItem('mute', 'true');
+  } else {
+    remoteVideo.muted = false;
+    remoteVideo.title = 'Mute audio';
+    muteIcon.classList.remove('active');
+    localStorage.setItem('mute', 'false');
+  }
+}
+
+function showHeader() {
+  if (!header.classList.contains('active')) {
+    header.classList.add('active');
+    setTimeout(function() {
+      header.classList.remove('active');
+    }, 5000);
+  }
+}
+
+document.body.onmousemove = showHeader;
+
+var isGetSourcesSupported = MediaStreamTrack && MediaStreamTrack.getSources;
+
+try {
+  if (isGetSourcesSupported) {
+    MediaStreamTrack.getSources(gotSources);
+  } else {
+    trace('This browser does not support MediaStreamTrack.getSources().');
+  }
+} catch (e) {
+  trace('This browser does not support MediaStreamTrack.getSources().');
+  trace('getUserMedia failed with exception: ' + e.message);
+}
+
+var videoSources = [];
+
+function gotSources(sources) {
+  for (var i = 0; i !== sources.length; ++i) {
+    var source = sources[i];
+    if (source.kind === 'video') {
+      videoSources.push(source);
+    }
+  }
+  // if more than one camera available, show the camera icon
+  if (videoSources.length > 1) {
+    cameraIcon.classList.remove('hidden');
+  }
+}
+
+function changeCamera() {
+  // do icon animation
+  cameraIcon.classList.add('activated');
+  setTimeout(function() {
+    cameraIcon.classList.remove('activated');
+    header.classList.remove('active');
+  }, 1000);
+
+  // check if sourceId has already been set
+  var sourceIdObj;
+  var videoOptional = params.mediaConstraints.video.optional;
+  if ( !! videoOptional) {
+    for (i = 0; i !== videoOptional.length; ++i) {
+      if (videoOptional[i].hasOwnProperty('sourceId')) {
+        sourceIdObj = videoOptional[i];
+        break;
+      }
+    }
+  }
+
+  if (sourceIdObj) {
+    for (var i = 0; i !== videoSources.length; ++i) {
+      var videoSourceId = videoSources[i].id;
+      // change it
+      if (sourceIdObj.sourceId !== videoSourceId) {
+        sourceIdObj.sourceId = videoSourceId;
+        break;
+      }
+    }
+  } else {
+    // this is the first time a non-default camera has been set
+    // default source is first in array of sources, so use second
+    params.mediaConstraints.mediaConstraints.video = {
+      optional: [{
+        'sourceId': videoSources[1].id
+      }]
+    };
+  }
+  doGetUserMedia();
 }
