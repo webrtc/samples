@@ -310,3 +310,7 @@ body {
 background: #f00;
 margin: 50px;
 }
+
+circle:hover {
+    fill: #fce57e;
+}
