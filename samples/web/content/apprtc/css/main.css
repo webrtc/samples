@@ -256,11 +256,6 @@ body:hover #icons svg {
   background: #12a256;
 }
 
-#switch_video.activated {
-  animation: rotate 1s;
-  -webkit-animation: rotate 1s;
-}
-
 #switch_video:hover circle {
   fill: #12a256;
 }
