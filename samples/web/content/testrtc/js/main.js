@@ -367,9 +367,9 @@ function testIsDisabled(testName) {
 }
 
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
-  var start = new Date();
+  var start = window.performance.now();
   var updateProgressBar = setInterval(function () {
-    var now = new Date();
+    var now = window.performance.now();
     setTestProgress((now - start) * 100 / timeoutMs);
   }, 100);
 
