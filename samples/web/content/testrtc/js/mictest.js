@@ -41,20 +41,6 @@ MicTest.prototype = {
     this.createAudioBuffer(stream);
   },
 
-  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
-    var start = new Date();
-    var updateProgressBar = setInterval(function () {
-      var now = new Date();
-      setTestProgress((now - start) * 100 / timeoutMs);
-    }, 100);
-
-    setTimeout(function () {
-      clearInterval(updateProgressBar);
-      setTestProgress(100);
-      timeoutCallback();
-    }, timeoutMs);
-  },
-
   checkAudioTracks: function(stream) {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
@@ -73,7 +59,7 @@ MicTest.prototype = {
     this.audioSource.connect(this.scriptNode);
     this.scriptNode.connect(audioContext.destination);
     this.scriptNode.onaudioprocess = this.collectAudio.bind(this);
-    this.setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 2000);
+    setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 2000);
   },
 
   collectAudio: function(event) {

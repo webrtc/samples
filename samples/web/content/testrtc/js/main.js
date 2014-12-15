@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog */
+/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -364,6 +364,20 @@ function testIsDisabled(testName) {
     }
   }
   return true;
+}
+
+function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
+  var start = window.performance.now();
+  var updateProgressBar = setInterval(function () {
+    var now = window.performance.now();
+    setTestProgress((now - start) * 100 / timeoutMs);
+  }, 100);
+
+  setTimeout(function () {
+    clearInterval(updateProgressBar);
+    setTestProgress(100);
+    timeoutCallback();
+  }, timeoutMs);
 }
 
 // Parse URL parameters and configure test filters.
