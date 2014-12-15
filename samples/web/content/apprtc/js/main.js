@@ -30,19 +30,36 @@
 
 'use strict';
 
-var cameraIcon = document.querySelector('div#camera');
-var hangupIcon = document.querySelector('div#hangup');
-var header = document.querySelector('header');
-var infoDiv = document.querySelector('#info');
-var localVideo = document.querySelector('#local-video');
-var miniVideo = document.querySelector('#mini-video');
-var muteIcon = document.querySelector('div#mute');
-var remoteCanvas = document.querySelector('#remote-canvas');
-var remoteVideo = document.querySelector('#remote-video');
-var sharingDiv = document.querySelector('#sharing');
-var statusDiv = document.querySelector('#status');
-var toggleInfoIcon = document.querySelector('div#toggleInfo');
-var videosDiv = document.querySelector('#videos');
+var icons = $('#icons');
+var infoDiv = $('#info');
+var localVideo = $('#local-video');
+var miniVideo = $('#mini-video');
+var remoteCanvas = $('#remote-canvas');
+var remoteVideo = $('#remote-video');
+var sharingDiv = $('#sharing');
+var statusDiv = $('#status');
+var videosDiv = $('#videos');
+
+var audioSvg = $('#audio');
+var videoSvg = $('#video');
+var switchVideoSvg = $('#switch_video');
+var fullscreenSvg = $('#fullscreen');
+var hangupSvg = $('#hangup');
+
+var muteAudioIcon = $('#mute_audio');
+var unmuteAudioIcon = $('#unmute_audio');
+var muteVideoIcon = $('#mute_video');
+var unmuteVideoIcon = $('#unmute_video');
+var enterFullscreenIcon = $('#enter_fullscreen');
+var exitFullscreenIcon = $('#exit_fullscreen');
+
+audioSvg.onclick = toggleAudioMute;
+videoSvg.onclick = toggleVideoMute;
+switchVideoSvg.onclick = switchVideo;
+fullscreenSvg.onclick = toggleFullScreen;
+hangupSvg.onclick = hangup;
+
+
 
 var channelReady = false;
 // Types of gathered ICE Candidates.
@@ -90,13 +107,6 @@ function initialize() {
     }
     return;
   }
-
-  cameraIcon.onclick = changeCamera;
-  hangupIcon.onclick = hangup;
-  muteIcon.onclick = toggleRemoteVideoElementMuted;
-  toggleInfoIcon.onclick = toggleInfoDiv;
-
-  document.body.ondblclick = toggleFullScreen;
 
   trace('Initializing; room=' + params.roomId + '.');
 
@@ -190,8 +200,8 @@ function transitionToActive() {
 
   // Prepare the remote video and PIP elements.
   if (params.isStereoscopic) {
-    miniVideo.classList.remove('active');
-    miniVideo.classList.add('hidden');
+    deactivate(miniVideo);
+    hide(miniVideo);
     setupStereoscopic(remoteVideo, remoteCanvas);
   } else {
     reattachMediaStream(miniVideo, localVideo);
@@ -200,9 +210,9 @@ function transitionToActive() {
   // Transition opacity from 0 to 1 for the remote and mini videos.
   remoteVideo.classList.add('active');
   miniVideo.classList.add('active');
-  header.classList.remove('hidden');
+  show(icons);
   // Transition opacity from 1 to 0 for the local video.
-  localVideo.classList.remove('active');
+  deactivate(localVideo);
   localVideo.src = '';
   // Rotate the div containing the videos 180 deg with a CSS transform.
   videosDiv.classList.add('active');
@@ -214,8 +224,8 @@ function transitionToWaiting() {
   remoteVideo.oncanplay = undefined;
   startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
-  videosDiv.classList.remove('active');
-  header.classList.add('hidden');
+  deactivate(videosDiv);
+  hide(icons);
   setTimeout(function() {
     localVideo.src = miniVideo.src;
     miniVideo.src = '';
@@ -224,17 +234,17 @@ function transitionToWaiting() {
   // Transition opacity from 0 to 1 for the local video.
   localVideo.classList.add('active');
   // Transition opacity from 1 to 0 for the remote and mini videos.
-  remoteVideo.classList.remove('active');
-  miniVideo.classList.remove('active');
+  deactivate(remoteVideo);
+  deactivate(miniVideo);
 }
 
 function transitionToDone() {
    // Stop waiting for remote video.
   remoteVideo.oncanplay = undefined;
-  localVideo.classList.remove('active');
-  remoteVideo.classList.remove('active');
-  miniVideo.classList.remove('active');
-  header.classList.add('hidden');
+  deactivate(localVideo);
+  deactivate(remoteVideo);
+  deactivate(miniVideo);
+  hide(icons);
   displayStatus('You have left the call. <a href=\'' + params.roomLink +
       '\'>Click here</a> to rejoin.');
 }
@@ -253,7 +263,15 @@ function toggleVideoMute() {
   }
 
   isVideoMuted = newMuted;
-  trace('Video ' + isVideoMuted ? 'muted.' : 'unmuted.');
+  trace('Video ' + (isVideoMuted ? 'muted.' : 'unmuted.'));
+
+  if (isVideoMuted) {
+    hide(muteVideoIcon);
+    show(unmuteVideoIcon);
+  } else {
+    hide(unmuteVideoIcon);
+    show(muteVideoIcon);
+  }
 }
 
 function toggleAudioMute() {
@@ -270,7 +288,15 @@ function toggleAudioMute() {
   }
 
   isAudioMuted = newMuted;
-  trace('Audio ' + isVideoMuted ? 'muted.' : 'unmuted.');
+  trace('Audio ' + (isAudioMuted ? 'muted.' : 'unmuted.'));
+
+  if (isAudioMuted) {
+    hide(muteAudioIcon);
+    show(unmuteAudioIcon);
+  } else {
+    hide(unmuteAudioIcon);
+    show(muteAudioIcon);
+  }
 }
 
 // Return false to screen out original Chrome shortcuts.
@@ -278,13 +304,15 @@ document.onkeypress = function(event) {
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
-      showHeader();
+      show(icons);
       toggleAudioMute();
       return false;
     case 'c':
+      show(icons);
       toggleVideoMute();
       return false;
     case 'f':
+      show(icons);
       toggleFullScreen();
       return false;
     case 'i':
@@ -312,7 +340,7 @@ function displaySharingInfo() {
 
 function displayStatus(status) {
   if (status === '') {
-    statusDiv.classList.remove('active');
+    deactivate(statusDiv);
   } else {
     statusDiv.classList.add('active');
   }
@@ -331,43 +359,36 @@ function toggleFullScreen() {
     // TODO: add shim so not Chrome only
     if (document.webkitIsFullScreen) {
       document.webkitCancelFullScreen();
+      show(exitFullscreenIcon);
+      hide(enterFullscreenIcon);
     } else {
       videosDiv.webkitRequestFullScreen();
       remoteCanvas.webkitRequestFullScreen();
+      show(enterFullscreenIcon);
+      hide(exitFullscreenIcon);
     }
   } catch (event) {
     trace(event);
   }
 }
 
-function toggleRemoteVideoElementMuted() {
-  setRemoteVideoElementMuted(!remoteVideo.muted);
-}
+// function toggleRemoteVideoElementMuted() {
+//   setRemoteVideoElementMuted(!remoteVideo.muted);
+// }
 
-function setRemoteVideoElementMuted(mute) {
-  if (mute) {
-    remoteVideo.muted = true;
-    remoteVideo.title = 'Unmute audio';
-    muteIcon.classList.add('active');
-    localStorage.setItem('mute', 'true');
-  } else {
-    remoteVideo.muted = false;
-    remoteVideo.title = 'Mute audio';
-    muteIcon.classList.remove('active');
-    localStorage.setItem('mute', 'false');
-  }
-}
-
-function showHeader() {
-  if (!header.classList.contains('active')) {
-    header.classList.add('active');
-    setTimeout(function() {
-      header.classList.remove('active');
-    }, 5000);
-  }
-}
-
-document.body.onmousemove = showHeader;
+// function setRemoteVideoElementMuted(mute) {
+//   if (mute) {
+//     remoteVideo.muted = true;
+//     remoteVideo.title = 'Unmute audio';
+//     mic.classList.add('active');
+//     lmic.setItem('mute', 'true');
+//   } else {
+//     remoteVideo.muted = false;
+//     remoteVideo.title = 'Mute audio';
+//     deactivate(mic);
+//   mic.setItem('mute', 'false');
+//   }
+// }
 
 var isGetSourcesSupported = MediaStreamTrack && MediaStreamTrack.getSources;
 
@@ -393,16 +414,15 @@ function gotSources(sources) {
   }
   // if more than one camera available, show the camera icon
   if (videoSources.length > 1) {
-    cameraIcon.classList.remove('hidden');
+    show(switchVideoSvg);
   }
 }
 
-function changeCamera() {
+function switchVideo() {
   // do icon animation
-  cameraIcon.classList.add('activated');
+  activate(switchVideo);
   setTimeout(function() {
-    cameraIcon.classList.remove('activated');
-    header.classList.remove('active');
+    switchVideo.classList.remove('activated');
   }, 1000);
 
   // check if sourceId has already been set
@@ -436,4 +456,24 @@ function changeCamera() {
     };
   }
   doGetUserMedia();
+}
+
+function $(selector){
+  return document.querySelector(selector);
+}
+
+function hide(element){
+  element.classList.add('hidden');
+}
+
+function show(element){
+  element.classList.remove('hidden');
+}
+
+function activate(element){
+  element.classList.add('active');
+}
+
+function deactivate(element){
+  element.classList.remove('active');
 }

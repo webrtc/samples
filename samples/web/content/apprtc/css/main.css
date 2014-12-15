@@ -6,7 +6,7 @@
  *  tree.
  */
 
-.hidden {
+ .hidden {
   display: none;
 }
 
@@ -207,7 +207,17 @@ label {
 
 
 
-/* icons */
+
+
+
+
+
+
+
+/*//////////////////////////////////////*/
+/*////// icons /////////////////////////*/
+/*//////////////////////////////////////*/
+
 
 #icons {
   bottom: 4vh;
@@ -220,7 +230,7 @@ svg {
   border-radius: 48px;
   display: block;
   margin: 0 0 3vh 0;
-  transform: translateX(-100px);
+  transform: translateX(calc(-6vw - 96px));
   transition: all .1s;
 }
 
@@ -233,38 +243,31 @@ body:hover #icons svg {
   transition-timing-function: ease-in-out;
 }
 
-#mic,
-#mic_off {
+#audio {
   transition: 40ms;
 }
 
-#mic:hover,
-#mic_off:hover {
+#audio:hover {
   background: #ab47bc;
 }
 
-#mic:hover circle,
-#mic_off:hover circle {
+#audio:hover circle {
   fill: #ab47bc;
 }
 
-#hangout_video,
-#hangout_video_off {
+#video {
   transition: 120ms;
 }
 
-#hangout_video:hover,
-#hangout_video_off:hover {
+#video:hover {
   background: #ff9f00;
 }
 
-#hangout_video:hover circle,
-#hangout_video_off:hover circle {
+#video:hover circle {
   fill: #ff9f00;
 }
 
-#switch_video,
-#switch_video_off {
+#switch_video {
   transition: 200ms;
 }
 
@@ -272,7 +275,7 @@ body:hover #icons svg {
   background: #12a256;
 }
 
-svg#switch_video:activated {
+#switch_video.activated {
   animation: rotate 1s;
   -webkit-animation: rotate 1s;
 }
@@ -293,16 +296,13 @@ svg#switch_video:activated {
   fill: #407cf7;
 }
 
-#call_end {
+#hangup {
   transition: 360ms;
 }
 
-#call_end:hover circle {
-  fill: #dd2c00;
-}
-
-#call_end:hover {
+#hangup:hover {
   background: #dd2c00;
 }
-
-
+#hangup:hover circle {
+  fill: #dd2c00;
+}
