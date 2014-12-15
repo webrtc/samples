@@ -88,7 +88,7 @@ Patches and issues welcome!
 
 [Peer2peer](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/peer2peer)
 
-[Peer2peer iframe](https://googlechrome.github.io/webrtc/samples/web/content/manual-test-test/peer2peer-iframe)
+[Peer2peer iframe](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/peer2peer-iframe)
 
 [Single audio stream](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/single-audio)
 
