@@ -470,9 +470,9 @@ function show(element){
   element.classList.remove('hidden');
 }
 
-function activate(element){
-  element.classList.add('active');
-}
+// function activate(element){
+//   element.classList.add('active');
+// }
 
 function deactivate(element){
   element.classList.remove('active');
