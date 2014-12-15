@@ -120,95 +120,10 @@ footer > div.active {
   opacity: .8;
 }
 
-header div {
-  background-color: black;
-  background-size: 100%;
-  background-repeat: no-repeat;
-  border-radius: 2px;
-  display: inline-block;
-  height: 40px;
-  margin: 0 20px 0 0;
-  opacity: 1;
-  width: 40px;
-}
-
-@media screen and (max-width: 450px) {
-  header div {
-    margin: 0 30px 0 0;
-  }
-}
-header div:last-of-type {
-  margin: 0 20px 0 0;
-}
-
-header div:hover {
-  background-color: #333;
-  opacity: 1;
-}
-
-header div#camera {
-  background-image: url(../images/camera.png);
-}
-
-header div#camera.activated {
-  animation: rotate 1s;
-  -webkit-animation: rotate 1s;
-}
-
-header div#hangup {
-  background-image: url(../images/hangupRed.png);
-}
-
-header div#hangup:hover {
-  background-image: url(../images/hangupWhite.png);
-  background-color: #dd4b39;
-}
-
-header div#mute {
-  background-image: url(../images/mute.png);
-}
-
-header div#mute.active {
-  background-color: #dd4b39;
-}
-
-header div#toggleInfo {
-  background-image: url(../images/toggleInfo.png);
-}
-
-header div#toggleInfo.active {
-  background-color: #dd4b39;
-}
-
-header {
-  background-color: black;
-  display: block;
-  opacity: 0;
-  padding: 20px 10px 20px 10px;
-  position: absolute;
-  text-align: center;
-  transition: all 0.7s;
-  width: calc(100% - 20px);
-  z-index: 1;
-}
-
-header.active {
-  opacity: 0.8;
-}
-
 html {
   height: 100%;
   margin: 0;
   width: 100%;
-}
-
-header img {
-  margin: 0 5% 0 0;
-  opacity: 0.8;
-}
-
-header img:hover {
-  opacity: 1;
 }
 
 label {
@@ -289,3 +204,105 @@ label {
     transform: rotateY(180deg);
   }
 }
+
+
+
+/* icons */
+
+#icons {
+  bottom: 4vh;
+  left: 6vw;
+  position: absolute;
+}
+
+svg {
+  box-shadow: 2px 2px 24px #444;
+  border-radius: 48px;
+  display: block;
+  margin: 0 0 3vh 0;
+  transform: translateX(-100px);
+  transition: all .1s;
+}
+
+svg:hover {
+  box-shadow: 4px 4px 48px #666;
+}
+
+body:hover #icons svg {
+  transform: translateX(0);
+  transition-timing-function: ease-in-out;
+}
+
+#mic,
+#mic_off {
+  transition: 40ms;
+}
+
+#mic:hover,
+#mic_off:hover {
+  background: #ab47bc;
+}
+
+#mic:hover circle,
+#mic_off:hover circle {
+  fill: #ab47bc;
+}
+
+#hangout_video,
+#hangout_video_off {
+  transition: 120ms;
+}
+
+#hangout_video:hover,
+#hangout_video_off:hover {
+  background: #ff9f00;
+}
+
+#hangout_video:hover circle,
+#hangout_video_off:hover circle {
+  fill: #ff9f00;
+}
+
+#switch_video,
+#switch_video_off {
+  transition: 200ms;
+}
+
+#switch_video:hover {
+  background: #12a256;
+}
+
+svg#switch_video:activated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+#switch_video:hover circle {
+  fill: #12a256;
+}
+
+#fullscreen {
+  transition: 280ms;
+}
+
+#fullscreen:hover {
+  background: #407cf7;
+}
+
+#fullscreen:hover circle {
+  fill: #407cf7;
+}
+
+#call_end {
+  transition: 360ms;
+}
+
+#call_end:hover circle {
+  fill: #dd2c00;
+}
+
+#call_end:hover {
+  background: #dd2c00;
+}
+
+

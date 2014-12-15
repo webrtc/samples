@@ -291,26 +291,105 @@ label {
 }
 
 
-svg {
-  box-shadow: 2px 2px 48px #666;
-  border-radius: 48px;
-  display: block;
-  margin: 0 0 24px 0;
-}
-
-#icons div {
-  background: #666;
-  border-radius: 34px;
-  margin: 0 0 2vh 0;
-  opacity: 0.7;
-  padding: 10px;
-}
 
 body {
-background: #f00;
-margin: 50px;
+  background: url(http://3.bp.blogspot.com/-JXhYC02NbBY/Um_MbkJcviI/AAAAAAAANkQ/YAuE4A9XPGk/s1600/lighting+fixes+left.png) 0 -278px;
 }
 
-circle:hover {
-    fill: #fce57e;
+#icons {
+  bottom: 4vh;
+  left: 6vw;
+  position: absolute;
 }
+
+svg {
+  box-shadow: 2px 2px 24px #444;
+  border-radius: 48px;
+  display: block;
+  margin: 0 0 3vh 0;
+  transform: translateX(-100px);
+  transition: all .1s;
+}
+
+svg:hover {
+  box-shadow: 4px 4px 48px #666;
+}
+
+body:hover #icons svg {
+  transform: translateX(0);
+  transition-timing-function: ease-in-out;
+}
+
+#mic,
+#mic_off {
+  transition: 40ms;
+}
+
+#mic:hover,
+#mic_off:hover {
+  background: #ab47bc;
+}
+
+#mic:hover circle,
+#mic_off:hover circle {
+  fill: #ab47bc;
+}
+
+#hangout_video,
+#hangout_video_off {
+  transition: 120ms;
+}
+
+#hangout_video:hover,
+#hangout_video_off:hover {
+  background: #ff9f00;
+}
+
+#hangout_video:hover circle,
+#hangout_video_off:hover circle {
+  fill: #ff9f00;
+}
+
+#switch_video,
+#switch_video_off {
+  transition: 200ms;
+}
+
+#switch_video:hover {
+  background: #12a256;
+}
+
+svg#switch_video:activated {
+  animation: rotate 1s;
+  -webkit-animation: rotate 1s;
+}
+
+#switch_video:hover circle {
+  fill: #12a256;
+}
+
+#fullscreen {
+  transition: 280ms;
+}
+
+#fullscreen:hover {
+  background: #407cf7;
+}
+
+#fullscreen:hover circle {
+  fill: #407cf7;
+}
+
+#call_end {
+  transition: 360ms;
+}
+
+#call_end:hover circle {
+  fill: #dd2c00;
+}
+
+#call_end:hover {
+  background: #dd2c00;
+}
+
+
