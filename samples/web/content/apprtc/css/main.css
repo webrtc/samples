@@ -213,15 +213,15 @@ svg {
   margin: 0 0 3vh 0;
   transform: translateX(calc(-6vw - 96px));
   transition: all .1s;
+  transition-timing-function: ease-in-out;
 }
 
 svg:hover {
   box-shadow: 4px 4px 48px #666;
 }
 
-body:hover #icons svg {
+#icons.active svg {
   transform: translateX(0);
-  transition-timing-function: ease-in-out;
 }
 
 #mute_audio {

@@ -470,10 +470,21 @@ function show(element){
   element.classList.remove('hidden');
 }
 
-// function activate(element){
-//   element.classList.add('active');
-// }
+function activate(element){
+  element.classList.add('active');
+}
 
 function deactivate(element){
   element.classList.remove('active');
 }
+
+function showIcons() {
+  if (!icons.classList.contains('active')) {
+    activate(icons);
+    setTimeout(function() {
+      deactivate(icons);
+    }, 5000);
+  }
+}
+
+document.body.onmousemove = showIcons;
