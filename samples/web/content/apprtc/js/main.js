@@ -6,7 +6,7 @@
  *  tree.
  */
 
-/* More information about these options at jshint.com/docs/options */
+ /* More information about these options at jshint.com/docs/options */
 
 // Variables defined in and used from apprtc/index.html.
 /* globals params, setupStereoscopic */
@@ -26,7 +26,7 @@
 // Variables defined in and used from signaling.js.
 /* globals openChannel, maybeStart, sendMessage */
 /* exported channelReady, gatheredIceCandidateTypes, sdpConstraints, turnDone,
-   onRemoteHangup, waitForRemoteVideo */
+onRemoteHangup, waitForRemoteVideo */
 
 'use strict';
 
@@ -40,21 +40,21 @@ var sharingDiv = $('#sharing');
 var statusDiv = $('#status');
 var videosDiv = $('#videos');
 
-var audioSvg = $('#audio');
-var videoSvg = $('#video');
+var muteAudioSvg = $('#mute_audio');
+var muteVideoSvg = $('#mute_video');
 var switchVideoSvg = $('#switch_video');
 var fullscreenSvg = $('#fullscreen');
 var hangupSvg = $('#hangup');
 
-var muteAudioIcon = $('#mute_audio');
-var unmuteAudioIcon = $('#unmute_audio');
-var muteVideoIcon = $('#mute_video');
-var unmuteVideoIcon = $('#unmute_video');
-var enterFullscreenIcon = $('#enter_fullscreen');
-var exitFullscreenIcon = $('#exit_fullscreen');
+var muteAudioOnIcon = $('#mute_audio_on');
+var muteAudioOffIcon = $('#mute_audio_off');
+var muteVideoOnIcon = $('#mute_video_on');
+var muteVideoOffIcon = $('#mute_video_off');
+var fullscreenOnIcon = $('#fullscreen_on');
+var fullscreenOffIcon = $('#fullscreen_off');
 
-audioSvg.onclick = toggleAudioMute;
-videoSvg.onclick = toggleVideoMute;
+muteAudioSvg.onclick = toggleAudioMute;
+muteVideoSvg.onclick = toggleVideoMute;
 switchVideoSvg.onclick = switchVideo;
 fullscreenSvg.onclick = toggleFullScreen;
 hangupSvg.onclick = hangup;
@@ -121,11 +121,11 @@ function initialize() {
   if (params.mediaConstraints.audio === false &&
       params.mediaConstraints.video === false) {
     hasLocalStream = false;
-    maybeStart();
-  } else {
-    hasLocalStream = true;
-    doGetUserMedia();
-  }
+  maybeStart();
+} else {
+  hasLocalStream = true;
+  doGetUserMedia();
+}
 }
 
 function onUserMediaSuccess(stream) {
@@ -144,7 +144,7 @@ function onUserMediaSuccess(stream) {
 
 function onUserMediaError(error) {
   var errorMessage = 'Failed to get access to local media. Error name was ' +
-      error.name + '. Continuing without sending a stream.';
+  error.name + '. Continuing without sending a stream.';
   displayError(errorMessage);
   alert(errorMessage);
 
@@ -221,8 +221,8 @@ function transitionToActive() {
 
 function transitionToWaiting() {
    // Stop waiting for remote video.
-  remoteVideo.oncanplay = undefined;
-  startTime = null;
+   remoteVideo.oncanplay = undefined;
+   startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
   deactivate(videosDiv);
   hide(icons);
@@ -239,7 +239,7 @@ function transitionToWaiting() {
 }
 
 function transitionToDone() {
-   // Stop waiting for remote video.
+  // Stop waiting for remote video.
   remoteVideo.oncanplay = undefined;
   deactivate(localVideo);
   deactivate(remoteVideo);
@@ -266,11 +266,11 @@ function toggleVideoMute() {
   trace('Video ' + (isVideoMuted ? 'muted.' : 'unmuted.'));
 
   if (isVideoMuted) {
-    hide(muteVideoIcon);
-    show(unmuteVideoIcon);
+    hide(muteVideoOffIcon);
+    show(muteVideoOnIcon);
   } else {
-    hide(unmuteVideoIcon);
-    show(muteVideoIcon);
+    hide(muteVideoOnIcon);
+    show(muteVideoOffIcon);
   }
 }
 
@@ -291,11 +291,11 @@ function toggleAudioMute() {
   trace('Audio ' + (isAudioMuted ? 'muted.' : 'unmuted.'));
 
   if (isAudioMuted) {
-    hide(muteAudioIcon);
-    show(unmuteAudioIcon);
+    hide(muteAudioOffIcon);
+    show(muteAudioOnIcon);
   } else {
-    hide(unmuteAudioIcon);
-    show(muteAudioIcon);
+    hide(muteAudioOnIcon);
+    show(muteAudioOffIcon);
   }
 }
 
@@ -304,25 +304,25 @@ document.onkeypress = function(event) {
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
-      show(icons);
-      toggleAudioMute();
-      return false;
+    show(icons);
+    toggleAudioMute();
+    return false;
     case 'c':
-      show(icons);
-      toggleVideoMute();
-      return false;
+    show(icons);
+    toggleVideoMute();
+    return false;
     case 'f':
-      show(icons);
-      toggleFullScreen();
-      return false;
+    show(icons);
+    toggleFullScreen();
+    return false;
     case 'i':
-      toggleInfoDiv();
-      return false;
+    toggleInfoDiv();
+    return false;
     case 'q':
-      hangup();
-      return false;
+    hangup();
+    return false;
     default:
-      return;
+    return;
   }
 };
 
@@ -359,13 +359,13 @@ function toggleFullScreen() {
     // TODO: add shim so not Chrome only
     if (document.webkitIsFullScreen) {
       document.webkitCancelFullScreen();
-      show(exitFullscreenIcon);
-      hide(enterFullscreenIcon);
+      show(fullscreenOnIcon);
+      hide(fullscreenOffIcon);
     } else {
       videosDiv.webkitRequestFullScreen();
       remoteCanvas.webkitRequestFullScreen();
-      show(enterFullscreenIcon);
-      hide(exitFullscreenIcon);
+      show(fullscreenOffIcon);
+      hide(fullscreenOnIcon);
     }
   } catch (event) {
     trace(event);
@@ -420,10 +420,10 @@ function gotSources(sources) {
 
 function switchVideo() {
   // do icon animation
-  activate(switchVideo);
-  setTimeout(function() {
-    switchVideo.classList.remove('activated');
-  }, 1000);
+  // activate(switchVideoSvg);
+  // setTimeout(function() {
+  //   switchVideoSvg.classList.remove('activated');
+  // }, 1000);
 
   // check if sourceId has already been set
   var sourceIdObj;
@@ -449,7 +449,7 @@ function switchVideo() {
   } else {
     // this is the first time a non-default camera has been set
     // default source is first in array of sources, so use second
-    params.mediaConstraints.mediaConstraints.video = {
+    params.mediaConstraints.video = {
       optional: [{
         'sourceId': videoSources[1].id
       }]

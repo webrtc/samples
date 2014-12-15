@@ -6,7 +6,7 @@
  *  tree.
  */
 
- .hidden {
+.hidden {
   display: none;
 }
 
@@ -38,25 +38,6 @@ body {
   height: 100%;
   margin: 0 auto;
   width: 100%;
-}
-
-button {
-  border: none;
-  border-radius: 2px;
-  font-family: 'Roboto', 'Lucida Grande', sans-serif;
-  position: relative;
-}
-
-button:active {
-  background-color: #444;
-}
-
-button:hover {
-  background-color: #aaa;
-}
-
-button[disabled] {
-  color: white;
 }
 
 div.warning {
@@ -243,27 +224,27 @@ body:hover #icons svg {
   transition-timing-function: ease-in-out;
 }
 
-#audio {
+#mute_audio {
   transition: 40ms;
 }
 
-#audio:hover {
+#mute_audio:hover {
   background: #ab47bc;
 }
 
-#audio:hover circle {
+#mute_audio:hover circle {
   fill: #ab47bc;
 }
 
-#video {
+#mute_video {
   transition: 120ms;
 }
 
-#video:hover {
+#mute_video:hover {
   background: #ff9f00;
 }
 
-#video:hover circle {
+#mute_video:hover circle {
   fill: #ff9f00;
 }
 
