@@ -40,18 +40,18 @@ var sharingDiv = $('#sharing');
 var statusDiv = $('#status');
 var videosDiv = $('#videos');
 
-var muteAudioSvg = $('#mute_audio');
-var muteVideoSvg = $('#mute_video');
-var switchVideoSvg = $('#switch_video');
+var muteAudioSvg = $('#mute-audio');
+var muteVideoSvg = $('#mute-video');
+var switchVideoSvg = $('#switch-video');
 var fullscreenSvg = $('#fullscreen');
 var hangupSvg = $('#hangup');
 
-var muteAudioOnIcon = $('#mute_audio_on');
-var muteAudioOffIcon = $('#mute_audio_off');
-var muteVideoOnIcon = $('#mute_video_on');
-var muteVideoOffIcon = $('#mute_video_off');
-var fullscreenOnIcon = $('#fullscreen_on');
-var fullscreenOffIcon = $('#fullscreen_off');
+var muteAudioOnIcon = $('#mute-audio-on');
+var muteAudioOffIcon = $('#mute-audio-off');
+var muteVideoOnIcon = $('#mute-video-on');
+var muteVideoOffIcon = $('#mute-video-off');
+var fullscreenOnIcon = $('#fullscreen-on');
+var fullscreenOffIcon = $('#fullscreen-off');
 
 muteAudioSvg.onclick = toggleAudioMute;
 muteVideoSvg.onclick = toggleVideoMute;
@@ -210,7 +210,7 @@ function transitionToActive() {
   // Transition opacity from 0 to 1 for the remote and mini videos.
   remoteVideo.classList.add('active');
   miniVideo.classList.add('active');
-  show(icons);
+//  show(icons);
   // Transition opacity from 1 to 0 for the local video.
   deactivate(localVideo);
   localVideo.src = '';
@@ -225,7 +225,7 @@ function transitionToWaiting() {
    startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
   deactivate(videosDiv);
-  hide(icons);
+  // hide(icons);
   setTimeout(function() {
     localVideo.src = miniVideo.src;
     miniVideo.src = '';
@@ -244,9 +244,9 @@ function transitionToDone() {
   deactivate(localVideo);
   deactivate(remoteVideo);
   deactivate(miniVideo);
-  hide(icons);
+  // hide(icons);
   displayStatus('You have left the call. <a href=\'' + params.roomLink +
-      '\'>Click here</a> to rejoin.');
+                '\'>Click here</a> to rejoin.');
 }
 
 function toggleVideoMute() {
@@ -304,15 +304,15 @@ document.onkeypress = function(event) {
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
-    show(icons);
+    // show(icons);
     toggleAudioMute();
     return false;
     case 'c':
-    show(icons);
+    // show(icons);
     toggleVideoMute();
     return false;
     case 'f':
-    show(icons);
+    // show(icons);
     toggleFullscreen();
     return false;
     case 'i':
@@ -357,10 +357,10 @@ function displayError(error) {
 //////////////////// maybe this should go in adapter.js? /////////////
 
 document.cancelFullScreen = document.webkitCancelFullScreen ||
-  document.mozCancelFullScreen || document.cancelFullScreen;
+document.mozCancelFullScreen || document.cancelFullScreen;
 
 document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-  document.body.mozRequestFullScreen || document.body.requestFullScreen;
+document.body.mozRequestFullScreen || document.body.requestFullScreen;
 
 // document.onfullscreenchange = document.onwebkitfullscreenchange =
 //   document.onmozfullscreenchange;
@@ -378,12 +378,12 @@ function isFullScreen(){
 function toggleFullscreen(){
   if (isFullScreen()) {
     document.cancelFullScreen();
-      show(fullscreenOffIcon);
-      hide(fullscreenOnIcon);
+    show(fullscreenOffIcon);
+    hide(fullscreenOnIcon);
   } else {
     document.body.requestFullScreen();
-      show(fullscreenOnIcon);
-      hide(fullscreenOffIcon);
+    show(fullscreenOnIcon);
+    hide(fullscreenOffIcon);
   }
 }
 
@@ -502,5 +502,5 @@ function showIcons() {
   }
 }
 
-// this doesn't work for Firefox -- hence hack in CSS :^\
 window.onmousemove = showIcons;
+

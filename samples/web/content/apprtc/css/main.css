@@ -201,7 +201,7 @@ label {
 
 
 #icons {
-  bottom: 4vh;
+  bottom: 77px;
   left: 6vw;
   position: absolute;
 }
@@ -224,46 +224,39 @@ svg:hover {
   transform: translateX(0);
 }
 
-/* because mousemove doesn't seem to fire in Firefox :^\ */
-@-moz-document url-prefix() {
-  body:hover #icons svg {
-    transform: translateX(0);
-  }
-}
-
-#mute_audio {
+#mute-audio {
   transition: 40ms;
 }
 
-#mute_audio:hover {
+#mute-audio:hover {
   background: #ab47bc;
 }
 
-#mute_audio:hover circle {
+#mute-audio:hover circle {
   fill: #ab47bc;
 }
 
-#mute_video {
+#mute-video {
   transition: 120ms;
 }
 
-#mute_video:hover {
+#mute-video:hover {
   background: #ff9f00;
 }
 
-#mute_video:hover circle {
+#mute-video:hover circle {
   fill: #ff9f00;
 }
 
-#switch_video {
+#switch-video {
   transition: 200ms;
 }
 
-#switch_video:hover {
+#switch-video:hover {
   background: #12a256;
 }
 
-#switch_video:hover circle {
+#switch-video:hover circle {
   fill: #12a256;
 }
 
