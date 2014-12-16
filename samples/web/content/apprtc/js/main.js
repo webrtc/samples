@@ -56,7 +56,7 @@ var fullscreenOffIcon = $('#fullscreen_off');
 muteAudioSvg.onclick = toggleAudioMute;
 muteVideoSvg.onclick = toggleVideoMute;
 switchVideoSvg.onclick = switchVideo;
-fullscreenSvg.onclick = toggleFullScreen;
+fullscreenSvg.onclick = toggleFullscreen;
 hangupSvg.onclick = hangup;
 
 
@@ -313,7 +313,7 @@ document.onkeypress = function(event) {
     return false;
     case 'f':
     show(icons);
-    toggleFullScreen();
+    toggleFullscreen();
     return false;
     case 'i':
     toggleInfoDiv();
@@ -354,21 +354,36 @@ function displayError(error) {
   showInfoDiv();
 }
 
-function toggleFullScreen() {
-  try {
-    // TODO: add shim so not Chrome only
-    if (document.webkitIsFullScreen) {
-      document.webkitCancelFullScreen();
-      show(fullscreenOnIcon);
-      hide(fullscreenOffIcon);
-    } else {
-      videosDiv.webkitRequestFullScreen();
-      remoteCanvas.webkitRequestFullScreen();
+//////////////////// maybe this should go in adapter.js? /////////////
+
+document.cancelFullScreen = document.webkitCancelFullScreen ||
+  document.mozCancelFullScreen || document.cancelFullScreen;
+
+document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+  document.body.mozRequestFullScreen || document.body.requestFullScreen;
+
+// document.onfullscreenchange = document.onwebkitfullscreenchange =
+//   document.onmozfullscreenchange;
+
+function isFullScreen(){
+  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
+    document.isFullScreen); // if any defined and true
+}
+
+// function fullScreenElement(){
+//   return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
+//     document.mozFullScreenElement || document.fullScreenElement;
+// }
+
+function toggleFullscreen(){
+  if (isFullScreen()) {
+    document.cancelFullScreen();
       show(fullscreenOffIcon);
       hide(fullscreenOnIcon);
-    }
-  } catch (event) {
-    trace(event);
+  } else {
+    document.body.requestFullScreen();
+      show(fullscreenOnIcon);
+      hide(fullscreenOffIcon);
   }
 }
 
@@ -487,4 +502,5 @@ function showIcons() {
   }
 }
 
-document.body.onmousemove = showIcons;
+// this doesn't work for Firefox -- hence hack in CSS :^\
+window.onmousemove = showIcons;

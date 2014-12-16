@@ -224,6 +224,13 @@ svg:hover {
   transform: translateX(0);
 }
 
+/* because mousemove doesn't seem to fire in Firefox :^\ */
+@-moz-document url-prefix() {
+  body:hover #icons svg {
+    transform: translateX(0);
+  }
+}
+
 #mute_audio {
   transition: 40ms;
 }
