@@ -210,7 +210,7 @@ function transitionToActive() {
   // Transition opacity from 0 to 1 for the remote and mini videos.
   remoteVideo.classList.add('active');
   miniVideo.classList.add('active');
-//  show(icons);
+    show(hangupSvg);
   // Transition opacity from 1 to 0 for the local video.
   deactivate(localVideo);
   localVideo.src = '';
@@ -225,7 +225,7 @@ function transitionToWaiting() {
    startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
   deactivate(videosDiv);
-  // hide(icons);
+  hide(hangupSvg);
   setTimeout(function() {
     localVideo.src = miniVideo.src;
     miniVideo.src = '';
@@ -244,7 +244,7 @@ function transitionToDone() {
   deactivate(localVideo);
   deactivate(remoteVideo);
   deactivate(miniVideo);
-  // hide(icons);
+  hide(hangupSvg);
   displayStatus('You have left the call. <a href=\'' + params.roomLink +
                 '\'>Click here</a> to rejoin.');
 }
@@ -304,15 +304,15 @@ document.onkeypress = function(event) {
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
-    // show(icons);
+    show(hangupSvg);
     toggleAudioMute();
     return false;
     case 'c':
-    // show(icons);
+    show(hangupSvg);
     toggleVideoMute();
     return false;
     case 'f':
-    // show(icons);
+    show(hangupSvg);
     toggleFullscreen();
     return false;
     case 'i':
