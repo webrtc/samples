@@ -70,26 +70,28 @@ Patches and issues welcome!
 
 ## Test pages ##
 
-[Audio and Video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/audio-and-video)
+[Audio and Video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/audio-and-video)
 
-[Constraints](https://googlechrome.github.io/webrtc/samples/web/content/manual/constraints)
+[Constraints](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/constraints)
 
-[Iframe apprtc](https://googlechrome.github.io/webrtc/samples/web/content/manual/iframe-apprtc)
+[Iframe apprtc](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/iframe-apprtc)
 
-[Iframe video](https://googlechrome.github.io/webrtc/samples/web/content/manual/iframe-video)
+[Iframe video](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/iframe-video)
 
-[Multiple audio streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-audio)
+[Multiple audio streams](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/multiple-audio)
 
-[Multiple peerconnections](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-peerconnections)
+[Multiple peerconnections](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/multiple-peerconnections)
 
-[Multiple video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual/multiple-video)
+[Multiple video devices](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/multiple-video-devices)
 
-[Peer2peer](https://googlechrome.github.io/webrtc/samples/web/content/manual/peer2peer)
+[Multiple video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/multiple-video)
 
-[Peer2peer iframe](https://googlechrome.github.io/webrtc/samples/web/content/manual/peer2peer-iframe)
+[Peer2peer](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/peer2peer)
 
-[Single audio stream](https://googlechrome.github.io/webrtc/samples/web/content/manual/single-audio)
+[Peer2peer iframe](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/peer2peer-iframe)
 
-[Single video stream](https://googlechrome.github.io/webrtc/samples/web/content/manual/single-video)
+[Single audio stream](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/single-audio)
 
-[Two video devices](https://googlechrome.github.io/webrtc/samples/web/content/manual/two-video-devices)
+[Single video stream](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/single-video)
+
+

@@ -236,10 +236,10 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   video_receive_codec = request.get('vrc', default_value = '')
 
   # Read url param controlling whether we send stereo.
-  stereo = request.get('stereo', default_value = 'false')
+  stereo = request.get('stereo', default_value = '')
 
   # Read url param controlling whether we send Opus FEC.
-  opusfec = request.get('opusfec', default_value = 'true')
+  opusfec = request.get('opusfec', default_value = '')
 
   # Read url param for Opus max sample rate.
   opusmaxpbr = request.get('opusmaxpbr', default_value = '')

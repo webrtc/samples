@@ -25,6 +25,14 @@ removeButton.onclick = removeServer;
 
 var begin, pc;
 
+function selectServer(event) {
+  var option = event.target;
+  var value = JSON.parse(option.value);
+  urlInput.value = value.url;
+  usernameInput.value = value.username || '';
+  passwordInput.value = value.credential || '';
+}
+
 function addServer() {
   var scheme = urlInput.value.split(':')[0];
   if (scheme !== 'stun' && scheme !== 'turn' && scheme !== 'turns') {
@@ -42,6 +50,7 @@ function addServer() {
   if (username || password) {
     option.text += (' [' + username + ':' + password + ']');
   }
+  option.ondblclick = selectServer;
   servers.add(option);
   urlInput.value = usernameInput.value = passwordInput.value = '';
 }
