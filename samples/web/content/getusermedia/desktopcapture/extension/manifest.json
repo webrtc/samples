@@ -11,12 +11,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://github.com/GoogleChrome/webrtc/*"],
+      "matches": ["https://googlechrome.github.io/webrtc/*"],
       "js": ["content-script.js"]
     }
   ],
   "permissions": [
     "desktopCapture",
-    "https://github.com/GoogleChrome/webrtc/*"
+    "https://googlechrome.github.io/webrtc/*"
   ]
 }
