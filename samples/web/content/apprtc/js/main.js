@@ -6,7 +6,7 @@
  *  tree.
  */
 
- /* More information about these options at jshint.com/docs/options */
+/* More information about these options at jshint.com/docs/options */
 
 // Variables defined in and used from apprtc/index.html.
 /* globals params, setupStereoscopic */
@@ -24,11 +24,6 @@
 /* exported prevStats, stats */
 
 // Variables defined in and used from signaling.js.
-<<<<<<< HEAD
-/* globals openChannel, maybeStart, sendMessage */
-/* exported channelReady, gatheredIceCandidateTypes, sdpConstraints, turnDone,
-onRemoteHangup, waitForRemoteVideo */
-=======
 /* globals connectToRoom, hasReceivedOffer:true, isSignalingChannelReady:true,
    messageQueue, sendWSSMessage, startSignaling */
 /* exported gatheredIceCandidateTypes, sdpConstraints, onRemoteHangup,
@@ -36,7 +31,6 @@ onRemoteHangup, waitForRemoteVideo */
 
 // Variables defined in and used from loopback.js.
 /* globals setupLoopback */
->>>>>>> 6a1b066c262380571c2d8d3cc6b6b1a0222b2364
 
 'use strict';
 
@@ -69,8 +63,6 @@ switchVideoSvg.onclick = switchVideo;
 fullscreenSvg.onclick = toggleFullscreen;
 hangupSvg.onclick = hangup;
 
-
-
 // Types of gathered ICE Candidates.
 var gatheredIceCandidateTypes = {
   Local: {},
@@ -102,9 +94,6 @@ var stats;
 var prevStats;
 
 function initialize() {
-<<<<<<< HEAD
-  show(icons); // if hidden by hangup()
-=======
   // We don't want to continue if this is triggered from Chrome prerendering,
   // since it will register the user to GAE without cleaning it up, causing
   // the real navigation to get a "full room" error. Instead we'll initialize
@@ -114,7 +103,8 @@ function initialize() {
     return;
   }
 
->>>>>>> 6a1b066c262380571c2d8d3cc6b6b1a0222b2364
+  show(icons); // if hidden by hangup()
+
   var roomErrors = params.errorMessages;
   if (roomErrors.length > 0) {
     console.log(roomErrors);
@@ -123,11 +113,7 @@ function initialize() {
     }
     return;
   }
-<<<<<<< HEAD
 
-=======
-  document.body.ondblclick = toggleFullScreen;
->>>>>>> 6a1b066c262380571c2d8d3cc6b6b1a0222b2364
   trace('Initializing; room=' + params.roomId + '.');
   connectToRoom(params.roomId);
   if (params.isLoopback) {
@@ -135,31 +121,12 @@ function initialize() {
   }
 }
 
-<<<<<<< HEAD
-  // NOTE: AppRTCClient.java searches & parses this line; update there when
-  // changing here.
-  openChannel();
-  maybeRequestTurn();
-
-  // Caller is always ready to create peerConnection.
-  signalingReady = params.isInitiator;
-
-  if (params.mediaConstraints.audio === false &&
-      params.mediaConstraints.video === false) {
-    hasLocalStream = false;
-  maybeStart();
-} else {
-  hasLocalStream = true;
-  doGetUserMedia();
-}
-=======
 function onVisibilityChange() {
   if (document.webkitVisibilityState === 'prerender') {
     return;
   }
   document.removeEventListener('webkitvisibilitychange', onVisibilityChange);
   initialize();
->>>>>>> 6a1b066c262380571c2d8d3cc6b6b1a0222b2364
 }
 
 function onUserMediaSuccess(stream) {
@@ -172,20 +139,20 @@ function onUserMediaSuccess(stream) {
   if (params.isInitiator) {
     displaySharingInfo();
   }
-  localVideo.classList.add('active');
+  activate(localVideo);
 }
 
 function onUserMediaError(error) {
   var errorMessage = 'Failed to get access to local media. Error name was ' +
-  error.name + '. Continuing without sending a stream.';
+      error.name + '. Continuing without sending a stream.';
   displayError(errorMessage);
   alert(errorMessage);
 }
 
 function hangup() {
+  hide(icons);
   trace('Hanging up.');
   displayStatus('Hanging up');
-  hide(icons);
   transitionToDone();
   localStream.stop();
   stop();
@@ -265,24 +232,24 @@ function transitionToActive() {
   }
 
   // Transition opacity from 0 to 1 for the remote and mini videos.
-  remoteVideo.classList.add('active');
-  miniVideo.classList.add('active');
-    show(hangupSvg);
+  activate(remoteVideo);
+  activate(miniVideo);
   // Transition opacity from 1 to 0 for the local video.
   deactivate(localVideo);
   localVideo.src = '';
   // Rotate the div containing the videos 180 deg with a CSS transform.
-  videosDiv.classList.add('active');
+  activate(videosDiv);
+  show(hangupSvg);
   displayStatus('');
 }
 
 function transitionToWaiting() {
    // Stop waiting for remote video.
-   remoteVideo.oncanplay = undefined;
-   startTime = null;
+  remoteVideo.oncanplay = undefined;
+  startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
-  deactivate(videosDiv);
   hide(hangupSvg);
+  deactivate(videosDiv);
   setTimeout(function() {
     if (miniVideo.src) {
       localVideo.src = miniVideo.src;
@@ -291,14 +258,14 @@ function transitionToWaiting() {
     remoteVideo.src = '';
   }, 800);
   // Transition opacity from 0 to 1 for the local video.
-  localVideo.classList.add('active');
+  activate(localVideo);
   // Transition opacity from 1 to 0 for the remote and mini videos.
   deactivate(remoteVideo);
   deactivate(miniVideo);
 }
 
 function transitionToDone() {
-  // Stop waiting for remote video.
+   // Stop waiting for remote video.
   remoteVideo.oncanplay = undefined;
   deactivate(localVideo);
   deactivate(remoteVideo);
@@ -358,30 +325,32 @@ function toggleAudioMute() {
   }
 }
 
+// Spacebar, or m: toggle audio mute.
+// c: toggle camera(video) mute.
+// f: toggle fullscreen.
+// i: toggle info panel.
+// q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 document.onkeypress = function(event) {
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
-    show(hangupSvg);
-    toggleAudioMute();
-    return false;
+      toggleAudioMute();
+      return false;
     case 'c':
-    show(hangupSvg);
-    toggleVideoMute();
-    return false;
+      toggleVideoMute();
+      return false;
     case 'f':
-    show(hangupSvg);
-    toggleFullscreen();
-    return false;
+      toggleFullscreen();
+      return false;
     case 'i':
-    toggleInfoDiv();
-    return false;
+      toggleInfoDiv();
+      return false;
     case 'q':
-    hangup();
-    return false;
+      hangup();
+      return false;
     default:
-    return;
+      return;
   }
 };
 
@@ -392,14 +361,14 @@ window.onbeforeunload = function() {
 };
 
 function displaySharingInfo() {
-  sharingDiv.classList.add('active');
+  activate(sharingDiv);
 }
 
 function displayStatus(status) {
   if (status === '') {
     deactivate(statusDiv);
   } else {
-    statusDiv.classList.add('active');
+    activate(statusDiv);
   }
   statusDiv.innerHTML = status;
 }
@@ -411,7 +380,7 @@ function displayError(error) {
   showInfoDiv();
 }
 
-//////////////////// maybe this should go in adapter.js? /////////////
+//////////////////// shim should probably go in separate file
 
 document.cancelFullScreen = document.webkitCancelFullScreen ||
 document.mozCancelFullScreen || document.cancelFullScreen;
@@ -431,6 +400,8 @@ function isFullScreen(){
 //   return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
 //     document.mozFullScreenElement || document.fullScreenElement;
 // }
+
+///////////////////////////////////////////////////////////////
 
 function toggleFullscreen(){
   if (isFullScreen()) {
@@ -452,7 +423,7 @@ function toggleFullscreen(){
 //   if (mute) {
 //     remoteVideo.muted = true;
 //     remoteVideo.title = 'Unmute audio';
-//     mic.classList.add('active');
+//     activate(mic);
 //     lmic.setItem('mute', 'true');
 //   } else {
 //     remoteVideo.muted = false;
@@ -498,7 +469,7 @@ function switchVideo() {
   // do icon animation
   // activate(switchVideoSvg);
   // setTimeout(function() {
-  //   switchVideoSvg.classList.remove('activated');
+  //   deactivate(switchVideoSvg);
   // }, 1000);
 
   // check if sourceId has already been set
@@ -564,4 +535,3 @@ function showIcons() {
 }
 
 window.onmousemove = showIcons;
-
