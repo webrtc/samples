@@ -386,7 +386,7 @@ function screenCaptureExtensionHandler_() {
                         '2. Check: "Enable Developer mode"\n' +
                         '3. Click: "Load the unpacked extension..."\n' +
                         '4. Choose "extension" folder from the repository:\n' +
-                        '(Can be dowloaded from here http://goo.gl/FGw6uk)\n' +
+                        '(Can be dowloaded from here http://goo.gl/M1zRbn)\n' +
                         '5. Reload this page';
           alert(message);
         }
