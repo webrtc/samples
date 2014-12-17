@@ -226,12 +226,13 @@ function transitionToWaiting() {
   // Rotate the div containing the videos -180 deg with a CSS transform.
   videosDiv.classList.remove('active');
   setTimeout(function() {
-    if (miniVideo.src) {
-      localVideo.src = miniVideo.src;
-    }
     miniVideo.src = '';
     remoteVideo.src = '';
   }, 800);
+  // Set localVideo.src now so that the local stream won't be lost if the call
+  // is restarted before the timeout.
+  localVideo.src = miniVideo.src;
+
   // Transition opacity from 0 to 1 for the local video.
   localVideo.classList.add('active');
   // Transition opacity from 1 to 0 for the remote and mini videos.
