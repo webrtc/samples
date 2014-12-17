@@ -45,7 +45,6 @@ function CamResolutionsTest() {
   this.supportedResolutions = 0;
   this.unsupportedResolutions = 0;
   this.currentResolutionForCheckEncodeTime = null;
-  this.collectStatsDuration = 5000;
 }
 
 CamResolutionsTest.prototype = {
@@ -79,13 +78,7 @@ CamResolutionsTest.prototype = {
     // Check stats for mandatory resolutions only.
     if (theResolution[2]) {
       this.currentResolutionForCheckEncodeTime = theResolution;
-      this.getEncodeTime = new GetStats();
-      this.getEncodeTime.start(stream, 'googAvgEncodeMs',
-          this.collectStat_.bind(this), this.collectStatsDuration);
-      this.stream = stream;
-      // Not sure on how to this with the progress bar properly.
-      setTimeoutWithProgressBar(function() { return; },
-          this.collectStatsDuration);
+      this.collectAndAnlyzeStats_(stream);
       return;
     }
     reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
@@ -94,36 +87,60 @@ CamResolutionsTest.prototype = {
     return;
   },
 
-  collectStat_: function(stats) {
-    this.analyzeStats_(stats);
-    this.stream.getVideoTracks()[0].stop();
-    this.finishTestOrRetrigger_();
+  collectAndAnlyzeStats_: function(stream) {
+    var call = new Call();
+    call.pc1.addStream(stream);
+    call.establishConnection();
+    call.gatherStats(call.pc1, this.analyzeStats_.bind(this), 100);
+    setTimeoutWithProgressBar( function() {
+      call.close();
+      stream.getVideoTracks()[0].stop();
+      this.finishTestOrRetrigger_();
+    }.bind(this), 5000);
   },
 
   analyzeStats_: function(stats) {
     var currentRes = this.currentResolutionForCheckEncodeTime;
-    if (stats.length === 0) {
-      // Consider making this an error in the future.
-      reportInfo('Supported ' + currentRes[0] + 'x' +  currentRes[1] +
-          ' - Stats are empty indicating the camera is not delivering video.');
-      return;
-    }
-    // Taken from http://javascriptexample.net/extobjects81.php.
-    Math.average = function() {
-      var cnt, tot, i;
-      cnt = arguments.length;
-      tot = i = 0;
-      while (i < cnt) {
-        tot += arguments[i++];
+    var googAvgEncodeTime = [];
+
+    for (var index = 0; index < stats.length - 1; index++) {
+      if (stats[index].type === 'ssrc') {
+        // Make sure to only capture stats after the encoder is setup.
+        // TODO(jansson) expand to cover audio as well.
+        if (stats[index].stat('googFrameRateInput') > 0) {
+          googAvgEncodeTime.push(parseInt(stats[index].stat('googAvgEncodeMs')));
+        }
       }
-      return tot / cnt;
-    };
-    var average = Math.average.apply(Math, stats);
-    var max = Math.max.apply(Math, stats);
-    var min = Math.min.apply(Math, stats);
-    reportInfo('Supported ' + currentRes[0] + 'x' + currentRes[1] +
-               ' Average: ' + Math.floor(average) + ' Max: ' +  max + ' Min: ' +
-               min + ' encode time (ms)');
+    }
+
+    function average_(statArray) {
+      Math.average = function() {
+        var cnt, tot, i;
+        cnt = arguments.length;
+        tot = i = 0;
+        while (i < cnt) {
+          tot += arguments[i++];
+        }
+        return tot / cnt;
+      };
+      return Math.floor(Math.average.apply(Math, statArray));
+    }
+    function max_(statArray) {
+      return Math.max.apply(Math, statArray);
+    }
+    function min_(statArray) {
+      return Math.min.apply(Math, statArray);
+    }
+
+    var userMessage = 'Supported ' + currentRes[0] + 'x' + currentRes[1];
+    var avgMinMaxStats = ' Average: ' + average_(googAvgEncodeTime) +
+                         ' Max: ' + max_(googAvgEncodeTime) +
+                         ' Min: ' + min_(googAvgEncodeTime)
+    if (googAvgEncodeTime.length === 0) {
+      reportError(userMessage + ' but no stats collected, check your chamera.');
+    } else {
+      reportInfo(userMessage + avgMinMaxStats + ' encode time (ms)');
+    }
   },
 
   failFunc_: function() {

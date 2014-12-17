@@ -41,6 +41,28 @@ Call.prototype = {
     this.constrainOfferToRemoveVideoFec_ = true;
   },
 
+  gatherStats: function(peerConnection, callback, interval) {
+    var stats = [];
+    getStats_();
+
+    function getStats_() {
+      if (peerConnection.signalingState === 'closed') {
+        callback(stats);
+        return;
+      }
+      setTimeout(function() {
+        peerConnection.getStats(gotStats_.bind(this));
+      }, interval);
+    }
+
+    function gotStats_(response) {
+      for (var index in response.result()) {
+        stats.push(response.result()[index]);
+      }
+      getStats_();
+    }
+  },
+
   gotOffer_: function (offer) {
     if (this.constrainOfferToRemoveVideoFec_) {
       offer.sdp = offer.sdp.replace(/(m=video 1 [^\r]+)(116 117)(\r\n)/g,
@@ -70,7 +92,7 @@ Call.prototype = {
         otherPeer.addIceCandidate(event.candidate);
       }
     }
-  }
+  },
 };
 
 Call.noFilter = function () {
