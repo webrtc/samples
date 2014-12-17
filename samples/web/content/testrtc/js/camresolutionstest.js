@@ -75,7 +75,7 @@ CamResolutionsTest.prototype = {
     this.supportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
     reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
-    stream.stop();
+    stream.getVideoTracks()[0].stop();
     this.finishTestOrRetrigger();
   },
 

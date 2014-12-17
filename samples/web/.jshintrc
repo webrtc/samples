@@ -36,6 +36,7 @@
     "RTCPeerConnection": true,
     "RTCSessionDescription": true,
     "setTestProgress": true,
+    "setTimeoutWithProgressBar": true,
     "Ssim": true,
     "startButton": true,
     "StatisticsAggregate": true,

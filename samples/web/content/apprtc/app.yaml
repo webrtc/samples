@@ -21,9 +21,6 @@ handlers:
   script: apprtc.app
   secure: always
 
-inbound_services:
-- channel_presence
-
 libraries:
 - name: jinja2
   version: latest
