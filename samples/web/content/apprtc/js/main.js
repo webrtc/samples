@@ -436,6 +436,10 @@ function gotSources(sources) {
 }
 
 function switchVideo() {
+  displayStatus('Camera switching is coming soon. For the moment, the person on the other end of the call will need to refresh their page to see the change of camera.');
+
+  setTimeout(function(){displayStatus('');}, 5000);
+
   // do icon animation
   // activate(switchVideoSvg);
   // setTimeout(function() {
