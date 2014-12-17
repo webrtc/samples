@@ -27,7 +27,7 @@
 /* globals connectToRoom, hasReceivedOffer:true, isSignalingChannelReady:true,
    messageQueue, sendWSSMessage, startSignaling */
 /* exported gatheredIceCandidateTypes, sdpConstraints, onRemoteHangup,
-   waitForRemoteVideo */
+   waitForRemoteVideo, displaySharingInfo */
 
 // Variables defined in and used from loopback.js.
 /* globals setupLoopback */
@@ -114,9 +114,6 @@ function onUserMediaSuccess(stream) {
   localStream = stream;
   // Caller creates PeerConnection.
   displayStatus('');
-  if (params.isInitiator) {
-    displaySharingInfo();
-  }
   localVideo.classList.add('active');
 }
 
