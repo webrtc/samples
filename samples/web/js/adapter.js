@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 /* global mozRTCIceCandidate, mozRTCPeerConnection,
 mozRTCSessionDescription, webkitRTCPeerConnection */
-/* exported trace */
+/* exported trace,requestUserMedia */
 
 'use strict';
 
@@ -213,3 +213,22 @@ if (navigator.mozGetUserMedia) {
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
 }
+
+// Returns the result of getUserMedia as a Promise.
+function requestUserMedia(constraints) {
+  return new Promise(function(resolve, reject) {
+    var onSuccess = function(stream) {
+      resolve(stream);
+    };
+    var onError = function(error) {
+      reject(error);
+    };
+
+    try {
+      getUserMedia(constraints, onSuccess, onError);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
