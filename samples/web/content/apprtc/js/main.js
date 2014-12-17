@@ -10,7 +10,7 @@
 
 // Variables defined in and used from apprtc/index.html.
 /* globals params, setupStereoscopic */
-/* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
+/* exported initialize */
 
 // Variables defined in and used from util.js.
 /* globals doGetUserMedia, maybeRequestTurn */
@@ -99,6 +99,7 @@ var turnDone = false;
 var xmlhttp;
 
 function initialize() {
+  show(icons); // if hidden by hangup()
   var roomErrors = params.errorMessages;
   if (roomErrors.length > 0) {
     console.log(roomErrors);
@@ -155,6 +156,7 @@ function onUserMediaError(error) {
 function hangup() {
   trace('Hanging up.');
   displayStatus('Hanging up');
+  hide(icons);
   transitionToDone();
   localStream.stop();
   stop();
@@ -246,7 +248,7 @@ function transitionToDone() {
   deactivate(miniVideo);
   hide(hangupSvg);
   displayStatus('You have left the call. <a href=\'' + params.roomLink +
-                '\'>Click here</a> to rejoin.');
+      '\'>Click here</a> to rejoin.');
 }
 
 function toggleVideoMute() {
