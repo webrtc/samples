@@ -18,15 +18,10 @@ import threading
 import urllib
 import webapp2
 from google.appengine.api import urlfetch
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-
-# Lock for syncing DB operation in concurrent requests handling.
-# TODO(brave): keeping working on improving performance with thread syncing.
-# One possible method for near future is to reduce the message caching.
-LOCK = threading.RLock()
 
 LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
 TURN_URL = 'https://computeengineondemand.appspot.com'
@@ -287,7 +282,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     username = client_id if client_id is not None else generate_random(9)
     turn_url = '%s/turn?username=%s&key=%s' % (TURN_URL, username, CEOD_KEY)
 
-  room_link = request.host_url + '/room/' + room_id
+  room_link = request.host_url + '/r/' + room_id
   room_link = append_url_arguments(request, room_link)
   pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
@@ -334,19 +329,19 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
 # generates non-unique numbers. We also have a special loopback client id.
 # TODO(tkchin): Generate room/client IDs in a unique way while handling
 # loopback scenario correctly.
-class Client(db.Model):
-  room_id = db.StringProperty()
-  client_id = db.StringProperty()
-  messages = db.ListProperty(db.Text)
-  is_initiator = db.BooleanProperty()
+class Client(ndb.Model):
+  room_id = ndb.StringProperty()
+  client_id = ndb.StringProperty()
+  messages = ndb.PickleProperty()
+  is_initiator = ndb.BooleanProperty()
 
-# Constructs the db key for the room. We use this key to create entity groups
+# Constructs the ndb key for the room. We use this key to create entity groups
 # for clients in the same room, so that clients in the same room will be
 # strongly consistent.
 def get_room_key(room_id):
-  return db.Key.from_path('Room', room_id)
+  return ndb.Key('Room', room_id)
 
-# Creates a new Client db object and adds it to |client_map|.
+# Creates a new Client ndb object and adds it to |client_map|.
 def add_client(client_map, room_id, client_id, messages, is_initiator):
   room_key = get_room_key(room_id)
   client = Client(room_id=room_id,
@@ -356,18 +351,16 @@ def add_client(client_map, room_id, client_id, messages, is_initiator):
                   parent=room_key)
   client.put()
   client_map[client_id] = client
-  logging.info('Added client ' + client_id + ' in room ' + room_id)
 
 # Removes a client from |client_map| and the datastore.
 def remove_client(client_map, client_id):
     client = client_map.pop(client_id)
-    client.delete()
+    client.key.delete()
 
 # Returns clients for room.
 def get_room_clients(room_id):
   room_key = get_room_key(room_id)
-  return Client.gql('WHERE ANCESTOR IS:ancestor AND room_id=:rid',
-                    ancestor=room_key, rid=room_id)
+  return Client.query(ancestor=room_key).fetch()
 
 # Returns dictionary of client_id to Client.
 def get_room_client_map(room_id):
@@ -379,32 +372,65 @@ def get_room_client_map(room_id):
     client_map[str(client.client_id)] = client
   return client_map
 
+@ndb.transactional(retries=100)
+def remove_client_from_room(room_id, client_id):
+  client_map = get_room_client_map(room_id)
+  if len(client_map) == 0:
+    return None
+  if client_id not in client_map:
+    return None
+
+  remove_client(client_map, client_id)
+  if LOOPBACK_CLIENT_ID in client_map:
+    remove_client(client_map, LOOPBACK_CLIENT_ID)
+
+  if len(client_map) > 0:
+    other_client = client_map.values()[0]
+    # Set other client to be new initiator.
+    other_client.is_initiator = True
+    # This should already be empty, but set it anyway.
+    other_client.messages = []
+    # Commit changes.
+    other_client.put()
+
+  return str(client_map.keys())
+
 class ByePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
-    with LOCK:
-      client_map = get_room_client_map(room_id)
-      if len(client_map) == 0:
-        logging.warning('Unknown room: ' + room_id)
-        return
-      if client_id not in client_map:
-        logging.warning('Unknown client ' + client_id + ' for room ' + room_id)
-        return
+    try:
+      room_state = remove_client_from_room(room_id, client_id)
+      if room_state is not None:
+        logging.info('Removed client ' + client_id + ' from room ' + room_id)
+        logging.info('Room ' + room_id + ' has state ' + room_state)
+    except Exception as e:
+      logging.warning('The transaction to remove a client failed: ' + str(e))
 
-      remove_client(client_map, client_id)
-      logging.info('Removed client ' + client_id + ' from room ' + room_id)
-      if LOOPBACK_CLIENT_ID in client_map:
-        remove_client(client_map, LOOPBACK_CLIENT_ID)
-        logging.info('Removed loopback client from room ' + room_id)
 
-      if len(client_map) > 0:
-        other_client = client_map.values()[0]
-        # Set other client to be new initiator.
-        other_client.is_initiator = True
-        # This should already be empty, but set it anyway.
-        other_client.messages = []
-        # Commit changes.
-        other_client.put()
-      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
+@ndb.transactional(retries=100)
+def add_message_from_client(room_id, client_id, message):
+  client_map = get_room_client_map(room_id)
+  occupancy = len(client_map)
+  # Check that room exists.
+  if occupancy == 0:
+    return {'error': 'UNKNOWN_ROOM', 'saved': False}
+
+  # Check that client is registered.
+  if not client_id in client_map:
+    return {'error': 'UNKNOWN_CLIENT', 'saved': False}
+
+  # Check if other client is registered.
+  if occupancy == 1:
+    client = client_map[client_id]
+    try:
+      text = message.encode(encoding='utf-8', errors='strict')
+    except Exception as e:
+      return {'error': str(e), 'saved': False}
+
+    client.messages.append(text)
+    client.put()
+    return {'error': None, 'saved': True}
+
+  return {'error': None, 'saved': False}
 
 class MessagePage(webapp2.RequestHandler):
   def write_response(self, result):
@@ -429,38 +455,60 @@ class MessagePage(webapp2.RequestHandler):
 
   def post(self, room_id, client_id):
     message_json = self.request.body
-    with LOCK:
-      client_map = get_room_client_map(room_id)
-      occupancy = len(client_map)
-      # Check that room exists.
-      if occupancy == 0:
-        logging.warning('Unknown room: ' + room_id)
-        self.write_response('UNKNOWN_ROOM')
-        return
 
-      # Check that client is registered.
-      if not client_id in client_map:
-        logging.warning('Unknown client: ' + client_id)
-        self.write_response('UNKNOWN_CLIENT')
+    try:
+      result = add_message_from_client(room_id, client_id, message_json)
+      if result['error'] is not None:
+        logging.warning('Failed to save message from client ' + client_id +
+                        ' for room ' + room_id + ': ' + result['error']);
+        self.write_response(result['error'])
         return
+      self.write_response('SUCCESS')
+      if not result['saved']:
+        # Other client registered, forward to collider.
+        # Note: this may fail in local dev server due to not having the right
+        # certificate file locally for SSL validation.
+        # Note: loopback scenario follows this code path.
+        # TODO(tkchin): consider async fetch here.
+        self.send_message_to_collider(room_id, client_id, message_json)
+        return
+      logging.info(
+          'Saved message from client ' + client_id + ' for room ' + room_id)
+    except Exception as e:
+      self.write_response(str(e))
+      logging.warning('The transaction to save a message failed: ' + str(e))
 
-      # Check if other client is registered.
-      if occupancy == 1:
-        # No other client registered, save message.
-        logging.info('Saving message from client ' + client_id +
-                     ' for room ' + room_id)
-        client = client_map[client_id]
-        text = db.Text(message_json, encoding='utf-8')
-        client.messages.append(text)
-        client.put()
-        self.write_response('SUCCESS')
-        return
-    # Other client registered, forward to collider. Do this outside the lock.
-    # Note: this may fail in local dev server due to not having the right
-    # certificate file locally for SSL validation.
-    # Note: loopback scenario follows this code path.
-    # TODO(tkchin): consider async fetch here.
-    self.send_message_to_collider(room_id, client_id, message_json)
+@ndb.transactional(retries=100)
+def add_client_to_room(room_id, client_id, is_loopback):
+  is_initiator = False
+  messages = []
+  is_full = False
+
+  client_map = get_room_client_map(room_id)
+  occupancy = len(client_map)
+  if occupancy == 0:
+    # New room.
+    # Create first client as initiator.
+    is_initiator = True
+    add_client(client_map, room_id, client_id, messages, is_initiator)
+    if is_loopback:
+      add_client(
+          client_map, room_id, LOOPBACK_CLIENT_ID, messages, False)
+  elif occupancy == 1:
+    # Retrieve stored messages from first client.
+    other_client = client_map.values()[0]
+    messages = other_client.messages
+    # Create second client as not initiator.
+    is_initiator = False
+    add_client(client_map, room_id, client_id, [], is_initiator)
+    # Delete the messages we've responded with.
+    other_client.messages = []
+    other_client.put()
+  elif occupancy >= 2:
+    is_full = true
+
+  return {'is_initiator':is_initiator, 'messages':messages,
+          'is_full':is_full, 'room_state': str(client_map.keys())}
 
 class RegisterPage(webapp2.RequestHandler):
   def write_response(self, result, params, messages):
@@ -482,39 +530,21 @@ class RegisterPage(webapp2.RequestHandler):
     is_initiator = False
     messages = []
     params = {}
-    with LOCK:
-      client_map = get_room_client_map(room_id)
-      occupancy = len(client_map)
-      if occupancy == 0:
-        # New room.
-        # Create first client as initiator.
-        is_initiator = True
-        add_client(client_map, room_id, client_id, messages, is_initiator)
-        if is_loopback:
-          add_client(
-              client_map, room_id, LOOPBACK_CLIENT_ID, messages, False)
-        # Write room parameters response.
-        self.write_room_parameters(room_id, client_id, messages, is_initiator)
 
-      elif occupancy == 1:
-        # Retrieve stored messages from first client.
-        other_client = client_map.values()[0]
-        messages = other_client.messages
-        # Create second client as not initiator.
-        is_initiator = False
-        add_client(client_map, room_id, client_id, [], is_initiator)
-        # Write room parameters response with any messages.
-        self.write_room_parameters(room_id, client_id, messages, is_initiator)
-        # Delete the messages we've responded with.
-        other_client.messages = []
-        other_client.put()
-      elif occupancy >= 2:
-        # Full room.
+    try:
+      result = add_client_to_room(room_id, client_id, is_loopback)
+      if result['is_full']:
         logging.info('Room ' + room_id + ' is full.')
-        self.write_response('FULL', params, messages)
+        self.write_response('FULL', {}, [])
         return
+
+      self.write_room_parameters(
+          room_id, client_id, result['messages'], result['is_initiator'])
       logging.info('User ' + client_id + ' registered in room ' + room_id)
-      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
+      logging.info('Room ' + room_id + ' has state ' + result['room_state'])
+    except Exception as e:
+      self.write_response('SERVERERROR', {}, [])
+      logging.warning('The transaction to add a client failed: ' + str(e))
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
@@ -534,13 +564,11 @@ class RoomPage(webapp2.RequestHandler):
   def get(self, room_id):
     """Renders index.html or full.html."""
     # Check if room is full.
-    with LOCK:
-      client_map = get_room_client_map(room_id)
-      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
-      if len(client_map) >= 2:
-        logging.info('Room ' + room_id + ' is full')
-        self.write_response('full.html')
-        return
+    client_map = get_room_client_map(room_id)
+    if len(client_map) >= 2:
+      logging.info('Room ' + room_id + ' is full')
+      self.write_response('full.html')
+      return
     # Parse out room parameters from request.
     params = get_room_parameters(self.request, room_id, None, None)
     self.write_response('index.html', params)
