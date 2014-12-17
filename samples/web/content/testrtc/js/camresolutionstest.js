@@ -135,7 +135,7 @@ CamResolutionsTest.prototype = {
     var userMessage = 'Supported ' + currentRes[0] + 'x' + currentRes[1];
     var avgMinMaxStats = ' Average: ' + average_(googAvgEncodeTime) +
                          ' Max: ' + max_(googAvgEncodeTime) +
-                         ' Min: ' + min_(googAvgEncodeTime)
+                         ' Min: ' + min_(googAvgEncodeTime);
     if (googAvgEncodeTime.length === 0) {
       reportError(userMessage + ' but no stats collected, check your chamera.');
     } else {
