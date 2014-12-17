@@ -16,7 +16,7 @@
   <meta name="description" content="WebRTC reference app">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
   <link rel="canonical" href="{{ room_link }}">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="/css/main.css">
 
 </head>
 
@@ -37,8 +37,8 @@
     <div id="status"></div>
   </footer>
 
-  <script type="text/javascript" src="/_ah/channel/jsapi"></script>
   <script src="/js/stats.js"></script>
+  {{ include_loopback_js }}
   <script src="/js/signaling.js"></script>
   <script src="/js/infobox.js"></script>
   <script src="/js/sdputils.js"></script>
@@ -50,12 +50,10 @@
   <script type="text/javascript">
     var params = {
       errorMessages: {{ error_messages }},
-      channelToken: '{{ token }}',
+      isLoopback: {{ is_loopback }},
 
-      roomId: '{{ room_key }}',
+      roomId: '{{ room_id }}',
       roomLink: '{{ room_link }}',
-      clientId: '{{ me }}',
-      isInitiator: {{ initiator }},
 
       mediaConstraints: {{ media_constraints | safe }},
       offerConstraints: {{ offer_constraints | safe }},
@@ -76,6 +74,8 @@
       videoSendCodec: '{{ video_send_codec }}',
       videoRecvBitrate: '{{ vrbr }}',
       videoRecvCodec: '{{ video_receive_codec }}',
+      wssUrl: '{{ wss_url }}',
+      wssPostUrl: '{{ wss_post_url }}'
     };
 
     initialize();

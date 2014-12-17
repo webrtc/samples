@@ -9,6 +9,7 @@ package collider
 import (
 	"code.google.com/p/go.net/websocket"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -43,9 +44,14 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "POST":
-		m := r.FormValue("msg")
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+			return
+		}
+		m := string(body)
 		if m == "" {
-			http.Error(w, "Missing msg", http.StatusBadRequest)
+			http.Error(w, "Empty request body", http.StatusBadRequest)
 			return
 		}
 		if err := rooms.send(rid, cid, m); err != nil {
