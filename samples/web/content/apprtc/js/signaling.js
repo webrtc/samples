@@ -18,7 +18,7 @@
    onUserMediaError, onUserMediaSuccess, params, parseJSON, pc:true,
    remoteStream:true, remoteVideo, requestTurnServers, sendAsyncUrlRequest,
    requestUserMedia, sdpConstraints, sharingDiv, webSocket:true, startTime:true,
-   transitionToActive, updateInfoDiv, waitForRemoteVideo */
+   transitionToActive, updateInfoDiv, waitForRemoteVideo, displaySharingInfo */
 /* exported connectToRoom, openSignalingChannel */
 
 'use strict';
@@ -262,6 +262,10 @@ function createPeerConnection(config, constraints) {
 }
 
 function startSignaling() {
+  if (params.isInitiator) {
+    displaySharingInfo();
+  }
+
   trace('Starting signaling.');
   startTime = window.performance.now();
   createPeerConnection(params.peerConnectionConfig,

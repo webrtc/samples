@@ -27,7 +27,7 @@
 /* globals connectToRoom, hasReceivedOffer:true, isSignalingChannelReady:true,
    messageQueue, sendWSSMessage, startSignaling */
 /* exported gatheredIceCandidateTypes, sdpConstraints, onRemoteHangup,
-   waitForRemoteVideo */
+   waitForRemoteVideo, displaySharingInfo */
 
 // Variables defined in and used from loopback.js.
 /* globals setupLoopback */
@@ -92,6 +92,7 @@ var startTime;
 var endTime;
 var stats;
 var prevStats;
+var transitionToWaitingTimer = null;
 
 function initialize() {
   // We don't want to continue if this is triggered from Chrome prerendering,
@@ -136,9 +137,6 @@ function onUserMediaSuccess(stream) {
   localStream = stream;
   // Caller creates PeerConnection.
   displayStatus('');
-  if (params.isInitiator) {
-    displaySharingInfo();
-  }
   activate(localVideo);
 }
 
@@ -222,6 +220,11 @@ function transitionToActive() {
   trace('Call setup time: ' + (endTime - startTime).toFixed(0) + 'ms.');
   updateInfoDiv();
 
+  if (transitionToWaitingTimer) {
+    clearTimeout(transitionToWaitingTimer);
+    transitionToWaitingTimer = null;
+  }
+
   // Prepare the remote video and PIP elements.
   if (params.isStereoscopic) {
     deactivate(miniVideo);
@@ -250,13 +253,17 @@ function transitionToWaiting() {
   // Rotate the div containing the videos -180 deg with a CSS transform.
   hide(hangupSvg);
   deactivate(videosDiv);
-  setTimeout(function() {
-    if (miniVideo.src) {
-      localVideo.src = miniVideo.src;
-    }
+
+  transitionToWaitingTimer = setTimeout(function() {
+    transitionToWaitingTimer = null;
     miniVideo.src = '';
     remoteVideo.src = '';
   }, 800);
+
+  // Set localVideo.src now so that the local stream won't be lost if the call
+  // is restarted before the timeout.
+  localVideo.src = miniVideo.src;
+
   // Transition opacity from 0 to 1 for the local video.
   activate(localVideo);
   // Transition opacity from 1 to 0 for the remote and mini videos.
