@@ -95,7 +95,6 @@ CamResolutionsTest.prototype = {
     setTimeoutWithProgressBar( function() {
       call.close();
       stream.getVideoTracks()[0].stop();
-      this.finishTestOrRetrigger_();
     }.bind(this), 5000);
   },
 
@@ -113,34 +112,16 @@ CamResolutionsTest.prototype = {
       }
     }
 
-    function average_(statArray) {
-      Math.average = function() {
-        var cnt, tot, i;
-        cnt = arguments.length;
-        tot = i = 0;
-        while (i < cnt) {
-          tot += arguments[i++];
-        }
-        return tot / cnt;
-      };
-      return Math.floor(Math.average.apply(Math, statArray));
-    }
-    function max_(statArray) {
-      return Math.max.apply(Math, statArray);
-    }
-    function min_(statArray) {
-      return Math.min.apply(Math, statArray);
-    }
-
     var userMessage = 'Supported ' + currentRes[0] + 'x' + currentRes[1];
-    var avgMinMaxStats = ' Average: ' + average_(googAvgEncodeTime) +
-                         ' Max: ' + max_(googAvgEncodeTime) +
-                         ' Min: ' + min_(googAvgEncodeTime);
+    var avgMinMaxStats = ' Average: ' + arrayAverage(googAvgEncodeTime) +
+                         ' Max: ' + arrayMax(googAvgEncodeTime) +
+                         ' Min: ' + arrayMin(googAvgEncodeTime);
     if (googAvgEncodeTime.length === 0) {
       reportError(userMessage + ' but no stats collected, check your chamera.');
     } else {
       reportInfo(userMessage + avgMinMaxStats + ' encode time (ms)');
     }
+    this.finishTestOrRetrigger_();
   },
 
   failFunc_: function() {
@@ -173,5 +154,4 @@ CamResolutionsTest.prototype = {
       this.triggerGetUserMedia_(this.resolutions[this.counter]);
     }
   }
-
 };

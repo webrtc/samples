@@ -41,6 +41,8 @@ Call.prototype = {
     this.constrainOfferToRemoveVideoFec_ = true;
   },
 
+  // When the peerConnection is closed the callback is called once returning
+  // with an array of gathered stats.
   gatherStats: function(peerConnection, callback, interval) {
     var stats = [];
     getStats_();
@@ -92,7 +94,7 @@ Call.prototype = {
         otherPeer.addIceCandidate(event.candidate);
       }
     }
-  },
+  }
 };
 
 Call.noFilter = function () {
