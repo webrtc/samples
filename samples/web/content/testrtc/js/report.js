@@ -89,11 +89,16 @@ Report.prototype = {
     return url;
   },
 
+  // Returns the logs into a JSON formated string that is a list of events
+  // similar to the way chrome devtools format uses. The final string is
+  // manually composed to have newlines between the entries is being easier
+  // to parse by human eyes.
   getContent_: function () {
     var stringArray = [];
-    for (var i = 0; i != this.output_.length; ++i)
+    for (var i = 0; i !== this.output_.length; ++i) {
       stringArray.push(JSON.stringify(this.output_[i]));
-    return "[" + stringArray.join(',\n') + "]";
+    }
+    return '[' + stringArray.join(',\n') + ']';
   },
 
   onWindowError_: function (error) {
