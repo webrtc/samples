@@ -159,9 +159,12 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
 
   # HTML or JSON.
   response_type = request.get('t')
-  # Which ICE candidates to allow.
+  # Which ICE candidates to allow. This is useful for forcing a call to run
+  # over TURN, by setting it=relay.
   ice_transports = request.get('it')
-  # Which TURN transport= to allow.
+  # Which TURN transport= to allow (i.e., only TURN URLs with transport=<tt>
+  # will be used). This is useful for forcing a session to use TURN/TCP, by
+  # setting it=relay&tt=tcp.
   turn_transports = request.get('tt')
   # A HTTP server that will be used to find the right TURN servers to use, as
   # described in http://tools.ietf.org/html/draft-uberti-rtcweb-turn-rest-00.
