@@ -11,11 +11,10 @@
   // array<function> returns the average (down to nearest int), max and min of
   // an int array.
 function arrayAverage(array) {
-  var cnt, tot, i;
-  cnt = array.length;
-  tot = i = 0;
-  while (i < cnt) {
-    tot += array[i++];
+  var cnt = array.length;
+  var tot = 0;
+  for (var i = 0; i < cnt; i++) {
+    tot += array[i];
   }
   return Math.floor(tot / cnt);
 }
