@@ -39,7 +39,7 @@ class AppRtcMainPageHandlerTest(unittest.TestCase):
     response = self.makeGetRequest('/')
     self.assertEqual(response.status_int, 302)
     redirect_location = response.headers['Location']
-    self.assertRegexpMatches(redirect_location, '^http://localhost/\?r=[\d]+$')
+    self.assertRegexpMatches(redirect_location, '^http://localhost/r/[\d]+$')
 
 if __name__ == '__main__':
   unittest.main()
