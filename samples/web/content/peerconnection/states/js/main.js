@@ -76,33 +76,19 @@ function call() {
   pc1 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created local peer connection object pc1');
   pc1StateDiv.textContent = pc1.signalingState || pc1.readyState;
-  if (typeof pc1.onsignalingstatechange !== 'undefined') {
-    pc1.onsignalingstatechange = stateCallback1;
-  } else {
-    pc1.onstatechange = stateCallback1;
-  }
+  pc1.onsignalingstatechange = stateCallback1;
+
   pc1IceStateDiv.textContent = pc1.iceConnectionState;
-  if (pc1.oniceconnectionstatechange) {
-    pc1.oniceconnectionstatechange = iceStateCallback1;
-  } else {
-    pc1.onicechange = iceStateCallback1;
-  }
+  pc1.oniceconnectionstatechange = iceStateCallback1;
   pc1.onicecandidate = iceCallback1;
 
   pc2 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created remote peer connection object pc2');
   pc2StateDiv.textContent = pc2.signalingState || pc2.readyState;
-  if (pc2.onsignalingstatechange) {
-    pc2.onsignalingstatechange = stateCallback2;
-  } else {
-    pc2.onstatechange = stateCallback2;
-  }
+  pc2.onsignalingstatechange = stateCallback2;
+
   pc2IceStateDiv.textContent = pc2.iceConnectionState;
-  if (typeof pc2.oniceconnectionstatechange !== 'undefined') {
-    pc2.oniceconnectionstatechange = iceStateCallback2;
-  } else {
-    pc2.onicechange = iceStateCallback2;
-  }
+  pc2.oniceconnectionstatechange = iceStateCallback2;
   pc2.onicecandidate = iceCallback2;
   pc2.onaddstream = gotRemoteStream;
   pc1.addStream(localstream);
