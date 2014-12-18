@@ -75,13 +75,13 @@ CamResolutionsTest.prototype = {
   successFunc_: function(stream) {
     this.supportedResolutions++;
     var theResolution = this.resolutions[this.counter++];
+    reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
     // Check stats for mandatory resolutions only.
     if (theResolution[2]) {
       this.currentResolutionForCheckEncodeTime = theResolution;
       this.collectAndAnlyzeStats_(stream);
       return;
     }
-    reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
     stream.getVideoTracks()[0].stop();
     this.finishTestOrRetrigger_();
     return;
@@ -112,14 +112,19 @@ CamResolutionsTest.prototype = {
       }
     }
 
-    var userMessage = 'Supported ' + currentRes[0] + 'x' + currentRes[1];
-    var avgMinMaxStats = ' Average: ' + arrayAverage(googAvgEncodeTime) +
-                         ' Max: ' + arrayMax(googAvgEncodeTime) +
-                         ' Min: ' + arrayMin(googAvgEncodeTime);
+    var avgEncodeMs = arrayAverage(googAvgEncodeTime);
+    var minEncodeMs = arrayMin(googAvgEncodeTime);
+    var maxEncodeMs = arrayMax(googAvgEncodeTime);
+    report.traceEventInstant('encode-stats', { width: currentRes[0],
+                                               height: currentRes[1],
+                                               minEncodeMs: minEncodeMs,
+                                               maxEncodeMs: maxEncodeMs,
+                                               avgEncodeMs: avgEncodeMs });
+
     if (googAvgEncodeTime.length === 0) {
-      reportError(userMessage + ' but no stats collected, check your chamera.');
+      reportError('No stats collected. Check your camera.');
     } else {
-      reportInfo(userMessage + avgMinMaxStats + ' encode time (ms)');
+      reportInfo('Encode time (ms): ' + minEncodeMs + ' min / ' + avgEncodeMs + ' avg / ' + maxEncodeMs + ' max');
     }
     this.finishTestOrRetrigger_();
   },
