@@ -143,9 +143,10 @@ Test.prototype = {
     this.clearMessages_();
     this.statusIcon_.setAttribute('icon', 'more-horiz');
     this.setProgress(null);
+    this.traceTestEvent = report.traceEventAsync('test-run');
 
     currentTest = this;
-    report.traceEventInstant('test-start', {name: this.name});
+    this.traceTestEvent({ name: this.name, status: 'Running' });
     if (!this.isDisabled) {
       this.func();
     } else {
@@ -156,16 +157,16 @@ Test.prototype = {
 
   done: function() {
     this.setProgress(null);
-    report.traceEventInstant('test-end', {name: this.name});
-    if (this.errorCount === 0 && this.successCount > 0) {
-      report.logTestRunResult(this.name, 'Success');
+    var success = (this.errorCount === 0 && this.successCount > 0);
+    var statusString = (success ? 'Success' : (this.isDisabled ? 'Disabled' : 'Failure'));
+    this.traceTestEvent({ status: statusString });
+    report.logTestRunResult(this.name, statusString);
+
+    if (success) {
       this.statusIcon_.setAttribute('icon', 'check');
       // On success, always close the details.
       this.output_.opened = false;
     } else {
-      if (!this.isDisabled) {
-        report.logTestRunResult(this.name, 'Failure');
-      }
       this.statusIcon_.setAttribute('icon', 'close');
       // Only close the details if there is only one expectations in which
       // case the test name should provide enough information.
@@ -198,25 +199,24 @@ Test.prototype = {
   },
 
   reportSuccess: function(str) {
-    report.traceEventInstant('report-success', str);
     this.reportMessage_(PREFIX_OK, str);
     this.successCount++;
+    this.traceTestEvent({success: str});
   },
 
   reportError: function(str) {
-    report.traceEventInstant('report-error', str);
     this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
     this.errorCount++;
+    this.traceTestEvent({error: str});
   },
 
   reportInfo: function(str) {
-    report.traceEventInstant('report-info', str);
     this.reportMessage_(PREFIX_INFO, str);
+    this.traceTestEvent({info: str});
   },
 
   reportFatal: function(str) {
-    report.traceEventInstant('report-fatal', str);
     this.reportError(str);
     this.done();
   },
@@ -289,13 +289,15 @@ function start() {
 }
 
 function doGetUserMedia(constraints, onSuccess, onFail) {
+  var traceGumEvent = report.traceEventAsync('getusermedia');
+
   // Call into getUserMedia via the polyfill (adapter.js).
   var successFunc = function() {
-    report.traceEventInstant('getusermedia-success', {});
+    traceGumEvent({ 'status': 'success' });
     onSuccess.apply(this, arguments);
   };
   var failFunc = function(error) {
-    report.traceEventInstant('getusermedia-fail', error);
+    traceGumEvent({ 'status': 'fail', 'error': error });
     if (onFail) {
       onFail.apply(this, arguments);
     } else {
@@ -307,10 +309,10 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
     appendSourceId(audioSelect.value, 'audio', constraints);
     appendSourceId(videoSelect.value, 'video', constraints);
 
-    report.traceEventInstant('getusermedia', constraints);
+    traceGumEvent({ 'status': 'pending', 'constraints': constraints });
     getUserMedia(constraints, successFunc, failFunc);
   } catch (e) {
-    console.log(e.message);
+    traceGumEvent({ 'status': 'exception', 'error': e.message });
     return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
 }
