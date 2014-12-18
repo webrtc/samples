@@ -41,7 +41,7 @@ function requestTurnServers(turnRequestUrl, turnTransports) {
         reject(Error('Error parsing response JSON: ' + response));
         return;
       }
-      // Filter out any unwanted TURN URIs.
+      // Filter the TURN URLs to only use the desired transport, if specified.
       if (turnTransports.length > 0) {
         filterTurnUrls(turnServerResponse.uris, turnTransports);
       }
@@ -62,6 +62,7 @@ function requestTurnServers(turnRequestUrl, turnTransports) {
   });
 }
 
+// Parse the supplied JSON, or return null if parsing fails.
 function parseJSON(json) {
   try {
     return JSON.parse(json);
@@ -71,6 +72,7 @@ function parseJSON(json) {
   return null;
 }
 
+// Filter a list of TURN urls to only contain those with transport=|protocol|.
 function filterTurnUrls(urls, protocol) {
   for (var i = 0; i < urls.length; ) {
     var parts = urls[i].split('?');
