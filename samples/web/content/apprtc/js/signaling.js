@@ -119,7 +119,7 @@ function getTurnServersIfNeeded() {
       // Error retrieving TURN servers.
       var subject =
           encodeURIComponent('AppRTC demo TURN server not working');
-      displayStatus('No TURN server; unlikely that media will traverse' +
+      displayStatus('No TURN server; unlikely that media will traverse ' +
                     'networks. If this persists please ' +
                     '<a href="mailto:discuss-webrtc@googlegroups.com?' +
                     'subject=' + subject + '">' +
