@@ -36,18 +36,16 @@ Report.prototype = {
   },
 
   traceEventInstant: function (name, args) {
-    var timestamp = (new Date()).getTime();
-    this.output_.push( { 'ts': timestamp,
-                         'name': name,
-                         'args': args });
+    this.output_.push({ 'ts': Date.now(),
+                        'name': name,
+                        'args': args });
   },
 
   traceEventWithId: function (name, id, args) {
-    var timestamp = (new Date()).getTime();
-    this.output_.push( { 'ts': timestamp,
-                         'name': name,
-                         'id': id,
-                         'args': args });
+    this.output_.push({ 'ts': Date.now(),
+                        'name': name,
+                        'id': id,
+                        'args': args });
   },
 
   traceEventAsync: function (name) {

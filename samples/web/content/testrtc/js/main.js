@@ -201,19 +201,19 @@ Test.prototype = {
   reportSuccess: function(str) {
     this.reportMessage_(PREFIX_OK, str);
     this.successCount++;
-    this.traceTestEvent({success: str});
+    this.traceTestEvent({ success: str });
   },
 
   reportError: function(str) {
     this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
     this.errorCount++;
-    this.traceTestEvent({error: str});
+    this.traceTestEvent({ error: str });
   },
 
   reportInfo: function(str) {
     this.reportMessage_(PREFIX_INFO, str);
-    this.traceTestEvent({info: str});
+    this.traceTestEvent({ info: str });
   },
 
   reportFatal: function(str) {
