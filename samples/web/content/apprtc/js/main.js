@@ -13,7 +13,7 @@
 /* exported initialize */
 
 // Variables defined in and used from util.js.
-/* globals doGetUserMedia */
+/* globals isFullScreen */
 /* exported onUserMediaSuccess, onUserMediaError */
 
 // Variables defined in and used from infobox.js.
@@ -46,20 +46,15 @@ var videosDiv = $('#videos');
 
 var muteAudioSvg = $('#mute-audio');
 var muteVideoSvg = $('#mute-video');
-var switchVideoSvg = $('#switch-video');
 var fullscreenSvg = $('#fullscreen');
 var hangupSvg = $('#hangup');
 
-var muteAudioOnIcon = $('#mute-audio-on');
-var muteAudioOffIcon = $('#mute-audio-off');
-var muteVideoOnIcon = $('#mute-video-on');
-var muteVideoOffIcon = $('#mute-video-off');
-var fullscreenOnIcon = $('#fullscreen-on');
-var fullscreenOffIcon = $('#fullscreen-off');
+var muteAudioIconSet = new IconSet('#mute-audio-on', '#mute-audio-off');
+var muteVideoIconSet = new IconSet('#mute-video-on', '#mute-video-off');
+var fullscreenIconSet = new IconSet('#fullscreen-on', '#fullscreen-off');
 
 muteAudioSvg.onclick = toggleAudioMute;
 muteVideoSvg.onclick = toggleVideoMute;
-switchVideoSvg.onclick = switchVideo;
 fullscreenSvg.onclick = toggleFullscreen;
 hangupSvg.onclick = hangup;
 
@@ -104,8 +99,6 @@ function initialize() {
     return;
   }
 
-  show(icons); // if hidden by hangup()
-
   var roomErrors = params.errorMessages;
   if (roomErrors.length > 0) {
     console.log(roomErrors);
@@ -138,6 +131,7 @@ function onUserMediaSuccess(stream) {
   // Caller creates PeerConnection.
   displayStatus('');
   activate(localVideo);
+  show(icons);
 }
 
 function onUserMediaError(error) {
@@ -297,14 +291,7 @@ function toggleVideoMute() {
 
   isVideoMuted = newMuted;
   trace('Video ' + (isVideoMuted ? 'muted.' : 'unmuted.'));
-
-  if (isVideoMuted) {
-    hide(muteVideoOffIcon);
-    show(muteVideoOnIcon);
-  } else {
-    hide(muteVideoOnIcon);
-    show(muteVideoOffIcon);
-  }
+  muteVideoIconSet.toggle();
 }
 
 function toggleAudioMute() {
@@ -322,13 +309,7 @@ function toggleAudioMute() {
 
   isAudioMuted = newMuted;
   trace('Audio ' + (isAudioMuted ? 'muted.' : 'unmuted.'));
-  if (isAudioMuted) {
-    hide(muteAudioOffIcon);
-    show(muteAudioOnIcon);
-  } else {
-    hide(muteAudioOnIcon);
-    show(muteAudioOffIcon);
-  }
+  muteAudioIconSet.toggle();
 }
 
 // Spacebar, or m: toggle audio mute.
@@ -386,129 +367,13 @@ function displayError(error) {
   showInfoDiv();
 }
 
-//////////////////// shim should probably go in separate file
-
-document.cancelFullScreen = document.webkitCancelFullScreen ||
-document.mozCancelFullScreen || document.cancelFullScreen;
-
-document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-document.body.mozRequestFullScreen || document.body.requestFullScreen;
-
-// document.onfullscreenchange = document.onwebkitfullscreenchange =
-//   document.onmozfullscreenchange;
-
-function isFullScreen(){
-  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
-    document.isFullScreen); // if any defined and true
-}
-
-// function fullScreenElement(){
-//   return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
-//     document.mozFullScreenElement || document.fullScreenElement;
-// }
-
-///////////////////////////////////////////////////////////////
-
 function toggleFullscreen(){
   if (isFullScreen()) {
     document.cancelFullScreen();
-    show(fullscreenOffIcon);
-    hide(fullscreenOnIcon);
   } else {
     document.body.requestFullScreen();
-    show(fullscreenOnIcon);
-    hide(fullscreenOffIcon);
   }
-}
-
-// function toggleRemoteVideoElementMuted() {
-//   setRemoteVideoElementMuted(!remoteVideo.muted);
-// }
-
-// function setRemoteVideoElementMuted(mute) {
-//   if (mute) {
-//     remoteVideo.muted = true;
-//     remoteVideo.title = 'Unmute audio';
-//     activate(mic);
-//     lmic.setItem('mute', 'true');
-//   } else {
-//     remoteVideo.muted = false;
-//     remoteVideo.title = 'Mute audio';
-//     deactivate(mic);
-//   mic.setItem('mute', 'false');
-//   }
-// }
-
-var isGetSourcesSupported = MediaStreamTrack && MediaStreamTrack.getSources;
-
-try {
-  if (isGetSourcesSupported) {
-    MediaStreamTrack.getSources(gotSources);
-  } else {
-    trace('This browser does not support MediaStreamTrack.getSources().');
-  }
-} catch (e) {
-  trace('This browser does not support MediaStreamTrack.getSources().');
-  trace('getUserMedia failed with exception: ' + e.message);
-}
-
-var videoSources = [];
-
-function gotSources(sources) {
-  for (var i = 0; i !== sources.length; ++i) {
-    var source = sources[i];
-    if (source.kind === 'video') {
-      videoSources.push(source);
-    }
-  }
-  // if more than one camera available, show the camera icon
-  if (videoSources.length > 1) {
-    show(switchVideoSvg);
-  }
-}
-
-function switchVideo() {
-  displayStatus('Camera switching is coming soon. For the moment, the person on the other end of the call will need to refresh their page to see the change of camera.');
-
-  setTimeout(function(){displayStatus('');}, 5000);
-
-  // do icon animation
-  // activate(switchVideoSvg);
-  // setTimeout(function() {
-  //   deactivate(switchVideoSvg);
-  // }, 1000);
-
-  // check if sourceId has already been set
-  var sourceIdObj;
-  var videoOptional = params.mediaConstraints.video.optional;
-  if ( !! videoOptional) {
-    for (i = 0; i !== videoOptional.length; ++i) {
-      if (videoOptional[i].hasOwnProperty('sourceId')) {
-        sourceIdObj = videoOptional[i];
-        break;
-      }
-    }
-  }
-
-  if (sourceIdObj) {
-    for (var i = 0; i !== videoSources.length; ++i) {
-      var videoSourceId = videoSources[i].id;
-      // change it
-      if (sourceIdObj.sourceId !== videoSourceId) {
-        sourceIdObj.sourceId = videoSourceId;
-        break;
-      }
-    }
-  } else {
-    // this is the first time a non-default camera has been set
-    // default source is first in array of sources, so use second
-    params.mediaConstraints.video = {
-      optional: [{
-        'sourceId': videoSources[1].id
-      }]
-    };
-  }
-  doGetUserMedia();
+  fullscreenIconSet.toggle();
 }
 
 function $(selector){
@@ -531,6 +396,25 @@ function deactivate(element){
   element.classList.remove('active');
 }
 
+function IconSet(icon0, icon1){
+  this.icon0 = document.querySelector(icon0);
+  this.icon1 = document.querySelector(icon1);
+}
+
+IconSet.prototype.toggle = function() {
+  if (this.icon0.classList.contains('hidden')){
+    this.icon0.classList.remove('hidden');
+  } else {
+    this.icon0.classList.add('hidden');
+  }
+
+  if (this.icon1.classList.contains('hidden')){
+    this.icon1.classList.remove('hidden');
+  } else {
+    this.icon1.classList.add('hidden');
+  }
+};
+
 function showIcons() {
   if (!icons.classList.contains('active')) {
     activate(icons);
@@ -541,3 +425,4 @@ function showIcons() {
 }
 
 window.onmousemove = showIcons;
+

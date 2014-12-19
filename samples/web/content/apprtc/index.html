@@ -43,7 +43,7 @@
     <div id="status"></div>
   </footer>
 
-  <div id="icons">
+  <div id="icons" class="hidden">
 
     <svg id="mute-audio" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="-10 -10 68 68">
     <title>title</title>
@@ -62,13 +62,6 @@
       <path id="mute-video-off" transform="scale(0.6), translate(17,16)" d="M40 8H8c-2.21 0-4 1.79-4 4v24c0 2.21 1.79 4 4 4h32c2.21 0 4-1.79 4-4V12c0-2.21-1.79-4-4-4zm-4 24l-8-6.4V32H12V16h16v6.4l8-6.4v16z" fill="white"/>
     </svg>
 
-    <svg id="switch-video" class="hidden" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="-10 -10 68 68">
-      <circle cx="24" cy="24" r="34" fill="#666" fill-opacity="0.6">
-        <title>Switch video camera</title>
-      </circle>
-      <path transform="scale(0.7), translate(13,11)" d="M36 19v-7c0-1.1-.89-2-2-2H6c-1.11 0-2 .9-2 2v24c0 1.1.89 2 2 2h28c1.11 0 2-.9 2-2v-7l8 8V11l-8 8zM26 31v-5H14v5l-7-7 7-7v5h12v-5l7 7-7 7z" fill="white"/>
-    </svg>
-
     <svg id="fullscreen" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="-10 -10 68 68">
       <circle cx="24" cy="24" r="34" fill="#666" fill-opacity="0.6">
         <title>Enter fullscreen</title>
@@ -79,14 +72,13 @@
 
     <svg id="hangup" class="hidden" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="-10 -10 68 68">
       <circle cx="24" cy="24" r="34" fill="#666" fill-opacity="0.6">
-        <title>Toodle-oo!</title>
+        <title>Hangup</title>
       </circle>
       <path transform="scale(0.7), translate(11,10)" d="M24 18c-3.21 0-6.3.5-9.2 1.44v6.21c0 .79-.46 1.47-1.12 1.8-1.95.98-3.74 2.23-5.33 3.7-.36.35-.85.57-1.4.57-.55 0-1.05-.22-1.41-.59L.59 26.18c-.37-.37-.59-.87-.59-1.42 0-.55.22-1.05.59-1.42C6.68 17.55 14.93 14 24 14s17.32 3.55 23.41 9.34c.37.36.59.87.59 1.42 0 .55-.22 1.05-.59 1.41l-4.95 4.95c-.36.36-.86.59-1.41.59-.54 0-1.04-.22-1.4-.57-1.59-1.47-3.38-2.72-5.33-3.7-.66-.33-1.12-1.01-1.12-1.8v-6.21C30.3 18.5 27.21 18 24 18z" fill="white"/>
     </svg>
 
   </div>
 
-  <script type="text/javascript" src="/_ah/channel/jsapi"></script>
   <script src="/js/stats.js"></script>
   {{ include_loopback_js }}
   <script src="/js/signaling.js"></script>

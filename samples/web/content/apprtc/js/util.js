@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported hasTurnServer, requestTurnServers, sendAsyncUrlRequest */
+/* exported hasTurnServer, isFullScreen, requestTurnServers, sendAsyncUrlRequest */
 
 'use strict';
 
@@ -74,3 +74,27 @@ function parseJSON(json) {
   }
   return null;
 }
+
+
+////// fullscreen shim start //////
+
+document.cancelFullScreen = document.webkitCancelFullScreen ||
+document.mozCancelFullScreen || document.cancelFullScreen;
+
+document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+document.body.mozRequestFullScreen || document.body.requestFullScreen;
+
+// document.onfullscreenchange = document.onwebkitfullscreenchange =
+//   document.onmozfullscreenchange;
+
+function isFullScreen(){
+  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
+    document.isFullScreen); // if any defined and true
+}
+
+// function fullScreenElement(){
+//   return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
+//     document.mozFullScreenElement || document.fullScreenElement;
+// }
+
+////// fullscreen shim end ///////
