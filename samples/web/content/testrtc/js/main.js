@@ -292,8 +292,10 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
   var traceGumEvent = report.traceEventAsync('getusermedia');
 
   // Call into getUserMedia via the polyfill (adapter.js).
-  var successFunc = function() {
-    traceGumEvent({ 'status': 'success' });
+  var successFunc = function(stream) {
+    var cam = getVideoDeviceName_(stream);
+    var mic = getAudioDeviceName_(stream);
+    traceGumEvent({ 'status': 'success', 'Camera': cam, 'Microphone': mic });
     onSuccess.apply(this, arguments);
   };
   var failFunc = function(error) {
@@ -366,6 +368,22 @@ function testIsDisabled(testName) {
     }
   }
   return true;
+}
+
+// Return the first audio device label on the track.
+function getAudioDeviceName_(stream) {
+  if (stream.getAudioTracks().length === 0) {
+    return null;
+  }
+  return stream.getAudioTracks()[0].label;
+}
+
+// Return the first video device label on the track.
+function getVideoDeviceName_(stream) {
+  if (stream.getVideoTracks().length === 0) {
+    return null;
+  }
+  return stream.getVideoTracks()[0].label;
 }
 
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
