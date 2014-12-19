@@ -21,7 +21,19 @@
 </head>
 
 <body>
-
+  <script>
+    // Keep this in sync with the HTML element id attributes.
+    var uiConstants = {
+      videosDivId: 'videos',
+      miniVideoId: 'mini-video',
+      remoteVideoId: 'remote-video',
+      localVideoId: 'local-video',
+      remoteCanvasId: 'remote-canvas',
+      sharingDivId: 'sharing-div',
+      infoDivId: 'info-div',
+      statusDivId: 'status-div'
+    };
+  </script>
   <div id="videos">
     <video id="mini-video" autoplay muted></video>
     <canvas id="remote-canvas"></canvas>
@@ -30,20 +42,22 @@
   </div>
 
   <footer>
-    <div id="sharing">
+    <div id="sharing-div">
       <div id="room-link">Waiting for someone to join this room: <a href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
     </div>
-    <div id="info"></div>
-    <div id="status"></div>
+    <div id="info-div"></div>
+    <div id="status-div"></div>
   </footer>
 
+  <script src="/js/util.js"></script>
   <script src="/js/stats.js"></script>
   {{ include_loopback_js }}
-  <script src="/js/signaling.js"></script>
-  <script src="/js/infobox.js"></script>
+  <script src="/js/signalingchannel.js"></script>
   <script src="/js/sdputils.js"></script>
-  <script src="/js/util.js"></script>
-  <script src="/js/main.js"></script>
+  <script src="/js/peerconnectionclient.js"></script>
+  <script src="/js/call.js"></script>
+  <script src="/js/infobox.js"></script>
+  <script src="/js/appcontroller.js"></script>
   {{ include_vr_js }}
   <script src="/js/adapter.js"></script>
 
@@ -78,6 +92,38 @@
       wssUrl: '{{ wss_url }}',
       wssPostUrl: '{{ wss_post_url }}'
     };
+
+    var appController;
+
+    function initialize() {
+      // We don't want to continue if this is triggered from Chrome prerendering,
+      // since it will register the user to GAE without cleaning it up, causing
+      // the real navigation to get a "full room" error. Instead we'll initialize
+      // once the visibility state changes to non-prerender.
+      if (document.webkitVisibilityState === 'prerender') {
+        document.addEventListener('webkitvisibilitychange', onVisibilityChange);
+        return;
+      }
+
+      var roomErrors = params.errorMessages;
+      if (roomErrors.length > 0) {
+        console.log(roomErrors);
+        for (var i = 0; i < roomErrors.length; ++i) {
+          window.alert(roomErrors[i]);
+        }
+        return;
+      }
+
+      appController = new AppController(params, uiConstants);
+    }
+
+    function onVisibilityChange() {
+      if (document.webkitVisibilityState === 'prerender') {
+        return;
+      }
+      document.removeEventListener('webkitvisibilitychange', onVisibilityChange);
+      initialize();
+    }
 
     initialize();
   </script>
