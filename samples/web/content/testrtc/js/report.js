@@ -10,6 +10,7 @@
 
 function Report() {
   this.output_ = [ 'TestRTC-Diagnose v0.1' ];
+  this.nextAsyncId_ = 0;
 
   // Hook console.log into the report, since that is the most common debug tool.
   this.nativeLog_ = console.log.bind(console);
@@ -18,7 +19,7 @@ function Report() {
   // Hook up window.onerror logs into the report.
   window.addEventListener('error', this.onWindowError_.bind(this));
 
-  this.traceEventInstant('system_info', Report.getSystemInfo());
+  this.traceEventInstant('system-info', Report.getSystemInfo());
 }
 
 Report.prototype = {
@@ -35,12 +36,23 @@ Report.prototype = {
   },
 
   traceEventInstant: function (name, args) {
-    var now = (new Date()).getTime();
-    this.output_.push(now + ': ' + name + ': ' + JSON.stringify(args));
+    this.output_.push({ 'ts': Date.now(),
+                        'name': name,
+                        'args': args });
+  },
+
+  traceEventWithId: function (name, id, args) {
+    this.output_.push({ 'ts': Date.now(),
+                        'name': name,
+                        'id': id,
+                        'args': args });
+  },
+
+  traceEventAsync: function (name) {
+    return this.traceEventWithId.bind(this, name, this.nextAsyncId_++);
   },
 
   logTestRunResult: function (testName, status) {
-    this.traceEventInstant('test', { name: testName, result: status });
     // Google Analytics event for the test result to allow to track how the
     // test is doing in the wild.
     ga('send', {
@@ -75,13 +87,21 @@ Report.prototype = {
     return url;
   },
 
+  // Returns the logs into a JSON formated string that is a list of events
+  // similar to the way chrome devtools format uses. The final string is
+  // manually composed to have newlines between the entries is being easier
+  // to parse by human eyes.
   getContent_: function () {
-    return this.output_.join('\n');
+    var stringArray = [];
+    for (var i = 0; i !== this.output_.length; ++i) {
+      stringArray.push(JSON.stringify(this.output_[i]));
+    }
+    return '[' + stringArray.join(',\n') + ']';
   },
 
   onWindowError_: function (error) {
-    this.traceEventInstant('error', {'message':error.message,
-                                     'filename': error.filename + ':' + error.lineno });
+    this.traceEventInstant('error', { 'message': error.message,
+                                      'filename': error.filename + ':' + error.lineno });
   },
 
   logHook_: function () {
