@@ -15,6 +15,7 @@ var stream;
 var vgaButton = document.querySelector('#vga');
 var qvgaButton = document.querySelector('#qvga');
 var hdButton = document.querySelector('#hd');
+var fullHdButton = document.querySelector('#full-hd');
 
 vgaButton.onclick = function() {
   getMedia(vgaConstraints);
@@ -28,9 +29,15 @@ hdButton.onclick = function() {
   getMedia(hdConstraints);
 };
 
+fullHdButton.onclick = function() {
+  getMedia(fullHdConstraints);
+};
+
 var qvgaConstraints = {
   video: {
     mandatory: {
+      minWidth: 320,
+      minHeight: 180,
       maxWidth: 320,
       maxHeight: 180
     }
@@ -40,6 +47,8 @@ var qvgaConstraints = {
 var vgaConstraints = {
   video: {
     mandatory: {
+      minWidth: 640,
+      minHeight: 360,
       maxWidth: 640,
       maxHeight: 360
     }
@@ -50,7 +59,20 @@ var hdConstraints = {
   video: {
     mandatory: {
       minWidth: 1280,
-      minHeight: 720
+      minHeight: 720,
+      maxWidth: 1280,
+      maxHeight: 720
+    }
+  }
+};
+
+var fullHdConstraints = {
+  video: {
+    mandatory: {
+      minWidth: 1920,
+      minHeight: 1080,
+      maxWidth: 1920,
+      maxHeight: 1080
     }
   }
 };
