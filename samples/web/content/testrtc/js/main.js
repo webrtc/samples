@@ -295,7 +295,7 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
   var successFunc = function(stream) {
     var cam = getVideoDeviceName_(stream);
     var mic = getAudioDeviceName_(stream);
-    traceGumEvent({ 'status': 'success', 'Camera': cam, 'Microphone': mic });
+    traceGumEvent({ 'status': 'success', 'camera': cam, 'microphone': mic });
     onSuccess.apply(this, arguments);
   };
   var failFunc = function(error) {
