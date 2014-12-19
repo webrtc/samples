@@ -277,7 +277,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # a random id, but we should make this better.
   username = client_id if client_id is not None else generate_random(9)
   if len(turn_base_url) > 0:
-    turn_url = '%s/turn?username=%s&key=%s' %
+    turn_url = '%s/turn?username=%s&key=%s' % \
         (turn_base_url, username, CEOD_KEY)
 
   room_link = request.host_url + '/room/' + room_id
