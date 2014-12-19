@@ -60,6 +60,7 @@
       peerConnectionConfig: {{ pc_config | safe }},
       peerConnectionConstraints: {{ pc_constraints | safe }},
       turnRequestUrl: '{{ turn_url }}',
+      turnTransports: '{{ turn_transports }}',
 
       audioSendBitrate: '{{ asbr }}',
       audioSendCodec: '{{ audio_send_codec }}',
