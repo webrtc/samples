@@ -66,7 +66,9 @@ Patches and issues welcome!
 
 ### Video chat ###
 
-[Complete video chat client (based on Google App Engine)](https://apprtc.appspot.com)
+[AppRTC video chat client](https://apprtc.appspot.com)
+
+[AppRTC parameters](https://googlechrome.github.io/webrtc/samples/web/content/apprtc/params.html)
 
 ## Test pages ##
 

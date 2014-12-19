@@ -322,7 +322,6 @@ function toggleAudioMute() {
 
   isAudioMuted = newMuted;
   trace('Audio ' + (isAudioMuted ? 'muted.' : 'unmuted.'));
-
   if (isAudioMuted) {
     hide(muteAudioOffIcon);
     show(muteAudioOnIcon);
