@@ -45,7 +45,7 @@ function maybeFixConfiguration(pcConfig) {
   }
 }
 
-if (navigator.mozGetUserMedia) {
+if (navigator.mozGetUserMedia && mozRTCPeerConnection) {
   console.log('This appears to be Firefox');
 
   webrtcDetectedBrowser = 'firefox';
