@@ -32,6 +32,7 @@ Report.prototype = {
     var content = encodeURIComponent(this.getContent_());
     var link = document.createElement('a');
     link.setAttribute('href', 'data:text/plain;charset=utf-8,' + content);
+    link.setAttribute('download', 'testrtc-' + (new Date().toJSON()) + '.log');
     link.click();
   },
 
