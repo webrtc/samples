@@ -169,12 +169,13 @@ addExplicitTest('Connectivity', 'WiFi Periodic Scan',
 function testForWiFiPeriodicScan(config) {
   var testDurationMs = 5 * 60 * 1000;
   var sendIntervalMs = 100;
-  var testFinished = false;
+  var running = true;
   var delays = [];
+  var recvTimeStamps = [];
   var call = new Call(config);
   call.setIceCandidateFilter(Call.isRelay);
 
-  var senderChannel = call.pc1.createDataChannel(null);
+  var senderChannel = call.pc1.createDataChannel({ ordered: false, maxRetransmits: 0 });
   senderChannel.addEventListener('open', send);
   call.pc2.addEventListener('datachannel', onReceiverChannel);
   call.establishConnection();
@@ -186,21 +187,23 @@ function testForWiFiPeriodicScan(config) {
   }
 
   function send() {
-    if (testFinished) { return; }
+    if (!running) { return; }
     senderChannel.send('' + Date.now());
     setTimeout(send, sendIntervalMs);
   }
 
   function receive(event) {
-    if (testFinished) { return; }
+    if (!running) { return; }
     var sendTime = parseInt(event.data);
     var delay = Date.now() - sendTime;
+    recvTimeStamps.push(sendTime);
     delays.push(delay);
   }
 
   function finishTest() {
-    report.traceEventInstant('periodic-delay', { delays: delays });
-    testFinished = true;
+    report.traceEventInstant('periodic-delay', { delays: delays, recvTimeStamps: recvTimeStamps });
+    running = false;
+    call.close();
     testFinished();
   }
 }
