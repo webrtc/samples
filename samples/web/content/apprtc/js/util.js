@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported hasTurnServer, isFullScreen, requestTurnServers, sendAsyncUrlRequest */
+/* exported requestTurnServers, sendAsyncUrlRequest */
 
 'use strict';
 
@@ -32,18 +32,8 @@ function sendAsyncUrlRequest(method, url) {
   });
 }
 
-function hasTurnServer(params) {
-  var iceServers = params.peerConnectionConfig.iceServers;
-  for (var i = 0, len = iceServers.length; i < len; i++) {
-    if (iceServers[i].urls.substr(0, 5) === 'turn:') {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Returns a list of turn servers after requesting it from CEOD.
-function requestTurnServers(turnRequestUrl) {
+function requestTurnServers(turnRequestUrl, turnTransports) {
   return new Promise(function(resolve, reject) {
     sendAsyncUrlRequest('GET', turnRequestUrl).then(function(response) {
       var turnServerResponse = parseJSON(response);
@@ -51,6 +41,12 @@ function requestTurnServers(turnRequestUrl) {
         reject(Error('Error parsing response JSON: ' + response));
         return;
       }
+      // Filter the TURN URLs to only use the desired transport, if specified.
+      if (turnTransports.length > 0) {
+        filterTurnUrls(turnServerResponse.uris, turnTransports);
+      }
+
+      // Create the RTCIceServer objects from the response.
       var turnServers = createIceServers(turnServerResponse.uris,
           turnServerResponse.username, turnServerResponse.password);
       if (!turnServers) {
@@ -66,6 +62,7 @@ function requestTurnServers(turnRequestUrl) {
   });
 }
 
+// Parse the supplied JSON, or return null if parsing fails.
 function parseJSON(json) {
   try {
     return JSON.parse(json);
@@ -75,26 +72,14 @@ function parseJSON(json) {
   return null;
 }
 
-
-////// fullscreen shim start //////
-
-document.cancelFullScreen = document.webkitCancelFullScreen ||
-document.mozCancelFullScreen || document.cancelFullScreen;
-
-document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-document.body.mozRequestFullScreen || document.body.requestFullScreen;
-
-// document.onfullscreenchange = document.onwebkitfullscreenchange =
-//   document.onmozfullscreenchange;
-
-function isFullScreen(){
-  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
-    document.isFullScreen); // if any defined and true
+// Filter a list of TURN urls to only contain those with transport=|protocol|.
+function filterTurnUrls(urls, protocol) {
+  for (var i = 0; i < urls.length; ) {
+    var parts = urls[i].split('?');
+    if (parts.length > 1 && parts[1] !== ('transport=' + protocol)) {
+      urls.splice(i, 1);
+    } else {
+      ++i;
+    }
+  }
 }
-
-// function fullScreenElement(){
-//   return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
-//     document.mozFullScreenElement || document.fullScreenElement;
-// }
-
-////// fullscreen shim end ///////

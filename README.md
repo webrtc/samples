@@ -68,7 +68,7 @@ Patches and issues welcome!
 
 [AppRTC video chat client](https://apprtc.appspot.com)
 
-[AppRTC parameters](https://googlechrome.github.io/webrtc/samples/web/content/apprtc/params.html)
+[AppRTC parameters](https://apprtc.appspot.com/params.html)
 
 ## Test pages ##
 

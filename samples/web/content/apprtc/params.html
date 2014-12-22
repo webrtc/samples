@@ -3,7 +3,7 @@
 <head>
 
   <meta name="keywords" content="WebRTC, HTML5, JavaScript" />
-  <meta name="description" content="Client-side WebRTC code samples." />
+  <meta name="description" content="AppRTC URL parameters" />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
@@ -68,8 +68,6 @@
         <tr><td><a href="https://apprtc.appspot.com?hd=true">hd=true</a></td><td>Use HD camera resolution <a href="http://googlechrome.github.io/webrtc/samples/web/content/getusermedia/resolution/" title="Video constraints demo">constraints</a>, i.e. minWidth: 1280, minHeight: 720</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?stereo=true">stereo=true</a></td><td>Turn on stereo audio</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?debug=loopback">debug=loopback</a></td><td>Connect to yourself, e.g. to test firewalls</td></tr>
-        <tr><td><a href="https://apprtc.appspot.com?tt=60">tt=[minutes]</a></td><td>Set channel timeout, default 30 minutes, max 1440</td></tr>
-        <tr><td><a href="https://apprtc.appspot.com?ss=stun:foo">ss=[stunserver]</a></td><td>Set STUN server different from the default</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?ts=turn:foo">ts=[turnserver]</a></td><td>Set TURN server different from the default</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?tp=foo">tp=[password]</a></td><td>Set password for the TURN server</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?audio=true&amp;video=false">audio=true&amp;video=false</a></td><td>Audio only</td></tr>
@@ -81,7 +79,7 @@
         <tr><td><a href="https://apprtc.appspot.com?dtls=false">dtls=false</a></td><td>Disable <a href="https://en.wikipedia.org/wiki/Datagram_Transport_Layer_Security" title="Wikipedia article: DTLS">Datagram Transport Layer Security</a></td></tr>
         <tr><td><a href="https://apprtc.appspot.com?dscp=true">dscp=true</a></td><td>Enable DSCP</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?ipv6=true">ipv6=true</a></td><td>Enable IPv6</td></tr>
-        <tr><td><a href="https://apprtc.appspot.com?arbr=48000">arbr=[bitrate]</a></td><td>Set audio receive bitrate</td></tr>
+        <tr><td><a href="https://apprtc.appspot.com?arbr=48000">arbr=[bitrate]</a></td><td>Set audio receive bitrate, kbps</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?asbr=16000">asbr=[bitrate]</a></td><td>Set audio send bitrate</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?vsbr=1000">vsbr=[bitrate]</a></td><td>Set video receive bitrate</td></tr>
         <tr><td><a href="https://apprtc.appspot.com?vrbr=8000">vrbr=[bitrate]</a></td><td>Set video send bitrate</td></tr>

@@ -10,12 +10,12 @@
 
 <head>
 
-  <title>WebRTC Reference App</title>
+  <title>AppRTC</title>
 
   <meta charset="utf-8">
   <meta name="description" content="WebRTC reference app">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
-  <meta itemprop="name" content="WebRTC Reference App">
+  <meta itemprop="name" content="AppRTC">
   <meta itemprop="image" content="images/webrtc-icon-192x192.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta id="theme-color" name="theme-color" content="#362A6C">
@@ -102,6 +102,7 @@
       peerConnectionConfig: {{ pc_config | safe }},
       peerConnectionConstraints: {{ pc_constraints | safe }},
       turnRequestUrl: '{{ turn_url }}',
+      turnTransports: '{{ turn_transports }}',
 
       audioSendBitrate: '{{ asbr }}',
       audioSendCodec: '{{ audio_send_codec }}',
