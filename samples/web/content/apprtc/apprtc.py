@@ -31,7 +31,7 @@ LOCK = threading.RLock()
 LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
 TURN_BASE_URL = 'https://computeengineondemand.appspot.com'
 WSS_HOST = 'apprtc-ws.webrtc.org'
-WSS_PORT = '8089'
+WSS_PORT = '443'
 CEOD_KEY = '4080218913'
 
 def generate_random(length):
