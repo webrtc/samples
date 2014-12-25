@@ -15,27 +15,7 @@ div#buttons {
   margin: 1em 0 1em 0;
   padding: 0 0 1em 0;
 }
-div#local {
-  margin: 0 20px 0 0;
-}
-div#preview {
-  border-bottom: 1px solid #eee;
-  margin: 0 0 1em 0;
-  padding: 0 0 0.5em 0;
-}
-div#preview > div {
-  display: inline-block;
-  vertical-align: top;
-  width: calc(50% - 12px);
-}
 div#select {
-  margin: 0 0 1em 0;
-}
-div#selectSource {
-  margin: 0 0 1em 0;
-}
-div.source {
-  display: inline-block;
   margin: 0 0 1em 0;
 }
 form {
@@ -56,9 +36,6 @@ textarea {
   padding: 5px;
   width: calc(100% - 10px);
 }
-video {
-  height: 225px;
-}
 
 @media screen and (max-width: 550px) {
   button {
@@ -71,21 +48,12 @@ video {
   button:nth-child(3n+0) {
     margin: 0 0 15px 0;
   }
-  video {
-    height: 96px;
-  }
 }
 
 @media screen and (max-width: 800px) {
   button {
     margin: 0 15px 15px 0;
     width: 155px;
-  }
-  div#selectSource {
-    margin: 0 0 0.5em 0;
-  }
-  div.source {
-    margin: 0 0 .2em 0;
   }
   select {
     margin: 0 1.5em 0 0;
