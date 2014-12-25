@@ -19,6 +19,7 @@ var usernameInput = document.querySelector('input#username');
 var ipv6Check = document.querySelector('input#ipv6');
 var unbundleCheck = document.querySelector('input#unbundle');
 var trickle = document.querySelector('input#trickle');
+var halfTrickle = document.querySelector('input#halftrickle');
 
 startButton.onclick = start;
 addButton.onclick = addServer;
@@ -33,6 +34,7 @@ var sdpConstraints = {
 };
 
 var useTrickle = false;
+var useHalfTrickle = false;
 var begin;
 
 
@@ -199,11 +201,11 @@ function iceCallback1(event) {
 }
 
 function iceCallback2(event) {
-  if (event.candidate && useTrickle) {
+  if (event.candidate && (useTrickle || useHalfTrickle)) {
     localPeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate),
       onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  } else if (!event.candidate && !useTrickle) {
+  } else if (!event.candidate && !(useTrickle || useHalfTrickle)) {
     localPeerConnection.setRemoteDescription(
       remotePeerConnection.localDescription,
       onSetSessionDescriptionSuccess,
