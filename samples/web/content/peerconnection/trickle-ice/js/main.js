@@ -93,7 +93,7 @@ function start() {
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
-  offerConstraints.optional = [{'googUseRtpMUX': !unbundleCheck.checked}];
+  offerConstraints.optional = [{'googUseRtpMUX': unbundleCheck.checked}];
 
   trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
         ', constraints=' + JSON.stringify(pcConstraints));
