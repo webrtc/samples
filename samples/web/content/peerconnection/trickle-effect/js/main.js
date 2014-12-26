@@ -81,6 +81,7 @@ function start() {
   startButton.disabled = true;
   createPeerConnection();
   useTrickle = trickle.checked;
+  useHalfTrickle = halfTrickle.checked;
   createOffer();
 }
 
@@ -104,7 +105,6 @@ function createPeerConnection() {
   // on whether the unbundle RTCP checkbox is checked.
   var config = {'iceServers': iceServers };
   var pcConstraints = {'mandatory': {'IceTransports': iceTransports}};
-  var offerConstraints = {'mandatory': {'OfferToReceiveAudio': true}};
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
 
@@ -114,7 +114,6 @@ function createPeerConnection() {
   remotePeerConnection = new RTCPeerConnection(config, pcConstraints);
   trace('Created remote peer connection object remotePeerConnection');
   remotePeerConnection.onicecandidate = iceCallback2;
-  remotePeerConnection.onaddstream = gotRemoteStream;
 
   localPeerConnection.oniceconnectionstatechange = onIceConnectionStateChange;
 
@@ -179,12 +178,6 @@ function onIceConnectionStateChange() {
       startButton.disabled = false;
       break;
   }
-}
-
-function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(remoteVideo, e.stream);
-  trace('Received remote stream');
 }
 
 function iceCallback1(event) {
