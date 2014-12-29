@@ -35,11 +35,5 @@ class AppRtcMainPageHandlerTest(unittest.TestCase):
     # PhantomJS uses WebKit, so Safari is closest to the thruth.
     return self.test_app.get(path, headers={'User-Agent': 'Safari'})
 
-  def testConnectingWithoutRoomIdRedirectsToGeneratedRoom(self):
-    response = self.makeGetRequest('/')
-    self.assertEqual(response.status_int, 302)
-    redirect_location = response.headers['Location']
-    self.assertRegexpMatches(redirect_location, '^http://localhost/r/[\d]+$')
-
 if __name__ == '__main__':
   unittest.main()

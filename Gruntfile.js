@@ -18,6 +18,8 @@ module.exports = function(grunt) {
           import: 2
         },
         src: ['samples/web/content/**/*.css',
+              // localfonts.css is a cached version of the web fonts css file provided by google.
+              '!samples/web/content/apprtc/css/localfonts.css',
               '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
@@ -27,6 +29,8 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
+              // localfonts.css is a cached version of the web fonts css file provided by google.
+              '!samples/web/content/apprtc/css/localfonts.css',
               '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
@@ -37,6 +41,7 @@ module.exports = function(grunt) {
       html1: {
         src: [
         'samples/web/content/apprtc/index.html',
+        'samples/web/content/apprtc/appwindow.html',
         'samples/web/content/datachannel/index.html',
         'samples/web/content/getusermedia/**/index.html',
         'samples/web/content/peerconnection/**/index.html'
