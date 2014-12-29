@@ -85,7 +85,7 @@ function testDataChannelThroughput(config) {
 
       var elapsedTime = Math.round((now - startTime) * 10) / 10000.0;
       var receivedKBits = receivedPayloadBytes * 8 / 1000;
-      reportSuccess('Total transmitted: ' + receivedKBits + ' kilo-bits in ' +
+      reportSuccess('Total transmitted: ' + receivedKBits + ' kbps in ' +
                     elapsedTime + ' seconds.');
       testFinished();
     }
