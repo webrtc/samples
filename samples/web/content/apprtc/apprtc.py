@@ -29,9 +29,9 @@ jinja_environment = jinja2.Environment(
 LOCK = threading.RLock()
 
 LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
-TURN_URL = 'https://computeengineondemand.appspot.com'
+TURN_BASE_URL = 'https://computeengineondemand.appspot.com'
 WSS_HOST = 'apprtc-ws.webrtc.org'
-WSS_PORT = '8089'
+WSS_PORT = '443'
 CEOD_KEY = '4080218913'
 
 def generate_random(length):
@@ -43,26 +43,15 @@ def generate_random(length):
 def is_chrome_for_android(user_agent):
   return 'Android' in user_agent and 'Chrome' in user_agent
 
-def get_default_stun_server(user_agent):
-  # others you can try: stun.services.mozilla.com, stunserver.org
-  return 'stun.l.google.com:19302'
-
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
 def get_hd_default(user_agent):
   if 'Android' in user_agent or not 'Chrome' in user_agent:
     return 'false'
   return 'true'
 
-def make_pc_config(stun_server, turn_server, ts_pwd, ice_transports):
-  config = {}
-  servers = []
-  if stun_server:
-    stun_config = 'stun:{}'.format(stun_server)
-    servers.append({'urls':stun_config})
-  if turn_server:
-    turn_config = 'turn:{}'.format(turn_server)
-    servers.append({'urls':turn_config, 'credential':ts_pwd})
-  config['iceServers'] = servers
+# iceServers will be filled in by the TURN HTTP request.
+def make_pc_config(ice_transports):
+  config = { 'iceServers': [] };
   if ice_transports:
     config['iceTransports'] = ice_transports
   return config
@@ -167,13 +156,19 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # Get the base url without arguments.
   base_url = request.path_url
   user_agent = request.headers['User-Agent']
+
+  # HTML or JSON.
   response_type = request.get('t')
-  stun_server = request.get('ss')
-  if not stun_server:
-    stun_server = get_default_stun_server(user_agent)
-  turn_server = request.get('ts')
-  ts_pwd = request.get('tp')
+  # Which ICE candidates to allow. This is useful for forcing a call to run
+  # over TURN, by setting it=relay.
   ice_transports = request.get('it')
+  # Which TURN transport= to allow (i.e., only TURN URLs with transport=<tt>
+  # will be used). This is useful for forcing a session to use TURN/TCP, by
+  # setting it=relay&tt=tcp.
+  turn_transports = request.get('tt')
+  # A HTTP server that will be used to find the right TURN servers to use, as
+  # described in http://tools.ietf.org/html/draft-uberti-rtcweb-turn-rest-00.
+  turn_base_url = request.get('ts', default_value = TURN_BASE_URL)
 
   # Use "audio" and "video" to set the media stream constraints. Defined here:
   # http://goo.gl/V7cZg
@@ -277,19 +272,17 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   else:
     include_loopback_js = ''
 
-  if turn_server == 'false':
-    turn_server = None
-    turn_url = ''
-  else:
-    # TODO(tkchin): We want to provide a TURN request url on the initial get,
-    # but we don't provide client_id until a register. For now just generate
-    # a random id, but we should make this better.
-    username = client_id if client_id is not None else generate_random(9)
-    turn_url = '%s/turn?username=%s&key=%s' % (TURN_URL, username, CEOD_KEY)
+  # TODO(tkchin): We want to provide a TURN request url on the initial get,
+  # but we don't provide client_id until a register. For now just generate
+  # a random id, but we should make this better.
+  username = client_id if client_id is not None else generate_random(9)
+  if len(turn_base_url) > 0:
+    turn_url = '%s/turn?username=%s&key=%s' % \
+        (turn_base_url, username, CEOD_KEY)
 
   room_link = request.host_url + '/room/' + room_id
   room_link = append_url_arguments(request, room_link)
-  pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
+  pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
   offer_constraints = make_offer_constraints()
   media_constraints = make_media_stream_constraints(audio, video,
@@ -305,6 +298,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'offer_constraints': json.dumps(offer_constraints),
     'media_constraints': json.dumps(media_constraints),
     'turn_url': turn_url,
+    'turn_transports': turn_transports,
     'stereo': stereo,
     'opusfec': opusfec,
     'opusmaxpbr': opusmaxpbr,

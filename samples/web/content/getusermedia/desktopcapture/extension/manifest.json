@@ -2,7 +2,7 @@
   "name": "Screensharing Extension",
   "description": "Screensharing Extension for my app",
   "version": "1.0.0",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "icons": {
     "128": "icon.png"
   },

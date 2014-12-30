@@ -11,6 +11,9 @@
   "unused": "strict",
   "globals": {
     "addTest": true,
+    "arrayAverage": true,
+    "arrayMax": true,
+    "arrayMin": true,
     "attachMediaStream": true,
     "attachMediaStream": true,
     "audioContext": true,

@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals setCodecParam, removeCodecParam, displayError, displayStatus,
-   gatheredIceCandidateTypes, hasTurnServer, iceCandidateType, localStream,
+   gatheredIceCandidateTypes, iceCandidateType, localStream,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
@@ -18,7 +18,7 @@
    onUserMediaError, onUserMediaSuccess, params, parseJSON, pc:true,
    remoteStream:true, remoteVideo, requestTurnServers, sendAsyncUrlRequest,
    requestUserMedia, sdpConstraints, sharingDiv, webSocket:true, startTime:true,
-   transitionToActive, updateInfoDiv, waitForRemoteVideo */
+   transitionToActive, updateInfoDiv, waitForRemoteVideo, displaySharingInfo */
 /* exported connectToRoom, openSignalingChannel */
 
 'use strict';
@@ -107,12 +107,13 @@ function getMediaIfNeeded() {
 
 // Asynchronously request a TURN server if needed.
 function getTurnServersIfNeeded() {
-  var shouldRequestTurnServers = !hasTurnServer(params) &&
+  var shouldRequestTurnServers =
       (params.turnRequestUrl && params.turnRequestUrl.length > 0);
   var turnPromise = null;
   if (shouldRequestTurnServers) {
     var requestUrl = params.turnRequestUrl;
-    turnPromise = requestTurnServers(requestUrl).then(function(turnServers) {
+    turnPromise = requestTurnServers(requestUrl, params.turnTransports).then(
+    function(turnServers) {
       var iceServers = params.peerConnectionConfig.iceServers;
       params.peerConnectionConfig.iceServers = iceServers.concat(turnServers);
     }).catch(function(error) {
@@ -241,14 +242,15 @@ function onSignalingChannelClose(event) {
 }
 
 function createPeerConnection(config, constraints) {
-  trace('Creating peer connection.');
+  trace('Creating peer connection with:' +
+      '  config: \'' + JSON.stringify(config) + '\';\n' +
+      '  constraints: \'' + JSON.stringify(constraints) + '\'.');
   try {
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     pc = new RTCPeerConnection(config, constraints);
     pc.onicecandidate = onIceCandidate;
-    trace('Created RTCPeerConnnection with:\n' +
-        '  config: \'' + JSON.stringify(config) + '\';\n' +
-        '  constraints: \'' + JSON.stringify(constraints) + '\'.');
+    trace('Created RTCPeerConnnection.');
+
   } catch (e) {
     displayError('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection; ' +
@@ -262,6 +264,10 @@ function createPeerConnection(config, constraints) {
 }
 
 function startSignaling() {
+  if (params.isInitiator) {
+    displaySharingInfo();
+  }
+
   trace('Starting signaling.');
   startTime = window.performance.now();
   createPeerConnection(params.peerConnectionConfig,

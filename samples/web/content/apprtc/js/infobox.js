@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals computeBitrate, computeE2EDelay, endTime, errorMessages,
+/* globals computeBitrate, computeE2EDelay, computeRate, endTime, errorMessages,
    extractStatAsInt, gatheredIceCandidateTypes, getStatsReport,
    getStatsTimer:true, infoDiv, pc,
    prevStats:true, remoteVideo, startTime, stats:true */
@@ -122,23 +122,28 @@ function buildStatsSection() {
   var rxPrevAudio = getStatsReport(prevStats, 'ssrc', 'audioOutputLevel');
   var txPrevVideo = getStatsReport(prevStats, 'ssrc', 'googFirsReceived');
   var rxPrevVideo = getStatsReport(prevStats, 'ssrc', 'googFirsSent');
-  var txAudioCodec, txAudioBitrate;
-  var rxAudioCodec, rxAudioBitrate;
-  var txVideoHeight, txVideoFps, txVideoCodec, txVideoBitrate;
-  var rxVideoHeight, rxVideoFps, rxVideoCodec, rxVideoBitrate;
+  var txAudioCodec, txAudioBitrate, txAudioPacketRate;
+  var rxAudioCodec, rxAudioBitrate, rxAudioPacketRate;
+  var txVideoHeight, txVideoFps, txVideoCodec;
+  var txVideoBitrate, txVideoPacketRate;
+  var rxVideoHeight, rxVideoFps, rxVideoCodec;
+  var rxVideoBitrate, rxVideoPacketRate;
   if (txAudio) {
     txAudioCodec = txAudio.stat('googCodecName');
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
+    txAudioPacketRate = computeRate(txAudio, txPrevAudio, 'packetsSent');
   }
   if (rxAudio) {
     rxAudioCodec = rxAudio.stat('googCodecName');
     rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
+    rxAudioPacketRate = computeRate(rxAudio, rxPrevAudio, 'packetsReceived');
   }
   if (txVideo) {
     txVideoCodec = txVideo.stat('googCodecName');
     txVideoHeight = txVideo.stat('googFrameHeightSent');
     txVideoFps = txVideo.stat('googFrameRateSent');
     txVideoBitrate = computeBitrate(txVideo, txPrevVideo, 'bytesSent');
+    txVideoPacketRate = computeRate(txVideo, txPrevVideo, 'packetsSent');
   }
   if (rxVideo) {
     rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
@@ -146,17 +151,22 @@ function buildStatsSection() {
     // TODO(juberti): this should ideally be obtained from the video element.
     rxVideoFps = rxVideo.stat('googFrameRateDecoded');
     rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
+    rxVideoPacketRate = computeRate(rxVideo, rxPrevVideo, 'packetsReceived');
   }
   contents += buildLine('Audio Tx', txAudioCodec + ', ' +
-      formatBitrate(txAudioBitrate));
+      formatBitrate(txAudioBitrate) + ', ' +
+      formatPacketRate(txAudioPacketRate));
   contents += buildLine('Audio Rx', rxAudioCodec + ', ' +
-      formatBitrate(rxAudioBitrate));
+      formatBitrate(rxAudioBitrate)  + ', ' +
+      formatPacketRate(rxAudioPacketRate));
   contents += buildLine('Video Tx',
       txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
-      txVideoFps.toString() + ', ' + formatBitrate(txVideoBitrate));
+      txVideoFps.toString() + ', ' + formatBitrate(txVideoBitrate) + ', ' +
+      formatPacketRate(txVideoPacketRate));
   contents += buildLine('Video Rx',
       rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
-      rxVideoFps.toString() + ', ' + formatBitrate(rxVideoBitrate));
+      rxVideoFps.toString() + ', ' + formatBitrate(rxVideoBitrate) + ', ' +
+      formatPacketRate(rxVideoPacketRate));
   return contents;
 }
 
@@ -191,4 +201,8 @@ function formatBitrate(value) {
 
   var str = value.toPrecision(3) + ' ' + suffix;
   return str;
+}
+
+function formatPacketRate(value) {
+  return value.toPrecision(3) + ' ' + 'pps';
 }
