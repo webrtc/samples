@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
+/* exported addExplicitTest, addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
