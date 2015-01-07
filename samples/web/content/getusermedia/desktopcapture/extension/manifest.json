@@ -1,6 +1,6 @@
 {
   "name": "Screensharing Extension",
-  "description": "Screensharing Extension for my app",
+  "description": "Screensharing Extension for WebRTC peer2peer test app",
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {
