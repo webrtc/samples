@@ -56,9 +56,9 @@ function CamCaptureTest() {
   this.video.setAttribute('muted','');
 }
 
-function ResolutionMatchesIndependentOfRotation(a_width, a_height, b_width, b_height) {
-  return (a_width === b_width && a_height === b_height) ||
-         (a_width === b_height && a_height === b_width);
+function resolutionMatchesIndependentOfRotation(aWidth, aHeight, bWidth, bHeight) {
+  return (aWidth === bWidth && aHeight === bHeight) ||
+         (aWidth === bHeight && aHeight === bWidth);
 }
 
 CamCaptureTest.prototype = {
@@ -139,8 +139,8 @@ CamCaptureTest.prototype = {
     if (info.isMuted === true) {
       reportError('Camera reported itself as muted.');
     }
-    if (!ResolutionMatchesIndependentOfRotation(info.videoWidth, info.videoHeight,
-                                               info.mandatoryMinWidth, info.mandatoryMinHeight)) {
+    if (!resolutionMatchesIndependentOfRotation(info.videoWidth, info.videoHeight,
+                                                info.mandatoryMinWidth, info.mandatoryMinHeight)) {
       reportError('Incorrect captured resolution.');
     }
     if (info.testedFrames === 0) {
