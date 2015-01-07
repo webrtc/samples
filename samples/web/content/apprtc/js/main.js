@@ -96,6 +96,8 @@ if (isChromeApp()) {
   server = 'http://localhost:8080';
 }
 
+var connectedToRoom = false;
+
 function initialize() {
   // We don't want to continue if this is triggered from Chrome prerendering,
   // since it will register the user to GAE without cleaning it up, causing
@@ -121,6 +123,7 @@ function initialize() {
   
   trace('Initializing; room=' + params.roomId + '.');
   connectToRoom(params.server, params.roomId);
+  connectedToRoom = true;
   if (params.isLoopback) {
     setupLoopback();
   }
@@ -328,6 +331,10 @@ function toggleAudioMute() {
 // q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 document.onkeypress = function(event) {
+  if (!connectedToRoom) {
+    return;
+  }
+  
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
@@ -395,11 +402,15 @@ function toggleFullScreen() {
 
 roomIdInput.addEventListener('input', function(){
   // validate room id, enable/disable join button
+  // The server currently accepts only the \w character class
   var room = roomIdInput.value;
-  if (room.length < 5) {
-    joinRoomButton.disabled = true;
-  } else {
+  var valid = room.length >= 5;
+  var re = /^\w+$/;
+  valid = valid && re.exec(room);
+  if (valid) {
     joinRoomButton.disabled = false;
+  } else {
+    joinRoomButton.disabled = true;
   }
 });
 
@@ -409,6 +420,7 @@ randomRoomButton.addEventListener('click', function() {
 
 joinRoomButton.addEventListener('click', function() {
   // TODO - validate entered room name
+  
   roomId = roomIdInput.value;
   loadRoom();
 },false);
@@ -425,10 +437,27 @@ function showRoomSelectionUI(shouldShow) {
   }
 }
 
+if (!isChromeApp()) {
+  window.onpopstate = function(event) {
+    if (!event.state) {
+      // Resetting back to room selection page not yet supported, reload
+      // the initial page instead.
+      trace('Reloading main page.');
+      location.href = location.origin;
+    } else {
+      // This could be a forward request to open a room again
+      if (event.state && event.state.roomLink) {
+        location.href = event.state.roomLink;
+      }
+    }
+    
+  };
+}
+
 function loadRoom() {
   pushRecentRoom(roomId).then(function() {
     // check if room is available
-    var roomCheckUri = server + '/room/' + roomId + '/status';
+    var roomCheckUri = server + '/room/' + encodeURIComponent(roomId) + '/status';
     trace('Requesting room status from: ' + roomCheckUri);
     return sendAsyncUrlRequest('GET', roomCheckUri);
   }).then(function(response) {
@@ -445,7 +474,7 @@ function loadRoom() {
       return;
     }).then(function() {
       // start process of getting params and initializing.
-      var paramsUri = server + '/params/' + roomId;
+      var paramsUri = server + '/params/' + encodeURIComponent(roomId);
       trace('Requesting default params from: ' + paramsUri);
       return sendAsyncUrlRequest('GET', paramsUri);
     }).then(function(response) {
@@ -461,6 +490,10 @@ function loadRoom() {
         params.server = server;
         trace('Retrieved default params from server.');
         showRoomSelectionUI(false);
+        // Push new URI in web app
+        if (!isChromeApp()) {
+          window.history.pushState({'roomId': params.roomId, 'roomLink': params.roomLink }, params.roomId, params.roomLink);
+        }
         initialize();
     }).catch(function(error) {
       // TODO : display error UI for room full or other errors.
@@ -488,7 +521,7 @@ getRecentRooms().then(function(recentRooms) {
     var href = document.createElement('a');
     var linkText = document.createTextNode(recentRooms[i]);
     href.appendChild(linkText);
-    href.href = location.origin + '/r/' + recentRooms[i];
+    href.href = location.origin + '/r/' + encodeURIComponent(recentRooms[i]);
     li.appendChild(href);
     recentRoomsList.appendChild(li);
     
