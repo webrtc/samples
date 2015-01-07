@@ -52,7 +52,7 @@ UtilsTest.prototype.testRandomReturnsCorrectLength = function() {
 UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() { 
   var str = randomString(500);
 
-  // randromString should return only the digits 0-9
+  // randromString should return only the digits 0-9.
   var positiveRe = /^[0-9]+$/;
   var negativeRe = /[^0-9]/;
   

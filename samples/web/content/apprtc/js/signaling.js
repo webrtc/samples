@@ -140,10 +140,6 @@ function registerWithGAE(server, roomId) {
       reject(Error('Missing room id.'));
     }
 
-    if (!server) {
-      // If server is not provided, use relative URI.
-      server = '';
-    }
     var path = server + '/register/' + roomId + window.location.search;
 
     sendAsyncUrlRequest('POST', path).then(function(response) {
@@ -390,10 +386,6 @@ function setRemote(message) {
 }
 
 function sendGAEMessage(server, message) {
-  if (!server) {
-    // If server is not provided, use relative URI.
-    server = '';
-  }
   var msgString = JSON.stringify(message);
   // Must append query parameters in case we've specified alternate WSS url.
   var path = server + '/message/' + params.roomId + '/' + params.clientId +
@@ -426,7 +418,7 @@ function sendSignalingMessage(message) {
     // Initiator posts all messages to GAE. GAE will either store the messages
     // until the other client connects, or forward the message to Collider if
     // the other client is already connected.
-    sendGAEMessage(params.server, message);
+    sendGAEMessage(params.roomServer, message);
   } else {
     sendWSSMessage(message);
   }

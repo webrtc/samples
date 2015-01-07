@@ -12,12 +12,6 @@
 /* exported params */
 'use strict';
 
-// Provide params var, provided inline in index.html.
-var params;
-
-// Generate random room id and connect.
-var room = randomString(9);
-
 // Provide default params set to the values returned by apprtc.appspot.com.
 var params = {
   errorMessages: [],
@@ -64,9 +58,10 @@ var params = {
   wssPostUrl: 'https://apprtc-ws.webrtc.org:443'
 };
 
-params.roomId = room;
-params.roomLink =  'https://apprtc.appspot.com/room/' + room;
-params.server = 'https://apprtc.appspot.com';
+// Generate random room id and connect.
+params.roomId = randomString(9);
+params.roomLink =  'https://apprtc.appspot.com/room/' + params.roomId;
+params.roomServer = 'https://apprtc.appspot.com';
 
 var joinRoomLink = document.querySelector('#room-link');
 joinRoomLink.href = params.roomLink;
