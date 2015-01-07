@@ -10,6 +10,7 @@
   "undef": true,
   "unused": "strict",
   "globals": {
+    "addExplicitTest": true,
     "addTest": true,
     "arrayAverage": true,
     "arrayMax": true,
