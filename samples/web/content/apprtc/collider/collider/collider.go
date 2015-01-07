@@ -19,20 +19,22 @@ import (
 	"time"
 )
 
+const registerTimeoutSec = 10
+
 type Collider struct {
-	rt *roomTable
-	db *dashboard
+	*roomTable
+	dash *dashboard
 }
 
 func NewCollider(rs string) *Collider {
 	return &Collider{
-		rt: newRoomTable(time.Second*10, rs),
-		db: newDashboard(),
+		roomTable: newRoomTable(time.Second*registerTimeoutSec, rs),
+		dash:      newDashboard(),
 	}
 }
 
-// Start starts the collider sever and blocks the thread until the program exits.
-func (c *Collider) Start(p int, tls bool) {
+// Run starts the collider server and blocks the thread until the program exits.
+func (c *Collider) Run(p int, tls bool) {
 	http.Handle("/ws", websocket.Handler(c.wsHandler))
 	http.HandleFunc("/status", c.httpStatusHandler)
 	http.HandleFunc("/", c.httpHandler)
@@ -47,7 +49,7 @@ func (c *Collider) Start(p int, tls bool) {
 	}
 
 	if e != nil {
-		log.Fatal("Start: " + e.Error())
+		log.Fatal("Run: " + e.Error())
 	}
 }
 
@@ -57,16 +59,16 @@ func (c *Collider) httpStatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 
-	rp := c.db.getReport(c.rt)
+	rp := c.dash.getReport(c.roomTable)
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(rp); err != nil {
 		err = errors.New("Failed to encode to JSON: err=" + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		c.db.onHttpError(err)
+		c.dash.onHttpError(err)
 	}
 }
 
-// httpHandler is a HTTP handler that handles POST/DELETE requests.
+// httpHandler is a HTTP handler that handles GET/POST/DELETE requests.
 // POST request to path "/$ROOMID/$CLIENTID" is used to send a message to the other client of the room.
 // $CLIENTID is the source client ID.
 // The request must have a form value "msg", which is the message to send.
@@ -76,15 +78,9 @@ func (c *Collider) httpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST, DELETE")
 
-	if r.URL.Path == "/favicon.ico" {
-		return
-	}
-
 	p := strings.Split(r.URL.Path, "/")
 	if len(p) != 3 {
-		err := errors.New("Invalid path: " + r.URL.Path)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		c.db.onHttpError(err)
+		c.httpError("Invalid path: "+r.URL.Path, w)
 		return
 	}
 	rid, cid := p[1], p[2]
@@ -93,30 +89,21 @@ func (c *Collider) httpHandler(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			err = errors.New("Failed to read request body: " + err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			c.db.onHttpError(err)
+			c.httpError("Failed to read request body: "+err.Error(), w)
 			return
 		}
 		m := string(body)
 		if m == "" {
-			err = errors.New("Empty request body")
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			c.db.onHttpError(err)
+			c.httpError("Empty request body", w)
 			return
 		}
-		if err := c.rt.send(rid, cid, m); err != nil {
-			err = errors.New("Failed to send the message: " + err.Error())
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			c.db.onHttpError(err)
+		if err := c.roomTable.send(rid, cid, m); err != nil {
+			c.httpError("Failed to send the message: "+err.Error(), w)
 			return
 		}
 	case "DELETE":
-		c.rt.remove(rid, cid)
+		c.roomTable.remove(rid, cid)
 	default:
-		err := errors.New("Method not allowed")
-		http.Error(w, err.Error(), http.StatusMethodNotAllowed)
-		c.db.onHttpError(err)
 		return
 	}
 
@@ -143,55 +130,55 @@ loop:
 	for {
 		err := websocket.JSON.Receive(ws, &msg)
 		if err != nil {
-			sendServerErr(ws, "Server error: "+err.Error())
-			c.db.onWsError(err)
+			c.wsError("websocket.JSON.Receive error: "+err.Error(), ws)
 			break
 		}
 
 		switch msg.Cmd {
 		case "register":
 			if registered {
-				err = errors.New("Duplicated register request")
-				sendServerErr(ws, err.Error())
-				c.db.onWsError(err)
+				c.wsError("Duplicated register request", ws)
 				break loop
 			}
 			if msg.RoomID == "" || msg.ClientID == "" {
-				err = errors.New("Invalid register request: missing 'clientid' or 'roomid'")
-				sendServerErr(ws, err.Error())
-				c.db.onWsError(err)
+				c.wsError("Invalid register request: missing 'clientid' or 'roomid'", ws)
 				break loop
 			}
-			if err = c.rt.register(msg.RoomID, msg.ClientID, ws); err != nil {
-				sendServerErr(ws, err.Error())
-				c.db.onWsError(err)
+			if err = c.roomTable.register(msg.RoomID, msg.ClientID, ws); err != nil {
+				c.wsError(err.Error(), ws)
 				break loop
 			}
 			registered, rid, cid = true, msg.RoomID, msg.ClientID
-			c.db.incrWsCount()
+			c.dash.incrWsCount()
 
-			defer c.rt.deregister(rid, cid)
+			defer c.roomTable.deregister(rid, cid)
 			break
 		case "send":
 			if !registered {
-				err = errors.New("Client not registered")
-				sendServerErr(ws, err.Error())
-				c.db.onWsError(err)
+				c.wsError("Client not registered", ws)
 				break loop
 			}
 			if msg.Msg == "" {
-				err = errors.New("Invalid send request: missing 'msg'")
-				sendServerErr(ws, err.Error())
-				c.db.onWsError(err)
+				c.wsError("Invalid send request: missing 'msg'", ws)
 				break loop
 			}
-			c.rt.send(rid, cid, msg.Msg)
+			c.roomTable.send(rid, cid, msg.Msg)
 			break
 		default:
-			err = errors.New("Invalid message: unexpected 'cmd'")
-			sendServerErr(ws, err.Error())
-			c.db.onWsError(err)
+			c.wsError("Invalid message: unexpected 'cmd'", ws)
 			break
 		}
 	}
+}
+
+func (c *Collider) httpError(msg string, w http.ResponseWriter) {
+	err := errors.New(msg)
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	c.dash.onHttpError(err)
+}
+
+func (c *Collider) wsError(msg string, ws *websocket.Conn) {
+	err := errors.New(msg)
+	sendServerErr(ws, msg)
+	c.dash.onWsError(err)
 }

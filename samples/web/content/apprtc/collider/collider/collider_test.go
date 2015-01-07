@@ -8,9 +8,11 @@ package collider
 import (
 	"code.google.com/p/go.net/websocket"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -22,15 +24,17 @@ var once sync.Once
 var registerTimeout = time.Second
 var cl *Collider
 
+var port = flag.Int("port", 8089, "The port that Collider listens to")
+
 func startCollider() {
-	serverAddr = "localhost:8089"
+	serverAddr = "localhost:" + strconv.Itoa(*port)
 
 	cl = &Collider{
-		rt: newRoomTable(registerTimeout, "http://"+serverAddr),
-		db: newDashboard(),
+		roomTable: newRoomTable(registerTimeout, "http://"+serverAddr),
+		dash:      newDashboard(),
 	}
 
-	go cl.Start(8089, false)
+	go cl.Run(*port, false)
 	fmt.Println("Test WebSocket server listening on ", serverAddr)
 }
 
@@ -46,7 +50,7 @@ func newConfig(t *testing.T, path string) *websocket.Config {
 
 func setup() {
 	once.Do(startCollider)
-	cl.rt = newRoomTable(registerTimeout, "http://"+serverAddr)
+	cl.roomTable = newRoomTable(registerTimeout, "http://"+serverAddr)
 }
 
 func addWsClient(t *testing.T, roomID string, clientID string) *websocket.Conn {
@@ -215,14 +219,14 @@ func TestHttpHandlerSendCached(t *testing.T) {
 	m := "hello!"
 	rid, src, dest := "abc", "456", "123"
 	postSend(t, rid, src, m)
-	if !waitForCondition(func() bool { return cl.rt.rooms[rid] != nil }) {
-		t.Errorf("After a POST request to the room %q, cl.rt.rooms[%q] = nil, want non-nil", rid, rid)
+	if !waitForCondition(func() bool { return cl.roomTable.rooms[rid] != nil }) {
+		t.Errorf("After a POST request to the room %q, cl.roomTable.rooms[%q] = nil, want non-nil", rid, rid)
 	}
 
 	c := addWsClient(t, rid, dest)
 	expectReceiveMessage(t, c, m)
-	if !waitForCondition(func() bool { return len(cl.rt.rooms[rid].clients[src].msgs) == 0 }) {
-		t.Errorf("After a POST request from the room %q from client %q and registering client %q, cl.rt.rooms[%q].clients[%q].msgs = %v, want emtpy", rid, src, dest, rid, src, cl.rt.rooms[rid].clients[src].msgs)
+	if !waitForCondition(func() bool { return len(cl.roomTable.rooms[rid].clients[src].msgs) == 0 }) {
+		t.Errorf("After a POST request from the room %q from client %q and registering client %q, cl.roomTable.rooms[%q].clients[%q].msgs = %v, want emtpy", rid, src, dest, rid, src, cl.roomTable.rooms[rid].clients[src].msgs)
 	}
 
 	c.Close()
@@ -235,15 +239,15 @@ func TestHttpHandlerDeleteConnection(t *testing.T) {
 	c := addWsClient(t, rid, cid)
 
 	// Waits until the server has registered the client.
-	if !waitForCondition(func() bool { return cl.rt.rooms[rid] != nil }) {
-		t.Errorf("After registering client %q in room %q, cl.rt.rooms[%q] = nil, want non-nil", cid, rid, rid)
+	if !waitForCondition(func() bool { return cl.roomTable.rooms[rid] != nil }) {
+		t.Errorf("After registering client %q in room %q, cl.roomTable.rooms[%q] = nil, want non-nil", cid, rid, rid)
 	}
 
 	// Deletes the client.
 	postDel(t, rid, cid)
 	expectConnectionClose(t, c)
-	if !waitForCondition(func() bool { return len(cl.rt.rooms) == 0 }) {
-		t.Errorf("After deleting client %q from room %q, cl.rt.rooms = %v, want empty", cid, rid, cl.rt.rooms)
+	if !waitForCondition(func() bool { return len(cl.roomTable.rooms) == 0 }) {
+		t.Errorf("After deleting client %q from room %q, cl.roomTable.rooms = %v, want empty", cid, rid, cl.roomTable.rooms)
 	}
 }
 
@@ -253,13 +257,13 @@ func TestRoomCleanedUpAfterTimeout(t *testing.T) {
 	// Sends a POST request to create a new and unregistered client.
 	r, c := "abc", "1"
 	postSend(t, r, c, "hi")
-	if !waitForCondition(func() bool { return cl.rt.rooms[r] != nil }) {
-		t.Errorf("After a POST request to the room %q, cl.rt.rooms[%q] = nil, want non-nil", r, r)
+	if !waitForCondition(func() bool { return cl.roomTable.rooms[r] != nil }) {
+		t.Errorf("After a POST request to the room %q, cl.roomTable.rooms[%q] = nil, want non-nil", r, r)
 	}
 	time.Sleep(registerTimeout + time.Second)
 
-	if l := len(cl.rt.rooms); l != 0 {
-		t.Errorf("After timeout without registering the new client, len(cl.rt.rooms) = %d, want 0", l)
+	if l := len(cl.roomTable.rooms); l != 0 {
+		t.Errorf("After timeout without registering the new client, len(cl.roomTable.rooms) = %d, want 0", l)
 	}
 }
 
@@ -268,7 +272,7 @@ func TestDeregisteredClientNotRemovedUntilTimeout(t *testing.T) {
 
 	rid, cid := "abc", "1"
 	conn := addWsClient(t, rid, cid)
-	c, _ := cl.rt.room(rid).client(cid)
+	c, _ := cl.roomTable.room(rid).client(cid)
 
 	conn.Close()
 
@@ -278,14 +282,14 @@ func TestDeregisteredClientNotRemovedUntilTimeout(t *testing.T) {
 	}
 
 	// Checks that the client is still in the room.
-	if actual, _ := cl.rt.room(rid).client(cid); actual != c {
-		t.Errorf("After websockt.Connection.Close(), cl.rt.room[rid].client[cid] = %v, want %v", actual, c)
+	if actual, _ := cl.roomTable.room(rid).client(cid); actual != c {
+		t.Errorf("After websockt.Connection.Close(), cl.roomTable.room[rid].client[cid] = %v, want %v", actual, c)
 	}
 
 	// Checks that the client and room are removed after the timeout.
 	time.Sleep(registerTimeout + time.Second)
-	if l := len(cl.rt.rooms); l != 0 {
-		t.Errorf("After timeout without re-registering the new client, len(cl.rt.rooms) = %d, want 0", l)
+	if l := len(cl.roomTable.rooms); l != 0 {
+		t.Errorf("After timeout without re-registering the new client, len(cl.roomTable.rooms) = %d, want 0", l)
 	}
 }
 
@@ -294,7 +298,7 @@ func TestReregisterClientBeforeTimeout(t *testing.T) {
 
 	rid, cid := "abc", "1"
 	conn := addWsClient(t, rid, cid)
-	c, _ := cl.rt.room(rid).client(cid)
+	c, _ := cl.roomTable.room(rid).client(cid)
 
 	conn.Close()
 
@@ -304,8 +308,8 @@ func TestReregisterClientBeforeTimeout(t *testing.T) {
 	}
 
 	// Checks that the client is still in the room.
-	if actual, _ := cl.rt.room(rid).client(cid); actual != c {
-		t.Errorf("After websockt.Connection.Close(), cl.rt.room[rid].client[cid] = %v, want %v", actual, c)
+	if actual, _ := cl.roomTable.room(rid).client(cid); actual != c {
+		t.Errorf("After websockt.Connection.Close(), cl.roomTable.room[rid].client[cid] = %v, want %v", actual, c)
 	}
 
 	// Reregister the client.

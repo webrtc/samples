@@ -21,5 +21,5 @@ func main() {
 	log.Printf("Starting collider: tls = %t, port = %d, room-server=%s", *tls, *port, *roomSrv)
 
 	c := collider.NewCollider(*roomSrv)
-	c.Start(*port, *tls)
+	c.Run(*port, *tls)
 }
