@@ -204,6 +204,20 @@ function testForWiFiPeriodicScan(config) {
     report.traceEventInstant('periodic-delay', { delays: delays, recvTimeStamps: recvTimeStamps });
     running = false;
     call.close();
+
+    var avg = arrayAverage(delays);
+    var max = arrayMax(delays);
+    var min = arrayMin(delays);
+
+    reportInfo('Average delay: ' + avg + ' ms.');
+    reportInfo('Min delay: ' + min + ' ms.');
+    reportInfo('Max delay: ' + max + ' ms.');
+
+    if (max / (min + 100) < 2.0) {
+      reportSuccess('All seems fine.');
+    } else {
+      reportError('There is a big difference between the min and max delay of packets. Your network appears unstable.');
+    }
     testFinished();
   }
 }
