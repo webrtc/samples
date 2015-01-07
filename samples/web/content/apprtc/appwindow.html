@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+
+<head>
+
+  <title>WebRTC Reference App</title>
+
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC reference app">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="/css/main.css">
+
+</head>
+
+<body>
+  
+  <div id="videos">
+    <video id="mini-video" autoplay muted></video>
+    <canvas id="remote-canvas"></canvas>
+    <video id="remote-video" autoplay></video>
+    <video id="local-video" autoplay muted></video>
+  </div>
+
+  <footer id="footer">
+    <div id="sharing">
+      <div>Waiting for someone to join this room: <a id="room-link" href="" target="_blank"></a></div>
+    </div>
+    <div id="info"></div>
+    <div id="status"></div>
+  </footer>
+
+  <script src="/js/stats.js"></script>
+  <!-- {{ include_loopback_js }} -->
+  <script src="/js/signaling.js"></script>
+  <script src="/js/infobox.js"></script>
+  <script src="/js/sdputils.js"></script>
+  <script src="/js/util.js"></script>
+  <script src="/js/main.js"></script>
+  <!-- {{ include_vr_js }} -->
+  <script src="/js/adapter.js"></script>
+  <script src="/js/appwindow.js"></script>
+
+</body>
+</html>

@@ -33,7 +33,7 @@ var messageQueue = [];
 // tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
-function connectToRoom(roomId) {
+function connectToRoom(server, roomId) {
   var mediaPromise = getMediaIfNeeded();
   var turnPromise = getTurnServersIfNeeded();
 
@@ -44,7 +44,7 @@ function connectToRoom(roomId) {
   });
 
   // Asynchronously register with GAE.
-  var registerPromise = registerWithGAE(roomId).then(function(roomParams) {
+  var registerPromise = registerWithGAE(server, roomId).then(function(roomParams) {
     // The only difference in parameters should be clientId and isInitiator,
     // and the turn servers that we requested.
     // TODO(tkchin): clean up response format. JSHint doesn't like it either.
@@ -134,12 +134,17 @@ function getTurnServersIfNeeded() {
 }
 
 // Registers with GAE and returns room parameters.
-function registerWithGAE(roomId) {
+function registerWithGAE(server, roomId) {
   return new Promise(function(resolve, reject) {
     if (!roomId) {
       reject(Error('Missing room id.'));
     }
-    var path = '/register/' + roomId + window.location.search;
+
+    if (!server) {
+      // If server is not provided, use relative URI.
+      server = '';
+    }
+    var path = server + '/register/' + roomId + window.location.search;
 
     sendAsyncUrlRequest('POST', path).then(function(response) {
       var responseObj = parseJSON(response);
@@ -384,10 +389,14 @@ function setRemote(message) {
   }
 }
 
-function sendGAEMessage(message) {
+function sendGAEMessage(server, message) {
+  if (!server) {
+    // If server is not provided, use relative URI.
+    server = '';
+  }
   var msgString = JSON.stringify(message);
   // Must append query parameters in case we've specified alternate WSS url.
-  var path = '/message/' + params.roomId + '/' + params.clientId +
+  var path = server + '/message/' + params.roomId + '/' + params.clientId +
       window.location.search;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
@@ -417,7 +426,7 @@ function sendSignalingMessage(message) {
     // Initiator posts all messages to GAE. GAE will either store the messages
     // until the other client connects, or forward the message to Collider if
     // the other client is already connected.
-    sendGAEMessage(message);
+    sendGAEMessage(params.server, message);
   } else {
     sendWSSMessage(message);
   }

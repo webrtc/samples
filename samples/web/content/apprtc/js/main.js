@@ -94,7 +94,7 @@ function initialize() {
   }
   document.body.ondblclick = toggleFullScreen;
   trace('Initializing; room=' + params.roomId + '.');
-  connectToRoom(params.roomId);
+  connectToRoom(params.server, params.roomId);
   if (params.isLoopback) {
     setupLoopback();
   }
@@ -139,7 +139,12 @@ function disconnectFromRoom() {
   // When the other client sees BYE it attempts to post offer and candidates to
   // GAE. GAE needs to know that we're disconnected at that point otherwise
   // it will forward messages to this client instead of storing them.
-  path = '/bye/' + params.roomId + '/' + params.clientId;
+  var server = params.server;
+  if (!server) {
+    // If server is not provided, use relative URI.
+    server = '';
+  }
+  path = server + '/bye/' + params.roomId + '/' + params.clientId;
   xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);
   xhr.send();
