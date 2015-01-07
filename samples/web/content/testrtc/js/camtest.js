@@ -57,8 +57,8 @@ function CamCaptureTest() {
 }
 
 function ResolutionMatchesIndependentOfRotation(a_width, a_height, b_width, b_height) {
-  return (a_width == b_width && a_height == b_height) ||
-         (a_width == b_height && a_height == b_width);
+  return (a_width === b_width && a_height === b_height) ||
+         (a_width === b_height && a_height === b_width);
 }
 
 CamCaptureTest.prototype = {
