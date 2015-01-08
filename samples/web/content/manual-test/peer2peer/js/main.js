@@ -387,7 +387,7 @@ function screenCaptureExtensionHandler_() {
                         '3. Click: "Load the unpacked extension..."\n' +
                         '4. Choose "extension" folder from the repository:\n' +
                         '(Can be downloaded from here http://goo.gl/M1zRbn)\n' +
-                        '5. Reload this page';
+                        '5. Reload this page over https';
           alert(message);
         }
         window.postMessage({ type: 'SS_UI_REQUEST', text: 'start' }, '*');
