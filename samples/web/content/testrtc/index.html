@@ -72,6 +72,14 @@
     <paper-icon-button icon="bug-report" onclick="report.open()">File a bug</paper-icon-button>
   </paper-dialog>
 
+  <!-- GetUserMedia not supported dialog -->
+  <paper-dialog id="gum-not-supported-dialog"
+                heading="Welcome to WebRTC Troubleshooter"
+                backdrop autoCloseDisabled>
+    <p>GetUserMedia is not supported in your browser, please use a WebRTC
+      enabled browser listed at <a href="http://www.webrtc.org">http://www.webrtc.org</a>.</p>
+  </paper-dialog>
+
   <!-- Settings dialog -->
   <paper-dialog id="settings-dialog" heading="Settings" transition="paper-dialog-transition-center">
     <div class="select"><label>Audio source: <select id="audioSource"></select></label></div>
