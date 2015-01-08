@@ -8,6 +8,9 @@
 'use strict';
 
 function Call(config) {
+  this.traceEvent = report.traceEventAsync('call');
+  this.traceEvent({ config: config });
+
   this.pc1 = new RTCPeerConnection(config);
   this.pc2 = new RTCPeerConnection(config);
 
@@ -19,10 +22,12 @@ function Call(config) {
 
 Call.prototype = {
   establishConnection: function () {
+    this.traceEvent({ state: 'start' });
     this.pc1.createOffer(this.gotOffer_.bind(this));
   },
 
   close: function () {
+    this.traceEvent({ state: 'end' });
     this.pc1.close();
     this.pc2.close();
   },
