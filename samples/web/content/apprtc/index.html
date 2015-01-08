@@ -21,19 +21,10 @@
 </head>
 
 <body>
-  <script>
-    // Keep this in sync with the HTML element id attributes.
-    var uiConstants = {
-      videosDivId: 'videos',
-      miniVideoId: 'mini-video',
-      remoteVideoId: 'remote-video',
-      localVideoId: 'local-video',
-      remoteCanvasId: 'remote-canvas',
-      sharingDivId: 'sharing-div',
-      infoDivId: 'info-div',
-      statusDivId: 'status-div'
-    };
-  </script>
+  <!--
+   * Keep the HTML id attributes in sync with |uiConstants| defined in
+   * appcontroller.js.
+  -->
   <div id="videos">
     <video id="mini-video" autoplay muted></video>
     <canvas id="remote-canvas"></canvas>
@@ -80,10 +71,8 @@
       audioSendCodec: '{{ audio_send_codec }}',
       audioRecvBitrate: '{{ arbr }}',
       audioRecvCodec: '{{ audio_receive_codec }}',
-      isStereoscopic: '{{ ssr }}',
       opusMaxPbr: '{{ opusmaxpbr }}',
       opusFec: '{{ opusfec }}',
-      opusStereo: '{{ stereo }}',
       videoSendBitrate: '{{ vsbr }}',
       videoSendInitialBitrate: '{{ vsibr }}',
       videoSendCodec: '{{ video_send_codec }}',
@@ -104,17 +93,7 @@
         document.addEventListener('webkitvisibilitychange', onVisibilityChange);
         return;
       }
-
-      var roomErrors = params.errorMessages;
-      if (roomErrors.length > 0) {
-        console.log(roomErrors);
-        for (var i = 0; i < roomErrors.length; ++i) {
-          window.alert(roomErrors[i]);
-        }
-        return;
-      }
-
-      appController = new AppController(params, uiConstants);
+      appController = new AppController(params);
     }
 
     function onVisibilityChange() {

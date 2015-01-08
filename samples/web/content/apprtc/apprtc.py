@@ -230,9 +230,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   video_send_codec = request.get('vsc', default_value = '')
   video_receive_codec = request.get('vrc', default_value = '')
 
-  # Read url param controlling whether we send stereo.
-  stereo = request.get('stereo', default_value = '')
-
   # Read url param controlling whether we send Opus FEC.
   opusfec = request.get('opusfec', default_value = '')
 
@@ -255,14 +252,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   dscp = request.get('dscp')
   ipv6 = request.get('ipv6')
 
-  # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
-  # two cameras' captures, which will each be fed to one eye.
-  ssr = request.get('ssr')
   # Avoid pulling down vr.js (>25KB, minified) if not needed.
   include_vr_js = ''
-  if ssr == 'true':
-    include_vr_js = ('<script src="/js/vr.js"></script>\n' +
-                     '<script src="/js/stereoscopic.js"></script>')
 
   debug = request.get('debug')
   if debug == 'loopback':
@@ -299,7 +290,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'media_constraints': json.dumps(media_constraints),
     'turn_url': turn_url,
     'turn_transports': turn_transports,
-    'stereo': stereo,
     'opusfec': opusfec,
     'opusmaxpbr': opusmaxpbr,
     'arbr': arbr,

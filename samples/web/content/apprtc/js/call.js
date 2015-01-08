@@ -268,7 +268,7 @@ Call.prototype.onUserMediaError_ = function(error) {
   alert(errorMessage);
 };
 
-Call.prototype.createPcClientIfNotExist_ = function() {
+Call.prototype.maybeCreatePcClient_ = function() {
   if (this.pcClient_) {
     return;
   }
@@ -286,7 +286,7 @@ Call.prototype.createPcClientIfNotExist_ = function() {
   } catch (e) {
     this.onError_('Create PeerConnection exception: ' + e.message);
     alert('Cannot create RTCPeerConnection; ' +
-        'WEBRTC is not supported by this browser.');
+        'WebRTC is not supported by this browser.');
     return;
   }
 };
@@ -295,7 +295,7 @@ Call.prototype.startSignaling_ = function() {
   trace('Starting signaling.');
   this.startTime = window.performance.now();
 
-  this.createPcClientIfNotExist_();
+  this.maybeCreatePcClient_();
   if (this.localStream_) {
     trace('Adding local stream.');
     this.pcClient_.addStream(this.localStream_);
@@ -335,7 +335,7 @@ Call.prototype.registerWithRoomServer_ = function() {
 };
 
 Call.prototype.onRecvSignalingChannelMessage_ = function(msg) {
-  this.createPcClientIfNotExist_();
+  this.maybeCreatePcClient_();
   this.pcClient_.receiveSignalingMessage(msg);
 };
 

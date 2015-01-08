@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals trace, InfoBox, setupStereoscopic */
+/* globals trace, InfoBox */
 /* exported AppController */
 
 'use strict';
@@ -17,12 +17,21 @@ function $(id) {
   return document.querySelector('#' + id);
 }
 
-// The controller that connects the Call with the UI.
-var AppController = function(params, uiConstants) {
-  trace('Initializing; room=' + params.roomId + '.');
+// Keep this in sync with the HTML element id attributes.
+var uiConstants = {
+  videosDivId: 'videos',
+  miniVideoId: 'mini-video',
+  remoteVideoId: 'remote-video',
+  localVideoId: 'local-video',
+  remoteCanvasId: 'remote-canvas',
+  sharingDivId: 'sharing-div',
+  infoDivId: 'info-div',
+  statusDivId: 'status-div'
+};
 
-  document.onkeypress = this.onKeyPress_.bind(this);
-  document.body.ondblclick = this.toggleFullScreen_.bind(this);
+// The controller that connects the Call with the UI.
+var AppController = function(params) {
+  trace('Initializing; room=' + params.roomId + '.');
 
   this.videosDiv_ = $(uiConstants.videosDivId);
   this.localVideo_ = $(uiConstants.localVideoId);
@@ -38,6 +47,14 @@ var AppController = function(params, uiConstants) {
   this.call_ = new Call(params);
   this.infoBox_ =
       new InfoBox($(uiConstants.infoDivId), this.remoteVideo_, this.call_);
+
+  var roomErrors = params.errorMessages;
+  if (roomErrors.length > 0) {
+    for (var i = 0; i < roomErrors.length; ++i) {
+      this.infoBox_.pushErrorMessage(roomErrors[i]);
+    }
+    return;
+  }
 
   // TODO(jiayl): replace callbacks with events.
   this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
@@ -59,6 +76,8 @@ var AppController = function(params, uiConstants) {
   this.call_.start();
 
   window.onbeforeunload = this.call_.hangup.bind(this.call_);
+  document.onkeypress = this.onKeyPress_.bind(this);
+  document.body.ondblclick = this.toggleFullScreen_.bind(this);
 
   this.transitionToWaitingTimer_ = null;
 };
@@ -130,14 +149,8 @@ AppController.prototype.transitionToActive_ = function() {
   }
 
   // Prepare the remote video and PIP elements.
-  if (this.params_.isStereoscopic) {
-    this.miniVideo_.classList.remove('active');
-    this.miniVideo_.classList.add('hidden');
-    setupStereoscopic(this.remoteVideo_, this.remoteCanvas_);
-  } else {
-    trace('reattachMediaStream: ' + this.localVideo_.src);
-    reattachMediaStream(this.miniVideo_, this.localVideo_);
-  }
+  trace('reattachMediaStream: ' + this.localVideo_.src);
+  reattachMediaStream(this.miniVideo_, this.localVideo_);
 
   // Transition opacity from 0 to 1 for the remote and mini videos.
   this.remoteVideo_.classList.add('active');
