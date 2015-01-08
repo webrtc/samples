@@ -9,7 +9,7 @@
 
 function Call(config) {
   this.traceEvent = report.traceEventAsync('call');
-  this.traceEvent({ config : config });
+  this.traceEvent({ config: config });
 
   this.pc1 = new RTCPeerConnection(config);
   this.pc2 = new RTCPeerConnection(config);
