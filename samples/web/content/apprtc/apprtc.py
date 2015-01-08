@@ -332,9 +332,8 @@ class Client:
     self.messages.append(msg)
   def clear_messages(self):
     self.messages = []
-  def on_other_client_leave(self):
-    self.is_initiator = True
-    self.messages = []
+  def set_initiator(self, initiator):
+    self.is_initiator = initiator
 
 class Room:
   clients = {}
@@ -362,23 +361,26 @@ def get_memcache_key_for_room(host, room_id):
 def add_client_to_room(host, room_id, client_id, is_loopback):
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
-  success = False
+  error = None
   # Compare and set retry loop.
   while True:
-    is_initiator = False
+    is_initiator = None
     messages = []
     is_full = False
     room_state = ''
     room = memcache_client.gets(key)
     if room is None:
+      # 'set' and another 'gets' are needed for CAS to work.
       if not memcache_client.set(key, Room()):
         logging.warning('memcache.Client.set failed for key ' + key)
+        error = 'ERROR'
         break
       room = memcache_client.gets(key)
 
     occupancy = room.get_occupancy()
     if occupancy >= 2:
       is_full = True
+      error = 'FULL'
       break
 
     if occupancy == 0:
@@ -397,7 +399,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       logging.info('Added client ' + client_id + ' in room ' + room_id)
       success = True
       break
-  return {'success': success, 'is_initiator': is_initiator,
+  return {'error': error, 'is_initiator': is_initiator,
           'messages': messages, 'is_full': is_full, 'room_state': room_state}
 
 def remove_client_from_room(host, room_id, client_id):
@@ -408,22 +410,22 @@ def remove_client_from_room(host, room_id, client_id):
     room = memcache_client.gets(key)
     if room is None:
       logging.warning('Unknown room: ' + room_id)
-      return None
+      return {'error': 'UNKNOWN_ROOM', 'room_state': None}
     if not room.has_client(client_id):
       logging.warning('Unknown client ' + client_id + ' for room ' + room_id)
-      return None
+      return {'error': 'UNKNOWN_CLIENT', 'room_state': None}
 
     room.remove_client(client_id)
     if room.has_client(LOOPBACK_CLIENT_ID):
       room.remove_client(LOOPBACK_CLIENT_ID)
     if room.get_occupancy() > 0:
-      room.get_other_client(client_id).on_other_client_leave()
+      room.get_other_client(client_id).set_initiator(True)
     else:
       room = None
 
     if memcache_client.cas(key, room):
       logging.info('Removed client ' + client_id + ' from room ' + room_id)
-      return str(room)
+      return {'error': None, 'room_state': str(room)}
 
 def save_message_from_client(host, room_id, client_id, message):
   key = get_memcache_key_for_room(host, room_id)
@@ -450,10 +452,10 @@ def save_message_from_client(host, room_id, client_id, message):
 
 class ByePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
-    room_state = remove_client_from_room(
+    result = remove_client_from_room(
         self.request.host_url, room_id, client_id)
-    if room_state is not None:
-      logging.info('Room ' + room_id + ' has state ' + room_state)
+    if result['error'] is None:
+      logging.info('Room ' + room_id + ' has state ' + result['room_state'])
 
 class MessagePage(webapp2.RequestHandler):
   def write_response(self, result):
@@ -515,12 +517,9 @@ class RegisterPage(webapp2.RequestHandler):
     is_loopback = self.request.get('debug') == 'loopback'
     result = add_client_to_room(
         self.request.host_url, room_id, client_id, is_loopback)
-    if result['is_full']:
-      logging.info('Room ' + room_id + ' is full.')
-      self.write_response('FULL', {}, [])
-      return
-    if not result['success']:
-      self.write_response('ERROR', {}, [])
+    if result['error'] is not None:
+      logging.info('Error adding client to room: ' + result['error'])
+      self.write_response(result['error'], {}, [])
       return
 
     self.write_room_parameters(
