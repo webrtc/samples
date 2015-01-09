@@ -10,10 +10,10 @@
 
 // Variables defined in and used from apprtc/index.html.
 /* globals params, setupStereoscopic */
-/* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
+/* exported initialize */
 
 // Variables defined in and used from util.js.
-/* globals doGetUserMedia */
+/* globals isFullScreen */
 /* exported onUserMediaSuccess, onUserMediaError */
 
 // Variables defined in and used from infobox.js.
@@ -34,14 +34,29 @@
 
 'use strict';
 
-var infoDiv = document.querySelector('#info');
-var localVideo = document.querySelector('#local-video');
-var miniVideo = document.querySelector('#mini-video');
-var remoteCanvas = document.querySelector('#remote-canvas');
-var remoteVideo = document.querySelector('#remote-video');
-var sharingDiv = document.querySelector('#sharing');
-var statusDiv = document.querySelector('#status');
-var videosDiv = document.querySelector('#videos');
+var icons = $('#icons');
+var infoDiv = $('#info');
+var localVideo = $('#local-video');
+var miniVideo = $('#mini-video');
+var remoteCanvas = $('#remote-canvas');
+var remoteVideo = $('#remote-video');
+var sharingDiv = $('#sharing');
+var statusDiv = $('#status');
+var videosDiv = $('#videos');
+
+var muteAudioSvg = $('#mute-audio');
+var muteVideoSvg = $('#mute-video');
+var fullscreenSvg = $('#fullscreen');
+var hangupSvg = $('#hangup');
+
+var muteAudioIconSet = new IconSet('#mute-audio-on', '#mute-audio-off');
+var muteVideoIconSet = new IconSet('#mute-video-on', '#mute-video-off');
+var fullscreenIconSet = new IconSet('#fullscreen-on', '#fullscreen-off');
+
+muteAudioSvg.onclick = toggleAudioMute;
+muteVideoSvg.onclick = toggleVideoMute;
+fullscreenSvg.onclick = toggleFullscreen;
+hangupSvg.onclick = hangup;
 
 // Types of gathered ICE Candidates.
 var gatheredIceCandidateTypes = {
@@ -97,7 +112,7 @@ function initialize() {
     }
     return;
   }
-  document.body.ondblclick = toggleFullScreen;
+
   trace('Initializing; room=' + params.roomId + '.');
   connectToRoom(params.roomServer, params.roomId);
   if (params.isLoopback) {
@@ -120,7 +135,8 @@ function onUserMediaSuccess(stream) {
   localStream = stream;
   // Caller creates PeerConnection.
   displayStatus('');
-  localVideo.classList.add('active');
+  activate(localVideo);
+  show(icons);
 }
 
 function onUserMediaError(error) {
@@ -131,6 +147,7 @@ function onUserMediaError(error) {
 }
 
 function hangup() {
+  hide(icons);
   trace('Hanging up.');
   displayStatus('Hanging up');
   transitionToDone();
@@ -210,21 +227,22 @@ function transitionToActive() {
 
   // Prepare the remote video and PIP elements.
   if (params.isStereoscopic) {
-    miniVideo.classList.remove('active');
-    miniVideo.classList.add('hidden');
+    deactivate(miniVideo);
+    hide(miniVideo);
     setupStereoscopic(remoteVideo, remoteCanvas);
   } else {
     reattachMediaStream(miniVideo, localVideo);
   }
 
   // Transition opacity from 0 to 1 for the remote and mini videos.
-  remoteVideo.classList.add('active');
-  miniVideo.classList.add('active');
+  activate(remoteVideo);
+  activate(miniVideo);
   // Transition opacity from 1 to 0 for the local video.
-  localVideo.classList.remove('active');
+  deactivate(localVideo);
   localVideo.src = '';
   // Rotate the div containing the videos 180 deg with a CSS transform.
-  videosDiv.classList.add('active');
+  activate(videosDiv);
+  show(hangupSvg);
   displayStatus('');
 }
 
@@ -233,7 +251,8 @@ function transitionToWaiting() {
   remoteVideo.oncanplay = undefined;
   startTime = null;
   // Rotate the div containing the videos -180 deg with a CSS transform.
-  videosDiv.classList.remove('active');
+  hide(hangupSvg);
+  deactivate(videosDiv);
 
   transitionToWaitingTimer = setTimeout(function() {
     transitionToWaitingTimer = null;
@@ -246,18 +265,19 @@ function transitionToWaiting() {
   localVideo.src = miniVideo.src;
 
   // Transition opacity from 0 to 1 for the local video.
-  localVideo.classList.add('active');
+  activate(localVideo);
   // Transition opacity from 1 to 0 for the remote and mini videos.
-  remoteVideo.classList.remove('active');
-  miniVideo.classList.remove('active');
+  deactivate(remoteVideo);
+  deactivate(miniVideo);
 }
 
 function transitionToDone() {
    // Stop waiting for remote video.
   remoteVideo.oncanplay = undefined;
-  localVideo.classList.remove('active');
-  remoteVideo.classList.remove('active');
-  miniVideo.classList.remove('active');
+  deactivate(localVideo);
+  deactivate(remoteVideo);
+  deactivate(miniVideo);
+  hide(hangupSvg);
   displayStatus('You have left the call. <a href=\'' + params.roomLink +
       '\'>Click here</a> to rejoin.');
 }
@@ -277,6 +297,7 @@ function toggleVideoMute() {
 
   isVideoMuted = newMuted;
   trace('Video ' + (isVideoMuted ? 'muted.' : 'unmuted.'));
+  muteVideoIconSet.toggle();
 }
 
 function toggleAudioMute() {
@@ -294,6 +315,7 @@ function toggleAudioMute() {
 
   isAudioMuted = newMuted;
   trace('Audio ' + (isAudioMuted ? 'muted.' : 'unmuted.'));
+  muteAudioIconSet.toggle();
 }
 
 // Spacebar, or m: toggle audio mute.
@@ -312,7 +334,7 @@ document.onkeypress = function(event) {
       toggleVideoMute();
       return false;
     case 'f':
-      toggleFullScreen();
+      toggleFullscreen();
       return false;
     case 'i':
       toggleInfoDiv();
@@ -332,14 +354,14 @@ window.onbeforeunload = function() {
 };
 
 function displaySharingInfo() {
-  sharingDiv.classList.add('active');
+  activate(sharingDiv);
 }
 
 function displayStatus(status) {
   if (status === '') {
-    statusDiv.classList.remove('active');
+    deactivate(statusDiv);
   } else {
-    statusDiv.classList.add('active');
+    activate(statusDiv);
   }
   statusDiv.innerHTML = status;
 }
@@ -351,16 +373,62 @@ function displayError(error) {
   showInfoDiv();
 }
 
-function toggleFullScreen() {
-  try {
-    // TODO: add shim so not Chrome only
-    if (document.webkitIsFullScreen) {
-      document.webkitCancelFullScreen();
-    } else {
-      videosDiv.webkitRequestFullScreen();
-      remoteCanvas.webkitRequestFullScreen();
-    }
-  } catch (event) {
-    trace(event);
+function toggleFullscreen(){
+  if (isFullScreen()) {
+    document.cancelFullScreen();
+  } else {
+    document.body.requestFullScreen();
+  }
+  fullscreenIconSet.toggle();
+}
+
+function $(selector){
+  return document.querySelector(selector);
+}
+
+function hide(element){
+  element.classList.add('hidden');
+}
+
+function show(element){
+  element.classList.remove('hidden');
+}
+
+function activate(element){
+  element.classList.add('active');
+}
+
+function deactivate(element){
+  element.classList.remove('active');
+}
+
+function IconSet(icon0, icon1){
+  this.icon0 = document.querySelector(icon0);
+  this.icon1 = document.querySelector(icon1);
+}
+
+IconSet.prototype.toggle = function() {
+  if (this.icon0.classList.contains('hidden')){
+    this.icon0.classList.remove('hidden');
+  } else {
+    this.icon0.classList.add('hidden');
+  }
+
+  if (this.icon1.classList.contains('hidden')){
+    this.icon1.classList.remove('hidden');
+  } else {
+    this.icon1.classList.add('hidden');
+  }
+};
+
+function showIcons() {
+  if (!icons.classList.contains('active')) {
+    activate(icons);
+    setTimeout(function() {
+      deactivate(icons);
+    }, 5000);
   }
 }
+
+window.onmousemove = showIcons;
+
