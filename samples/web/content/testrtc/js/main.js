@@ -12,11 +12,11 @@
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
-if (typeof window.AudioContext === 'undefined') {
-  console.log('Failed to instantiate an audio context');
-} else {
+try {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
   var audioContext = new AudioContext();
+} catch (e) {
+    console.log('Failed to instantiate an audio context, error: ' + e);
 }
 var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
