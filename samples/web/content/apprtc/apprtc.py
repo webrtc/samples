@@ -8,10 +8,10 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 import cgi
+import constants
 import logging
 import os
 import random
-import re
 import json
 import jinja2
 import threading
@@ -23,20 +23,11 @@ from google.appengine.api import urlfetch
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
-TURN_BASE_URL = 'https://computeengineondemand.appspot.com'
-WSS_HOST = 'apprtc-ws.webrtc.org'
-WSS_PORT = '8089'
-CEOD_KEY = '4080218913'
-
 def generate_random(length):
   word = ''
   for _ in range(length):
     word += random.choice('0123456789')
   return word
-
-def is_chrome_for_android(user_agent):
-  return 'Android' in user_agent and 'Chrome' in user_agent
 
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
 def get_hd_default(user_agent):
@@ -102,17 +93,10 @@ def maybe_add_constraint(constraints, param, constraint):
 
 def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
-  # Force on the new BWE in Chrome 35 and later.
-  # TODO(juberti): Remove once Chrome 36 is stable.
-  constraints['optional'].append({'googImprovedWifiBwe': True})
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
 
-  return constraints
-
-def make_offer_constraints():
-  constraints = { 'mandatory': {}, 'optional': [] }
   return constraints
 
 def append_url_arguments(request, link):
@@ -127,21 +111,18 @@ def append_url_arguments(request, link):
   return link
 
 def get_wss_parameters(request):
-  ws_host = request.get('wsh')
-  ws_port = request.get('wsp')
+  ws_host_port_pair = request.get('wshpp')
   ws_tls = request.get('wstls')
 
-  if not ws_host:
-    ws_host = WSS_HOST
-  if not ws_port:
-    ws_port = WSS_PORT
+  if not ws_host_port_pair:
+    ws_host_port_pair = constants.WSS_HOST_PORT_PAIR
 
   if ws_tls and ws_tls == 'false':
-    wss_url = 'ws://' + ws_host + ':' + ws_port + '/ws'
-    wss_post_url = 'http://' + ws_host + ':' + ws_port
+    wss_url = 'ws://' + ws_host_port_pair + '/ws'
+    wss_post_url = 'http://' + ws_host_port_pair
   else:
-    wss_url = 'wss://' + ws_host + ':' + ws_port + '/ws'
-    wss_post_url = 'https://' + ws_host + ':' + ws_port
+    wss_url = 'wss://' + ws_host_port_pair + '/ws'
+    wss_post_url = 'https://' + ws_host_port_pair
   return (wss_url, wss_post_url)
 
 # Returns appropriate room parameters based on query parameters in the request.
@@ -163,7 +144,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   turn_transports = request.get('tt')
   # A HTTP server that will be used to find the right TURN servers to use, as
   # described in http://tools.ietf.org/html/draft-uberti-rtcweb-turn-rest-00.
-  turn_base_url = request.get('ts', default_value = TURN_BASE_URL)
+  constants.TURN_BASE_URL = request.get('ts', default_value = constants.TURN_BASE_URL)
 
   # Use "audio" and "video" to set the media stream constraints. Defined here:
   # http://goo.gl/V7cZg
@@ -271,15 +252,14 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # but we don't provide client_id until a register. For now just generate
   # a random id, but we should make this better.
   username = client_id if client_id is not None else generate_random(9)
-  if len(turn_base_url) > 0:
-    turn_url = '%s/turn?username=%s&key=%s' % \
-        (turn_base_url, username, CEOD_KEY)
+  if len(constants.TURN_BASE_URL) > 0:
+    turn_url = constants.TURN_URL_TEMPLATE % (constants.TURN_BASE_URL, username, constants.CEOD_KEY)
 
   room_link = request.host_url + '/room/' + room_id
   room_link = append_url_arguments(request, room_link)
   pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
-  offer_constraints = make_offer_constraints()
+  offer_constraints = { 'mandatory': {}, 'optional': [] }
   media_constraints = make_media_stream_constraints(audio, video,
                                                     firefox_fake_device)
   wss_url, wss_post_url = get_wss_parameters(request)
@@ -387,7 +367,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       is_initiator = True
       room.add_client(client_id, Client(is_initiator))
       if is_loopback:
-        room.add_client(LOOPBACK_CLIENT_ID, Client(False))
+        room.add_client(constants.LOOPBACK_CLIENT_ID, Client(False))
     else:
       is_initiator = False
       other_client = room.get_other_client(client_id)
@@ -416,8 +396,8 @@ def remove_client_from_room(host, room_id, client_id):
       return {'error': 'UNKNOWN_CLIENT', 'room_state': None}
 
     room.remove_client(client_id)
-    if room.has_client(LOOPBACK_CLIENT_ID):
-      room.remove_client(LOOPBACK_CLIENT_ID)
+    if room.has_client(constants.LOOPBACK_CLIENT_ID):
+      room.remove_client(constants.LOOPBACK_CLIENT_ID)
     if room.get_occupancy() > 0:
       room.get_other_client(client_id).set_initiator(True)
     else:
