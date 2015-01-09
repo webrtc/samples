@@ -32,7 +32,8 @@ function MicTest() {
 MicTest.prototype = {
   run: function() {
     if (typeof audioContext === 'undefined') {
-      reportFatal('WebAudio is not supported, test cannot run.');
+      reportError('WebAudio is not supported, test cannot run.');
+      testFinished();
     } else {
       doGetUserMedia(this.constraints, this.gotStream.bind(this));
     }
@@ -49,7 +50,7 @@ MicTest.prototype = {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
     if (audioTracks.length < 1) {
-      reportFatal('No audio track in returned stream.');
+      reportError('No audio track in returned stream.');
       return false;
     }
     reportSuccess('Audio track created using device=' + audioTracks[0].label);
