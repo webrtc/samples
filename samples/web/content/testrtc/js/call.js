@@ -110,6 +110,10 @@ Call.isRelay = function (candidate) {
   return candidate.type === 'relay';
 };
 
+Call.isNotHostCandidate = function (candidate) {
+  return candidate.type !== 'host';
+};
+
 Call.isIpv6 = function (candidate) {
   return candidate.address.indexOf(':') !== -1;
 };
