@@ -8,7 +8,9 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported requestTurnServers, sendAsyncUrlRequest */
+/* exported requestTurnServers, sendAsyncUrlRequest, randomString, isChromeApp,
+   getStorage, setStorage, pushRecentRoom, getRecentRooms */
+/* globals chrome */
 
 'use strict';
 
@@ -42,7 +44,7 @@ function requestTurnServers(turnRequestUrl, turnTransports) {
         return;
       }
       // Filter the TURN URLs to only use the desired transport, if specified.
-      if (turnTransports.length > 0) {
+      if (turnTransports && turnTransports.length > 0) {
         filterTurnUrls(turnServerResponse.uris, turnTransports);
       }
 
@@ -82,4 +84,98 @@ function filterTurnUrls(urls, protocol) {
       ++i;
     }
   }
+}
+
+// Return a random numerical string.
+function randomString(strLength) {
+  var result = [];
+  strLength = strLength || 5;
+  var charSet = '0123456789';
+  while (strLength--) {
+    result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
+  }
+  return result.join('');
+}
+
+// Returns true if the code is running in a packaged Chrome App.
+function isChromeApp() {
+  return (typeof chrome !== 'undefined' &&
+          typeof chrome.storage !== 'undefined' &&
+          typeof chrome.storage.local !== 'undefined');
+}
+
+// Get a value from local browser storage. Calls callback with value.
+function getStorage(key, callback) {
+  if (isChromeApp()) {
+    // use chrome.storage.local
+    chrome.storage.local.get(key, function(values) {
+      // unwrap key/value pair
+      if (callback)
+      {
+        callback(values[key]);
+      }
+    });
+  } else {
+    // use localStorage
+    var value = localStorage.getItem(key);
+    if (callback) {
+      callback(value);
+    }
+  }
+}
+
+// Set a value in local browser storage. Calls callback after completion.
+function setStorage(key, value, callback) {
+  if (isChromeApp()) {
+    // use chrome.storage.local
+    var data = {};
+    data[key] = value;
+    chrome.storage.local.set(data, callback);
+  } else {
+    // use localStorage
+    localStorage.setItem(key, value);
+    if (callback) {
+      callback();
+    }
+  }
+}
+
+var recentRoomsKey = 'recentRooms';
+
+// Add a room to the recently used list and store to local storage.
+function pushRecentRoom(roomId) {
+  // Push recent room to top of recent list, keep max of 10 entries.
+  return new Promise(function(resolve, reject) {
+    if (!roomId) {
+      resolve();
+      return;
+    }
+    
+    getRecentRooms().then(function(recentRooms) {
+      recentRooms = [roomId].concat(recentRooms);
+      // Remove any duplicates from the list, leaving the first occurance.
+      recentRooms = recentRooms.filter(function(value, index, self) {
+        return self.indexOf(value) === index;
+      });
+      recentRooms = recentRooms.slice(0,9);
+      setStorage(recentRoomsKey, JSON.stringify(recentRooms), function() {
+        resolve();
+      });
+    }).catch(function(err) {
+      reject(err);
+    });
+  });
+}
+
+// Get the list of recently used rooms from local storage.
+function getRecentRooms() {
+  return new Promise(function(resolve) {
+    getStorage(recentRoomsKey, function(value) {
+      var recentRooms = parseJSON(value);
+      if (!recentRooms) {
+        recentRooms = [];
+      }
+      resolve(recentRooms);
+    });
+  });
 }

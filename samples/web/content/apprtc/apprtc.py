@@ -288,35 +288,42 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   media_constraints = make_media_stream_constraints(audio, video,
                                                     firefox_fake_device)
   wss_url, wss_post_url = get_wss_parameters(request)
+  jsonParams = json.dumps({
+    'errorMessages': error_messages,
+    'isLoopback' : debug == 'loopback',
+    'roomId': room_id,
+    'roomLink': room_link,
+    'peerConnectionConfig': pc_config,
+    'peerConnectionConstraints': pc_constraints,
+    'offerConstraints': offer_constraints,
+    'mediaConstraints': media_constraints,
+    'turnRequestUrl': turn_url,
+    'turnTransports': turn_transports,
+    'opusStereo': stereo,
+    'opusFec': opusfec,
+    'opusMaxPbr': opusmaxpbr,
+    'audioRecvBitrate': arbr,
+    'audioSendBitrate': asbr,
+    'videoRecvBitrate': vrbr,
+    'videoSendBitrate': vsbr,
+    'videoSendInitialBitrate': vsibr,
+    'audioSendCodec': audio_send_codec,
+    'audioReceiveCodec': audio_receive_codec,
+    'videoSendCodec': video_send_codec,
+    'videoReceiveCodec': video_receive_codec,
+    'isStereoscopic': ssr,
+    'wssUrl': wss_url,
+    'wssPostUrl': wss_post_url
+  })
+  
   params = {
-    'error_messages': error_messages,
-    'is_loopback' : json.dumps(debug == 'loopback'),
-    'room_id': room_id,
-    'room_link': room_link,
-    'pc_config': json.dumps(pc_config),
-    'pc_constraints': json.dumps(pc_constraints),
-    'offer_constraints': json.dumps(offer_constraints),
-    'media_constraints': json.dumps(media_constraints),
-    'turn_url': turn_url,
-    'turn_transports': turn_transports,
-    'stereo': stereo,
-    'opusfec': opusfec,
-    'opusmaxpbr': opusmaxpbr,
-    'arbr': arbr,
-    'asbr': asbr,
-    'vrbr': vrbr,
-    'vsbr': vsbr,
-    'vsibr': vsibr,
-    'audio_send_codec': audio_send_codec,
-    'audio_receive_codec': audio_receive_codec,
-    'video_send_codec': video_send_codec,
-    'video_receive_codec': video_receive_codec,
-    'ssr': ssr,
+    'room_id' : room_id,
+    'room_link' : room_link,
+    'json_params' : jsonParams,
     'include_loopback_js' : include_loopback_js,
-    'include_vr_js': include_vr_js,
-    'wss_url': wss_url,
-    'wss_post_url': wss_post_url
+    'include_vr_js' : include_vr_js
   }
+  
   if client_id is not None:
     params['client_id'] = client_id
   if is_initiator is not None:
@@ -511,13 +518,18 @@ class RegisterPage(webapp2.RequestHandler):
       logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
 
 class MainPage(webapp2.RequestHandler):
+  def write_response(self, target_page, params={}):
+    template = jinja_environment.get_template(target_page)
+    content = template.render(params)
+    self.response.out.write(content)
+    
   def get(self):
-    """Redirects to a room page."""
-    room_id = generate_random(8)
-    redirect = '/r/' + room_id
-    redirect = append_url_arguments(self.request, redirect)
-    self.redirect(redirect)
-    logging.info('Redirecting visitor to base URL to ' + redirect)
+    """Render index.html."""
+    params = { 
+      'json_params' : '{}',
+      'landing_page' : True 
+    }
+    self.write_response('index.html', params)
 
 class RoomPage(webapp2.RequestHandler):
   def write_response(self, target_page, params={}):
@@ -539,6 +551,27 @@ class RoomPage(webapp2.RequestHandler):
     params = get_room_parameters(self.request, room_id, None, None)
     self.write_response('index.html', params)
 
+class RoomStatusPage(webapp2.RequestHandler):
+  def write_response(self, result):
+    content = json.dumps(result)
+    self.response.write(content)
+
+  def get(self, room_id):
+    """Check if a room is full and return the status via JSON."""
+    with LOCK:
+      client_map = get_room_client_map(room_id)
+      logging.info('Room ' + room_id + ' has state ' + str(client_map.keys()))
+      roomFull = False
+      if len(client_map) >= 2:
+        logging.info('Room ' + room_id + ' is full')
+        roomFull = True
+      self.write_response({ 'roomFull' : roomFull })
+    
+class ParamsPage(webapp2.RequestHandler):
+  def get(self, room_id):
+    params = get_room_parameters(self.request, room_id, None, None)
+    self.response.out.write(params['json_params'])
+
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/bye/(\w+)/(\w+)', ByePage),
@@ -546,5 +579,7 @@ app = webapp2.WSGIApplication([
     ('/register/(\w+)', RegisterPage),
     # TODO(jiayl): Remove support of /room/ when all clients are updated.
     ('/room/(\w+)', RoomPage),
+    ('/room/(\w+)/status', RoomStatusPage),
     ('/r/(\w+)', RoomPage),
+    ('/params/(\w+)', ParamsPage),
 ], debug=True)

@@ -8,12 +8,13 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-// Variables defined in and used from apprtc/index.html.
-/* globals params, setupStereoscopic */
+// Variables defined in and used from apprtc/index.html or appwindow.js.
+/* globals initialParams, setupStereoscopic */
 /* exported doGetUserMedia, enterFullScreen, initialize, onHangup */
 
 // Variables defined in and used from util.js.
-/* globals doGetUserMedia */
+/* globals doGetUserMedia, isChromeApp, randomString, pushRecentRoom, getRecentRooms,
+   sendAsyncUrlRequest, parseJSON */
 /* exported onUserMediaSuccess, onUserMediaError */
 
 // Variables defined in and used from infobox.js.
@@ -42,6 +43,13 @@ var remoteVideo = document.querySelector('#remote-video');
 var sharingDiv = document.querySelector('#sharing');
 var statusDiv = document.querySelector('#status');
 var videosDiv = document.querySelector('#videos');
+var footerDiv = document.querySelector('#footer');
+var roomLink = document.querySelector('#room-link-a');
+var joinRoomButton = document.querySelector('#joinButton');
+var randomRoomButton = document.querySelector('#randomButton');
+var roomIdInput = document.querySelector('#roomId');
+var recentRoomsList = document.querySelector('#recentRoomsList');
+var roomUIDiv = document.querySelector('#landing');
 
 // Types of gathered ICE Candidates.
 var gatheredIceCandidateTypes = {
@@ -74,6 +82,22 @@ var stats;
 var prevStats;
 var transitionToWaitingTimer = null;
 
+var params = initialParams;
+// If we already have a room to join, it will be set in params.roomId.
+// If not, this will be undefined.
+var roomId;
+if (params) {
+  roomId = params.roomId;
+}
+
+var server = '';
+if (isChromeApp()) {
+  // TODO: update server
+  server = 'http://localhost:8080';
+}
+
+var connectedToRoom = false;
+
 function initialize() {
   // We don't want to continue if this is triggered from Chrome prerendering,
   // since it will register the user to GAE without cleaning it up, causing
@@ -93,8 +117,13 @@ function initialize() {
     return;
   }
   document.body.ondblclick = toggleFullScreen;
+  
+  roomLink.innerHTML = params.roomLink;
+  roomLink.href = params.roomLink;
+  
   trace('Initializing; room=' + params.roomId + '.');
-  connectToRoom(params.roomId);
+  connectToRoom(params.server, params.roomId);
+  connectedToRoom = true;
   if (params.isLoopback) {
     setupLoopback();
   }
@@ -139,7 +168,12 @@ function disconnectFromRoom() {
   // When the other client sees BYE it attempts to post offer and candidates to
   // GAE. GAE needs to know that we're disconnected at that point otherwise
   // it will forward messages to this client instead of storing them.
-  path = '/bye/' + params.roomId + '/' + params.clientId;
+  var server = params.server;
+  if (!server) {
+    // If server is not provided, use relative URI.
+    server = '';
+  }
+  path = server + '/bye/' + params.roomId + '/' + params.clientId;
   xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);
   xhr.send();
@@ -297,6 +331,10 @@ function toggleAudioMute() {
 // q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 document.onkeypress = function(event) {
+  if (!connectedToRoom) {
+    return;
+  }
+  
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
@@ -321,9 +359,12 @@ document.onkeypress = function(event) {
 
 // Send a BYE on refreshing or leaving a page
 // to ensure the room is cleaned up for the next session.
-window.onbeforeunload = function() {
-  disconnectFromRoom();
-};
+// onbeforeunload is not supported in chrome apps.
+if (!isChromeApp()) {
+  window.onbeforeunload = function() {
+    disconnectFromRoom();
+  };
+}
 
 function displaySharingInfo() {
   sharingDiv.classList.add('active');
@@ -358,3 +399,142 @@ function toggleFullScreen() {
     trace(event);
   }
 }
+
+roomIdInput.addEventListener('input', function(){
+  // validate room id, enable/disable join button
+  // The server currently accepts only the \w character class
+  var room = roomIdInput.value;
+  var valid = room.length >= 5;
+  var re = /^\w+$/;
+  valid = valid && re.exec(room);
+  if (valid) {
+    joinRoomButton.disabled = false;
+  } else {
+    joinRoomButton.disabled = true;
+  }
+});
+
+randomRoomButton.addEventListener('click', function() {
+  roomIdInput.value = randomString(9);
+}, false);
+
+joinRoomButton.addEventListener('click', function() {
+  // TODO - validate entered room name
+  
+  roomId = roomIdInput.value;
+  loadRoom();
+},false);
+
+function showRoomSelectionUI(shouldShow) {
+  if (shouldShow) {
+    videosDiv.classList.add('hidden');
+    footerDiv.classList.add('hidden');
+    roomUIDiv.classList.add('active');
+  } else {
+    videosDiv.classList.remove('hidden');
+    footerDiv.classList.remove('hidden');
+    roomUIDiv.classList.remove('active');
+  }
+}
+
+if (!isChromeApp()) {
+  window.onpopstate = function(event) {
+    if (!event.state) {
+      // Resetting back to room selection page not yet supported, reload
+      // the initial page instead.
+      trace('Reloading main page.');
+      location.href = location.origin;
+    } else {
+      // This could be a forward request to open a room again
+      if (event.state && event.state.roomLink) {
+        location.href = event.state.roomLink;
+      }
+    }
+    
+  };
+}
+
+function loadRoom() {
+  pushRecentRoom(roomId).then(function() {
+    // check if room is available
+    var roomCheckUri = server + '/room/' + encodeURIComponent(roomId) + '/status';
+    trace('Requesting room status from: ' + roomCheckUri);
+    return sendAsyncUrlRequest('GET', roomCheckUri);
+  }).then(function(response) {
+      var roomStatusResponse = parseJSON(response);
+      if (!roomStatusResponse) {
+        trace('Error parsing json response for room status: ' + response);
+        return Promise.reject('Error getting room status.');
+      }
+  
+      if (roomStatusResponse.roomFull) {
+        trace('Room is full.');
+        return Promise.reject('Room is full: ' + roomId);
+      }
+      return;
+    }).then(function() {
+      // start process of getting params and initializing.
+      var paramsUri = server + '/params/' + encodeURIComponent(roomId);
+      trace('Requesting default params from: ' + paramsUri);
+      return sendAsyncUrlRequest('GET', paramsUri);
+    }).then(function(response) {
+        var paramsServerResponse = parseJSON(response);
+        if (!paramsServerResponse) {
+          // TODO - we could provide a set of defaults here, but the next call
+          // is likely to fail as well if the server isn't responding.
+          trace('Error parsing json response for default params: ' + response);
+          return Promise.reject('Error getting room parameters.');
+        }
+        // TODO - filter for known values
+        params = paramsServerResponse;
+        params.server = server;
+        trace('Retrieved default params from server.');
+        showRoomSelectionUI(false);
+        // Push new URI in web app
+        if (!isChromeApp()) {
+          window.history.pushState({'roomId': params.roomId, 'roomLink': params.roomLink }, params.roomId, params.roomLink);
+        }
+        initialize();
+    }).catch(function(error) {
+      // TODO : display error UI for room full or other errors.
+      trace('Could not connect to room:');
+      trace(error);
+      if (error.message) {
+        trace(error.message);
+      }
+    });
+}
+
+function makeRecentlyUsedClickHandler(roomName) {
+  return function(e) {
+    e.preventDefault();
+    // Launch clicked room
+    roomId = roomName;
+    loadRoom();
+  };
+}
+// Build recently used rooms list UI.
+getRecentRooms().then(function(recentRooms) {
+  for (var i = 0; i < recentRooms.length; ++i) {
+    // Create link in recent list
+    var li = document.createElement('li');
+    var href = document.createElement('a');
+    var linkText = document.createTextNode(recentRooms[i]);
+    href.appendChild(linkText);
+    href.href = location.origin + '/r/' + encodeURIComponent(recentRooms[i]);
+    li.appendChild(href);
+    recentRoomsList.appendChild(li);
+    
+    // Set up click handler to avoid browser navigation.
+    href.addEventListener('click', makeRecentlyUsedClickHandler(recentRooms[i]), false);
+  }
+});
+
+// Show room selection UI if we don't have a room to join.
+if (!roomId) {
+  roomId = randomString(9);
+  roomIdInput.value = roomId;
+  showRoomSelectionUI(true);
+}
+
+
