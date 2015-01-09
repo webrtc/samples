@@ -164,16 +164,19 @@ function testVideoBandwidth(config) {
 }
 
 addExplicitTest('Connectivity', 'WiFi Periodic Scan',
-  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan, reportFatal));
+  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null, Call.isNotHostCandidate), reportFatal));
 
-function testForWiFiPeriodicScan(config) {
+addExplicitTest('Connectivity', 'WiFi Periodic Scan - Relay',
+  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null, Call.isRelay), reportFatal));
+
+function testForWiFiPeriodicScan(candidateFilter, config) {
   var testDurationMs = 5 * 60 * 1000;
   var sendIntervalMs = 100;
   var running = true;
   var delays = [];
   var recvTimeStamps = [];
   var call = new Call(config);
-  call.setIceCandidateFilter(Call.isRelay);
+  call.setIceCandidateFilter(candidateFilter);
 
   var senderChannel = call.pc1.createDataChannel({ ordered: false, maxRetransmits: 0 });
   senderChannel.addEventListener('open', send);
@@ -208,15 +211,18 @@ function testForWiFiPeriodicScan(config) {
     var avg = arrayAverage(delays);
     var max = arrayMax(delays);
     var min = arrayMin(delays);
-
     reportInfo('Average delay: ' + avg + ' ms.');
     reportInfo('Min delay: ' + min + ' ms.');
     reportInfo('Max delay: ' + max + ' ms.');
 
-    if (max / (min + 100) < 2.0) {
-      reportSuccess('All seems fine.');
+    if (delays.lenght < 0.8 * testDurationMs / sendIntervalMs) {
+      reportError('Not enough samples gathered. Keep the page on the foreground while the test is running.');
     } else {
-      reportError('There is a big difference between the min and max delay of packets. Your network appears unstable.');
+      reportSuccess('Collected ' + delays.length + ' delay samples.');
+    }
+
+    if (max > (min + 100) * 2) {
+        reportError('There is a big difference between the min and max delay of packets. Your network appears unstable.');
     }
     testFinished();
   }
