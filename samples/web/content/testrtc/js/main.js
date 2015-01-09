@@ -12,7 +12,13 @@
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
-var audioContext = new AudioContext();
+var audioContext;
+try {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  audioContext = new AudioContext();
+} catch (e) {
+    console.log('Web Audio API not supported, error: : ' + e);
+}
 var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
 var audioSelect = document.querySelector('select#audioSource');

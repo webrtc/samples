@@ -31,7 +31,11 @@ function MicTest() {
 
 MicTest.prototype = {
   run: function() {
-    doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    if (typeof audioContext === 'undefined') {
+      reportFatal('WebAudio is not supported, test cannot run.');
+    } else {
+      doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    }
   },
 
   gotStream: function(stream) {
