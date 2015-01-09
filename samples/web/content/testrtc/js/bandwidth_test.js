@@ -215,7 +215,7 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
     reportInfo('Min delay: ' + min + ' ms.');
     reportInfo('Max delay: ' + max + ' ms.');
 
-    if (delays.lenght < 0.8 * testDurationMs / sendIntervalMs) {
+    if (delays.length < 0.8 * testDurationMs / sendIntervalMs) {
       reportError('Not enough samples gathered. Keep the page on the foreground while the test is running.');
     } else {
       reportSuccess('Collected ' + delays.length + ' delay samples.');
