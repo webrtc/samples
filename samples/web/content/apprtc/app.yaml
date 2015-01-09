@@ -17,6 +17,10 @@ handlers:
 - url: /css
   static_dir: css
 
+- url: /probe.*
+  script: probers.app
+  secure: always
+
 - url: /.*
   script: apprtc.app
   secure: always
