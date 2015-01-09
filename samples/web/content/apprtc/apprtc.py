@@ -342,25 +342,24 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
   error = None
+  retries = 0
   # Compare and set retry loop.
   while True:
     is_initiator = None
     messages = []
-    is_full = False
     room_state = ''
     room = memcache_client.gets(key)
     if room is None:
       # 'set' and another 'gets' are needed for CAS to work.
       if not memcache_client.set(key, Room()):
         logging.warning('memcache.Client.set failed for key ' + key)
-        error = 'ERROR'
+        error = constants.RESPONSE_ERROR
         break
       room = memcache_client.gets(key)
 
     occupancy = room.get_occupancy()
     if occupancy >= 2:
-      is_full = True
-      error = 'FULL'
+      error = constants.RESPONSE_ROOM_FULL
       break
 
     if occupancy == 0:
@@ -376,24 +375,29 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       other_client.clear_messages()
     room_state = str(room)
     if memcache_client.cas(key, room):
-      logging.info('Added client ' + client_id + ' in room ' + room_id)
+      logging.info('Added client %s in room %s, retries = %d' \
+          %(client_id, room_id, retries))
       success = True
       break
+    else:
+      retries = retries + 1
   return {'error': error, 'is_initiator': is_initiator,
-          'messages': messages, 'is_full': is_full, 'room_state': room_state}
+          'messages': messages, 'room_state': room_state}
 
 def remove_client_from_room(host, room_id, client_id):
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
+  retries = 0
   # Compare and set retry loop.
   while True:
     room = memcache_client.gets(key)
     if room is None:
-      logging.warning('Unknown room: ' + room_id)
-      return {'error': 'UNKNOWN_ROOM', 'room_state': None}
+      logging.warning('remove_client_from_room: Unknown room ' + room_id)
+      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'room_state': None}
     if not room.has_client(client_id):
-      logging.warning('Unknown client ' + client_id + ' for room ' + room_id)
-      return {'error': 'UNKNOWN_CLIENT', 'room_state': None}
+      logging.warning('remove_client_from_room: Unknown client ' + client_id + \
+          ' for room ' + room_id)
+      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'room_state': None}
 
     room.remove_client(client_id)
     if room.has_client(constants.LOOPBACK_CLIENT_ID):
@@ -404,31 +408,37 @@ def remove_client_from_room(host, room_id, client_id):
       room = None
 
     if memcache_client.cas(key, room):
-      logging.info('Removed client ' + client_id + ' from room ' + room_id)
+      logging.info('Removed client %s from room %s, retries=%d' \
+          %(client_id, room_id, retries))
       return {'error': None, 'room_state': str(room)}
+    retries = retries + 1
 
 def save_message_from_client(host, room_id, client_id, message):
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
+  retries = 0
   # Compare and set retry loop.
   while True:
     room = memcache_client.gets(key)
     if room is None:
       logging.warning('Unknown room: ' + room_id)
-      return {'error': 'UNKNOWN_ROOM', 'saved': False}
+      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'saved': False}
     if not room.has_client(client_id):
       logging.warning('Unknown client: ' + client_id)
-      return {'error': 'UNKNOWN_CLIENT', 'saved': False}
+      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'saved': False}
     if room.get_occupancy() > 1:
       return {'error': None, 'saved': False}
 
     try:
       text = message.encode(encoding='utf-8', errors='strict')
     except Exception as e:
-      return {'error': 'ENCODE_ERROR', 'saved': False}
+      return {'error': constants.RESPONSE_ERROR, 'saved': False}
     room.get_client(client_id).add_message(text)
     if memcache_client.cas(key, room):
+      logging.info('Saved message for client %s in room %s, retries=%d' \
+          %(client_id, room_id, retries))
       return {'error': None, 'saved': True}
+    retries = retries + 1
 
 class ByePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
@@ -456,7 +466,7 @@ class MessagePage(webapp2.RequestHandler):
       # TODO(tkchin): better error handling.
       self.error(500)
       return
-    self.write_response('SUCCESS')
+    self.write_response(constants.RESPONSE_SUCCESS)
 
   def post(self, room_id, client_id):
     message_json = self.request.body
@@ -465,18 +475,14 @@ class MessagePage(webapp2.RequestHandler):
     if result['error'] is not None:
       self.write_response(result['error'])
       return
-    self.write_response('SUCCESS')
-    if result['saved']:
-      logging.info('Saving message from client ' + client_id +
-                   ' for room ' + room_id)
-      return
-
-    # Other client registered, forward to collider. Do this outside the lock.
-    # Note: this may fail in local dev server due to not having the right
-    # certificate file locally for SSL validation.
-    # Note: loopback scenario follows this code path.
-    # TODO(tkchin): consider async fetch here.
-    self.send_message_to_collider(room_id, client_id, message_json)
+    self.write_response(constants.RESPONSE_SUCCESS)
+    if not result['saved']:
+      # Other client registered, forward to collider. Do this outside the lock.
+      # Note: this may fail in local dev server due to not having the right
+      # certificate file locally for SSL validation.
+      # Note: loopback scenario follows this code path.
+      # TODO(tkchin): consider async fetch here.
+      self.send_message_to_collider(room_id, client_id, message_json)
 
 class RegisterPage(webapp2.RequestHandler):
   def write_response(self, result, params, messages):
