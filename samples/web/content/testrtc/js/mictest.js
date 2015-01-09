@@ -41,6 +41,7 @@ MicTest.prototype = {
 
   gotStream: function(stream) {
     if (!this.checkAudioTracks(stream)) {
+      testFinished();
       return;
     }
     this.createAudioBuffer(stream);
