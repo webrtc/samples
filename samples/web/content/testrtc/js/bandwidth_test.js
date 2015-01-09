@@ -162,3 +162,68 @@ function testVideoBandwidth(config) {
     testFinished();
   }
 }
+
+addExplicitTest('Connectivity', 'WiFi Periodic Scan',
+  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null, Call.isNotHostCandidate), reportFatal));
+
+addExplicitTest('Connectivity', 'WiFi Periodic Scan - Relay',
+  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null, Call.isRelay), reportFatal));
+
+function testForWiFiPeriodicScan(candidateFilter, config) {
+  var testDurationMs = 5 * 60 * 1000;
+  var sendIntervalMs = 100;
+  var running = true;
+  var delays = [];
+  var recvTimeStamps = [];
+  var call = new Call(config);
+  call.setIceCandidateFilter(candidateFilter);
+
+  var senderChannel = call.pc1.createDataChannel({ ordered: false, maxRetransmits: 0 });
+  senderChannel.addEventListener('open', send);
+  call.pc2.addEventListener('datachannel', onReceiverChannel);
+  call.establishConnection();
+
+  setTimeoutWithProgressBar(finishTest, testDurationMs);
+
+  function onReceiverChannel(event) {
+     event.channel.addEventListener('message', receive);
+  }
+
+  function send() {
+    if (!running) { return; }
+    senderChannel.send('' + Date.now());
+    setTimeout(send, sendIntervalMs);
+  }
+
+  function receive(event) {
+    if (!running) { return; }
+    var sendTime = parseInt(event.data);
+    var delay = Date.now() - sendTime;
+    recvTimeStamps.push(sendTime);
+    delays.push(delay);
+  }
+
+  function finishTest() {
+    report.traceEventInstant('periodic-delay', { delays: delays, recvTimeStamps: recvTimeStamps });
+    running = false;
+    call.close();
+
+    var avg = arrayAverage(delays);
+    var max = arrayMax(delays);
+    var min = arrayMin(delays);
+    reportInfo('Average delay: ' + avg + ' ms.');
+    reportInfo('Min delay: ' + min + ' ms.');
+    reportInfo('Max delay: ' + max + ' ms.');
+
+    if (delays.length < 0.8 * testDurationMs / sendIntervalMs) {
+      reportError('Not enough samples gathered. Keep the page on the foreground while the test is running.');
+    } else {
+      reportSuccess('Collected ' + delays.length + ' delay samples.');
+    }
+
+    if (max > (min + 100) * 2) {
+        reportError('There is a big difference between the min and max delay of packets. Your network appears unstable.');
+    }
+    testFinished();
+  }
+}
