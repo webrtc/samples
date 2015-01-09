@@ -37,7 +37,6 @@ module.exports = function(grunt) {
       html1: {
         src: [
         'samples/web/content/apprtc/index.html',
-        'samples/web/content/apprtc/appwindow.html',
         'samples/web/content/datachannel/index.html',
         'samples/web/content/getusermedia/**/index.html',
         'samples/web/content/peerconnection/**/index.html'
@@ -84,6 +83,33 @@ module.exports = function(grunt) {
         command: './run_python_tests.sh'
       },
     },
+    
+    'grunt-chrome-build' : {
+      apprtc: {
+        options: {
+          buildDir: 'build/chrome-app',
+          zipFile: 'build/chrome-app/apprtc.zip',
+          chromeBinary: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+          keyFile: 'apprtc.pem'
+        },
+        files: [
+          {
+            expand: true,
+            cwd: 'samples/web/content/apprtc',
+            src: [
+              '**/*.js',
+              '!**/*test.js',
+              //'samples/web/content/apprtc/appwindow.html',
+              '**/*.css',
+              'images/apprtc*.png',
+              'manifest.json',  
+              '!*.pem'
+            ],
+            dest: 'build/chrome-app/'
+          }
+        ]
+      }
+    },
 
     jstdPhantom: {
       options: {
@@ -102,10 +128,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
+  grunt.loadTasks('grunt-chrome-build');
 
   // set default tasks to run when grunt is called without parameters
   grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
                      'shell:runPythonTests', 'jstdPhantom']);
+  grunt.registerTask('build', ['grunt-chrome-build']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };

@@ -15,7 +15,9 @@
   <meta charset="utf-8">
   <meta name="description" content="WebRTC reference app">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+{% if not chromeapp %}
   <link rel="canonical" href="{{ room_link }}">
+{% endif %}
   <link rel="stylesheet" href="/css/main.css">
 
 </head>
@@ -31,22 +33,30 @@
 
   <footer>
     <div id="sharing">
-      <div id="room-link">Waiting for someone to join this room: <a href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
+      <div id="room-link">Waiting for someone to join this room: <a id="room-link-href" href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
     </div>
     <div id="info"></div>
     <div id="status"></div>
   </footer>
 
   <script src="/js/stats.js"></script>
+{% if not chromeapp %}
   {{ include_loopback_js }}
+{% endif %}
   <script src="/js/signaling.js"></script>
   <script src="/js/infobox.js"></script>
   <script src="/js/sdputils.js"></script>
   <script src="/js/util.js"></script>
   <script src="/js/main.js"></script>
+{% if not chromeapp %}
   {{ include_vr_js }}
+{% endif %}
   <script src="/js/adapter.js"></script>
+{% if chromeapp %}
+  <script src="/js/appwindow.js"></script>
+{% endif %}
 
+{% if not chromeapp %}
   <script type="text/javascript">
     var params = {
       errorMessages: {{ error_messages }},
@@ -91,6 +101,6 @@
     ga('create', 'UA-48530561-2', 'auto');
     ga('send', 'pageview');
   </script>
-
+{% endif %}
 </body>
 </html>
