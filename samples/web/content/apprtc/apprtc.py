@@ -308,15 +308,20 @@ class Client:
   is_initiator = False
   def __init__(self, is_initiator):
     self.is_initiator = is_initiator
+    self.messages = []
   def add_message(self, msg):
     self.messages.append(msg)
   def clear_messages(self):
     self.messages = []
   def set_initiator(self, initiator):
     self.is_initiator = initiator
+  def __str__(self):
+    return '{%r, %d}' % (self.is_initiator, len(self.messages))
 
 class Room:
   clients = {}
+  def __init__(self):
+    self.clients = {}
   def add_client(self, client_id, client):
     self.clients[client_id] = client
   def remove_client(self, client_id):
@@ -356,10 +361,14 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
         error = constants.RESPONSE_ERROR
         break
       room = memcache_client.gets(key)
+    room_state = str(room)
 
     occupancy = room.get_occupancy()
     if occupancy >= 2:
       error = constants.RESPONSE_ROOM_FULL
+      break
+    if room.has_client(client_id):
+      error = constants.RESPONSE_DUPLICATE_CLIENT
       break
 
     if occupancy == 0:
@@ -373,7 +382,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       messages = other_client.messages
       room.add_client(client_id, Client(is_initiator))
       other_client.clear_messages()
-    room_state = str(room)
+
     if memcache_client.cas(key, room):
       logging.info('Added client %s in room %s, retries = %d' \
           %(client_id, room_id, retries))
@@ -414,6 +423,12 @@ def remove_client_from_room(host, room_id, client_id):
     retries = retries + 1
 
 def save_message_from_client(host, room_id, client_id, message):
+  text = None
+  try:
+      text = message.encode(encoding='utf-8', errors='strict')
+  except Exception as e:
+    return {'error': constants.RESPONSE_ERROR, 'saved': False}
+
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
   retries = 0
@@ -429,14 +444,11 @@ def save_message_from_client(host, room_id, client_id, message):
     if room.get_occupancy() > 1:
       return {'error': None, 'saved': False}
 
-    try:
-      text = message.encode(encoding='utf-8', errors='strict')
-    except Exception as e:
-      return {'error': constants.RESPONSE_ERROR, 'saved': False}
-    room.get_client(client_id).add_message(text)
+    client = room.get_client(client_id)
+    client.add_message(text)
     if memcache_client.cas(key, room):
-      logging.info('Saved message for client %s in room %s, retries=%d' \
-          %(client_id, room_id, retries))
+      logging.info('Saved message for client %s:%s in room %s, retries=%d' \
+          %(client_id, str(client), room_id, retries))
       return {'error': None, 'saved': True}
     retries = retries + 1
 
@@ -504,7 +516,8 @@ class RegisterPage(webapp2.RequestHandler):
     result = add_client_to_room(
         self.request.host_url, room_id, client_id, is_loopback)
     if result['error'] is not None:
-      logging.info('Error adding client to room: ' + result['error'])
+      logging.info('Error adding client to room: ' + result['error'] + \
+          ', room_state=' + result['room_state'])
       self.write_response(result['error'], {}, [])
       return
 
