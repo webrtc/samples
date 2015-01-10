@@ -304,8 +304,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
 # TODO(tkchin): Generate room/client IDs in a unique way while handling
 # loopback scenario correctly.
 class Client:
-  messages = []
-  is_initiator = False
   def __init__(self, is_initiator):
     self.is_initiator = is_initiator
     self.messages = []
@@ -319,7 +317,6 @@ class Client:
     return '{%r, %d}' % (self.is_initiator, len(self.messages))
 
 class Room:
-  clients = {}
   def __init__(self):
     self.clients = {}
   def add_client(self, client_id, client):
