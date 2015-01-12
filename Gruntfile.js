@@ -37,6 +37,7 @@ module.exports = function(grunt) {
       html1: {
         src: [
         'samples/web/content/apprtc/index.html',
+        'samples/web/content/apprtc/appwindow.html',
         'samples/web/content/datachannel/index.html',
         'samples/web/content/getusermedia/**/index.html',
         'samples/web/content/peerconnection/**/index.html'

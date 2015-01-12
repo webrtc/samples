@@ -18,6 +18,7 @@
 
 var Call = function(params) {
   this.params_ = params;
+  this.roomServer_ = params.server || '';
 
   this.channel_ = new SignalingChannel(params.wssUrl, params.wssPostUrl);
   this.channel_.onmessage = this.onRecvSignalingChannelMessage_.bind(this);
@@ -71,7 +72,8 @@ Call.prototype.hangup = function() {
   // When the other client sees BYE it attempts to post offer and candidates to
   // GAE. GAE needs to know that we're disconnected at that point otherwise
   // it will forward messages to this client instead of storing them.
-  var path = '/bye/' + this.params_.roomId + '/' + this.params_.clientId;
+  var path = this.roomServer_ + '/bye/' + this.params_.roomId +
+      '/' + this.params_.clientId;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);
   xhr.send();
@@ -313,7 +315,8 @@ Call.prototype.registerWithRoomServer_ = function() {
     if (!this.params_.roomId) {
       reject(Error('Missing room id.'));
     }
-    var path = '/register/' + this.params_.roomId + window.location.search;
+    var path = this.roomServer_ + '/register/' +
+        this.params_.roomId + window.location.search;
 
     sendAsyncUrlRequest('POST', path).then(function(response) {
       var responseObj = parseJSON(response);
@@ -346,8 +349,8 @@ Call.prototype.sendSignalingMessage_ = function(message) {
     // until the other client connects, or forward the message to Collider if
     // the other client is already connected.
     // Must append query parameters in case we've specified alternate WSS url.
-    var path = '/message/' + this.params_.roomId + '/' + this.params_.clientId +
-        window.location.search;
+    var path = this.roomServer_ + '/message/' + this.params_.roomId +
+        '/' + this.params_.clientId + window.location.search;
     var xhr = new XMLHttpRequest();
     xhr.open('POST', path, true);
     xhr.send(msgString);
