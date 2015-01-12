@@ -7,12 +7,17 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
+/* exported addExplicitTest, addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
-var audioContext = new AudioContext();
+try {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  var audioContext = new AudioContext();
+} catch (e) {
+    console.log('Failed to instantiate an audio context, error: ' + e);
+}
 var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
 var audioSelect = document.querySelector('select#audioSource');
@@ -260,6 +265,14 @@ function addTest(suiteName, testName, func) {
   testSuites.push(testSuite);
 }
 
+// Add a test that only runs if it is explicitly enabled with
+// ?test_filter=<TEST NAME>
+function addExplicitTest(suiteName, testName, func) {
+  if (testIsExplicitlyEnabled(testName)) {
+    addTest(suiteName, testName, func);
+  }
+}
+
 // Helper to run a list of tasks sequentially:
 //   tasks - Array of { run: function(doneCallback) {} }.
 //   doneCallback - called once all tasks have run sequentially.
@@ -361,13 +374,16 @@ function testIsDisabled(testName) {
   if (testFilters.length === 0) {
     return false;
   }
+  return !testIsExplicitlyEnabled(testName);
+}
 
+function testIsExplicitlyEnabled(testName) {
   for (var i = 0; i !== testFilters.length; ++i) {
     if (testFilters[i] === testName) {
-      return false;
+      return true;
     }
   }
-  return true;
+  return false;
 }
 
 // Return the first audio device label on the track.
