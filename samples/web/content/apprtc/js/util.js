@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported requestTurnServers, sendAsyncUrlRequest */
+/* exported requestTurnServers, sendAsyncUrlRequest, randomString */
 
 'use strict';
 
@@ -82,4 +82,15 @@ function filterTurnUrls(urls, protocol) {
       ++i;
     }
   }
+}
+
+// Return a random numerical string.
+function randomString(strLength) {
+  var result = [];
+  strLength = strLength || 5;
+  var charSet = '0123456789';
+  while (strLength--) {
+    result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
+  }
+  return result.join('');
 }
