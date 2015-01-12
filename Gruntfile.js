@@ -99,7 +99,6 @@ module.exports = function(grunt) {
             src: [
               '**/*.js',
               '!**/*test.js',
-              //'samples/web/content/apprtc/appwindow.html',
               '**/*.css',
               'images/apprtc*.png',
               'manifest.json',  
