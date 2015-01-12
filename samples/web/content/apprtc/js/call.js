@@ -28,16 +28,17 @@ var Call = function(params) {
 
   this.startTime = null;
 
-  // Public call backs.
+  // Public callbacks. Keep it sorted.
+  this.oncallerstarted = null;
+  this.onerror = null;
+  this.oniceconnectionstatechange = null;
+  this.onlocalstreamadded = null;
+  this.onnewicecandidate = null;
   this.onremotehangup = null;
   this.onremotesdpset = null;
   this.onremotestreamadded = null;
-  this.onlocalstreamadded = null;
   this.onsignalingstatechange = null;
-  this.oniceconnectionstatechange = null;
-  this.onnewicecandidate = null;
   this.onstatusmessage = null;
-  this.onerror = null;
 };
 
 Call.prototype.isInitiator = function() {
@@ -45,7 +46,7 @@ Call.prototype.isInitiator = function() {
 };
 
 Call.prototype.start = function() {
-  this.connectToRoom_(this.getMediaIfNeeded_(), this.getTurnServersIfNeeded_());
+  this.connectToRoom_(this.maybeGetMedia_(), this.maybeGetTurnServers_());
   if (this.params_.isLoopback) {
     setupLoopback();
   }
@@ -156,7 +157,7 @@ Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
   var channelPromise = this.channel_.open().catch(function(error) {
     this.onError_('WebSocket open error: ' + error.message);
     return Promise.reject(error);
-  });
+  }.bind(this));
 
   // Asynchronously register with GAE.
   var registerPromise =
@@ -196,7 +197,7 @@ Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
 };
 
 // Asynchronously request user media if needed.
-Call.prototype.getMediaIfNeeded_ = function() {
+Call.prototype.maybeGetMedia_ = function() {
   // mediaConstraints.audio and mediaConstraints.video could be objects, so
   // check '!=== false' instead of '=== true'.
   var needStream = (this.params_.mediaConstraints.audio !== false ||
@@ -211,9 +212,7 @@ Call.prototype.getMediaIfNeeded_ = function() {
 
       this.onUserMediaSuccess_(stream);
     }.bind(this)).catch(function(error) {
-      trace('Error getting user media: ' + error.message);
-      alert('getUserMedia() failed. Is this a WebRTC capable browser?');
-
+      this.onError_('Error getting user media: ' + error.message);
       this.onUserMediaError_(error);
     }.bind(this));
   } else {
@@ -223,7 +222,7 @@ Call.prototype.getMediaIfNeeded_ = function() {
 };
 
 // Asynchronously request a TURN server if needed.
-Call.prototype.getTurnServersIfNeeded_ = function() {
+Call.prototype.maybeGetTurnServers_ = function() {
   var shouldRequestTurnServers =
       (this.params_.turnRequestUrl && this.params_.turnRequestUrl.length > 0);
 
@@ -295,6 +294,10 @@ Call.prototype.maybeCreatePcClient_ = function() {
 
 Call.prototype.startSignaling_ = function() {
   trace('Starting signaling.');
+  if (this.isInitiator() && this.oncallerstarted) {
+    this.oncallerstarted();
+  }
+
   this.startTime = window.performance.now();
 
   this.maybeCreatePcClient_();

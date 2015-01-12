@@ -28,12 +28,11 @@
 
 <body>
   <!--
-   * Keep the HTML id attributes in sync with |uiConstants| defined in
+   * Keep the HTML id attributes in sync with |UI_CONSTANTS| defined in
    * appcontroller.js.
   -->
   <div id="videos">
     <video id="mini-video" autoplay muted></video>
-    <canvas id="remote-canvas"></canvas>
     <video id="remote-video" autoplay></video>
     <video id="local-video" autoplay muted></video>
   </div>
@@ -92,8 +91,6 @@
   <script src="/js/call.js"></script>
   <script src="/js/infobox.js"></script>
   <script src="/js/appcontroller.js"></script>
-  <script src="/js/main.js"></script>
-  {{ include_vr_js }}
 
   <script type="text/javascript">
     var params = {
@@ -116,6 +113,7 @@
       audioRecvCodec: '{{ audio_receive_codec }}',
       opusMaxPbr: '{{ opusmaxpbr }}',
       opusFec: '{{ opusfec }}',
+      opusStereo: '{{ stereo }}',
       videoSendBitrate: '{{ vsbr }}',
       videoSendInitialBitrate: '{{ vsibr }}',
       videoSendCodec: '{{ video_send_codec }}',

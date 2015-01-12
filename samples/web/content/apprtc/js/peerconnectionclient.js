@@ -45,15 +45,15 @@ var PeerConnectionClient = function(params, startTime) {
   this.started_ = false;
 
   // TODO(jiayl): Replace callbacks with events.
-  // Public callbacks.
-  this.onsignalingmessage = null;
+  // Public callbacks. Keep it sorted.
+  this.onerror = null;
+  this.oniceconnectionstatechange = null;
+  this.onnewicecandidate = null;
   this.onremotehangup = null;
   this.onremotesdpset = null;
   this.onremotestreamadded = null;
+  this.onsignalingmessage = null;
   this.onsignalingstatechange = null;
-  this.oniceconnectionstatechange = null;
-  this.onnewicecandidate = null;
-  this.onerror = null;
 };
 
 // Set up audio and video regardless of what devices are present.

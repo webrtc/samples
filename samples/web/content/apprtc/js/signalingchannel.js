@@ -22,9 +22,9 @@ var SignalingChannel = function(wssUrl, wssPostUrl) {
   this.websocket_ = null;
   this.registered_ = false;
 
-  // Public callbacks.
-  this.onmessage = null;
+  // Public callbacks. Keep it sorted.
   this.onerror = null;
+  this.onmessage = null;
 };
 
 SignalingChannel.prototype.open = function() {

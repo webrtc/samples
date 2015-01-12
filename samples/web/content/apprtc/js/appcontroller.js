@@ -9,9 +9,13 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals trace, InfoBox, isFullScreen */
-/* exported AppController */
+/* exported AppController, remoteVideo */
 
 'use strict';
+
+// TODO(jiayl): remove |remoteVideo| once the chrome browser tests are updated.
+// Do not use in the production code.
+var remoteVideo = $('#remote-video');
 
 // Keep this in sync with the HTML element id attributes. Keep it sorted.
 var UI_CONSTANTS = {
@@ -33,7 +37,6 @@ var UI_CONSTANTS = {
   muteVideoOnSvg: '#mute-video-on',
   muteVideoSvg: '#mute-video',
 
-  remoteCanvas: '#remote-canvas',
   remoteVideo: '#remote-video',
   sharingDiv: '#sharing-div',
   statusDiv: '#status-div',
@@ -44,16 +47,14 @@ var UI_CONSTANTS = {
 var AppController = function(params) {
   trace('Initializing; room=' + params.roomId + '.');
 
-  this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
+  this.hangupSvg_ = $(UI_CONSTANTS.hangupSvg);
+  this.icons_ = $(UI_CONSTANTS.icons);
   this.localVideo_ = $(UI_CONSTANTS.localVideo);
-  this.miniVideo_ = $(UI_CONSTANTS.miniVideo);
-  this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
-  this.remoteCanvas_ = $(UI_CONSTANTS.remoteCanvas);
   this.miniVideo_ = $(UI_CONSTANTS.miniVideo);
   this.sharingDiv_ = $(UI_CONSTANTS.sharingDiv);
   this.statusDiv_ = $(UI_CONSTANTS.statusDiv);
-  this.icons_ = $(UI_CONSTANTS.icons);
-  this.hangupSvg_ = $(UI_CONSTANTS.hangupSvg);
+  this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
+  this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
 
   this.muteAudioIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
@@ -66,7 +67,7 @@ var AppController = function(params) {
 
   this.call_ = new Call(params);
   this.infoBox_ =
-      new InfoBox($(UI_CONSTANTS.infoDivId), this.remoteVideo_, this.call_);
+      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
 
   this.transitionToWaitingTimer_ = null;
 
@@ -147,7 +148,7 @@ AppController.prototype.waitForRemoteVideo_ = function() {
 };
 
 AppController.prototype.onRemoteStreamAdded_ = function(stream) {
-  this.activate_(this.sharingDiv_);
+  this.deactivate_(this.sharingDiv_);
   trace('Remote stream added.');
   attachMediaStream(this.remoteVideo_, stream);
 };
@@ -158,7 +159,7 @@ AppController.prototype.onLocalStreamAdded_ = function(stream) {
   attachMediaStream(this.localVideo_, stream);
 
   this.displayStatus_('');
-  this.active_(this.localVideo_);
+  this.activate_(this.localVideo_);
   this.show_(this.icons_);
 };
 
@@ -308,7 +309,7 @@ AppController.prototype.show_ = function(element){
   element.classList.remove('hidden');
 };
 
-AppController.prototype.activate = function(element){
+AppController.prototype.activate_ = function(element){
   element.classList.add('active');
 };
 
@@ -321,7 +322,7 @@ AppController.prototype.showIcons_ = function() {
     this.activate_(this.icons_);
     setTimeout(function() {
       this.deactivate_(this.icons_);
-    }, 5000);
+    }.bind(this), 5000);
   }
 };
 
