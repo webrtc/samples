@@ -33,7 +33,11 @@ var currentTest;
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
   gum.start(function () {
-    MediaStreamTrack.getSources(gotSources);
+    if (typeof MediaStreamTrack.getSources === 'undefined') {
+      console.log('getSources is not supported, device selection not possible.');
+    } else {
+      MediaStreamTrack.getSources(gotSources);
+    }
     startButton.removeAttribute('disabled');
   });
 });

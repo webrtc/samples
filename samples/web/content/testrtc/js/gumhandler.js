@@ -16,11 +16,12 @@ function GumHandler() {
   this.gumNotSupportedDialog_ = document.getElementById('gum-not-supported-dialog');
   this.gumErrorMessage_ = document.getElementById('gum-error-message');
   this.firstUserCheck_ = null;
+  this.gumStreamSuccessCallback_ = null;
 }
 
 GumHandler.prototype = {
   start: function(callback) {
-    this.gumStreamSuccessCallback = callback;
+    this.gumStreamSuccessCallback_ = callback;
     if (typeof navigator.getUserMedia === 'undefined') {
       this.gumNotSupportedDialog_.open();
     } else {
@@ -47,7 +48,7 @@ GumHandler.prototype = {
     }
     this.gumPendingDialog_.close();
     this.gumErrorDialog_.close();
-    this.gumStreamSuccessCallback();
+    this.gumStreamSuccessCallback_();
   },
 
   gotError_: function(error) {
