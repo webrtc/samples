@@ -132,11 +132,17 @@ function buildStatsSection() {
     txAudioCodec = txAudio.stat('googCodecName');
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
     txAudioPacketRate = computeRate(txAudio, txPrevAudio, 'packetsSent');
+    contents += buildLine('Audio Tx', txAudioCodec + ', ' +
+        formatBitrate(txAudioBitrate) + ', ' +
+        formatPacketRate(txAudioPacketRate));
   }
   if (rxAudio) {
     rxAudioCodec = rxAudio.stat('googCodecName');
     rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
     rxAudioPacketRate = computeRate(rxAudio, rxPrevAudio, 'packetsReceived');
+    contents += buildLine('Audio Rx', rxAudioCodec + ', ' +
+        formatBitrate(rxAudioBitrate)  + ', ' +
+        formatPacketRate(rxAudioPacketRate));
   }
   if (txVideo) {
     txVideoCodec = txVideo.stat('googCodecName');
@@ -144,6 +150,10 @@ function buildStatsSection() {
     txVideoFps = txVideo.stat('googFrameRateSent');
     txVideoBitrate = computeBitrate(txVideo, txPrevVideo, 'bytesSent');
     txVideoPacketRate = computeRate(txVideo, txPrevVideo, 'packetsSent');
+    contents += buildLine('Video Tx',
+        txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
+        txVideoFps.toString() + ', ' + formatBitrate(txVideoBitrate) + ', ' +
+        formatPacketRate(txVideoPacketRate));
   }
   if (rxVideo) {
     rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
@@ -152,21 +162,11 @@ function buildStatsSection() {
     rxVideoFps = rxVideo.stat('googFrameRateDecoded');
     rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
     rxVideoPacketRate = computeRate(rxVideo, rxPrevVideo, 'packetsReceived');
+    contents += buildLine('Video Rx',
+        rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
+        rxVideoFps.toString() + ', ' + formatBitrate(rxVideoBitrate) + ', ' +
+        formatPacketRate(rxVideoPacketRate));
   }
-  contents += buildLine('Audio Tx', txAudioCodec + ', ' +
-      formatBitrate(txAudioBitrate) + ', ' +
-      formatPacketRate(txAudioPacketRate));
-  contents += buildLine('Audio Rx', rxAudioCodec + ', ' +
-      formatBitrate(rxAudioBitrate)  + ', ' +
-      formatPacketRate(rxAudioPacketRate));
-  contents += buildLine('Video Tx',
-      txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
-      txVideoFps.toString() + ', ' + formatBitrate(txVideoBitrate) + ', ' +
-      formatPacketRate(txVideoPacketRate));
-  contents += buildLine('Video Rx',
-      rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
-      rxVideoFps.toString() + ', ' + formatBitrate(rxVideoBitrate) + ', ' +
-      formatPacketRate(rxVideoPacketRate));
   return contents;
 }
 
