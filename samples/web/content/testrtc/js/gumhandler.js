@@ -21,11 +21,9 @@ function GumHandler() {
 GumHandler.prototype = {
   start: function(callback) {
     this.gumStreamSuccessCallback = callback;
-    startButton.disabled = true;
     if (typeof navigator.getUserMedia === 'undefined') {
       this.gumNotSupportedDialog_.open();
     } else {
-      // getSources is currently shimmed in adapter.js.
       this.getUserMedia_(callback);
       this.firstUserCheck_ = setTimeout(this.firstTimeUser_.bind(this), 300);
     }
