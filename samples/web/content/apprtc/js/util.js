@@ -83,3 +83,27 @@ function filterTurnUrls(urls, protocol) {
     }
   }
 }
+
+// Start shims for fullscreen
+
+document.cancelFullScreen = document.webkitCancelFullScreen ||
+document.mozCancelFullScreen || document.cancelFullScreen;
+
+document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+document.body.mozRequestFullScreen || document.body.requestFullScreen;
+
+document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
+
+function isFullScreen(){
+  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
+    document.isFullScreen); // if any defined and true
+}
+
+function fullScreenElement(){
+  return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
+    document.mozFullScreenElement || document.fullScreenElement;
+}
+
+// End shims for fullscreen
+
+
