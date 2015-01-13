@@ -31,11 +31,17 @@ function MicTest() {
 
 MicTest.prototype = {
   run: function() {
-    doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    if (typeof audioContext === 'undefined') {
+      reportError('WebAudio is not supported, test cannot run.');
+      testFinished();
+    } else {
+      doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    }
   },
 
   gotStream: function(stream) {
     if (!this.checkAudioTracks(stream)) {
+      testFinished();
       return;
     }
     this.createAudioBuffer(stream);
@@ -45,7 +51,7 @@ MicTest.prototype = {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
     if (audioTracks.length < 1) {
-      reportFatal('No audio track in returned stream.');
+      reportError('No audio track in returned stream.');
       return false;
     }
     reportSuccess('Audio track created using device=' + audioTracks[0].label);
