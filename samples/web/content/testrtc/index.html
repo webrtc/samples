@@ -47,7 +47,7 @@
     <span flex>WebRTC Troubleshooter</span>
     <paper-icon-button icon="menu" onclick="settingsDialog.toggle()"></paper-icon-button>
     <paper-icon-button icon="bug-report" onclick="report.open()"></paper-icon-button>
-    <paper-button id="start-button" onclick="start()" raised>Start</paper-button>
+    <paper-button id="start-button" onclick="start()" raised disabled>Start</paper-button>
   </core-toolbar>
 
   <!-- Placeholder for dynamically generated test suites. -->
@@ -70,6 +70,14 @@
       camera and microphone.</p>
     <p>GetUserMedia reason: <span id="gum-error-message"></span></p>
     <paper-icon-button icon="bug-report" onclick="report.open()">File a bug</paper-icon-button>
+  </paper-dialog>
+
+  <!-- GetUserMedia not supported dialog -->
+  <paper-dialog id="gum-not-supported-dialog"
+                heading="Welcome to WebRTC Troubleshooter"
+                backdrop autoCloseDisabled>
+    <p>GetUserMedia is not supported in your browser, please use a WebRTC
+      enabled browser listed at <a href="http://www.webrtc.org">http://www.webrtc.org</a>.</p>
   </paper-dialog>
 
   <!-- Settings dialog -->
