@@ -68,7 +68,7 @@ Patches and issues welcome!
 
 [AppRTC video chat client](https://apprtc.appspot.com) powered by Google App Engine
 
-[AppRTC URL parameters](https://apprtc.appspot.com/params.html)
+[AppRTC URL parameters](https://apprtc.appspot.com/html/params.html)
 
 ## Test pages ##
 
