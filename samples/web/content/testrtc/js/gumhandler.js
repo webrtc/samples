@@ -13,15 +13,21 @@
 function GumHandler() {
   this.gumPendingDialog_ = document.getElementById('gum-pending-dialog');
   this.gumErrorDialog_ = document.getElementById('gum-error-dialog');
+  this.gumNotSupportedDialog_ = document.getElementById('gum-not-supported-dialog');
   this.gumErrorMessage_ = document.getElementById('gum-error-message');
   this.firstUserCheck_ = null;
+  this.gumStreamSuccessCallback_ = null;
 }
 
 GumHandler.prototype = {
-  start: function() {
-    startButton.disabled = true;
-    this.getUserMedia_();
-    this.firstUserCheck_ = setTimeout(this.firstTimeUser_.bind(this), 300);
+  start: function(callback) {
+    this.gumStreamSuccessCallback_ = callback;
+    if (typeof navigator.getUserMedia === 'undefined') {
+      this.gumNotSupportedDialog_.open();
+    } else {
+      this.getUserMedia_(callback);
+      this.firstUserCheck_ = setTimeout(this.firstTimeUser_.bind(this), 300);
+    }
   },
 
   firstTimeUser_: function() {
@@ -42,7 +48,7 @@ GumHandler.prototype = {
     }
     this.gumPendingDialog_.close();
     this.gumErrorDialog_.close();
-    startButton.removeAttribute('disabled');
+    this.gumStreamSuccessCallback_();
   },
 
   gotError_: function(error) {
