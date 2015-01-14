@@ -22,7 +22,8 @@ var InfoBox = function(infoDiv, remoteVideo, call) {
   this.errorMessages_ = [];
   this.stats_ = null;
   this.prevStats_ = null;
-  this.callSetupDelay_ = null;
+  this.startTime_ = null;
+  this.endTime_ = null;
   this.getStatsTimer_ = null;
 
   // Types of gathered ICE Candidates.
@@ -50,12 +51,14 @@ InfoBox.prototype.pushErrorMessage = function(msg) {
   this.showInfoDiv();
 };
 
-InfoBox.prototype.setCallSetupDelay = function(delay) {
-  this.callSetupDelay_ = delay;
+InfoBox.prototype.setSetupTimes = function(startTime, endTime) {
+  this.startTime_ = startTime;
+  this.endTime_ = endTime;
 };
 
 InfoBox.prototype.showInfoDiv = function() {
   this.getStatsTimer_ = setInterval(this.refreshStats_.bind(this), 1000);
+  this.refreshStats_();
   this.infoDiv_.classList.add('active');
 };
 
@@ -141,15 +144,17 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var captureStart = extractStatAsInt(this.stats_, 'ssrc',
       'googCaptureStartNtpTimeMs');
   var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
-  if (this.callSetupDelay_ !== null) {
+  if (this.endTime_ !== null) {
+    contents += this.buildLine_('Call time',
+        this.formatInterval_(performance.now() - this.endTime_));
     contents += this.buildLine_('Setup time',
-        this.callSetupDelay_.toFixed(0).toString() + 'ms');
+        this.formatMsec_(this.endTime_ - this.startTime_));
   }
   if (rtt !== null) {
-    contents += this.buildLine_('RTT', rtt.toString() + 'ms');
+    contents += this.buildLine_('RTT', this.formatMsec_(rtt));
   }
   if (e2eDelay !== null) {
-    contents += this.buildLine_('End to end', e2eDelay.toString() + 'ms');
+    contents += this.buildLine_('End to end', this.formatMsec_(e2eDelay));
   }
 
   // Obtain resolution, framerate, and bitrate this.stats_.
@@ -227,6 +232,27 @@ InfoBox.prototype.buildLine_ = function(label, value) {
   }
   line += '\n';
   return line;
+};
+
+InfoBox.prototype.formatInterval_ = function(value) {
+  var result = '';
+  var seconds = Math.floor(value / 1000);
+  var minutes = Math.floor(seconds / 60);
+  var hours = Math.floor(minutes / 60);
+  var formatTwoDigit = function(twodigit) {
+    return ((twodigit < 10) ? '0' : '') + twodigit.toString();
+  };
+
+  if (hours > 0) {
+    result += formatTwoDigit(hours) + ':';
+  }
+  result += formatTwoDigit(minutes - hours * 60) + ':';
+  result += formatTwoDigit(seconds - minutes * 60);
+  return result;
+};
+
+InfoBox.prototype.formatMsec_ = function(value) {
+  return value.toFixed(0).toString() + 'ms';
 };
 
 InfoBox.prototype.formatBitrate_ = function(value) {
