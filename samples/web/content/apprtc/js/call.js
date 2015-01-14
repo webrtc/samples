@@ -180,19 +180,18 @@ Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
   // already registered with GAE.
   Promise.all([channelPromise, registerPromise]).then(function() {
     this.channel_.register(this.params_.roomId, this.params_.clientId);
+
+    // We only start signaling after we have registered the signaling channel
+    // and have media and TURN. Since we send candidates as soon as the peer
+    // connection generates them we need to wait for the signaling channel to be
+    // ready.
+    Promise.all([turnPromise, mediaPromise]).then(function() {
+      this.startSignaling_();
+    }.bind(this)).catch(function(error) {
+      this.onError_('Failed to start signaling: ' + error.message);
+    }.bind(this));
   }.bind(this)).catch(function(error) {
     this.onError_('WebSocket register error: ' + error.message);
-  }.bind(this));
-
-  // We only create a peer connection once we have media and TURN. Since right
-  // now we send candidates as soon as the peer connection generates them we
-  // need to wait for registration as well.
-  // TODO(tkchin): create peer connection earlier, but only send candidates if
-  // registration has occurred.
-  Promise.all([registerPromise, turnPromise, mediaPromise]).then(function() {
-    this.startSignaling_();
-  }.bind(this)).catch(function(error) {
-    this.onError_('Failed to start signaling: ' + error.message);
   }.bind(this));
 };
 
