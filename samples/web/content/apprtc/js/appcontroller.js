@@ -38,6 +38,7 @@ var UI_CONSTANTS = {
   muteVideoSvg: '#mute-video',
 
   remoteVideo: '#remote-video',
+  roomLinkHref: '#room-link-href',
   sharingDiv: '#sharing-div',
   statusDiv: '#status-div',
   videosDiv: '#videos',

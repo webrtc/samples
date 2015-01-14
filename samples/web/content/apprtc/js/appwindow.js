@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 // Variables defined in and used from main.js.
-/* globals randomString, AppController */
+/* globals randomString, AppController, UI_CONSTANTS */
 /* exported params */
 'use strict';
 
@@ -63,7 +63,7 @@ params.roomId = randomString(9);
 params.roomLink =  'https://apprtc.appspot.com/room/' + params.roomId;
 params.roomServer = 'https://apprtc.appspot.com';
 
-var joinRoomLink = document.querySelector('#room-link-href');
+var joinRoomLink = document.querySelector(UI_CONSTANTS.roomLinkHref);
 joinRoomLink.href = params.roomLink;
 joinRoomLink.text = params.roomLink;
 
