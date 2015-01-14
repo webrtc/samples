@@ -8,56 +8,96 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals computeBitrate, computeE2EDelay, computeRate, endTime, errorMessages,
-   extractStatAsInt, gatheredIceCandidateTypes, getStatsReport,
-   getStatsTimer:true, infoDiv, pc,
-   prevStats:true, remoteVideo, startTime, stats:true */
-/* exported toggleInfoDiv, updateInfoDiv */
+/* globals computeBitrate, computeE2EDelay, extractStatAsInt, getStatsReport,
+   iceCandidateType, computeRate */
+/* exported InfoBox */
 
 'use strict';
 
-function showInfoDiv() {
-  getStatsTimer = setInterval(refreshStats, 1000);
-  infoDiv.classList.add('active');
-}
+var InfoBox = function(infoDiv, remoteVideo, call) {
+  this.infoDiv_ = infoDiv;
+  this.remoteVideo_ = remoteVideo;
+  this.call_ = call;
 
-function toggleInfoDiv() {
-  if (infoDiv.classList.contains('active')) {
-    clearInterval(getStatsTimer);
-    infoDiv.classList.remove('active');
+  this.errorMessages_ = [];
+  this.stats_ = null;
+  this.prevStats_ = null;
+  this.callSetupDelay_ = null;
+  this.getStatsTimer_ = null;
+
+  // Types of gathered ICE Candidates.
+  this.iceCandidateTypes_ = {
+    Local: {},
+    Remote: {}
+  };
+};
+
+InfoBox.prototype.recordIceCandidateTypes = function(location, candidate) {
+  var type = iceCandidateType(candidate);
+
+  var types = this.iceCandidateTypes_[location];
+  if (!types[type]) {
+    types[type] = 1;
   } else {
-    showInfoDiv();
+    ++types[type];
   }
-}
+  this.updateInfoDiv();
+};
 
-function refreshStats() {
-  if (pc) {
-    pc.getStats(function(response) {
-      prevStats = stats;
-      stats = response.result();
-      updateInfoDiv();
-    });
+InfoBox.prototype.pushErrorMessage = function(msg) {
+  this.errorMessages_.push(msg);
+  this.updateInfoDiv();
+  this.showInfoDiv();
+};
+
+InfoBox.prototype.setCallSetupDelay = function(delay) {
+  this.callSetupDelay_ = delay;
+};
+
+InfoBox.prototype.showInfoDiv = function() {
+  this.getStatsTimer_ = setInterval(this.refreshStats_.bind(this), 1000);
+  this.infoDiv_.classList.add('active');
+};
+
+InfoBox.prototype.toggleInfoDiv = function() {
+  if (this.infoDiv_.classList.contains('active')) {
+    clearInterval(this.getStatsTimer_);
+    this.infoDiv_.classList.remove('active');
+  } else {
+    this.showInfoDiv();
   }
-}
+};
 
-function updateInfoDiv() {
-  var contents = '<pre id=\"stats\" style=\"line-height: initial\">';
+InfoBox.prototype.refreshStats_ = function() {
+  this.call_.getPeerConnectionStats(function(response) {
+    this.prevStats_ = this.stats_;
+    this.stats_ = response.result();
+    this.updateInfoDiv();
+  }.bind(this));
+};
 
-  if (stats) {
+InfoBox.prototype.updateInfoDiv = function() {
+  var contents = '<pre id=\"this.stats_\" style=\"line-height: initial\">';
+
+  if (this.stats_) {
+    var states = this.call_.getPeerConnectionStates();
+    if (!states) {
+      return;
+    }
     // Build the display.
-    contents += buildLine('States');
-    contents += buildLine('Signaling', pc.signalingState);
-    contents += buildLine('Gathering', pc.iceGatheringState);
-    contents += buildLine('Connection', pc.iceConnectionState);
-    for (var endpoint in gatheredIceCandidateTypes) {
+    contents += this.buildLine_('States');
+    contents += this.buildLine_('Signaling', states.signalingState);
+    contents += this.buildLine_('Gathering', states.iceGatheringState);
+    contents += this.buildLine_('Connection', states.iceConnectionState);
+    for (var endpoint in this.iceCandidateTypes_) {
       var types = [];
-      for (var type in gatheredIceCandidateTypes[endpoint]) {
-        types.push(type + ':' + gatheredIceCandidateTypes[endpoint][type]);
+      for (var type in this.iceCandidateTypes_[endpoint]) {
+        types.push(type + ':' + this.iceCandidateTypes_[endpoint][type]);
       }
-      contents += buildLine(endpoint, types.join(' '));
+      contents += this.buildLine_(endpoint, types.join(' '));
     }
 
-    var activeCandPair = getStatsReport(stats, 'googCandidatePair',
+    var activeCandPair = getStatsReport(this.stats_, 'googCandidatePair',
         'googActiveConnection', 'true');
     var localAddr, remoteAddr, localAddrType, remoteAddrType;
     if (activeCandPair) {
@@ -67,61 +107,61 @@ function updateInfoDiv() {
       remoteAddrType = activeCandPair.stat('googRemoteCandidateType');
     }
     if (localAddr && remoteAddr) {
-      contents += buildLine('LocalAddr', localAddr +
+      contents += this.buildLine_('LocalAddr', localAddr +
           ' (' + localAddrType + ')');
-      contents += buildLine('RemoteAddr', remoteAddr +
+      contents += this.buildLine_('RemoteAddr', remoteAddr +
           ' (' + remoteAddrType + ')');
     }
-    contents += buildLine();
+    contents += this.buildLine_();
 
-    contents += buildStatsSection();
+    contents += this.buildStatsSection_();
   }
 
-  if (errorMessages.length) {
-    infoDiv.classList.add('warning');
-    for (var i = 0; i !== errorMessages.length; ++i) {
-      contents += errorMessages[i] + '\n';
+  if (this.errorMessages_.length) {
+    this.infoDiv_.classList.add('warning');
+    for (var i = 0; i !== this.errorMessages_.length; ++i) {
+      contents += this.errorMessages_[i] + '\n';
     }
   } else {
-    infoDiv.classList.remove('warning');
+    this.infoDiv_.classList.remove('warning');
   }
 
   contents += '</pre>';
 
-  if (infoDiv.innerHTML !== contents) {
-    infoDiv.innerHTML = contents;
+  if (this.infoDiv_.innerHTML !== contents) {
+    this.infoDiv_.innerHTML = contents;
   }
-}
+};
 
-function buildStatsSection() {
-  var contents = buildLine('Stats');
+InfoBox.prototype.buildStatsSection_ = function() {
+  var contents = this.buildLine_('Stats');
 
-  // Obtain setup and latency stats.
-  var rtt = extractStatAsInt(stats, 'ssrc', 'googRtt');
-  var captureStart = extractStatAsInt(stats, 'ssrc',
+  // Obtain setup and latency this.stats_.
+  var rtt = extractStatAsInt(this.stats_, 'ssrc', 'googRtt');
+  var captureStart = extractStatAsInt(this.stats_, 'ssrc',
       'googCaptureStartNtpTimeMs');
-  var e2eDelay = computeE2EDelay(captureStart, remoteVideo.currentTime);
-  if (endTime !== null) {
-    contents += buildLine('Setup time',
-        (endTime - startTime).toFixed(0).toString() + 'ms');
+  var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
+  if (this.callSetupDelay_ !== null) {
+    contents += this.buildLine_('Setup time',
+        this.callSetupDelay_.toFixed(0).toString() + 'ms');
   }
   if (rtt !== null) {
-    contents += buildLine('RTT', rtt.toString() + 'ms');
+    contents += this.buildLine_('RTT', rtt.toString() + 'ms');
   }
   if (e2eDelay !== null) {
-    contents += buildLine('End to end', e2eDelay.toString() + 'ms');
+    contents += this.buildLine_('End to end', e2eDelay.toString() + 'ms');
   }
 
-  // Obtain resolution, framerate, and bitrate stats.
+  // Obtain resolution, framerate, and bitrate this.stats_.
   // TODO(juberti): find a better way to tell these apart.
-  var txAudio = getStatsReport(stats, 'ssrc', 'audioInputLevel');
-  var rxAudio = getStatsReport(stats, 'ssrc', 'audioOutputLevel');
-  var txVideo = getStatsReport(stats, 'ssrc', 'googFirsReceived');
-  var rxVideo = getStatsReport(stats, 'ssrc', 'googFirsSent');
-  var txPrevAudio = getStatsReport(prevStats, 'ssrc', 'audioInputLevel');
-  var rxPrevAudio = getStatsReport(prevStats, 'ssrc', 'audioOutputLevel');
-  var txPrevVideo = getStatsReport(prevStats, 'ssrc', 'googFirsReceived');
-  var rxPrevVideo = getStatsReport(prevStats, 'ssrc', 'googFirsSent');
+  var txAudio = getStatsReport(this.stats_, 'ssrc', 'audioInputLevel');
+  var rxAudio = getStatsReport(this.stats_, 'ssrc', 'audioOutputLevel');
+  var txVideo = getStatsReport(this.stats_, 'ssrc', 'googFirsReceived');
+  var rxVideo = getStatsReport(this.stats_, 'ssrc', 'googFirsSent');
+  var txPrevAudio = getStatsReport(this.prevStats_, 'ssrc', 'audioInputLevel');
+  var rxPrevAudio = getStatsReport(this.prevStats_, 'ssrc', 'audioOutputLevel');
+  var txPrevVideo = getStatsReport(this.prevStats_, 'ssrc', 'googFirsReceived');
+  var rxPrevVideo = getStatsReport(this.prevStats_, 'ssrc', 'googFirsSent');
   var txAudioCodec, txAudioBitrate, txAudioPacketRate;
   var rxAudioCodec, rxAudioBitrate, rxAudioPacketRate;
   var txVideoHeight, txVideoFps, txVideoCodec;
@@ -132,17 +172,17 @@ function buildStatsSection() {
     txAudioCodec = txAudio.stat('googCodecName');
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
     txAudioPacketRate = computeRate(txAudio, txPrevAudio, 'packetsSent');
-    contents += buildLine('Audio Tx', txAudioCodec + ', ' +
-        formatBitrate(txAudioBitrate) + ', ' +
-        formatPacketRate(txAudioPacketRate));
+    contents += this.buildLine_('Audio Tx', txAudioCodec + ', ' +
+        this.formatBitrate_(txAudioBitrate) + ', ' +
+        this.formatPacketRate_(txAudioPacketRate));
   }
   if (rxAudio) {
     rxAudioCodec = rxAudio.stat('googCodecName');
     rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
     rxAudioPacketRate = computeRate(rxAudio, rxPrevAudio, 'packetsReceived');
-    contents += buildLine('Audio Rx', rxAudioCodec + ', ' +
-        formatBitrate(rxAudioBitrate)  + ', ' +
-        formatPacketRate(rxAudioPacketRate));
+    contents += this.buildLine_('Audio Rx', rxAudioCodec + ', ' +
+        this.formatBitrate_(rxAudioBitrate)  + ', ' +
+        this.formatPacketRate_(rxAudioPacketRate));
   }
   if (txVideo) {
     txVideoCodec = txVideo.stat('googCodecName');
@@ -150,27 +190,29 @@ function buildStatsSection() {
     txVideoFps = txVideo.stat('googFrameRateSent');
     txVideoBitrate = computeBitrate(txVideo, txPrevVideo, 'bytesSent');
     txVideoPacketRate = computeRate(txVideo, txPrevVideo, 'packetsSent');
-    contents += buildLine('Video Tx',
+    contents += this.buildLine_('Video Tx',
         txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
-        txVideoFps.toString() + ', ' + formatBitrate(txVideoBitrate) + ', ' +
-        formatPacketRate(txVideoPacketRate));
+        txVideoFps.toString() + ', ' +
+        this.formatBitrate_(txVideoBitrate) + ', ' +
+        this.formatPacketRate_(txVideoPacketRate));
   }
   if (rxVideo) {
     rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
-    rxVideoHeight = remoteVideo.videoHeight;
+    rxVideoHeight = this.remoteVideo_.videoHeight;
     // TODO(juberti): this should ideally be obtained from the video element.
     rxVideoFps = rxVideo.stat('googFrameRateDecoded');
     rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
     rxVideoPacketRate = computeRate(rxVideo, rxPrevVideo, 'packetsReceived');
-    contents += buildLine('Video Rx',
+    contents += this.buildLine_('Video Rx',
         rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
-        rxVideoFps.toString() + ', ' + formatBitrate(rxVideoBitrate) + ', ' +
-        formatPacketRate(rxVideoPacketRate));
+        rxVideoFps.toString() + ', ' +
+        this.formatBitrate_(rxVideoBitrate) + ', ' +
+        this.formatPacketRate_(rxVideoPacketRate));
   }
   return contents;
-}
+};
 
-function buildLine(label, value) {
+InfoBox.prototype.buildLine_ = function(label, value) {
   var columnWidth = 12;
   var line = '';
   if (label) {
@@ -185,9 +227,13 @@ function buildLine(label, value) {
   }
   line += '\n';
   return line;
-}
+};
 
-function formatBitrate(value) {
+InfoBox.prototype.formatBitrate_ = function(value) {
+  if (!value) {
+    return '- bps';
+  }
+
   var suffix;
   if (value < 1000) {
     suffix = 'bps';
@@ -201,8 +247,11 @@ function formatBitrate(value) {
 
   var str = value.toPrecision(3) + ' ' + suffix;
   return str;
-}
+};
 
-function formatPacketRate(value) {
+InfoBox.prototype.formatPacketRate_ = function(value) {
+  if (!value) {
+    return '- pps';
+  }
   return value.toPrecision(3) + ' ' + 'pps';
-}
+};
