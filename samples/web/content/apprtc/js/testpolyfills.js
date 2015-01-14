@@ -128,3 +128,24 @@ MyPromise.prototype.onReject_ = function(reason) {
 };
 
 window.Promise = window.Promise || MyPromise;
+
+// Provide a shim for phantomjs, where chrome is not defined.
+var myChrome = {
+  app: {
+    runtime: {
+      onLaunched: {
+        addListener: function(callback) {
+          console.log('chrome.app.runtime.onLaunched.addListener called:' + JSON.stringify(callback));
+        }
+      }
+    },
+    window: {
+      create: function(fileName, callback) {
+        console.log('chrome.window.create called: ' + fileName + ', ' + JSON.stringify(callback));
+      }
+    }
+  }
+};
+
+window.chrome = window.chrome || myChrome;
+

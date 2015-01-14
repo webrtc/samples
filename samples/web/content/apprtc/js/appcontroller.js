@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals trace, InfoBox, isFullScreen */
+/* globals trace, InfoBox, setUpFullScreen, isFullScreen */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -106,6 +106,8 @@ var AppController = function(params) {
   $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
   $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
   $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
+  
+  setUpFullScreen();
 };
 
 AppController.prototype.hangup_ = function() {
