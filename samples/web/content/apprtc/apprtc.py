@@ -231,15 +231,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   dscp = request.get('dscp')
   ipv6 = request.get('ipv6')
 
-  # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
-  # two cameras' captures, which will each be fed to one eye.
-  ssr = request.get('ssr')
-  # Avoid pulling down vr.js (>25KB, minified) if not needed.
-  include_vr_js = ''
-  if ssr == 'true':
-    include_vr_js = ('<script src="/js/vr.js"></script>\n' +
-                     '<script src="/js/stereoscopic.js"></script>')
-
   debug = request.get('debug')
   if debug == 'loopback':
     # Set dtls to false as DTLS does not work for loopback.
@@ -286,9 +277,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'audio_receive_codec': audio_receive_codec,
     'video_send_codec': video_send_codec,
     'video_receive_codec': video_receive_codec,
-    'ssr': ssr,
     'include_loopback_js' : include_loopback_js,
-    'include_vr_js': include_vr_js,
     'wss_url': wss_url,
     'wss_post_url': wss_post_url
   }
