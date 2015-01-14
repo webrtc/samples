@@ -172,11 +172,17 @@ InfoBox.prototype.buildStatsSection_ = function() {
     txAudioCodec = txAudio.stat('googCodecName');
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
     txAudioPacketRate = computeRate(txAudio, txPrevAudio, 'packetsSent');
+    contents += this.buildLine_('Audio Tx', txAudioCodec + ', ' +
+        this.formatBitrate_(txAudioBitrate) + ', ' +
+        this.formatPacketRate_(txAudioPacketRate));
   }
   if (rxAudio) {
     rxAudioCodec = rxAudio.stat('googCodecName');
     rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
     rxAudioPacketRate = computeRate(rxAudio, rxPrevAudio, 'packetsReceived');
+    contents += this.buildLine_('Audio Rx', rxAudioCodec + ', ' +
+        this.formatBitrate_(rxAudioBitrate)  + ', ' +
+        this.formatPacketRate_(rxAudioPacketRate));
   }
   if (txVideo) {
     txVideoCodec = txVideo.stat('googCodecName');
@@ -184,6 +190,11 @@ InfoBox.prototype.buildStatsSection_ = function() {
     txVideoFps = txVideo.stat('googFrameRateSent');
     txVideoBitrate = computeBitrate(txVideo, txPrevVideo, 'bytesSent');
     txVideoPacketRate = computeRate(txVideo, txPrevVideo, 'packetsSent');
+    contents += this.buildLine_('Video Tx',
+        txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
+        txVideoFps.toString() + ', ' +
+        this.formatBitrate_(txVideoBitrate) + ', ' +
+        this.formatPacketRate_(txVideoPacketRate));
   }
   if (rxVideo) {
     rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
@@ -192,24 +203,12 @@ InfoBox.prototype.buildStatsSection_ = function() {
     rxVideoFps = rxVideo.stat('googFrameRateDecoded');
     rxVideoBitrate = computeBitrate(rxVideo, rxPrevVideo, 'bytesReceived');
     rxVideoPacketRate = computeRate(rxVideo, rxPrevVideo, 'packetsReceived');
+    contents += this.buildLine_('Video Rx',
+        rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
+        rxVideoFps.toString() + ', ' +
+        this.formatBitrate_(rxVideoBitrate) + ', ' +
+        this.formatPacketRate_(rxVideoPacketRate));
   }
-  contents += this.buildLine_('Audio Tx', txAudioCodec + ', ' +
-      this.formatBitrate_(txAudioBitrate) + ', ' +
-      this.formatPacketRate_(txAudioPacketRate));
-  contents += this.buildLine_('Audio Rx', rxAudioCodec + ', ' +
-      this.formatBitrate_(rxAudioBitrate)  + ', ' +
-      this.formatPacketRate_(rxAudioPacketRate));
-  contents += this.buildLine_('Video Tx',
-      txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
-      txVideoFps.toString() + ', ' +
-      this.formatBitrate_(txVideoBitrate) + ', ' +
-      this.formatPacketRate_(txVideoPacketRate));
-  contents += this.buildLine_('Video Rx',
-      rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
-      rxVideoFps.toString() + ', ' +
-      this.formatBitrate_(rxVideoBitrate) + ', ' +
-      this.formatPacketRate_(rxVideoPacketRate));
-
   return contents;
 };
 
