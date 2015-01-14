@@ -27,20 +27,22 @@
 </head>
 
 <body>
-
+  <!--
+   * Keep the HTML id attributes in sync with |UI_CONSTANTS| defined in
+   * appcontroller.js.
+  -->
   <div id="videos">
     <video id="mini-video" autoplay muted></video>
-    <canvas id="remote-canvas"></canvas>
     <video id="remote-video" autoplay></video>
     <video id="local-video" autoplay muted></video>
   </div>
 
   <footer>
-    <div id="sharing">
+    <div id="sharing-div">
       <div id="room-link">Waiting for someone to join this room: <a href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
     </div>
-    <div id="info"></div>
-    <div id="status"></div>
+    <div id="info-div"></div>
+    <div id="status-div"></div>
   </footer>
 
   <div id="icons" class="hidden">
@@ -80,14 +82,15 @@
   </div>
 
   <script src="/js/stats.js"></script>
-  {{ include_loopback_js }}
-  <script src="/js/signaling.js"></script>
-  <script src="/js/infobox.js"></script>
-  <script src="/js/sdputils.js"></script>
   <script src="/js/util.js"></script>
   <script src="/js/adapter.js"></script>
-  <script src="/js/main.js"></script>
-  {{ include_vr_js }}
+  {{ include_loopback_js }}
+  <script src="/js/signalingchannel.js"></script>
+  <script src="/js/sdputils.js"></script>
+  <script src="/js/peerconnectionclient.js"></script>
+  <script src="/js/call.js"></script>
+  <script src="/js/infobox.js"></script>
+  <script src="/js/appcontroller.js"></script>
 
   <script type="text/javascript">
     var params = {
@@ -108,7 +111,6 @@
       audioSendCodec: '{{ audio_send_codec }}',
       audioRecvBitrate: '{{ arbr }}',
       audioRecvCodec: '{{ audio_receive_codec }}',
-      isStereoscopic: '{{ ssr }}',
       opusMaxPbr: '{{ opusmaxpbr }}',
       opusFec: '{{ opusfec }}',
       opusStereo: '{{ stereo }}',
@@ -120,6 +122,28 @@
       wssUrl: '{{ wss_url }}',
       wssPostUrl: '{{ wss_post_url }}'
     };
+
+    var appController;
+
+    function initialize() {
+      // We don't want to continue if this is triggered from Chrome prerendering,
+      // since it will register the user to GAE without cleaning it up, causing
+      // the real navigation to get a "full room" error. Instead we'll initialize
+      // once the visibility state changes to non-prerender.
+      if (document.webkitVisibilityState === 'prerender') {
+        document.addEventListener('webkitvisibilitychange', onVisibilityChange);
+        return;
+      }
+      appController = new AppController(params);
+    }
+
+    function onVisibilityChange() {
+      if (document.webkitVisibilityState === 'prerender') {
+        return;
+      }
+      document.removeEventListener('webkitvisibilitychange', onVisibilityChange);
+      initialize();
+    }
 
     initialize();
   </script>
