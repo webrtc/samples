@@ -144,7 +144,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   turn_transports = request.get('tt')
   # A HTTP server that will be used to find the right TURN servers to use, as
   # described in http://tools.ietf.org/html/draft-uberti-rtcweb-turn-rest-00.
-  constants.TURN_BASE_URL = request.get('ts', default_value = constants.TURN_BASE_URL)
+  turn_base_url = request.get('ts', default_value = constants.TURN_BASE_URL)
 
   # Use "audio" and "video" to set the media stream constraints. Defined here:
   # http://goo.gl/V7cZg
@@ -252,8 +252,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # but we don't provide client_id until a register. For now just generate
   # a random id, but we should make this better.
   username = client_id if client_id is not None else generate_random(9)
-  if len(constants.TURN_BASE_URL) > 0:
-    turn_url = constants.TURN_URL_TEMPLATE % (constants.TURN_BASE_URL, username, constants.CEOD_KEY)
+  if len(turn_base_url) > 0:
+    turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
 
   room_link = request.host_url + '/room/' + room_id
   room_link = append_url_arguments(request, room_link)
