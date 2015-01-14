@@ -37,7 +37,6 @@ module.exports = function(grunt) {
       html1: {
         src: [
         'samples/web/content/apprtc/index.html',
-        'samples/web/content/apprtc/appwindow.html',
         'samples/web/content/datachannel/index.html',
         'samples/web/content/getusermedia/**/index.html',
         'samples/web/content/peerconnection/**/index.html'
@@ -84,6 +83,36 @@ module.exports = function(grunt) {
         command: './run_python_tests.sh'
       },
     },
+    
+    'grunt-chrome-build' : {
+      apprtc: {
+        options: {
+          buildDir: 'build/chrome-app',
+          zipFile: 'build/chrome-app/apprtc.zip',
+          // If values for chromeBinary and keyFile are not provided, the packaging
+          // step will be skipped.
+          // chromeBinary should be set to the Chrome executable on your system.
+          chromeBinary: null,
+          // keyFile should be set to the key you want to use to create the crx package
+          keyFile: null
+        },
+        files: [
+          {
+            expand: true,
+            cwd: 'samples/web/content/apprtc',
+            src: [
+              '**/*.js',
+              '!**/*test.js',
+              '**/*.css',
+              'images/apprtc*.png',
+              'manifest.json',  
+              '!*.pem'
+            ],
+            dest: 'build/chrome-app/'
+          }
+        ]
+      }
+    },
 
     jstdPhantom: {
       options: {
@@ -102,10 +131,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
+  grunt.loadTasks('grunt-chrome-build');
 
   // set default tasks to run when grunt is called without parameters
   grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
                      'shell:runPythonTests', 'jstdPhantom']);
+  grunt.registerTask('build', ['grunt-chrome-build']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
