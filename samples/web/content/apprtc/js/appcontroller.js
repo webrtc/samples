@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals trace, InfoBox, isFullScreen */
+/* globals trace, InfoBox, setUpFullScreen, isFullScreen */
 /* exported AppController, remoteVideo */
 
 'use strict';

@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported fullScreenElement, isFullScreen, requestTurnServers, sendAsyncUrlRequest, randomString */
+/* exported setUpFullScreen, fullScreenElement, isFullScreen, 
+   requestTurnServers, sendAsyncUrlRequest, randomString */
 
 'use strict';
 
