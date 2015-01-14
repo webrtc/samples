@@ -89,8 +89,12 @@ module.exports = function(grunt) {
         options: {
           buildDir: 'build/chrome-app',
           zipFile: 'build/chrome-app/apprtc.zip',
-          chromeBinary: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-          keyFile: 'apprtc.pem'
+          // If values for chromeBinary and keyFile are not provided, the packaging
+          // step will be skipped.
+          // chromeBinary should be set to the Chrome executable on your system.
+          chromeBinary: null,
+          // keyFile should be set to the key you want to use to create the crx package
+          keyFile: null
         },
         files: [
           {
