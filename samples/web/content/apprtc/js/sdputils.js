@@ -19,6 +19,9 @@
 'use strict';
 
 function mergeConstraints(cons1, cons2) {
+  if (!cons1 || !cons2) {
+    return cons1 || cons2;
+  }
   var merged = cons1;
   for (var name in cons2.mandatory) {
     merged.mandatory[name] = cons2.mandatory[name];

@@ -32,7 +32,14 @@ var currentTest;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
-  gum.start();
+  gum.start(function () {
+    if (typeof MediaStreamTrack.getSources === 'undefined') {
+      console.log('getSources is not supported, device selection not possible.');
+    } else {
+      MediaStreamTrack.getSources(gotSources);
+    }
+    startButton.removeAttribute('disabled');
+  });
 });
 
 // A test suite is a composition of many tests.
@@ -362,12 +369,6 @@ function appendOption(sourceInfo, option) {
   } else {
     console.log('Some other kind of source');
   }
-}
-
-if (typeof MediaStreamTrack === 'undefined') {
-  reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
-} else {
-  MediaStreamTrack.getSources(gotSources);
 }
 
 function testIsDisabled(testName) {

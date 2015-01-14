@@ -15,6 +15,10 @@ function download {
 
 VERSION_REGEX='[0-9]*\.[0-9]*\.[0-9]*'
 VERSION=$(curl -sS https://appengine.google.com/api/updatecheck | grep release | grep -o $VERSION_REGEX)
+if [ "$VERSION" == "1.9.15" ]; then
+  # TODO(phoglund): remove when updatecheck returns the right thing.
+  VERSION="1.9.17"
+fi
 GAE_SDK_FILE=google_appengine_$VERSION.zip
 GAE_SDK_URL=https://storage.googleapis.com/appengine-sdks/featured/$GAE_SDK_FILE
 
