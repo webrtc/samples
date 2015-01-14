@@ -18,7 +18,7 @@
 
 var Call = function(params) {
   this.params_ = params;
-  this.roomServer_ = params.server || '';
+  this.roomServer_ = params.roomServer || '';
 
   this.channel_ = new SignalingChannel(params.wssUrl, params.wssPostUrl);
   this.channel_.onmessage = this.onRecvSignalingChannelMessage_.bind(this);

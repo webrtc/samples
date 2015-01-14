@@ -85,14 +85,15 @@ function filterTurnUrls(urls, protocol) {
 }
 
 // Start shims for fullscreen
-
-document.cancelFullScreen = document.webkitCancelFullScreen ||
-document.mozCancelFullScreen || document.cancelFullScreen;
-if (document.body) {
+function setUpFullScreen() {
+  document.cancelFullScreen = document.webkitCancelFullScreen ||
+  document.mozCancelFullScreen || document.cancelFullScreen;
+  
   document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
   document.body.mozRequestFullScreen || document.body.requestFullScreen;
+
+  document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
 }
-document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
 
 function isFullScreen(){
   return !!(document.webkitIsFullScreen || document.mozFullScreen ||
