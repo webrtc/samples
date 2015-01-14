@@ -88,10 +88,10 @@ function filterTurnUrls(urls, protocol) {
 
 document.cancelFullScreen = document.webkitCancelFullScreen ||
 document.mozCancelFullScreen || document.cancelFullScreen;
-
-document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-document.body.mozRequestFullScreen || document.body.requestFullScreen;
-
+if (document.body) {
+  document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+  document.body.mozRequestFullScreen || document.body.requestFullScreen;
+}
 document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
 
 function isFullScreen(){

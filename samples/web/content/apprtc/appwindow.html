@@ -23,17 +23,16 @@
   
   <div id="videos">
     <video id="mini-video" autoplay muted></video>
-    <canvas id="remote-canvas"></canvas>
     <video id="remote-video" autoplay></video>
     <video id="local-video" autoplay muted></video>
   </div>
 
   <footer id="footer">
-    <div id="sharing">
-      <div>Waiting for someone to join this room: <a id="room-link" href="" target="_blank"></a></div>
+    <div id="sharing-div">
+      <div id="room-link">Waiting for someone to join this room: <a id="room-link-href" href="" target="_blank"></a></div>
     </div>
-    <div id="info"></div>
-    <div id="status"></div>
+    <div id="info-div"></div>
+    <div id="status-div"></div>
   </footer>
   
   <div id="icons" class="hidden">
@@ -73,14 +72,15 @@
   </div>
 
   <script src="/js/stats.js"></script>
-  <!-- {{ include_loopback_js }} -->
-  <script src="/js/signaling.js"></script>
-  <script src="/js/infobox.js"></script>
-  <script src="/js/sdputils.js"></script>
   <script src="/js/util.js"></script>
-  <script src="/js/main.js"></script>
-  <!-- {{ include_vr_js }} -->
   <script src="/js/adapter.js"></script>
+  <!-- {{ include_loopback_js }} -->
+  <script src="/js/signalingchannel.js"></script>
+  <script src="/js/sdputils.js"></script>
+  <script src="/js/peerconnectionclient.js"></script>
+  <script src="/js/call.js"></script>
+  <script src="/js/infobox.js"></script>
+  <script src="/js/appcontroller.js"></script>
   <script src="/js/appwindow.js"></script>
 
 </body>

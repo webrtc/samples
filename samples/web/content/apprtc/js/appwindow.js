@@ -61,10 +61,12 @@ var params = {
 // Generate random room id and connect.
 params.roomId = randomString(9);
 params.roomLink =  'https://apprtc.appspot.com/room/' + params.roomId;
-params.roomServer = 'https://apprtc.appspot.com';
+params.server = 'https://apprtc.appspot.com';
 
-var joinRoomLink = document.querySelector('#room-link');
-joinRoomLink.href = params.roomLink;
-joinRoomLink.text = params.roomLink;
+var joinRoomLink = document.querySelector('#room-link-href');
+if (joinRoomLink) {
+  joinRoomLink.href = params.roomLink;
+  joinRoomLink.text = params.roomLink;
+}
 
-initialize();
+var appController = new AppController(params);
