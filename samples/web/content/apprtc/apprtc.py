@@ -245,11 +245,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   username = client_id if client_id is not None else generate_random(9)
   if len(turn_base_url) > 0:
     turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
-
-  room_link = None
-  if room_id is not None:
-    room_link = request.host_url + '/r/' + room_id
-    room_link = append_url_arguments(request, room_link)
     
   pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
@@ -282,7 +277,10 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'wss_url': wss_url,
     'wss_post_url': wss_post_url
   }
+
   if room_id is not None:
+    room_link = request.host_url + '/r/' + room_id
+    room_link = append_url_arguments(request, room_link)
     params['room_id'] = room_id
     params['room_link'] = room_link
   if client_id is not None:

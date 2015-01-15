@@ -25,34 +25,37 @@ var loadingParams = {
       sendAsyncUrlRequest('GET', roomServer + '/params').then(function(result) {
         var serverParams = parseJSON(result);
         var newParams = {};
-        if (serverParams)
-        { 
-          // Convert from server format to expected format.
-          // TODO(tkchin): clean up response format. JSHint doesn't like it.
-          /* jshint ignore:start */
-          newParams.isLoopback = serverParams.is_loopback === 'true';
-          newParams.mediaConstraints = parseJSON(serverParams.media_constraints);
-          newParams.offerConstraints = parseJSON(serverParams.offer_constraints);
-          newParams.peerConnectionConfig = parseJSON(serverParams.pc_config);
-          newParams.peerConnectionConstraints = parseJSON(serverParams.pc_constraints);
-          newParams.turnRequestUrl = serverParams.turn_url;
-          newParams.turnTransports = serverParams.turn_transports;
-          newParams.audioSendBitrate = serverParams.asbr;
-          newParams.audioSendCodec = serverParams.audio_send_codec;
-          newParams.audioRecvBitrate = serverParams.arbr;
-          newParams.audioRecvCodec = serverParams.audio_receive_codec;
-          newParams.opusMaxPbr = serverParams.opusmaxpbr;
-          newParams.opusFec = serverParams.opusfec;
-          newParams.videoSendBitrate = serverParams.vsbr;
-          newParams.videoSendInitialBitrate = serverParams.vsibr;
-          newParams.videoSendCodec = serverParams.video_send_codec;
-          newParams.videoRecvBitrate = serverParams.vrbr;
-          newParams.videoRecvCodec = serverParams.video_receive_codec;
-          newParams.wssUrl = serverParams.wss_url;
-          newParams.wssPostUrl = serverParams.wss_post_url;
-          /* jshint ignore:end */
-          newParams.messages = serverParams.messages;
+        if (!serverParams)
+        {
+          resolve(newParams);
         }
+        
+        // Convert from server format to expected format.
+        // TODO(tkchin): clean up response format. JSHint doesn't like it.
+        /* jshint ignore:start */
+        newParams.isLoopback = serverParams.is_loopback === 'true';
+        newParams.mediaConstraints = parseJSON(serverParams.media_constraints);
+        newParams.offerConstraints = parseJSON(serverParams.offer_constraints);
+        newParams.peerConnectionConfig = parseJSON(serverParams.pc_config);
+        newParams.peerConnectionConstraints = parseJSON(serverParams.pc_constraints);
+        newParams.turnRequestUrl = serverParams.turn_url;
+        newParams.turnTransports = serverParams.turn_transports;
+        newParams.audioSendBitrate = serverParams.asbr;
+        newParams.audioSendCodec = serverParams.audio_send_codec;
+        newParams.audioRecvBitrate = serverParams.arbr;
+        newParams.audioRecvCodec = serverParams.audio_receive_codec;
+        newParams.opusMaxPbr = serverParams.opusmaxpbr;
+        newParams.opusFec = serverParams.opusfec;
+        newParams.videoSendBitrate = serverParams.vsbr;
+        newParams.videoSendInitialBitrate = serverParams.vsibr;
+        newParams.videoSendCodec = serverParams.video_send_codec;
+        newParams.videoRecvBitrate = serverParams.vrbr;
+        newParams.videoRecvCodec = serverParams.video_receive_codec;
+        newParams.wssUrl = serverParams.wss_url;
+        newParams.wssPostUrl = serverParams.wss_post_url;
+        /* jshint ignore:end */
+        newParams.messages = serverParams.messages;
+        
         trace('Initializing; parameters from server: ');
         trace(JSON.stringify(newParams));
         resolve(newParams);

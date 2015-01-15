@@ -150,7 +150,8 @@ Call.prototype.toggleAudioMute = function() {
 // tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
-Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
+Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
+  this.params_.roomId = roomId;
   // Asynchronously open a WebSocket connection to WSS.
   // TODO(jiayl): We don't need to wait for the signaling channel to open before
   // start signaling.
