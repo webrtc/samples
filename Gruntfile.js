@@ -18,6 +18,7 @@ module.exports = function(grunt) {
           import: 2
         },
         src: ['samples/web/content/**/*.css',
+              '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       },
@@ -26,6 +27,7 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
+              '!samples/web/content/**/*_nolint.css',
               '!samples/web/content/testrtc/bower_components/**/*.css'
         ]
       }
@@ -76,6 +78,50 @@ module.exports = function(grunt) {
       files: ['samples/web/content/**/*.js']
     },
 
+    shell: {
+      runPythonTests: {
+        command: './run_python_tests.sh'
+      },
+    },
+    
+    'grunt-chrome-build' : {
+      apprtc: {
+        options: {
+          buildDir: 'build/chrome-app',
+          zipFile: 'build/chrome-app/apprtc.zip',
+          // If values for chromeBinary and keyFile are not provided, the packaging
+          // step will be skipped.
+          // chromeBinary should be set to the Chrome executable on your system.
+          chromeBinary: null,
+          // keyFile should be set to the key you want to use to create the crx package
+          keyFile: null
+        },
+        files: [
+          {
+            expand: true,
+            cwd: 'samples/web/content/apprtc',
+            src: [
+              '**/*.js',
+              '!**/*test.js',
+              '**/*.css',
+              'images/apprtc*.png',
+              'manifest.json',  
+              '!*.pem'
+            ],
+            dest: 'build/chrome-app/'
+          }
+        ]
+      }
+    },
+
+    jstdPhantom: {
+      options: {
+        useLatest : true,
+        port: 9876,
+      },
+      files: [
+        "samples/web/content/apprtc/js_test_driver.conf",
+      ]},
   });
 
   // enable plugins
@@ -83,9 +129,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
+  grunt.loadTasks('grunt-chrome-build');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
+                     'shell:runPythonTests', 'jstdPhantom']);
+  grunt.registerTask('build', ['grunt-chrome-build']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };

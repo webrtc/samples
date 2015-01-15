@@ -14,7 +14,6 @@ body {
 
 .title {
   height: 60px;
-  line-height: 60px;
   font-size: 18px;
   font-weight: 500;
   background-color: #4F7DC9;
@@ -26,7 +25,12 @@ body {
 }
 
 paper-button {
-  background-color: #d84a38;
+  background-color: #9E9;
+  color: #000;
+}
+
+#start-button {
+  line-height: 3em;
 }
 
 div#content {
@@ -57,12 +61,12 @@ core-toolbar.test-suite + core-collapse {
 
 core-toolbar.test-suite core-icon[icon="check"],
 core-toolbar.test core-icon[icon="check"] {
-  color: green;
+  color: #080;
 }
 
 core-toolbar.test-suite core-icon[icon="close"],
 core-toolbar.test core-icon[icon="close"] {
-  color: red;
+  color: #F00;
 }
 
 /* Test style */

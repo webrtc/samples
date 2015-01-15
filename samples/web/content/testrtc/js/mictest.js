@@ -31,35 +31,27 @@ function MicTest() {
 
 MicTest.prototype = {
   run: function() {
-    doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    if (typeof audioContext === 'undefined') {
+      reportError('WebAudio is not supported, test cannot run.');
+      testFinished();
+    } else {
+      doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    }
   },
 
   gotStream: function(stream) {
     if (!this.checkAudioTracks(stream)) {
+      testFinished();
       return;
     }
     this.createAudioBuffer(stream);
-  },
-
-  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
-    var start = new Date();
-    var updateProgressBar = setInterval(function () {
-      var now = new Date();
-      setTestProgress((now - start) * 100 / timeoutMs);
-    }, 100);
-
-    setTimeout(function () {
-      clearInterval(updateProgressBar);
-      setTestProgress(100);
-      timeoutCallback();
-    }, timeoutMs);
   },
 
   checkAudioTracks: function(stream) {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
     if (audioTracks.length < 1) {
-      reportFatal('No audio track in returned stream.');
+      reportError('No audio track in returned stream.');
       return false;
     }
     reportSuccess('Audio track created using device=' + audioTracks[0].label);
@@ -73,7 +65,7 @@ MicTest.prototype = {
     this.audioSource.connect(this.scriptNode);
     this.scriptNode.connect(audioContext.destination);
     this.scriptNode.onaudioprocess = this.collectAudio.bind(this);
-    this.setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 1000);
+    setTimeoutWithProgressBar(this.stopCollectingAudio.bind(this), 2000);
   },
 
   collectAudio: function(event) {
@@ -81,7 +73,7 @@ MicTest.prototype = {
   },
 
   stopCollectingAudio: function() {
-    this.stream.stop();
+    this.stream.getAudioTracks()[0].stop();
     this.audioSource.disconnect(this.scriptNode);
     this.scriptNode.disconnect(audioContext.destination);
     // Start analyzing the audio buffer.

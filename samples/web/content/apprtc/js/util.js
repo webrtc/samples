@@ -8,78 +8,114 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals displayError, displayStatus, maybeStart, onUserMediaSuccess,
-   onUserMediaError, params, turnDone:true, xmlhttp:true */
-/* exported doGetUserMedia, maybeRequestTurn */
+/* exported setUpFullScreen, fullScreenElement, isFullScreen, 
+   requestTurnServers, sendAsyncUrlRequest, randomString */
 
 'use strict';
 
-function maybeRequestTurn() {
-  // Allow to skip turn by passing ts=false to apprtc.
-  if (params.turnRequestUrl === '') {
-    turnDone = true;
-    return;
-  }
+// Sends the URL request and returns a Promise as the result.
+function sendAsyncUrlRequest(method, url) {
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) {
+        return;
+      }
+      if (xhr.status !== 200) {
+        reject(
+            Error('Status=' + xhr.status + ', response=' + xhr.responseText));
+        return;
+      }
+      resolve(xhr.responseText);
+    };
+    xhr.open(method, url, true);
+    xhr.send();
+  });
+}
 
-  var iceServers = params.peerConnectionConfig.iceServers;
-  for (var i = 0, len = iceServers.length; i < len; i++) {
-    if (iceServers[i].urls.substr(0, 5) === 'turn:') {
-      turnDone = true;
+// Returns a list of turn servers after requesting it from CEOD.
+function requestTurnServers(turnRequestUrl, turnTransports) {
+  return new Promise(function(resolve, reject) {
+    sendAsyncUrlRequest('GET', turnRequestUrl).then(function(response) {
+      var turnServerResponse = parseJSON(response);
+      if (!turnServerResponse) {
+        reject(Error('Error parsing response JSON: ' + response));
+        return;
+      }
+      // Filter the TURN URLs to only use the desired transport, if specified.
+      if (turnTransports.length > 0) {
+        filterTurnUrls(turnServerResponse.uris, turnTransports);
+      }
+
+      // Create the RTCIceServer objects from the response.
+      var turnServers = createIceServers(turnServerResponse.uris,
+          turnServerResponse.username, turnServerResponse.password);
+      if (!turnServers) {
+        reject(Error('Error creating ICE servers from response.'));
+        return;
+      }
+      trace('Retrieved TURN server information.');
+      resolve(turnServers);
+    }).catch(function(error) {
+      reject(Error('TURN server request error: ' + error.message));
       return;
-    }
-  }
-
-  var currentDomain = document.domain;
-  if (currentDomain.search('localhost') === -1 &&
-      currentDomain.search('apprtc') === -1) {
-    // Not authorized domain. Try with default STUN instead.
-    turnDone = true;
-    return;
-  }
-
-  // No TURN server. Get one from computeengineondemand.appspot.com.
-  xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = onTurnResult;
-  xmlhttp.open('GET', params.turnRequestUrl, true);
-  xmlhttp.send();
+    });
+  });
 }
 
-function onTurnResult() {
-  if (xmlhttp.readyState !== 4) {
-    return;
-  }
-
-  if (xmlhttp.status === 200) {
-    var turnServer = JSON.parse(xmlhttp.responseText);
-    // Create turnUris using the polyfill (adapter.js).
-    var turnServers = createIceServers(turnServer.uris,
-        turnServer.username, turnServer.password);
-    if (turnServers !== null) {
-      var iceServers = params.peerConnectionConfig.iceServers;
-      params.peerConnectionConfig.iceServers = iceServers.concat(turnServers);
-    }
-  } else {
-    var subject = encodeURIComponent('AppRTC demo TURN server not working');
-    displayStatus('No TURN server; unlikely that media will traverse networks. ' +
-        'If this persists please <a href="mailto:discuss-webrtc@googlegroups.com?' +
-        'subject=' + subject + '">' +
-        'report it to discuss-webrtc@googlegroups.com</a>.');
-  }
-  // If TURN request failed, continue the call with default STUN.
-  turnDone = true;
-  maybeStart();
-}
-
-function doGetUserMedia() {
-  // Call into getUserMedia via the polyfill (adapter.js).
+// Parse the supplied JSON, or return null if parsing fails.
+function parseJSON(json) {
   try {
-    displayStatus('Calling getUserMedia()...');
-    getUserMedia(params.mediaConstraints, onUserMediaSuccess, onUserMediaError);
-    trace('Requested access to local media with mediaConstraints:\n' +
-        '  \'' + JSON.stringify(params.mediaConstraints) + '\'');
+    return JSON.parse(json);
   } catch (e) {
-    alert('getUserMedia() failed. Is this a WebRTC capable browser?');
-    displayError('getUserMedia failed with exception: ' + e.message);
+    trace('Error parsing json: ' + json);
+  }
+  return null;
+}
+
+// Filter a list of TURN urls to only contain those with transport=|protocol|.
+function filterTurnUrls(urls, protocol) {
+  for (var i = 0; i < urls.length; ) {
+    var parts = urls[i].split('?');
+    if (parts.length > 1 && parts[1] !== ('transport=' + protocol)) {
+      urls.splice(i, 1);
+    } else {
+      ++i;
+    }
   }
 }
 
+// Start shims for fullscreen
+function setUpFullScreen() {
+  document.cancelFullScreen = document.webkitCancelFullScreen ||
+  document.mozCancelFullScreen || document.cancelFullScreen;
+  
+  document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+  document.body.mozRequestFullScreen || document.body.requestFullScreen;
+
+  document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
+}
+
+function isFullScreen(){
+  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
+    document.isFullScreen); // if any defined and true
+}
+
+function fullScreenElement(){
+  return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
+    document.mozFullScreenElement || document.fullScreenElement;
+}
+
+// End shims for fullscreen
+
+
+// Return a random numerical string.
+function randomString(strLength) {
+  var result = [];
+  strLength = strLength || 5;
+  var charSet = '0123456789';
+  while (strLength--) {
+    result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
+  }
+  return result.join('');
+}

@@ -56,6 +56,11 @@ function CamCaptureTest() {
   this.video.setAttribute('muted','');
 }
 
+function resolutionMatchesIndependentOfRotation(aWidth, aHeight, bWidth, bHeight) {
+  return (aWidth === bWidth && aHeight === bHeight) ||
+         (aWidth === bHeight && aHeight === bWidth);
+}
+
 CamCaptureTest.prototype = {
   run: function() {
     doGetUserMedia(this.constraints, this.gotStream.bind(this));
@@ -72,21 +77,7 @@ CamCaptureTest.prototype = {
     this.setupCanvas();
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
-    this.setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video), 5000);
-  },
-
-  setTimeoutWithProgressBar: function (timeoutCallback, timeoutMs) {
-    var start = new Date();
-    var updateProgressBar = setInterval(function () {
-      var now = new Date();
-      setTestProgress((now - start) * 100 / timeoutMs);
-    }, 100);
-
-    setTimeout(function () {
-      clearInterval(updateProgressBar);
-      setTestProgress(100);
-      timeoutCallback();
-    }, timeoutMs);
+    setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video), 5000);
   },
 
   checkVideoTracks: function(stream) {
@@ -148,13 +139,10 @@ CamCaptureTest.prototype = {
     if (info.isMuted === true) {
       reportError('Camera reported itself as muted.');
     }
-    if (info.videoWidth !== info.mandatoryMinWidth) {
-      reportError('Incorrect captured width.');
+    if (!resolutionMatchesIndependentOfRotation(info.videoWidth, info.videoHeight,
+                                                info.mandatoryMinWidth, info.mandatoryMinHeight)) {
+      reportError('Incorrect captured resolution.');
     }
-    if (info.videoHeight !== info.mandatoryMinHeight) {
-      reportError('Incorrect captured height.');
-    }
-
     if (info.testedFrames === 0) {
       reportError('Could not analyze any video frame.');
     } else {

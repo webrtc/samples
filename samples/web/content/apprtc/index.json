@@ -1,0 +1,4 @@
+{
+  "chromeapp": true,
+  "description": "This data is used to build the Chrome App. index.html is transformed to appwindow.html using jinja2 and the data from this file."
+}

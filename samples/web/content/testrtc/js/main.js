@@ -7,12 +7,17 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog */
+/* exported addExplicitTest, addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
-var audioContext = new AudioContext();
+try {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  var audioContext = new AudioContext();
+} catch (e) {
+    console.log('Failed to instantiate an audio context, error: ' + e);
+}
 var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
 var audioSelect = document.querySelector('select#audioSource');
@@ -24,6 +29,18 @@ var PREFIX_FAILED  = '[ FAILED ]';
 var testSuites = [];
 var testFilters = [];
 var currentTest;
+
+window.addEventListener('polymer-ready', function() {
+  var gum = new GumHandler();
+  gum.start(function () {
+    if (typeof MediaStreamTrack.getSources === 'undefined') {
+      console.log('getSources is not supported, device selection not possible.');
+    } else {
+      MediaStreamTrack.getSources(gotSources);
+    }
+    startButton.removeAttribute('disabled');
+  });
+});
 
 // A test suite is a composition of many tests.
 function TestSuite(name, output) {
@@ -127,7 +144,7 @@ function Test(suite, name, func) {
   this.doneCallback_ = null;
 
   this.isDisabled = testIsDisabled(name);
-  this.reportInfo('Test not run yet.');
+  this.reportMessage_(PREFIX_INFO, 'Test not run yet.');
 }
 
 Test.prototype = {
@@ -138,8 +155,10 @@ Test.prototype = {
     this.clearMessages_();
     this.statusIcon_.setAttribute('icon', 'more-horiz');
     this.setProgress(null);
+    this.traceTestEvent = report.traceEventAsync('test-run');
 
     currentTest = this;
+    this.traceTestEvent({ name: this.name, status: 'Running' });
     if (!this.isDisabled) {
       this.func();
     } else {
@@ -150,7 +169,12 @@ Test.prototype = {
 
   done: function() {
     this.setProgress(null);
-    if (this.errorCount === 0 && this.successCount > 0) {
+    var success = (this.errorCount === 0 && this.successCount > 0);
+    var statusString = (success ? 'Success' : (this.isDisabled ? 'Disabled' : 'Failure'));
+    this.traceTestEvent({ status: statusString });
+    report.logTestRunResult(this.name, statusString);
+
+    if (success) {
       this.statusIcon_.setAttribute('icon', 'check');
       // On success, always close the details.
       this.output_.opened = false;
@@ -189,16 +213,19 @@ Test.prototype = {
   reportSuccess: function(str) {
     this.reportMessage_(PREFIX_OK, str);
     this.successCount++;
+    this.traceTestEvent({ success: str });
   },
 
   reportError: function(str) {
     this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
     this.errorCount++;
+    this.traceTestEvent({ error: str });
   },
 
   reportInfo: function(str) {
     this.reportMessage_(PREFIX_INFO, str);
+    this.traceTestEvent({ info: str });
   },
 
   reportFatal: function(str) {
@@ -245,6 +272,14 @@ function addTest(suiteName, testName, func) {
   testSuites.push(testSuite);
 }
 
+// Add a test that only runs if it is explicitly enabled with
+// ?test_filter=<TEST NAME>
+function addExplicitTest(suiteName, testName, func) {
+  if (testIsExplicitlyEnabled(testName)) {
+    addTest(suiteName, testName, func);
+  }
+}
+
 // Helper to run a list of tasks sequentially:
 //   tasks - Array of { run: function(doneCallback) {} }.
 //   doneCallback - called once all tasks have run sequentially.
@@ -274,27 +309,32 @@ function start() {
 }
 
 function doGetUserMedia(constraints, onSuccess, onFail) {
+  var traceGumEvent = report.traceEventAsync('getusermedia');
+
   // Call into getUserMedia via the polyfill (adapter.js).
   var successFunc = function(stream) {
-    trace('User has granted access to local media.');
-    onSuccess(stream);
+    var cam = getVideoDeviceName_(stream);
+    var mic = getAudioDeviceName_(stream);
+    traceGumEvent({ 'status': 'success', 'camera': cam, 'microphone': mic });
+    onSuccess.apply(this, arguments);
   };
-  var failFunc = onFail || function(error) {
-    // If onFail function is provided error callback is propagated to the
-    // caller.
-    var errorMessage = 'Failed to get access to local media. Error name was ' +
-        error.name;
-    return reportFatal(errorMessage);
+  var failFunc = function(error) {
+    traceGumEvent({ 'status': 'fail', 'error': error });
+    if (onFail) {
+      onFail.apply(this, arguments);
+    } else {
+      reportFatal('Failed to get access to local media. Error name was ' + error.name);
+    }
   };
   try {
     // Append the constraints with the getSource constraints.
     appendSourceId(audioSelect.value, 'audio', constraints);
     appendSourceId(videoSelect.value, 'video', constraints);
 
+    traceGumEvent({ 'status': 'pending', 'constraints': constraints });
     getUserMedia(constraints, successFunc, failFunc);
-    trace('Requested access to local media with constraints:\n' +
-        '  \'' + JSON.stringify(constraints) + '\'');
   } catch (e) {
+    traceGumEvent({ 'status': 'exception', 'error': e.message });
     return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
 }
@@ -331,23 +371,50 @@ function appendOption(sourceInfo, option) {
   }
 }
 
-if (typeof MediaStreamTrack === 'undefined') {
-  reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
-} else {
-  MediaStreamTrack.getSources(gotSources);
-}
-
 function testIsDisabled(testName) {
   if (testFilters.length === 0) {
     return false;
   }
+  return !testIsExplicitlyEnabled(testName);
+}
 
+function testIsExplicitlyEnabled(testName) {
   for (var i = 0; i !== testFilters.length; ++i) {
     if (testFilters[i] === testName) {
-      return false;
+      return true;
     }
   }
-  return true;
+  return false;
+}
+
+// Return the first audio device label on the track.
+function getAudioDeviceName_(stream) {
+  if (stream.getAudioTracks().length === 0) {
+    return null;
+  }
+  return stream.getAudioTracks()[0].label;
+}
+
+// Return the first video device label on the track.
+function getVideoDeviceName_(stream) {
+  if (stream.getVideoTracks().length === 0) {
+    return null;
+  }
+  return stream.getVideoTracks()[0].label;
+}
+
+function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
+  var start = window.performance.now();
+  var updateProgressBar = setInterval(function () {
+    var now = window.performance.now();
+    setTestProgress((now - start) * 100 / timeoutMs);
+  }, 100);
+
+  setTimeout(function () {
+    clearInterval(updateProgressBar);
+    setTestProgress(100);
+    timeoutCallback();
+  }, timeoutMs);
 }
 
 // Parse URL parameters and configure test filters.

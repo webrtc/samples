@@ -8,26 +8,20 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 import cgi
+import constants
 import logging
 import os
 import random
-import re
 import json
 import jinja2
 import threading
+import urllib
 import webapp2
-from google.appengine.ext import db
+from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-
-# Lock for syncing DB operation in concurrent requests handling.
-# TODO(brave): keeping working on improving performance with thread syncing.
-# One possible method for near future is to reduce the message caching.
-LOCK = threading.RLock()
-
-WSS_HOST = 'apprtc-ws.webrtc.org'
-WSS_PORT = '8089'
 
 def generate_random(length):
   word = ''
@@ -35,43 +29,15 @@ def generate_random(length):
     word += random.choice('0123456789')
   return word
 
-def sanitize(key):
-  return re.sub('[^a-zA-Z0-9\-]', '-', key)
-
-def make_client_id(room, user):
-  return room.key().id_or_name() + '/' + user
-
-def is_chrome_for_android(user_agent):
-  return 'Android' in user_agent and 'Chrome' in user_agent
-
-def get_default_stun_server(user_agent):
-  # others you can try: stun.services.mozilla.com, stunserver.org
-  return 'stun.l.google.com:19302'
-
-def get_preferred_audio_receive_codec():
-  return 'opus/48000'
-
-def get_preferred_audio_send_codec(user_agent):
-  # Empty string means no preference.
-  preferred_audio_send_codec = ''
-  return preferred_audio_send_codec
-
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
 def get_hd_default(user_agent):
   if 'Android' in user_agent or not 'Chrome' in user_agent:
     return 'false'
   return 'true'
 
-def make_pc_config(stun_server, turn_server, ts_pwd, ice_transports):
-  config = {}
-  servers = []
-  if stun_server:
-    stun_config = 'stun:{}'.format(stun_server)
-    servers.append({'urls':stun_config})
-  if turn_server:
-    turn_config = 'turn:{}'.format(turn_server)
-    servers.append({'urls':turn_config, 'credential':ts_pwd})
-  config['iceServers'] = servers
+# iceServers will be filled in by the TURN HTTP request.
+def make_pc_config(ice_transports):
+  config = { 'iceServers': [] };
   if ice_transports:
     config['iceTransports'] = ice_transports
   return config
@@ -127,349 +93,461 @@ def maybe_add_constraint(constraints, param, constraint):
 
 def make_pc_constraints(dtls, dscp, ipv6):
   constraints = { 'optional': [] }
-  # Force on the new BWE in Chrome 35 and later.
-  # TODO(juberti): Remove once Chrome 36 is stable.
-  constraints['optional'].append({'googImprovedWifiBwe': True})
   maybe_add_constraint(constraints, dtls, 'DtlsSrtpKeyAgreement')
   maybe_add_constraint(constraints, dscp, 'googDscp')
   maybe_add_constraint(constraints, ipv6, 'googIPv6')
 
   return constraints
 
-def make_offer_constraints():
-  constraints = { 'mandatory': {}, 'optional': [] }
-  return constraints
-
 def append_url_arguments(request, link):
-  for argument in request.arguments():
-    if argument != 'r':
-      link += ('&' + cgi.escape(argument, True) + '=' +
-                cgi.escape(request.get(argument), True))
+  arguments = request.arguments()
+  if len(arguments) == 0:
+    return link
+  link += ('?' + cgi.escape(arguments[0], True) + '=' +
+           cgi.escape(request.get(arguments[0]), True))
+  for argument in arguments[1:]:
+    link += ('&' + cgi.escape(argument, True) + '=' +
+             cgi.escape(request.get(argument), True))
   return link
 
-def write_response(response, response_type, target_page, params):
-  if response_type == 'json':
-    content = json.dumps(params)
+def get_wss_parameters(request):
+  ws_host_port_pair = request.get('wshpp')
+  ws_tls = request.get('wstls')
+
+  if not ws_host_port_pair:
+    ws_host_port_pair = constants.WSS_HOST_PORT_PAIR
+
+  if ws_tls and ws_tls == 'false':
+    wss_url = 'ws://' + ws_host_port_pair + '/ws'
+    wss_post_url = 'http://' + ws_host_port_pair
   else:
-    template = jinja_environment.get_template(target_page)
-    content = template.render(params)
-  response.out.write(content)
+    wss_url = 'wss://' + ws_host_port_pair + '/ws'
+    wss_post_url = 'https://' + ws_host_port_pair
+  return (wss_url, wss_post_url)
 
-class Room(db.Model):
-  """All the data we store for a room"""
-  user1 = db.StringProperty()
-  user2 = db.StringProperty()
+# Returns appropriate room parameters based on query parameters in the request.
+# TODO(tkchin): move query parameter parsing to JS code.
+def get_room_parameters(request, room_id, client_id, is_initiator):
+  error_messages = []
+  # Get the base url without arguments.
+  base_url = request.path_url
+  user_agent = request.headers['User-Agent']
 
+  # HTML or JSON.
+  response_type = request.get('t')
+  # Which ICE candidates to allow. This is useful for forcing a call to run
+  # over TURN, by setting it=relay.
+  ice_transports = request.get('it')
+  # Which TURN transport= to allow (i.e., only TURN URLs with transport=<tt>
+  # will be used). This is useful for forcing a session to use TURN/TCP, by
+  # setting it=relay&tt=tcp.
+  turn_transports = request.get('tt')
+  # A HTTP server that will be used to find the right TURN servers to use, as
+  # described in http://tools.ietf.org/html/draft-uberti-rtcweb-turn-rest-00.
+  turn_base_url = request.get('ts', default_value = constants.TURN_BASE_URL)
+
+  # Use "audio" and "video" to set the media stream constraints. Defined here:
+  # http://goo.gl/V7cZg
+  #
+  # "true" and "false" are recognized and interpreted as bools, for example:
+  #   "?audio=true&video=false" (Start an audio-only call.)
+  #   "?audio=false" (Start a video-only call.)
+  # If unspecified, the stream constraint defaults to True.
+  #
+  # To specify media track constraints, pass in a comma-separated list of
+  # key/value pairs, separated by a "=". Examples:
+  #   "?audio=googEchoCancellation=false,googAutoGainControl=true"
+  #   (Disable echo cancellation and enable gain control.)
+  #
+  #   "?video=minWidth=1280,minHeight=720,googNoiseReduction=true"
+  #   (Set the minimum resolution to 1280x720 and enable noise reduction.)
+  #
+  # Keys starting with "goog" will be added to the "optional" key; all others
+  # will be added to the "mandatory" key.
+  # To override this default behavior, add a "mandatory" or "optional" prefix
+  # to each key, e.g.
+  #   "?video=optional:minWidth=1280,optional:minHeight=720,
+  #           mandatory:googNoiseReduction=true"
+  #   (Try to do 1280x720, but be willing to live with less; enable
+  #    noise reduction or die trying.)
+  #
+  # The audio keys are defined here: talk/app/webrtc/localaudiosource.cc
+  # The video keys are defined here: talk/app/webrtc/videosource.cc
+  audio = request.get('audio')
+  video = request.get('video')
+
+  # Pass firefox_fake_device=1 to pass fake: true in the media constraints,
+  # which will make Firefox use its built-in fake device.
+  firefox_fake_device = request.get('firefox_fake_device')
+
+  # The hd parameter is a shorthand to determine whether to open the
+  # camera at 720p. If no value is provided, use a platform-specific default.
+  # When defaulting to HD, use optional constraints, in case the camera
+  # doesn't actually support HD modes.
+  hd = request.get('hd').lower()
+  if hd and video:
+    message = 'The "hd" parameter has overridden video=' + video
+    logging.error(message)
+    error_messages.append(message)
+  if hd == 'true':
+    video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
+  elif not hd and not video and get_hd_default(user_agent) == 'true':
+    video = 'optional:minWidth=1280,optional:minHeight=720'
+
+  if request.get('minre') or request.get('maxre'):
+    message = ('The "minre" and "maxre" parameters are no longer supported. '
+              'Use "video" instead.')
+    logging.error(message)
+    error_messages.append(message)
+
+  # Allow preferred audio and video codecs to be overridden.
+  audio_send_codec = request.get('asc', default_value = '')
+  audio_receive_codec = request.get('arc', default_value = '')
+  video_send_codec = request.get('vsc', default_value = '')
+  video_receive_codec = request.get('vrc', default_value = '')
+
+  # Read url param controlling whether we send stereo.
+  stereo = request.get('stereo', default_value = '')
+
+  # Read url param controlling whether we send Opus FEC.
+  opusfec = request.get('opusfec', default_value = '')
+
+  # Read url param for Opus max sample rate.
+  opusmaxpbr = request.get('opusmaxpbr', default_value = '')
+
+  # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
+  asbr = request.get('asbr', default_value = '')
+  arbr = request.get('arbr', default_value = '')
+
+  # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
+  vsbr = request.get('vsbr', default_value = '')
+  vrbr = request.get('vrbr', default_value = '')
+
+  # Read url params for the initial video send bitrate (vsibr)
+  vsibr = request.get('vsibr', default_value = '')
+
+  # Options for controlling various networking features.
+  dtls = request.get('dtls')
+  dscp = request.get('dscp')
+  ipv6 = request.get('ipv6')
+
+  debug = request.get('debug')
+  if debug == 'loopback':
+    # Set dtls to false as DTLS does not work for loopback.
+    dtls = 'false'
+    include_loopback_js = '<script src="/js/loopback.js"></script>'
+  else:
+    include_loopback_js = ''
+
+  # TODO(tkchin): We want to provide a TURN request url on the initial get,
+  # but we don't provide client_id until a register. For now just generate
+  # a random id, but we should make this better.
+  username = client_id if client_id is not None else generate_random(9)
+  if len(turn_base_url) > 0:
+    turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
+
+  room_link = request.host_url + '/room/' + room_id
+  room_link = append_url_arguments(request, room_link)
+  pc_config = make_pc_config(ice_transports)
+  pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
+  offer_constraints = { 'mandatory': {}, 'optional': [] }
+  media_constraints = make_media_stream_constraints(audio, video,
+                                                    firefox_fake_device)
+  wss_url, wss_post_url = get_wss_parameters(request)
+  params = {
+    'error_messages': error_messages,
+    'is_loopback' : json.dumps(debug == 'loopback'),
+    'room_id': room_id,
+    'room_link': room_link,
+    'pc_config': json.dumps(pc_config),
+    'pc_constraints': json.dumps(pc_constraints),
+    'offer_constraints': json.dumps(offer_constraints),
+    'media_constraints': json.dumps(media_constraints),
+    'turn_url': turn_url,
+    'turn_transports': turn_transports,
+    'stereo': stereo,
+    'opusfec': opusfec,
+    'opusmaxpbr': opusmaxpbr,
+    'arbr': arbr,
+    'asbr': asbr,
+    'vrbr': vrbr,
+    'vsbr': vsbr,
+    'vsibr': vsibr,
+    'audio_send_codec': audio_send_codec,
+    'audio_receive_codec': audio_receive_codec,
+    'video_send_codec': video_send_codec,
+    'video_receive_codec': video_receive_codec,
+    'include_loopback_js' : include_loopback_js,
+    'wss_url': wss_url,
+    'wss_post_url': wss_post_url
+  }
+  if client_id is not None:
+    params['client_id'] = client_id
+  if is_initiator is not None:
+    params['is_initiator'] = json.dumps(is_initiator)
+  return params
+
+# For now we have (room_id, client_id) pairs are 'unique' but client_ids are
+# not. Uniqueness is not enforced however and bad things may happen if RNG
+# generates non-unique numbers. We also have a special loopback client id.
+# TODO(tkchin): Generate room/client IDs in a unique way while handling
+# loopback scenario correctly.
+class Client:
+  def __init__(self, is_initiator):
+    self.is_initiator = is_initiator
+    self.messages = []
+  def add_message(self, msg):
+    self.messages.append(msg)
+  def clear_messages(self):
+    self.messages = []
+  def set_initiator(self, initiator):
+    self.is_initiator = initiator
   def __str__(self):
-    result = '['
-    if self.user1:
-      result += "%s" % (self.user1)
-    if self.user2:
-      result += ", %s" % (self.user2)
-    result += ']'
-    return result
+    return '{%r, %d}' % (self.is_initiator, len(self.messages))
 
+class Room:
+  def __init__(self):
+    self.clients = {}
+  def add_client(self, client_id, client):
+    self.clients[client_id] = client
+  def remove_client(self, client_id):
+    del self.clients[client_id]
   def get_occupancy(self):
-    occupancy = 0
-    if self.user1:
-      occupancy += 1
-    if self.user2:
-      occupancy += 1
-    return occupancy
+    return len(self.clients)
+  def has_client(self, client_id):
+    return client_id in self.clients
+  def get_client(self, client_id):
+    return self.clients[client_id]
+  def get_other_client(self, client_id):
+    for key, client in self.clients.items():
+      if key is not client_id:
+        return client
+    return None
+  def __str__(self):
+    return str(self.clients.keys())
 
-  def get_other_user(self, user):
-    if user == self.user1:
-      return self.user2
-    elif user == self.user2:
-      return self.user1
+def get_memcache_key_for_room(host, room_id):
+  return '%s/%s' % (host, room_id)
+
+def add_client_to_room(host, room_id, client_id, is_loopback):
+  key = get_memcache_key_for_room(host, room_id)
+  memcache_client = memcache.Client()
+  error = None
+  retries = 0
+  room = None
+  # Compare and set retry loop.
+  while True:
+    is_initiator = None
+    messages = []
+    room_state = ''
+    room = memcache_client.gets(key)
+    if room is None:
+      # 'set' and another 'gets' are needed for CAS to work.
+      if not memcache_client.set(key, Room()):
+        logging.warning('memcache.Client.set failed for key ' + key)
+        error = constants.RESPONSE_ERROR
+        break
+      room = memcache_client.gets(key)
+
+    occupancy = room.get_occupancy()
+    if occupancy >= 2:
+      error = constants.RESPONSE_ROOM_FULL
+      break
+    if room.has_client(client_id):
+      error = constants.RESPONSE_DUPLICATE_CLIENT
+      break
+
+    if occupancy == 0:
+      is_initiator = True
+      room.add_client(client_id, Client(is_initiator))
+      if is_loopback:
+        room.add_client(constants.LOOPBACK_CLIENT_ID, Client(False))
     else:
-      return None
+      is_initiator = False
+      other_client = room.get_other_client(client_id)
+      messages = other_client.messages
+      room.add_client(client_id, Client(is_initiator))
+      other_client.clear_messages()
 
-  def has_user(self, user):
-    return (user and (user == self.user1 or user == self.user2))
-
-  def add_user(self, user):
-    if not self.user1:
-      self.user1 = user
-    elif not self.user2:
-      self.user2 = user
+    if memcache_client.cas(key, room):
+      logging.info('Added client %s in room %s, retries = %d' \
+          %(client_id, room_id, retries))
+      success = True
+      break
     else:
-      raise RuntimeError('room is full')
-    self.put()
+      retries = retries + 1
+  return {'error': error, 'is_initiator': is_initiator,
+          'messages': messages, 'room_state': str(room)}
 
-  def remove_user(self, user):
-    if user == self.user2:
-      self.user2 = None
-    if user == self.user1:
-      if self.user2:
-        self.user1 = self.user2
-        self.user2 = None
-      else:
-        self.user1 = None
-    if self.get_occupancy() > 0:
-      self.put()
+def remove_client_from_room(host, room_id, client_id):
+  key = get_memcache_key_for_room(host, room_id)
+  memcache_client = memcache.Client()
+  retries = 0
+  # Compare and set retry loop.
+  while True:
+    room = memcache_client.gets(key)
+    if room is None:
+      logging.warning('remove_client_from_room: Unknown room ' + room_id)
+      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'room_state': None}
+    if not room.has_client(client_id):
+      logging.warning('remove_client_from_room: Unknown client ' + client_id + \
+          ' for room ' + room_id)
+      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'room_state': None}
+
+    room.remove_client(client_id)
+    if room.has_client(constants.LOOPBACK_CLIENT_ID):
+      room.remove_client(constants.LOOPBACK_CLIENT_ID)
+    if room.get_occupancy() > 0:
+      room.get_other_client(client_id).set_initiator(True)
     else:
-      self.delete()
+      room = None
+
+    if memcache_client.cas(key, room):
+      logging.info('Removed client %s from room %s, retries=%d' \
+          %(client_id, room_id, retries))
+      return {'error': None, 'room_state': str(room)}
+    retries = retries + 1
+
+def save_message_from_client(host, room_id, client_id, message):
+  text = None
+  try:
+      text = message.encode(encoding='utf-8', errors='strict')
+  except Exception as e:
+    return {'error': constants.RESPONSE_ERROR, 'saved': False}
+
+  key = get_memcache_key_for_room(host, room_id)
+  memcache_client = memcache.Client()
+  retries = 0
+  # Compare and set retry loop.
+  while True:
+    room = memcache_client.gets(key)
+    if room is None:
+      logging.warning('Unknown room: ' + room_id)
+      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'saved': False}
+    if not room.has_client(client_id):
+      logging.warning('Unknown client: ' + client_id)
+      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'saved': False}
+    if room.get_occupancy() > 1:
+      return {'error': None, 'saved': False}
+
+    client = room.get_client(client_id)
+    client.add_message(text)
+    if memcache_client.cas(key, room):
+      logging.info('Saved message for client %s:%s in room %s, retries=%d' \
+          %(client_id, str(client), room_id, retries))
+      return {'error': None, 'saved': True}
+    retries = retries + 1
 
 class ByePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
-    with LOCK:
-      room = Room.get_by_key_name(room_id)
-      if not room:
-        logging.warning('Unknown room' + room_id)
-        return
-      room.remove_user(client_id)
-      logging.info('User ' + client_id + ' quit from room ' + room_id)
-      logging.info('Room ' + room_id + ' has state ' + str(room))
+    result = remove_client_from_room(
+        self.request.host_url, room_id, client_id)
+    if result['error'] is None:
+      logging.info('Room ' + room_id + ' has state ' + result['room_state'])
 
-class MainPage(webapp2.RequestHandler):
-  """The main UI page, renders the 'index.html' template."""
-  def get(self):
-    """Renders the main page. When this page is shown, we create a new
-    channel to push asynchronous updates to the client."""
+class MessagePage(webapp2.RequestHandler):
+  def write_response(self, result):
+    content = json.dumps({ 'result' : result })
+    self.response.write(content)
 
-    # Append strings to this list to have them thrown up in message boxes. This
-    # will also cause the app to fail.
-    error_messages = []
-    # Get the base url without arguments.
-    base_url = self.request.path_url
-    user_agent = self.request.headers['User-Agent']
-    room_key = sanitize(self.request.get('r'))
-    response_type = self.request.get('t')
-    stun_server = self.request.get('ss')
-    if not stun_server:
-      stun_server = get_default_stun_server(user_agent)
-    turn_server = self.request.get('ts')
-    ts_pwd = self.request.get('tp')
-    ice_transports = self.request.get('it')
+  def send_message_to_collider(self, room_id, client_id, message):
+    logging.info('Forwarding message to collider for room ' + room_id +
+                 ' client ' + client_id)
+    wss_url, wss_post_url = get_wss_parameters(self.request)
+    url = wss_post_url + '/' + room_id + '/' + client_id
+    result = urlfetch.fetch(url=url,
+                            payload=message,
+                            method=urlfetch.POST)
+    if result.status_code != 200:
+      logging.error(
+          'Failed to send message to collider: %d' % (result.status_code))
+      # TODO(tkchin): better error handling.
+      self.error(500)
+      return
+    self.write_response(constants.RESPONSE_SUCCESS)
 
-    # Use "audio" and "video" to set the media stream constraints. Defined here:
-    # http://goo.gl/V7cZg
-    #
-    # "true" and "false" are recognized and interpreted as bools, for example:
-    #   "?audio=true&video=false" (Start an audio-only call.)
-    #   "?audio=false" (Start a video-only call.)
-    # If unspecified, the stream constraint defaults to True.
-    #
-    # To specify media track constraints, pass in a comma-separated list of
-    # key/value pairs, separated by a "=". Examples:
-    #   "?audio=googEchoCancellation=false,googAutoGainControl=true"
-    #   (Disable echo cancellation and enable gain control.)
-    #
-    #   "?video=minWidth=1280,minHeight=720,googNoiseReduction=true"
-    #   (Set the minimum resolution to 1280x720 and enable noise reduction.)
-    #
-    # Keys starting with "goog" will be added to the "optional" key; all others
-    # will be added to the "mandatory" key.
-    # To override this default behavior, add a "mandatory" or "optional" prefix
-    # to each key, e.g.
-    #   "?video=optional:minWidth=1280,optional:minHeight=720,
-    #           mandatory:googNoiseReduction=true"
-    #   (Try to do 1280x720, but be willing to live with less; enable
-    #    noise reduction or die trying.)
-    #
-    # The audio keys are defined here: talk/app/webrtc/localaudiosource.cc
-    # The video keys are defined here: talk/app/webrtc/videosource.cc
-    audio = self.request.get('audio')
-    video = self.request.get('video')
+  def post(self, room_id, client_id):
+    message_json = self.request.body
+    result = save_message_from_client(
+        self.request.host_url, room_id, client_id, message_json)
+    if result['error'] is not None:
+      self.write_response(result['error'])
+      return
+    self.write_response(constants.RESPONSE_SUCCESS)
+    if not result['saved']:
+      # Other client registered, forward to collider. Do this outside the lock.
+      # Note: this may fail in local dev server due to not having the right
+      # certificate file locally for SSL validation.
+      # Note: loopback scenario follows this code path.
+      # TODO(tkchin): consider async fetch here.
+      self.send_message_to_collider(room_id, client_id, message_json)
 
-    # Pass firefox_fake_device=1 to pass fake: true in the media constraints,
-    # which will make Firefox use its built-in fake device.
-    firefox_fake_device = self.request.get('firefox_fake_device')
+class RegisterPage(webapp2.RequestHandler):
+  def write_response(self, result, params, messages):
+    # TODO(tkchin): Clean up response format. For simplicity put everything in
+    # params for now.
+    params['messages'] = messages
+    self.response.write(json.dumps({
+      'result': result,
+      'params': params
+    }))
 
-    # The hd parameter is a shorthand to determine whether to open the
-    # camera at 720p. If no value is provided, use a platform-specific default.
-    # When defaulting to HD, use optional constraints, in case the camera
-    # doesn't actually support HD modes.
-    hd = self.request.get('hd').lower()
-    if hd and video:
-      message = 'The "hd" parameter has overridden video=' + video
-      logging.error(message)
-      error_messages.append(message)
-    if hd == 'true':
-      video = 'mandatory:minWidth=1280,mandatory:minHeight=720'
-    elif not hd and not video and get_hd_default(user_agent) == 'true':
-      video = 'optional:minWidth=1280,optional:minHeight=720'
+  def write_room_parameters(self, room_id, client_id, messages, is_initiator):
+    params = get_room_parameters(self.request, room_id, client_id, is_initiator)
+    self.write_response('SUCCESS', params, messages)
 
-    if self.request.get('minre') or self.request.get('maxre'):
-      message = ('The "minre" and "maxre" parameters are no longer supported. '
-                 'Use "video" instead.')
-      logging.error(message)
-      error_messages.append(message)
-
-    audio_send_codec = self.request.get('asc', default_value = '')
-    if not audio_send_codec:
-      audio_send_codec = get_preferred_audio_send_codec(user_agent)
-
-    audio_receive_codec = self.request.get('arc', default_value = '')
-    if not audio_receive_codec:
-      audio_receive_codec = get_preferred_audio_receive_codec()
-
-    # Set stereo to false by default.
-    stereo = self.request.get('stereo', default_value = 'false')
-
-    # Set opusfec to false by default.
-    opusfec = self.request.get('opusfec', default_value = 'true')
-
-    # Read url param for opusmaxpbr
-    opusmaxpbr = self.request.get('opusmaxpbr', default_value = '')
-
-    # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
-    asbr = self.request.get('asbr', default_value = '')
-    arbr = self.request.get('arbr', default_value = '')
-
-    # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
-    vsbr = self.request.get('vsbr', default_value = '')
-    vrbr = self.request.get('vrbr', default_value = '')
-
-    # Read url params for the initial video send bitrate (vsibr)
-    vsibr = self.request.get('vsibr', default_value = '')
-
-    # Options for making pcConstraints
-    dtls = self.request.get('dtls')
-    dscp = self.request.get('dscp')
-    ipv6 = self.request.get('ipv6')
-
-    # Stereoscopic rendering.  Expects remote video to be a side-by-side view of
-    # two cameras' captures, which will each be fed to one eye.
-    ssr = self.request.get('ssr')
-    # Avoid pulling down vr.js (>25KB, minified) if not needed.
-    include_vr_js = ''
-    if ssr == 'true':
-      include_vr_js = ('<script src="/js/vr.js"></script>\n' +
-                       '<script src="/js/stereoscopic.js"></script>')
-
-    # Disable pinch-zoom scaling since we manage video real-estate explicitly
-    # (via full-screen) and don't want devicePixelRatios changing dynamically.
-    meta_viewport = ''
-    if is_chrome_for_android(user_agent):
-      meta_viewport = ('<meta name="viewport" content="width=device-width, ' +
-                       'user-scalable=no, initial-scale=1, maximum-scale=1">')
-
-    debug = self.request.get('debug')
-    if debug == 'loopback':
-      # Set dtls to false as DTLS does not work for loopback.
-      dtls = 'false'
-      include_loopback_js = '<script src="/js/loopback.js"></script>'
-    else:
-      include_loopback_js = ''
-
-    unittest = self.request.get('unittest')
-    if unittest:
-      # Always create a new room for the unit tests.
-      room_key = generate_random(8)
-
-    if not room_key:
-      room_key = generate_random(8)
-      redirect = '/?r=' + room_key
-      redirect = append_url_arguments(self.request, redirect)
-      self.redirect(redirect)
-      logging.info('Redirecting visitor to base URL to ' + redirect)
+  def post(self, room_id):
+    client_id = generate_random(8)
+    is_loopback = self.request.get('debug') == 'loopback'
+    result = add_client_to_room(
+        self.request.host_url, room_id, client_id, is_loopback)
+    if result['error'] is not None:
+      logging.info('Error adding client to room: ' + result['error'] + \
+          ', room_state=' + result['room_state'])
+      self.write_response(result['error'], {}, [])
       return
 
-    logging.info('Preparing to add user to room ' + room_key)
-    user = None
-    initiator = 0
-    with LOCK:
-      room = Room.get_by_key_name(room_key)
-      if not room and debug != "full":
-        # New room.
-        user = generate_random(8)
-        room = Room(key_name = room_key)
-        room.add_user(user)
-        if debug != 'loopback':
-          initiator = 0
-        else:
-          room.add_user(user)
-          initiator = 1
-      elif room and room.get_occupancy() == 1 and debug != 'full':
-        # 1 occupant.
-        user = generate_random(8)
-        room.add_user(user)
-        initiator = 1
-      else:
-        # 2 occupants (full).
-        params = {
-          'error': 'full',
-          'error_messages': ['The room is full.'],
-          'room_key': room_key
-        }
-        write_response(self.response, response_type, 'full.html', params)
-        logging.info('Room ' + room_key + ' is full')
+    self.write_room_parameters(
+        room_id, client_id, result['messages'], result['is_initiator'])
+    logging.info('User ' + client_id + ' registered in room ' + room_id)
+    logging.info('Room ' + room_id + ' has state ' + result['room_state'])
+
+class MainPage(webapp2.RequestHandler):
+  def get(self):
+    """Redirects to a room page."""
+    room_id = generate_random(8)
+    redirect = '/r/' + room_id
+    redirect = append_url_arguments(self.request, redirect)
+    self.redirect(redirect)
+    logging.info('Redirecting visitor to base URL to ' + redirect)
+
+class RoomPage(webapp2.RequestHandler):
+  def write_response(self, target_page, params={}):
+    template = jinja_environment.get_template(target_page)
+    content = template.render(params)
+    self.response.out.write(content)
+
+  def get(self, room_id):
+    """Renders index.html or full.html."""
+    # Check if room is full.
+    room = memcache.get(
+        get_memcache_key_for_room(self.request.host_url, room_id))
+    if room is not None:
+      logging.info('Room ' + room_id + ' has state ' + str(room))
+      if room.get_occupancy() >= 2:
+        logging.info('Room ' + room_id + ' is full')
+        self.write_response('full.html')
         return
-
-    logging.info('User ' + user + ' added to room ' + room_key)
-    logging.info('Room ' + room_key + ' has state ' + str(room))
-
-    if turn_server == 'false':
-      turn_server = None
-      turn_url = ''
-    else:
-      turn_url = 'https://computeengineondemand.appspot.com/'
-      turn_url = turn_url + 'turn?' + 'username=' + user + '&key=4080218913'
-
-    room_link = base_url + '?r=' + room_key
-    room_link = append_url_arguments(self.request, room_link)
-    pc_config = make_pc_config(stun_server, turn_server, ts_pwd, ice_transports)
-    pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
-    offer_constraints = make_offer_constraints()
-    media_constraints = make_media_stream_constraints(audio, video,
-                                                      firefox_fake_device)
-
-    ws_host = self.request.get('wsh')
-    ws_port = self.request.get('wsp')
-    ws_tls = self.request.get('wstls')
-
-    if not ws_host:
-      ws_host = WSS_HOST
-    if not ws_port:
-      ws_port = WSS_PORT
-
-    if ws_tls and ws_tls == 'false':
-      wss_url = 'ws://' + ws_host + ':' + ws_port + '/ws'
-      wss_post_url = 'http://' + ws_host + ':' + ws_port
-    else:
-      wss_url = 'wss://' + ws_host + ':' + ws_port + '/ws'
-      wss_post_url = 'https://' + ws_host + ':' + ws_port
-
-    params = {
-      'error_messages': error_messages,
-      'is_loopback' : json.dumps(debug == 'loopback'),
-      'me': user,
-      'room_key': room_key,
-      'room_link': room_link,
-      'initiator': initiator,
-      'pc_config': json.dumps(pc_config),
-      'pc_constraints': json.dumps(pc_constraints),
-      'offer_constraints': json.dumps(offer_constraints),
-      'media_constraints': json.dumps(media_constraints),
-      'turn_url': turn_url,
-      'stereo': stereo,
-      'opusfec': opusfec,
-      'opusmaxpbr': opusmaxpbr,
-      'arbr': arbr,
-      'asbr': asbr,
-      'vrbr': vrbr,
-      'vsbr': vsbr,
-      'vsibr': vsibr,
-      'audio_send_codec': audio_send_codec,
-      'audio_receive_codec': audio_receive_codec,
-      'ssr': ssr,
-      'include_loopback_js' : include_loopback_js,
-      'include_vr_js': include_vr_js,
-      'meta_viewport': meta_viewport,
-      'wss_url': wss_url,
-      'wss_post_url': wss_post_url
-    }
-
-    if unittest:
-      target_page = 'test/test_' + unittest + '.html'
-    else:
-      target_page = 'index.html'
-    write_response(self.response, response_type, target_page, params)
-
+    # Parse out room parameters from request.
+    params = get_room_parameters(self.request, room_id, None, None)
+    self.write_response('index.html', params)
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/bye/(\w+)/(\w+)', ByePage)
-  ], debug=True)
+    ('/bye/(\w+)/(\w+)', ByePage),
+    ('/message/(\w+)/(\w+)', MessagePage),
+    ('/register/(\w+)', RegisterPage),
+    # TODO(jiayl): Remove support of /room/ when all clients are updated.
+    ('/room/(\w+)', RoomPage),
+    ('/r/(\w+)', RoomPage),
+], debug=True)

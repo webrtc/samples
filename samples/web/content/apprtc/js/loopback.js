@@ -52,7 +52,7 @@ function setupLoopback() {
       wssMessage = JSON.parse(event.data);
       message = JSON.parse(wssMessage.msg);
     } catch (e) {
-      trace('Error parsing JSON: ' + event.data); 
+      trace('Error parsing JSON: ' + event.data);
       return;
     }
     if (wssMessage.error) {
