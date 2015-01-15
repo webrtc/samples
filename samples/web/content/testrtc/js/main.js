@@ -12,7 +12,12 @@
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
-var audioContext = new AudioContext();
+try {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  var audioContext = new AudioContext();
+} catch (e) {
+    console.log('Failed to instantiate an audio context, error: ' + e);
+}
 var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
 var audioSelect = document.querySelector('select#audioSource');
@@ -27,7 +32,14 @@ var currentTest;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
-  gum.start();
+  gum.start(function () {
+    if (typeof MediaStreamTrack.getSources === 'undefined') {
+      console.log('getSources is not supported, device selection not possible.');
+    } else {
+      MediaStreamTrack.getSources(gotSources);
+    }
+    startButton.removeAttribute('disabled');
+  });
 });
 
 // A test suite is a composition of many tests.
@@ -357,12 +369,6 @@ function appendOption(sourceInfo, option) {
   } else {
     console.log('Some other kind of source');
   }
-}
-
-if (typeof MediaStreamTrack === 'undefined') {
-  reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
-} else {
-  MediaStreamTrack.getSources(gotSources);
 }
 
 function testIsDisabled(testName) {

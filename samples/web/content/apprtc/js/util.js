@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported requestTurnServers, sendAsyncUrlRequest */
+/* exported setUpFullScreen, fullScreenElement, isFullScreen, 
+   requestTurnServers, sendAsyncUrlRequest, randomString */
 
 'use strict';
 
@@ -82,4 +83,39 @@ function filterTurnUrls(urls, protocol) {
       ++i;
     }
   }
+}
+
+// Start shims for fullscreen
+function setUpFullScreen() {
+  document.cancelFullScreen = document.webkitCancelFullScreen ||
+  document.mozCancelFullScreen || document.cancelFullScreen;
+  
+  document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+  document.body.mozRequestFullScreen || document.body.requestFullScreen;
+
+  document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
+}
+
+function isFullScreen(){
+  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
+    document.isFullScreen); // if any defined and true
+}
+
+function fullScreenElement(){
+  return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
+    document.mozFullScreenElement || document.fullScreenElement;
+}
+
+// End shims for fullscreen
+
+
+// Return a random numerical string.
+function randomString(strLength) {
+  var result = [];
+  strLength = strLength || 5;
+  var charSet = '0123456789';
+  while (strLength--) {
+    result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
+  }
+  return result.join('');
 }
