@@ -334,6 +334,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
   memcache_client = memcache.Client()
   error = None
   retries = 0
+  room = None
   # Compare and set retry loop.
   while True:
     is_initiator = None
@@ -347,7 +348,6 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
         error = constants.RESPONSE_ERROR
         break
       room = memcache_client.gets(key)
-    room_state = str(room)
 
     occupancy = room.get_occupancy()
     if occupancy >= 2:
@@ -377,7 +377,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
     else:
       retries = retries + 1
   return {'error': error, 'is_initiator': is_initiator,
-          'messages': messages, 'room_state': room_state}
+          'messages': messages, 'room_state': str(room)}
 
 def remove_client_from_room(host, room_id, client_id):
   key = get_memcache_key_for_room(host, room_id)

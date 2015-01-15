@@ -1,0 +1,35 @@
+WebRTC welcomes patches/pulls for features and bug fixes.
+
+For contributors external to Google, follow the instructions given here:
+
+Google Individual Contributor License
+
+In all cases, contributors must sign a contributor license agreement,
+either for an individual or corporation, before a patch can be accepted.
+Please fill out the agreement for an individual or a
+corporation, as appropriate.
+
+https://developers.google.com/open-source/cla/individual
+https://developers.google.com/open-source/cla/corporate
+
+If you or your organization is not listed there already, you should
+add an entry to the AUTHORS file as part of your patch.
+
+If you plan to add a significant component or large chunk of code, it
+is recommended to bring it up on the discussion list
+(https://groups.google.com/forum/#!forum/discuss-webrtc) for a design
+discussion before writing code.
+
+If appropriate, write a unit test that demonstrates your patch. Tests are the
+best way to ensure that future contributors do not break your code
+accidentally.
+
+
+To change the WebRTC source, you must submit a pull request in GitHub.
+See the GitHub documentation here:
+
+https://help.github.com/categories/collaborating/
+
+WebRTC developers monitor outstanding pull requests. They may request changes on
+the pull request before accepting. They will also verify that the CLA has been
+signed.
