@@ -16,11 +16,11 @@
 
 'use strict';
 
-var Call = function(roomServer) {
-  this.params_ = null;
-  this.roomServer_ = roomServer || '';
+var Call = function(params) {
+  this.params_ = params;
+  this.roomServer_ = params.roomServer || '';
 
-  this.channel_ = new SignalingChannel();
+  this.channel_ = new SignalingChannel(params.wssUrl, params.wssPostUrl);
   this.channel_.onmessage = this.onRecvSignalingChannelMessage_.bind(this);
 
   this.pcClient_ = null;
@@ -46,7 +46,10 @@ Call.prototype.isInitiator = function() {
 };
 
 Call.prototype.start = function(roomId) {
-  this.connectToRoom_(roomId);
+  this.connectToRoom_(roomId, this.maybeGetMedia_(), this.maybeGetTurnServers_());
+  if (this.params_.isLoopback) {
+    setupLoopback();
+  }
 };
 
 Call.prototype.hangup = function() {
@@ -142,82 +145,56 @@ Call.prototype.toggleAudioMute = function() {
   trace('Audio ' + (audioTracks[0].enabled ? 'unmuted.' : 'muted.'));
 };
 
-// Connects client to the room. This happens by first registering with GAE.
-// After registration response is received, we have the params needed for 
-// requesting media and requesting turn. Once all three of those
-// tasks are complete, the signaling process begins. At the same time, a
+// Connects client to the room. This happens by simultaneously requesting
+// media, requesting turn, and registering with GAE. Once all three of those
+// tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
-Call.prototype.connectToRoom_ = function(roomId) {
+Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
   // Asynchronously open a WebSocket connection to WSS.
-  this.registerWithRoomServer_(roomId).then(function(roomParams) {
-    // TODO(tkchin): clean up response format. JSHint doesn't like it.
-    /* jshint ignore:start */
-    this.params_ = {};
-    this.params_.clientId = roomParams.client_id;
-    this.params_.isInitiator = roomParams.is_initiator === 'true';
-    this.params_.isLoopback = roomParams.is_loopback === 'true';
-    this.params_.roomId = roomParams.room_id;
-    this.params_.roomLink = roomParams.room_link;
-    this.params_.mediaConstraints = parseJSON(roomParams.media_constraints);
-    this.params_.offerConstraints = parseJSON(roomParams.offer_constraints);
-    this.params_.peerConnectionConfig = parseJSON(roomParams.pc_config);
-    this.params_.peerConnectionConstraints = parseJSON(roomParams.pc_constraints);
-    this.params_.turnRequestUrl = roomParams.turn_url;
-    this.params_.turnTransports = roomParams.turn_transports;
-    this.params_.audioSendBitrate = roomParams.asbr;
-    this.params_.audioSendCodec = roomParams.audio_send_codec;
-    this.params_.audioRecvBitrate = roomParams.arbr;
-    this.params_.audioRecvCodec = roomParams.audio_receive_codec;
-    this.params_.opusMaxPbr = roomParams.opusmaxpbr;
-    this.params_.opusFec = roomParams.opusfec;
-    this.params_.videoSendBitrate = roomParams.vsbr;
-    this.params_.videoSendInitialBitrate = roomParams.vsibr;
-    this.params_.videoSendCodec = roomParams.video_send_codec;
-    this.params_.videoRecvBitrate = roomParams.vrbr;
-    this.params_.videoRecvCodec = roomParams.video_receive_codec;
-    this.params_.wssUrl = roomParams.wss_url;
-    this.params_.wssPostUrl = roomParams.wss_post_url;
-     /* jshint ignore:end */
-    this.params_.messages = roomParams.messages;
-    
-    if (this.params_.isLoopback) {
-      setupLoopback();
-    }
-  }.bind(this)).catch(function(error) {
-    this.onError_('Room server register error: ' + error.message);
+  // TODO(jiayl): We don't need to wait for the signaling channel to open before
+  // start signaling.
+  var channelPromise = this.channel_.open().catch(function(error) {
+    this.onError_('WebSocket open error: ' + error.message);
     return Promise.reject(error);
-  }.bind(this)).then(function() {
-    var mediaPromise = this.maybeGetMedia_();
-    var turnPromise = this.maybeGetTurnServers_();
-    
-    // Asynchronously open a WebSocket connection to WSS.
-    // TODO(jiayl): We don't need to wait for the signaling channel to open before
-    // start signaling.
-    this.channel_.open(this.params_.wssUrl, this.params_.wssPostUrl).catch(function(error) {
-      this.onError_('WebSocket open error: ' + error.message);
-      return Promise.reject(error);
-    }.bind(this)).then(function() {
-      // We only register with WSS if the web socket connection is open and if we're
-      // already registered with GAE.
-      this.channel_.register(this.params_.roomId, this.params_.clientId);
-      // We only start signaling after we have registered the signaling channel
-      // and have media and TURN. Since we send candidates as soon as the peer
-      // connection generates them we need to wait for the signaling channel to be
-      // ready.
-      Promise.all([turnPromise, mediaPromise]).then(function() {
-        this.startSignaling_();
+  }.bind(this));
+
+  // Asynchronously register with GAE.
+  var registerPromise =
+      this.registerWithRoomServer_(this.params_.roomId).then(function(roomParams) {
+        // The only difference in parameters should be clientId and isInitiator,
+        // and the turn servers that we requested.
+        // TODO(tkchin): clean up response format. JSHint doesn't like it.
+        /* jshint ignore:start */
+        this.params_.clientId = roomParams.client_id;
+        this.params_.roomId = roomParams.room_id;
+        this.params_.roomLink = roomParams.room_link;
+        this.params_.isInitiator = roomParams.is_initiator === 'true';
+        /* jshint ignore:end */
+        this.params_.messages = roomParams.messages;
       }.bind(this)).catch(function(error) {
-        this.onError_('Failed to start signaling: ' + error.message);
+        this.onError_('Room server register error: ' + error.message);
+        return Promise.reject(error);
       }.bind(this));
+
+  // We only register with WSS if the web socket connection is open and if we're
+  // already registered with GAE.
+  Promise.all([channelPromise, registerPromise]).then(function() {
+    this.channel_.register(this.params_.roomId, this.params_.clientId);
+
+    // We only start signaling after we have registered the signaling channel
+    // and have media and TURN. Since we send candidates as soon as the peer
+    // connection generates them we need to wait for the signaling channel to be
+    // ready.
+    Promise.all([turnPromise, mediaPromise]).then(function() {
+      this.startSignaling_();
     }.bind(this)).catch(function(error) {
-      this.onError_('WebSocket register error: ' + error.message);
+      this.onError_('Failed to start signaling: ' + error.message);
     }.bind(this));
   }.bind(this)).catch(function(error) {
-    this.onError_('Error connecting to room: ' + error.message);
+    this.onError_('WebSocket register error: ' + error.message);
   }.bind(this));
 };
-
 
 // Asynchronously request user media if needed.
 Call.prototype.maybeGetMedia_ = function() {

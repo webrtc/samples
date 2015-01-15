@@ -246,8 +246,11 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   if len(turn_base_url) > 0:
     turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
 
-  room_link = request.host_url + '/room/' + room_id
-  room_link = append_url_arguments(request, room_link)
+  room_link = None
+  if room_id is not None:
+    room_link = request.host_url + '/room/' + room_id
+    room_link = append_url_arguments(request, room_link)
+    
   pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
   offer_constraints = { 'mandatory': {}, 'optional': [] }
@@ -257,8 +260,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   params = {
     'error_messages': error_messages,
     'is_loopback' : json.dumps(debug == 'loopback'),
-    'room_id': room_id,
-    'room_link': room_link,
     'pc_config': json.dumps(pc_config),
     'pc_constraints': json.dumps(pc_constraints),
     'offer_constraints': json.dumps(offer_constraints),
@@ -281,6 +282,9 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'wss_url': wss_url,
     'wss_post_url': wss_post_url
   }
+  if room_id is not None:
+    params['room_id'] = room_id
+    params['room_link'] = room_link
   if client_id is not None:
     params['client_id'] = client_id
   if is_initiator is not None:
@@ -539,12 +543,15 @@ class RoomPage(webapp2.RequestHandler):
         self.write_response('full.html')
         return
     # Parse out room parameters from request.
-    roomParams = get_room_parameters(self.request, room_id, None, None)
-    params = {
-      'error_messages': roomParams['error_messages'],
-      'roomId': room_id
-    }
+    params = get_room_parameters(self.request, room_id, None, None)
     self.write_response('index.html', params)
+
+class ParamsPage(webapp2.RequestHandler):
+  def get(self):
+    # Return room independent room parameters.
+    params = get_room_parameters(self.request, None, None, None)
+    self.response.write(json.dumps(params))
+    
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
@@ -554,4 +561,5 @@ app = webapp2.WSGIApplication([
     # TODO(jiayl): Remove support of /room/ when all clients are updated.
     ('/room/(\w+)', RoomPage),
     ('/r/(\w+)', RoomPage),
+    ('/params', ParamsPage),
 ], debug=True)

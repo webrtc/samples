@@ -103,7 +103,32 @@
   <script type="text/javascript">
     var loadingParams = {
       errorMessages: {{ error_messages }},
-      roomId: '{{ roomId }}'
+      isLoopback: {{ is_loopback }},
+
+      roomId: '{{ room_id }}',
+      roomLink: '{{ room_link }}',
+
+      mediaConstraints: {{ media_constraints | safe }},
+      offerConstraints: {{ offer_constraints | safe }},
+      peerConnectionConfig: {{ pc_config | safe }},
+      peerConnectionConstraints: {{ pc_constraints | safe }},
+      turnRequestUrl: '{{ turn_url }}',
+      turnTransports: '{{ turn_transports }}',
+
+      audioSendBitrate: '{{ asbr }}',
+      audioSendCodec: '{{ audio_send_codec }}',
+      audioRecvBitrate: '{{ arbr }}',
+      audioRecvCodec: '{{ audio_receive_codec }}',
+      opusMaxPbr: '{{ opusmaxpbr }}',
+      opusFec: '{{ opusfec }}',
+      opusStereo: '{{ stereo }}',
+      videoSendBitrate: '{{ vsbr }}',
+      videoSendInitialBitrate: '{{ vsibr }}',
+      videoSendCodec: '{{ video_send_codec }}',
+      videoRecvBitrate: '{{ vrbr }}',
+      videoRecvCodec: '{{ video_receive_codec }}',
+      wssUrl: '{{ wss_url }}',
+      wssPostUrl: '{{ wss_post_url }}'
     };
 
     var appController;

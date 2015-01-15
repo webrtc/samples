@@ -67,45 +67,64 @@ var AppController = function(loadingParams) {
       UI_CONSTANTS.fullscreenOnSvg, UI_CONSTANTS.fullscreenOffSvg);
 
   this.loadingParams_ = loadingParams;
-  this.roomLink_ = '';
-
-  this.call_ = new Call(loadingParams.roomServer);
-  this.infoBox_ =
-      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
-
-  this.transitionToWaitingTimer_ = null;
-
-  var roomErrors = loadingParams.errorMessages;
-  if (roomErrors.length > 0) {
-    for (var i = 0; i < roomErrors.length; ++i) {
-      this.infoBox_.pushErrorMessage(roomErrors[i]);
-    }
-    return;
+  var paramsPromise = Promise.resolve(JSON.stringify({}));
+  if (this.loadingParams_.paramsFunction)
+  {
+    // Fetch params from server.
+    paramsPromise = this.loadingParams_.paramsFunction();
   }
 
-  // TODO(jiayl): replace callbacks with events.
-  this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
-  this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
-  this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
-  this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
+  Promise.resolve(paramsPromise).then(function(newParams) {
+    // Merge newly retrieved params with loadingParams
+    if (newParams) {
+      Object.keys(newParams).forEach(function(key) {
+        this.loadingParams_[key] = newParams[key];
+      }.bind(this));
+    }
+  }.bind(this)).catch(function(error) {
+    trace('Initializing; error getting params from server: ' + error.message);
+  }.bind(this)).then(function() {
+    // Proceed with call set up.
+    this.roomLink_ = '';
 
-  this.call_.onsignalingstatechange =
-      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-  this.call_.oniceconnectionstatechange =
-      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-  this.call_.onnewicecandidate =
-      this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+    this.call_ = new Call(this.loadingParams_);
+    this.infoBox_ =
+        new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
 
-  this.call_.onerror = this.displayError_.bind(this);
-  this.call_.onstatusmessage = this.displayStatus_.bind(this);
-  this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+    this.transitionToWaitingTimer_ = null;
 
-  this.call_.start(loadingParams.roomId);
+    var roomErrors = this.loadingParams_.errorMessages;
+    if (roomErrors.length > 0) {
+      for (var i = 0; i < roomErrors.length; ++i) {
+        this.infoBox_.pushErrorMessage(roomErrors[i]);
+      }
+      return;
+    }
 
-  window.onbeforeunload = this.call_.hangup.bind(this.call_);
-  document.onkeypress = this.onKeyPress_.bind(this);
-  window.onmousemove = this.showIcons_.bind(this);
+    // TODO(jiayl): replace callbacks with events.
+    this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
+    this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
+    this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
+    this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
 
+    this.call_.onsignalingstatechange =
+        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+    this.call_.oniceconnectionstatechange =
+        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+    this.call_.onnewicecandidate =
+        this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+
+    this.call_.onerror = this.displayError_.bind(this);
+    this.call_.onstatusmessage = this.displayStatus_.bind(this);
+    this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+
+    this.call_.start(this.loadingParams_.roomId);
+
+    window.onbeforeunload = this.call_.hangup.bind(this.call_);
+    document.onkeypress = this.onKeyPress_.bind(this);
+    window.onmousemove = this.showIcons_.bind(this);
+  }.bind(this));
+  
   $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
   $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
   $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
