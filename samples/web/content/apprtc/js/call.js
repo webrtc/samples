@@ -48,7 +48,7 @@ Call.prototype.isInitiator = function() {
 Call.prototype.start = function(roomId) {
   this.connectToRoom_(roomId, this.maybeGetMedia_(), this.maybeGetTurnServers_());
   if (this.params_.isLoopback) {
-    setupLoopback();
+    setupLoopback(this.params_.wssUrl, roomId);
   }
 };
 
