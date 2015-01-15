@@ -28,6 +28,7 @@ var loadingParams = {
         if (!serverParams)
         {
           resolve(newParams);
+          return;
         }
         
         // Convert from server format to expected format.
@@ -64,7 +65,6 @@ var loadingParams = {
         reject(error);
       });
     });
-    
   }
 };
 
