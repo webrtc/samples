@@ -539,7 +539,11 @@ class RoomPage(webapp2.RequestHandler):
         self.write_response('full.html')
         return
     # Parse out room parameters from request.
-    params = get_room_parameters(self.request, room_id, None, None)
+    roomParams = get_room_parameters(self.request, room_id, None, None)
+    params = {
+      'error_messages': roomParams['error_messages'],
+      'roomId': room_id
+    }
     self.write_response('index.html', params)
 
 app = webapp2.WSGIApplication([

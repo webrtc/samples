@@ -98,7 +98,7 @@ SignalingChannelTest.prototype.setUp = function() {
   WebSocket = MockWebSocket;
 
   this.channel =
-      new SignalingChannel(FAKE_WSS_URL, FAKE_WSS_POST_URL);
+      new SignalingChannel();
 };
 
 SignalingChannelTest.prototype.tearDown = function() {
@@ -106,7 +106,7 @@ SignalingChannelTest.prototype.tearDown = function() {
 };
 
 SignalingChannelTest.prototype.testOpenSuccess = function() {
-  var promise = this.channel.open();
+  var promise = this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   assertEquals(1, webSockets.length);
 
   var resolved = false;
@@ -124,7 +124,7 @@ SignalingChannelTest.prototype.testOpenSuccess = function() {
 };
 
 SignalingChannelTest.prototype.testReceiveMessage = function() {
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   var socket = webSockets[0];
   socket.simulateOpenResult(true);
 
@@ -145,7 +145,7 @@ SignalingChannelTest.prototype.testReceiveMessage = function() {
 };
 
 SignalingChannelTest.prototype.testOpenFailure = function() {
-  var promise = this.channel.open();
+  var promise = this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   assertEquals(1, webSockets.length);
 
   var resolved = false;
@@ -163,7 +163,7 @@ SignalingChannelTest.prototype.testOpenFailure = function() {
 };
 
 SignalingChannelTest.prototype.testRegisterBeforeOpen = function() {
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   this.channel.register(FAKE_ROOM_ID, FAKE_CLIENT_ID);
 
   var socket = webSockets[0];
@@ -180,7 +180,7 @@ SignalingChannelTest.prototype.testRegisterBeforeOpen = function() {
 };
 
 SignalingChannelTest.prototype.testRegisterAfterOpen = function() {
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   var socket = webSockets[0];
   socket.simulateOpenResult(true);
   this.channel.register(FAKE_ROOM_ID, FAKE_CLIENT_ID);
@@ -201,7 +201,7 @@ SignalingChannelTest.prototype.testSendBeforeOpen = function() {
   var realXMLHttpRequest = XMLHttpRequest;
   XMLHttpRequest = MockXMLHttpRequest;
 
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   this.channel.register(FAKE_ROOM_ID, FAKE_CLIENT_ID);
 
   var message = 'hello';
@@ -218,7 +218,7 @@ SignalingChannelTest.prototype.testSendBeforeOpen = function() {
 };
 
 SignalingChannelTest.prototype.testSendAfterOpen = function() {
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   var socket = webSockets[0];
   socket.simulateOpenResult(true);
   this.channel.register(FAKE_ROOM_ID, FAKE_CLIENT_ID);
@@ -237,7 +237,7 @@ SignalingChannelTest.prototype.testCloseAfterRegister = function() {
   var realXMLHttpRequest = XMLHttpRequest;
   XMLHttpRequest = MockXMLHttpRequest;
 
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   var socket = webSockets[0];
   socket.simulateOpenResult(true);
   this.channel.register(FAKE_ROOM_ID, FAKE_CLIENT_ID);
@@ -259,7 +259,7 @@ SignalingChannelTest.prototype.testCloseBeforeRegister = function() {
   var realXMLHttpRequest = XMLHttpRequest;
   XMLHttpRequest = MockXMLHttpRequest;
 
-  this.channel.open();
+  this.channel.open(FAKE_WSS_URL, FAKE_WSS_POST_URL);
   this.channel.close();
 
   assertEquals(0, xhrs.length);

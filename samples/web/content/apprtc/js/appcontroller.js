@@ -45,8 +45,9 @@ var UI_CONSTANTS = {
 };
 
 // The controller that connects the Call with the UI.
-var AppController = function(params) {
-  trace('Initializing; room=' + params.roomId + '.');
+var AppController = function(loadingParams) {
+  trace('Initializing; server= ' + loadingParams.roomServer + '.');
+  trace('Initializing; room=' + loadingParams.roomId + '.');
 
   this.hangupSvg_ = $(UI_CONSTANTS.hangupSvg);
   this.icons_ = $(UI_CONSTANTS.icons);
@@ -56,6 +57,7 @@ var AppController = function(params) {
   this.statusDiv_ = $(UI_CONSTANTS.statusDiv);
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
+  this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
   this.muteAudioIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
@@ -64,15 +66,16 @@ var AppController = function(params) {
   this.fullscreenIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.fullscreenOnSvg, UI_CONSTANTS.fullscreenOffSvg);
 
-  this.params_ = params;
+  this.loadingParams_ = loadingParams;
+  this.roomLink_ = '';
 
-  this.call_ = new Call(params);
+  this.call_ = new Call(loadingParams.roomServer);
   this.infoBox_ =
       new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
 
   this.transitionToWaitingTimer_ = null;
 
-  var roomErrors = params.errorMessages;
+  var roomErrors = loadingParams.errorMessages;
   if (roomErrors.length > 0) {
     for (var i = 0; i < roomErrors.length; ++i) {
       this.infoBox_.pushErrorMessage(roomErrors[i]);
@@ -97,7 +100,7 @@ var AppController = function(params) {
   this.call_.onstatusmessage = this.displayStatus_.bind(this);
   this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 
-  this.call_.start();
+  this.call_.start(loadingParams.roomId);
 
   window.onbeforeunload = this.call_.hangup.bind(this.call_);
   document.onkeypress = this.onKeyPress_.bind(this);
@@ -227,7 +230,7 @@ AppController.prototype.transitionToDone_ = function() {
   this.deactivate_(this.miniVideo_);
   this.hide_(this.hangupSvg_);
   this.displayStatus_('You have left the call. <a href=\'' +
-      this.params_.roomLink + '\'>Click here</a> to rejoin.');
+      this.roomLink_ + '\'>Click here</a> to rejoin.');
 };
 
 // Spacebar, or m: toggle audio mute.
@@ -263,7 +266,10 @@ AppController.prototype.onKeyPress_ = function(event) {
   }
 };
 
-AppController.prototype.displaySharingInfo_ = function() {
+AppController.prototype.displaySharingInfo_ = function(roomLink) {
+  this.roomLinkHref_.href = roomLink;
+  this.roomLinkHref_.text = roomLink;
+  this.roomLink_ = roomLink;
   this.activate_(this.sharingDiv_);
 };
 
