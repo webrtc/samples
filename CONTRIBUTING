@@ -13,9 +13,6 @@ https://developers.google.com/open-source/cla/individual
 
 https://developers.google.com/open-source/cla/corporate
 
-If you or your organization is not listed there already, you should
-add an entry to the AUTHORS file as part of your patch.
-
 If you plan to add a significant component or large chunk of code, it
 is recommended to bring it up on the discussion list
 (https://groups.google.com/forum/#!forum/discuss-webrtc) for a design
@@ -29,7 +26,7 @@ To change the WebRTC source, you must submit a pull request in GitHub. See the G
 
 https://help.github.com/categories/collaborating/
 
-WebRTC developers monitor outstanding pull requests. They may request changes on
+WebRTC developers monitor outstanding pull requests. They may request changes to
 the pull request before accepting. They will also verify that the CLA has been
 signed.
 
