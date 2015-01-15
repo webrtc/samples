@@ -67,23 +67,24 @@ var AppController = function(loadingParams) {
       UI_CONSTANTS.fullscreenOnSvg, UI_CONSTANTS.fullscreenOffSvg);
 
   this.loadingParams_ = loadingParams;
-  var paramsPromise = Promise.resolve(JSON.stringify({}));
+  var paramsPromise = Promise.resolve({});
   if (this.loadingParams_.paramsFunction)
   {
-    // Fetch params from server.
+    // If we have a paramsFunction value, we need to call it
+    // and use the returned values to merge with the passed
+    // in params. In the Chrome app, this is used to initialize
+    // the app with params from the server.
     paramsPromise = this.loadingParams_.paramsFunction();
   }
 
   Promise.resolve(paramsPromise).then(function(newParams) {
-    // Merge newly retrieved params with loadingParams
+    // Merge newly retrieved params with loadingParams.
     if (newParams) {
       Object.keys(newParams).forEach(function(key) {
         this.loadingParams_[key] = newParams[key];
       }.bind(this));
     }
-  }.bind(this)).catch(function(error) {
-    trace('Initializing; error getting params from server: ' + error.message);
-  }.bind(this)).then(function() {
+    
     // Proceed with call set up.
     this.roomLink_ = '';
 
@@ -123,14 +124,16 @@ var AppController = function(loadingParams) {
     window.onbeforeunload = this.call_.hangup.bind(this.call_);
     document.onkeypress = this.onKeyPress_.bind(this);
     window.onmousemove = this.showIcons_.bind(this);
+    
+    $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
+    $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
+    $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
+    $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
+  
+    setUpFullScreen();
+  }.bind(this)).catch(function(error) {
+    trace('Error initializing: ' + error.message);
   }.bind(this));
-  
-  $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
-  $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
-  $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
-  $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
-  
-  setUpFullScreen();
 };
 
 AppController.prototype.hangup_ = function() {

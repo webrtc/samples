@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals displayError */
+/* globals trace */
 /* exported setCodecParam, iceCandidateType,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
@@ -73,7 +73,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
   // Find m line for the given mediaType.
   var mLineIndex = findLine(sdpLines, 'm=', mediaType);
   if (mLineIndex === null) {
-    displayError('Failed to add bandwidth line to sdp, as no m-line found');
+    trace('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
 
@@ -87,7 +87,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
   var cLineIndex = findLineInRange(sdpLines, mLineIndex + 1,
       nextMLineIndex, 'c=');
   if (cLineIndex === null) {
-    displayError('Failed to add bandwidth line to sdp, as no c-line found');
+    trace('Failed to add bandwidth line to sdp, as no c-line found');
     return sdp;
   }
 
@@ -120,7 +120,7 @@ function maybeSetVideoSendInitialBitRate(sdp, params) {
   var bitrate = params.videoSendBitrate;
   if (bitrate) {
     if (initialBitrate > bitrate) {
-      displayError('Clamping initial bitrate to max bitrate of ' +
+      trace('Clamping initial bitrate to max bitrate of ' +
                    bitrate + ' kbps.');
       initialBitrate = bitrate;
       params.videoSendInitialBitrate = initialBitrate;
@@ -133,7 +133,7 @@ function maybeSetVideoSendInitialBitRate(sdp, params) {
   // Search for m line.
   var mLineIndex = findLine(sdpLines, 'm=', 'video');
   if (mLineIndex === null) {
-    displayError('Failed to find video m-line');
+    trace('Failed to find video m-line');
     return sdp;
   }
 

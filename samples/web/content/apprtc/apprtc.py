@@ -248,7 +248,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
 
   room_link = None
   if room_id is not None:
-    room_link = request.host_url + '/room/' + room_id
+    room_link = request.host_url + '/r/' + room_id
     room_link = append_url_arguments(request, room_link)
     
   pc_config = make_pc_config(ice_transports)

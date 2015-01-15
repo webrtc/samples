@@ -57,6 +57,7 @@ var loadingParams = {
         trace(JSON.stringify(newParams));
         resolve(newParams);
       }).catch(function(error) {
+        trace('Initializing; error getting params from server: ' + error.message);
         reject(error);
       });
     });

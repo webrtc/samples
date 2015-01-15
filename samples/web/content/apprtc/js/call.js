@@ -161,7 +161,7 @@ Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
 
   // Asynchronously register with GAE.
   var registerPromise =
-      this.registerWithRoomServer_(this.params_.roomId).then(function(roomParams) {
+      this.registerWithRoomServer_().then(function(roomParams) {
         // The only difference in parameters should be clientId and isInitiator,
         // and the turn servers that we requested.
         // TODO(tkchin): clean up response format. JSHint doesn't like it.
@@ -313,13 +313,13 @@ Call.prototype.startSignaling_ = function() {
 };
 
 // Registers with GAE and returns room parameters.
-Call.prototype.registerWithRoomServer_ = function(roomId) {
+Call.prototype.registerWithRoomServer_ = function() {
   return new Promise(function(resolve, reject) {
-    if (!roomId) {
+    if (!this.params_.roomId) {
       reject(Error('Missing room id.'));
     }
     var path = this.roomServer_ + '/register/' +
-        roomId + window.location.search;
+        this.params_.roomId + window.location.search;
 
     sendAsyncUrlRequest('POST', path).then(function(response) {
       var responseObj = parseJSON(response);
