@@ -126,16 +126,16 @@ CamResolutionsTest.prototype = {
     var minFPSSent = arrayMin(googAvgFrameRateSent);
     var maxFPSSent = arrayMax(googAvgFrameRateSent);
     report.traceEventInstant('video-stats', { width: currentRes[0],
-                                               height: currentRes[1],
-                                               minEncodeMs: minEncodeMs,
-                                               maxEncodeMs: maxEncodeMs,
-                                               avgEncodeMs: avgEncodeMs,
-                                               minFPSInput: minFPSInput,
-                                               maxFPSInput: maxFPSInput,
-                                               avgFPSInput: avgFPSInput,
-                                               minFPSSent: minFPSSent,
-                                               maxFPSSent: maxFPSSent,
-                                               avgFPSSent: avgFPSSent });
+                                              height: currentRes[1],
+                                              minEncodeMs: minEncodeMs,
+                                              maxEncodeMs: maxEncodeMs,
+                                              avgEncodeMs: avgEncodeMs,
+                                              minFPSInput: minFPSInput,
+                                              maxFPSInput: maxFPSInput,
+                                              avgFPSInput: avgFPSInput,
+                                              minFPSSent: minFPSSent,
+                                              maxFPSSent: maxFPSSent,
+                                              avgFPSSent: avgFPSSent });
 
     if (googAvgEncodeTime.length === 0) {
       reportError('No stats collected. Check your camera.');
@@ -143,6 +143,9 @@ CamResolutionsTest.prototype = {
       reportInfo('Encode time (ms): ' + minEncodeMs + ' min / ' + avgEncodeMs + ' avg / ' + maxEncodeMs + ' max');
       reportInfo('Input FPS: ' + minFPSInput + ' min / ' + avgFPSInput + ' avg / ' + maxFPSInput + ' max');
       reportInfo('Sent FPS: ' + minFPSSent + ' min / ' + avgFPSSent + ' avg / ' + maxFPSSent + ' max');
+      if (avgFPSSent < 5) {
+        reportError('Low average sent FPS: ' + avgFPSSent);
+      }
     }
     this.finishTestOrRetrigger_();
   },
