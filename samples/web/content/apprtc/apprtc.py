@@ -9,6 +9,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 
 import cgi
 import constants
+import gcm_register
 import logging
 import os
 import random
@@ -544,6 +545,7 @@ class RoomPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/bind/(\w+)', gcm_register.BindPage),
     ('/bye/(\w+)/(\w+)', ByePage),
     ('/message/(\w+)/(\w+)', MessagePage),
     ('/register/(\w+)', RegisterPage),
