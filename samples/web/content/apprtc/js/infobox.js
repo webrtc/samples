@@ -146,7 +146,7 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
   if (this.endTime_ !== null) {
     contents += this.buildLine_('Call time',
-        this.formatInterval_(performance.now() - this.endTime_));
+        this.formatInterval_(window.performance.now() - this.endTime_));
     contents += this.buildLine_('Setup time',
         this.formatMsec_(this.endTime_ - this.startTime_));
   }
@@ -234,6 +234,7 @@ InfoBox.prototype.buildLine_ = function(label, value) {
   return line;
 };
 
+// Convert a number of milliseconds into a '[HH:]MM:SS' string.
 InfoBox.prototype.formatInterval_ = function(value) {
   var result = '';
   var seconds = Math.floor(value / 1000);
@@ -251,10 +252,12 @@ InfoBox.prototype.formatInterval_ = function(value) {
   return result;
 };
 
+// Convert a number of milliesconds into a 'XXX ms' string.
 InfoBox.prototype.formatMsec_ = function(value) {
-  return value.toFixed(0).toString() + 'ms';
+  return value.toFixed(0).toString() + ' ms';
 };
 
+// Convert a bitrate into a 'XXX Xbps' string.
 InfoBox.prototype.formatBitrate_ = function(value) {
   if (!value) {
     return '- bps';
@@ -275,6 +278,7 @@ InfoBox.prototype.formatBitrate_ = function(value) {
   return str;
 };
 
+// Convert a packet rate into a 'XXX pps' string.
 InfoBox.prototype.formatPacketRate_ = function(value) {
   if (!value) {
     return '- pps';
