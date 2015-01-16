@@ -19,8 +19,6 @@ var remoteVideo = $('#remote-video');
 
 // Keep this in sync with the HTML element id attributes. Keep it sorted.
 var UI_CONSTANTS = {
-  fullscreenOffSvg: '#fullscreen-off',
-  fullscreenOnSvg: '#fullscreen-on',
   fullscreenSvg: '#fullscreen',
 
   hangupSvg: '#hangup',
@@ -29,12 +27,7 @@ var UI_CONSTANTS = {
   localVideo: '#local-video',
   miniVideo: '#mini-video',
 
-  muteAudioOffSvg: '#mute-audio-off',
-  muteAudioOnSvg: '#mute-audio-on',
   muteAudioSvg: '#mute-audio',
-
-  muteVideoOffSvg: '#mute-video-off',
-  muteVideoOnSvg: '#mute-video-on',
   muteVideoSvg: '#mute-video',
 
   remoteVideo: '#remote-video',
@@ -59,12 +52,9 @@ var AppController = function(loadingParams) {
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
-  this.muteAudioIconSet_ = new AppController.IconSet_(
-      UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
-  this.muteVideoIconSet_ = new AppController.IconSet_(
-      UI_CONSTANTS.muteVideoOnSvg, UI_CONSTANTS.muteVideoOffSvg);
-  this.fullscreenIconSet_ = new AppController.IconSet_(
-      UI_CONSTANTS.fullscreenOnSvg, UI_CONSTANTS.fullscreenOffSvg);
+  this.muteAudioIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
+  this.muteVideoIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
+  this.fullscreenIconSet_ = new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
   this.loadingParams_ = loadingParams;
   var paramsPromise = Promise.resolve({});
@@ -84,7 +74,7 @@ var AppController = function(loadingParams) {
         this.loadingParams_[key] = newParams[key];
       }.bind(this));
     }
-    
+
     // Proceed with call set up.
     this.roomLink_ = '';
 
@@ -124,12 +114,12 @@ var AppController = function(loadingParams) {
     window.onbeforeunload = this.call_.hangup.bind(this.call_);
     document.onkeypress = this.onKeyPress_.bind(this);
     window.onmousemove = this.showIcons_.bind(this);
-    
+
     $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
     $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
     $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
     $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
-  
+
     setUpFullScreen();
   }.bind(this)).catch(function(error) {
     trace('Error initializing: ' + error.message);
@@ -357,22 +347,17 @@ AppController.prototype.showIcons_ = function() {
   }
 };
 
-AppController.IconSet_ = function(icon0, icon1){
-  this.icon0 = document.querySelector(icon0);
-  this.icon1 = document.querySelector(icon1);
+AppController.IconSet_ = function(iconSelector){
+  this.iconElement = document.querySelector(iconSelector);
 };
 
 AppController.IconSet_.prototype.toggle = function() {
-  if (this.icon0.classList.contains('hidden')){
-    this.icon0.classList.remove('hidden');
+  if (this.iconElement.classList.contains('on')){
+    this.iconElement.classList.remove('on');
+    // turn it off: CSS hides `svg path.on` and displays `svg path.off`
   } else {
-    this.icon0.classList.add('hidden');
-  }
-
-  if (this.icon1.classList.contains('hidden')){
-    this.icon1.classList.remove('hidden');
-  } else {
-    this.icon1.classList.add('hidden');
+    // turn it on: CSS displays `svg.on path.on` and hides `svg.on path.off`
+    this.iconElement.classList.add('on');
   }
 };
 

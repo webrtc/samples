@@ -172,6 +172,35 @@ label {
   position: absolute;
 }
 
+circle {
+  fill: #666;
+  fill-opacity: 0.6;
+}
+
+svg.on circle {
+  fill-opacity: 0;
+}
+
+/* on icons are hidden by default */
+path.on {
+  display: none;
+}
+
+/* off icons are displayed by default */
+path.off {
+  display: block;
+}
+
+/* on icons are displayed when parent svg has class 'on' */
+svg.on path.on {
+  display: block;
+}
+
+/* off icons are hidden when parent svg has class 'on' */
+svg.on path.off {
+  display: none;
+}
+
 svg {
   box-shadow: 2px 2px 24px #444;
   border-radius: 48px;
@@ -194,7 +223,8 @@ svg:hover {
   transition: 40ms;
 }
 
-#mute-audio:hover {
+#mute-audio:hover,
+#mute-audio.on {
   background: #ab47bc;
 }
 
@@ -206,7 +236,8 @@ svg:hover {
   transition: 120ms;
 }
 
-#mute-video:hover {
+#mute-video:hover,
+#mute-video.on {
   background: #ff9f00;
 }
 
@@ -230,7 +261,8 @@ svg:hover {
   transition: 280ms;
 }
 
-#fullscreen:hover {
+#fullscreen:hover,
+#fullscreen.on {
   background: #407cf7;
 }
 
