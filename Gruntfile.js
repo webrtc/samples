@@ -124,6 +124,7 @@ module.exports = function(grunt) {
       },
       files: [
         'samples/web/content/apprtc/js_test_driver.conf',
+        'samples/web/js/js_test_driver.conf',
       ]},
 
     closurecompiler: {
