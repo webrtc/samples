@@ -45,8 +45,9 @@ var UI_CONSTANTS = {
 };
 
 // The controller that connects the Call with the UI.
-var AppController = function(params) {
-  trace('Initializing; room=' + params.roomId + '.');
+var AppController = function(loadingParams) {
+  trace('Initializing; server= ' + loadingParams.roomServer + '.');
+  trace('Initializing; room=' + loadingParams.roomId + '.');
 
   this.hangupSvg_ = $(UI_CONSTANTS.hangupSvg);
   this.icons_ = $(UI_CONSTANTS.icons);
@@ -56,6 +57,7 @@ var AppController = function(params) {
   this.statusDiv_ = $(UI_CONSTANTS.statusDiv);
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
+  this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
   this.muteAudioIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
@@ -64,51 +66,74 @@ var AppController = function(params) {
   this.fullscreenIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.fullscreenOnSvg, UI_CONSTANTS.fullscreenOffSvg);
 
-  this.params_ = params;
-
-  this.call_ = new Call(params);
-  this.infoBox_ =
-      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
-
-  this.transitionToWaitingTimer_ = null;
-
-  var roomErrors = params.errorMessages;
-  if (roomErrors.length > 0) {
-    for (var i = 0; i < roomErrors.length; ++i) {
-      this.infoBox_.pushErrorMessage(roomErrors[i]);
-    }
-    return;
+  this.loadingParams_ = loadingParams;
+  var paramsPromise = Promise.resolve({});
+  if (this.loadingParams_.paramsFunction)
+  {
+    // If we have a paramsFunction value, we need to call it
+    // and use the returned values to merge with the passed
+    // in params. In the Chrome app, this is used to initialize
+    // the app with params from the server.
+    paramsPromise = this.loadingParams_.paramsFunction();
   }
 
-  // TODO(jiayl): replace callbacks with events.
-  this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
-  this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
-  this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
-  this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
+  Promise.resolve(paramsPromise).then(function(newParams) {
+    // Merge newly retrieved params with loadingParams.
+    if (newParams) {
+      Object.keys(newParams).forEach(function(key) {
+        this.loadingParams_[key] = newParams[key];
+      }.bind(this));
+    }
+    
+    // Proceed with call set up.
+    this.roomLink_ = '';
 
-  this.call_.onsignalingstatechange =
-      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-  this.call_.oniceconnectionstatechange =
-      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-  this.call_.onnewicecandidate =
-      this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+    this.call_ = new Call(this.loadingParams_);
+    this.infoBox_ =
+        new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
 
-  this.call_.onerror = this.displayError_.bind(this);
-  this.call_.onstatusmessage = this.displayStatus_.bind(this);
-  this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+    this.transitionToWaitingTimer_ = null;
 
-  this.call_.start();
+    var roomErrors = this.loadingParams_.errorMessages;
+    if (roomErrors.length > 0) {
+      for (var i = 0; i < roomErrors.length; ++i) {
+        this.infoBox_.pushErrorMessage(roomErrors[i]);
+      }
+      return;
+    }
 
-  window.onbeforeunload = this.call_.hangup.bind(this.call_);
-  document.onkeypress = this.onKeyPress_.bind(this);
-  window.onmousemove = this.showIcons_.bind(this);
+    // TODO(jiayl): replace callbacks with events.
+    this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
+    this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
+    this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
+    this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
 
-  $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
-  $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
-  $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
-  $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
+    this.call_.onsignalingstatechange =
+        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+    this.call_.oniceconnectionstatechange =
+        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+    this.call_.onnewicecandidate =
+        this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+
+    this.call_.onerror = this.displayError_.bind(this);
+    this.call_.onstatusmessage = this.displayStatus_.bind(this);
+    this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+
+    this.call_.start(this.loadingParams_.roomId);
+
+    window.onbeforeunload = this.call_.hangup.bind(this.call_);
+    document.onkeypress = this.onKeyPress_.bind(this);
+    window.onmousemove = this.showIcons_.bind(this);
+    
+    $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
+    $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
+    $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
+    $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
   
-  setUpFullScreen();
+    setUpFullScreen();
+  }.bind(this)).catch(function(error) {
+    trace('Error initializing: ' + error.message);
+  }.bind(this));
 };
 
 AppController.prototype.hangup_ = function() {
@@ -227,7 +252,7 @@ AppController.prototype.transitionToDone_ = function() {
   this.deactivate_(this.miniVideo_);
   this.hide_(this.hangupSvg_);
   this.displayStatus_('You have left the call. <a href=\'' +
-      this.params_.roomLink + '\'>Click here</a> to rejoin.');
+      this.roomLink_ + '\'>Click here</a> to rejoin.');
 };
 
 // Spacebar, or m: toggle audio mute.
@@ -263,7 +288,10 @@ AppController.prototype.onKeyPress_ = function(event) {
   }
 };
 
-AppController.prototype.displaySharingInfo_ = function() {
+AppController.prototype.displaySharingInfo_ = function(roomLink) {
+  this.roomLinkHref_.href = roomLink;
+  this.roomLinkHref_.text = roomLink;
+  this.roomLink_ = roomLink;
   this.activate_(this.sharingDiv_);
 };
 

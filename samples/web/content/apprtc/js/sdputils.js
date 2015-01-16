@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals displayError, params */
+/* globals trace */
 /* exported setCodecParam, iceCandidateType,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
@@ -34,7 +34,7 @@ function iceCandidateType(candidateStr) {
   return candidateStr.split(' ')[7];
 }
 
-function maybeSetAudioSendBitRate(sdp) {
+function maybeSetAudioSendBitRate(sdp, params) {
   if (!params.audioSendBitrate) {
     return sdp;
   }
@@ -42,7 +42,7 @@ function maybeSetAudioSendBitRate(sdp) {
   return preferBitRate(sdp, params.audioSendBitrate, 'audio');
 }
 
-function maybeSetAudioReceiveBitRate(sdp) {
+function maybeSetAudioReceiveBitRate(sdp, params) {
   if (!params.audioRecvBitrate) {
     return sdp;
   }
@@ -50,7 +50,7 @@ function maybeSetAudioReceiveBitRate(sdp) {
   return preferBitRate(sdp, params.audioRecvBitrate, 'audio');
 }
 
-function maybeSetVideoSendBitRate(sdp) {
+function maybeSetVideoSendBitRate(sdp, params) {
   if (!params.videoSendBitrate) {
     return sdp;
   }
@@ -58,7 +58,7 @@ function maybeSetVideoSendBitRate(sdp) {
   return preferBitRate(sdp, params.videoSendBitrate, 'video');
 }
 
-function maybeSetVideoReceiveBitRate(sdp) {
+function maybeSetVideoReceiveBitRate(sdp, params) {
   if (!params.videoRecvBitrate) {
     return sdp;
   }
@@ -73,7 +73,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
   // Find m line for the given mediaType.
   var mLineIndex = findLine(sdpLines, 'm=', mediaType);
   if (mLineIndex === null) {
-    displayError('Failed to add bandwidth line to sdp, as no m-line found');
+    trace('Failed to add bandwidth line to sdp, as no m-line found');
     return sdp;
   }
 
@@ -87,7 +87,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
   var cLineIndex = findLineInRange(sdpLines, mLineIndex + 1,
       nextMLineIndex, 'c=');
   if (cLineIndex === null) {
-    displayError('Failed to add bandwidth line to sdp, as no c-line found');
+    trace('Failed to add bandwidth line to sdp, as no c-line found');
     return sdp;
   }
 
@@ -109,7 +109,7 @@ function preferBitRate(sdp, bitrate, mediaType) {
 // Add an a=fmtp: x-google-min-bitrate=kbps line, if videoSendInitialBitrate
 // is specified. We'll also add a x-google-min-bitrate value, since the max
 // must be >= the min.
-function maybeSetVideoSendInitialBitRate(sdp) {
+function maybeSetVideoSendInitialBitRate(sdp, params) {
   var initialBitrate = params.videoSendInitialBitrate;
   if (!initialBitrate) {
     return sdp;
@@ -120,7 +120,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   var bitrate = params.videoSendBitrate;
   if (bitrate) {
     if (initialBitrate > bitrate) {
-      displayError('Clamping initial bitrate to max bitrate of ' +
+      trace('Clamping initial bitrate to max bitrate of ' +
                    bitrate + ' kbps.');
       initialBitrate = bitrate;
       params.videoSendInitialBitrate = initialBitrate;
@@ -133,7 +133,7 @@ function maybeSetVideoSendInitialBitRate(sdp) {
   // Search for m line.
   var mLineIndex = findLine(sdpLines, 'm=', 'video');
   if (mLineIndex === null) {
-    displayError('Failed to find video m-line');
+    trace('Failed to find video m-line');
     return sdp;
   }
 
@@ -146,22 +146,22 @@ function maybeSetVideoSendInitialBitRate(sdp) {
 }
 
 // Promotes |audioSendCodec| to be the first in the m=audio line, if set.
-function maybePreferAudioSendCodec(sdp) {
+function maybePreferAudioSendCodec(sdp, params) {
   return maybePreferCodec(sdp, 'audio', 'send', params.audioSendCodec);
 }
 
 // Promotes |audioRecvCodec| to be the first in the m=audio line, if set.
-function maybePreferAudioReceiveCodec(sdp) {
+function maybePreferAudioReceiveCodec(sdp, params) {
   return maybePreferCodec(sdp, 'audio', 'receive', params.audioRecvCodec);
 }
 
 // Promotes |videoSendCodec| to be the first in the m=audio line, if set.
-function maybePreferVideoSendCodec(sdp) {
+function maybePreferVideoSendCodec(sdp, params) {
   return maybePreferCodec(sdp, 'video', 'send', params.videoSendCodec);
 }
 
 // Promotes |videoRecvCodec| to be the first in the m=audio line, if set.
-function maybePreferVideoReceiveCodec(sdp) {
+function maybePreferVideoReceiveCodec(sdp, params) {
   return maybePreferCodec(sdp, 'video', 'receive', params.videoRecvCodec);
 }
 

@@ -8,7 +8,6 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals params */
 /* exported setupLoopback */
 
 'use strict';
@@ -20,13 +19,13 @@
 // one while in loopback. Bye is ignored because there is no work to do.
 var loopbackWebSocket = null;
 var LOOPBACK_CLIENT_ID = 'loopback_client_id';
-function setupLoopback() {
+function setupLoopback(wssUrl, roomId) {
   if (loopbackWebSocket) {
     return;
   }
   // TODO(tkchin): merge duplicate code once SignalingChannel abstraction
   // exists.
-  loopbackWebSocket = new WebSocket(params.wssUrl);
+  loopbackWebSocket = new WebSocket(wssUrl);
 
   var sendLoopbackMessage = function(message) {
     var msgString = JSON.stringify({
@@ -39,7 +38,7 @@ function setupLoopback() {
   loopbackWebSocket.onopen = function() {
     var registerMessage = {
       cmd: 'register',
-      roomid: params.roomId,
+      roomid: roomId,
       clientid: LOOPBACK_CLIENT_ID
     };
     loopbackWebSocket.send(JSON.stringify(registerMessage));

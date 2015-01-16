@@ -101,7 +101,7 @@
 
 {% if not chromeapp %}
   <script type="text/javascript">
-    var params = {
+    var loadingParams = {
       errorMessages: {{ error_messages }},
       isLoopback: {{ is_loopback }},
 
@@ -142,7 +142,7 @@
         document.addEventListener('webkitvisibilitychange', onVisibilityChange);
         return;
       }
-      appController = new AppController(params);
+      appController = new AppController(loadingParams);
     }
 
     function onVisibilityChange() {
