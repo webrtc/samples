@@ -9,7 +9,9 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* exported setUpFullScreen, fullScreenElement, isFullScreen, 
-   requestTurnServers, sendAsyncUrlRequest, randomString */
+   requestTurnServers, sendAsyncUrlRequest, randomString,
+   getStorage, setStorage */
+/* globals chrome */
 
 'use strict';
 
@@ -97,6 +99,9 @@ function setUpFullScreen() {
 }
 
 function isFullScreen(){
+  if (isChromeApp()) {
+    return chrome.app.window.current().isFullscreen();
+  }
   return !!(document.webkitIsFullScreen || document.mozFullScreen ||
     document.isFullScreen); // if any defined and true
 }
@@ -118,4 +123,47 @@ function randomString(strLength) {
     result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
   }
   return result.join('');
+}
+
+// Returns true if the code is running in a packaged Chrome App.
+function isChromeApp() {
+  return (typeof chrome !== 'undefined' &&
+          typeof chrome.storage !== 'undefined' &&
+          typeof chrome.storage.local !== 'undefined');
+}
+
+// Get a value from local browser storage. Calls callback with value.
+function getStorage(key, callback) {
+  if (isChromeApp()) {
+    // use chrome.storage.local
+    chrome.storage.local.get(key, function(values) {
+      // unwrap key/value pair
+      if (callback)
+      {
+        callback(values[key]);
+      }
+    });
+  } else {
+    // use localStorage
+    var value = localStorage.getItem(key);
+    if (callback) {
+      callback(value);
+    }
+  }
+}
+
+// Set a value in local browser storage. Calls callback after completion.
+function setStorage(key, value, callback) {
+  if (isChromeApp()) {
+    // use chrome.storage.local
+    var data = {};
+    data[key] = value;
+    chrome.storage.local.set(data, callback);
+  } else {
+    // use localStorage
+    localStorage.setItem(key, value);
+    if (callback) {
+      callback();
+    }
+  }
 }

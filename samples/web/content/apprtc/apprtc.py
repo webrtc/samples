@@ -515,13 +515,18 @@ class RegisterPage(webapp2.RequestHandler):
     logging.info('Room ' + room_id + ' has state ' + result['room_state'])
 
 class MainPage(webapp2.RequestHandler):
+  def write_response(self, target_page, params={}):
+    template = jinja_environment.get_template(target_page)
+    content = template.render(params)
+    self.response.out.write(content)
+    
   def get(self):
-    """Redirects to a room page."""
-    room_id = generate_random(8)
-    redirect = '/r/' + room_id
-    redirect = append_url_arguments(self.request, redirect)
-    self.redirect(redirect)
-    logging.info('Redirecting visitor to base URL to ' + redirect)
+    """Renders index.html."""
+    # Parse out parameters from request.
+    params = get_room_parameters(self.request, None, None, None)
+    params['connect'] = False
+    params['room_id'] = generate_random(8)
+    self.write_response('index.html', params)
 
 class RoomPage(webapp2.RequestHandler):
   def write_response(self, target_page, params={}):
@@ -542,6 +547,7 @@ class RoomPage(webapp2.RequestHandler):
         return
     # Parse out room parameters from request.
     params = get_room_parameters(self.request, room_id, None, None)
+    params['connect'] = True
     self.write_response('index.html', params)
 
 class ParamsPage(webapp2.RequestHandler):

@@ -296,7 +296,7 @@ Call.prototype.maybeCreatePcClient_ = function() {
 Call.prototype.startSignaling_ = function() {
   trace('Starting signaling.');
   if (this.isInitiator() && this.oncallerstarted) {
-    this.oncallerstarted(this.params_.roomLink);
+    this.oncallerstarted(this.params_.roomId, this.params_.roomLink);
   }
 
   this.startTime = window.performance.now();
@@ -328,7 +328,9 @@ Call.prototype.registerWithRoomServer_ = function() {
         reject(Error('Error parsing response JSON.'));
         return;
       }
-      if (responseObj.result !== 'SUCCESS') {
+      if (responseObj.result === 'FULL') {
+        // TODO : handle room full state by returning to room selection state.
+      } else if (responseObj.result !== 'SUCCESS') {
         reject(Error('Registration error: ' + responseObj.result));
         return;
       }

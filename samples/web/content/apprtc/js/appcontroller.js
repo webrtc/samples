@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals trace, InfoBox, setUpFullScreen, isFullScreen */
+/* globals trace, InfoBox, setUpFullScreen, isFullScreen,
+   RoomSelection, isChromeApp, chrome */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -39,6 +40,11 @@ var UI_CONSTANTS = {
 
   remoteVideo: '#remote-video',
   roomLinkHref: '#room-link-href',
+  roomSelectionDiv: '#room-selection',
+  roomSelectionInput: '#room-id-input',
+  roomSelectionJoinButton: '#join-button',
+  roomSelectionRandomButton: '#random-button',
+  roomSelectionRecentList: '#recent-rooms-list',
   sharingDiv: '#sharing-div',
   statusDiv: '#status-div',
   videosDiv: '#videos',
@@ -58,6 +64,8 @@ var AppController = function(loadingParams) {
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
+  
+  this.inCall_ = false;
 
   this.muteAudioIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
@@ -119,21 +127,61 @@ var AppController = function(loadingParams) {
     this.call_.onstatusmessage = this.displayStatus_.bind(this);
     this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 
-    this.call_.start(this.loadingParams_.roomId);
-
-    window.onbeforeunload = this.call_.hangup.bind(this.call_);
-    document.onkeypress = this.onKeyPress_.bind(this);
-    window.onmousemove = this.showIcons_.bind(this);
-    
-    $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
-    $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
-    $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
-    $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
-  
-    setUpFullScreen();
+    this.roomSelection_ = null;
+    if (this.loadingParams_.connect !== false && this.loadingParams_.roomId) {
+      // If we already have a room to connect to, connect now.
+      this.call_.start(this.loadingParams_.roomId);
+      
+      // Record this room in the recently used list.
+      var recentlyUsedList = new RoomSelection.RecentlyUsedList();
+      recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
+      
+      this.finishCallSetup_();
+    } else {
+      // Display the room selection UI.
+      var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
+      this.roomSelection_ = new RoomSelection(roomSelectionDiv, this.loadingParams_.suggestedRoomId);
+      this.show_(roomSelectionDiv);
+      this.roomSelection_.onRoomSelected = function(roomName) {
+        this.hide_(roomSelectionDiv);
+        this.call_.start(roomName);
+        this.finishCallSetup_();
+      }.bind(this);
+    }
   }.bind(this)).catch(function(error) {
     trace('Error initializing: ' + error.message);
   }.bind(this));
+};
+
+AppController.prototype.finishCallSetup_ = function() {
+  this.inCall_ = true;
+  
+  window.onbeforeunload = this.call_.hangup.bind(this.call_);
+  document.onkeypress = this.onKeyPress_.bind(this);
+  window.onmousemove = this.showIcons_.bind(this);
+  
+  $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
+  $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
+  $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
+  $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
+
+  setUpFullScreen();
+  
+  if (!isChromeApp()) {
+    window.onpopstate = function(event) {
+      if (!event.state) {
+        // Resetting back to room selection page not yet supported, reload
+        // the initial page instead.
+        trace('Reloading main page.');
+        location.href = location.origin;
+      } else {
+        // This could be a forward request to open a room again
+        if (event.state && event.state.roomLink) {
+          location.href = event.state.roomLink;
+        }
+      }
+    };
+  }
 };
 
 AppController.prototype.hangup_ = function() {
@@ -141,6 +189,7 @@ AppController.prototype.hangup_ = function() {
   this.hide_(this.icons_);
   this.displayStatus_('Hanging up');
   this.transitionToDone_();
+  this.inCall_ = false;
 
   this.call_.hangup();
 };
@@ -262,6 +311,10 @@ AppController.prototype.transitionToDone_ = function() {
 // q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 AppController.prototype.onKeyPress_ = function(event) {
+  if (!this.inCall_) {
+    return;
+  }
+  
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
@@ -288,10 +341,17 @@ AppController.prototype.onKeyPress_ = function(event) {
   }
 };
 
-AppController.prototype.displaySharingInfo_ = function(roomLink) {
+AppController.prototype.pushCallNavigation_ = function(roomId, roomLink) {
+  if (!isChromeApp()) {
+    window.history.pushState({'roomId': roomId, 'roomLink': roomLink }, roomId, roomLink);
+  }  
+};
+
+AppController.prototype.displaySharingInfo_ = function(roomId, roomLink) {
   this.roomLinkHref_.href = roomLink;
   this.roomLinkHref_.text = roomLink;
   this.roomLink_ = roomLink;
+  this.pushCallNavigation_(roomId, roomLink);
   this.activate_(this.sharingDiv_);
 };
 
@@ -321,9 +381,19 @@ AppController.prototype.toggleVideoMute_ = function() {
 
 AppController.prototype.toggleFullScreen_ = function() {
   if (isFullScreen()) {
-    document.cancelFullScreen();
+    trace('Exiting fullscreen.');
+    if (isChromeApp()) {
+      chrome.app.window.current().restore();
+    } else {
+      document.cancelFullScreen();
+    }
   } else {
-    document.body.requestFullScreen();
+    trace('Entering fullscreen.');
+    if (isChromeApp()) {
+      chrome.app.window.current().fullscreen();
+    } else {
+      document.body.requestFullScreen();
+    }
   }
   this.fullscreenIconSet_.toggle();
 };
