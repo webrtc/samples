@@ -195,8 +195,11 @@ AppController.prototype.transitionToActive_ = function() {
   }
 
   // Prepare the remote video and PIP elements.
+  // Holding the mouse down on the PIP causes it to swap with the main video.
   trace('reattachMediaStream: ' + this.localVideo_.src);
   reattachMediaStream(this.miniVideo_, this.localVideo_);
+  this.miniVideo_.onmousedown = this.swapSelfView_.bind(this);
+  this.miniVideo_.onmouseup = this.swapSelfView_.bind(this);
 
   // Transition opacity from 0 to 1 for the remote and mini videos.
   this.activate_(this.remoteVideo_);
@@ -245,6 +248,12 @@ AppController.prototype.transitionToDone_ = function() {
       this.roomLink_ + '\'>Click here</a> to rejoin.');
 };
 
+AppController.prototype.swapSelfView_ = function() {
+  var temp = this.miniVideo_.src;
+  this.miniVideo_.src = this.remoteVideo_.src;
+  this.remoteVideo_.src = temp;
+}
+
 // Spacebar, or m: toggle audio mute.
 // c: toggle camera(video) mute.
 // f: toggle fullscreen.
@@ -269,6 +278,9 @@ AppController.prototype.onKeyPress_ = function(event) {
       return false;
     case 'i':
       this.infoBox_.toggleInfoDiv();
+      return false;
+    case 's':
+      this.swapSelfView_();
       return false;
     case 'q':
       this.hangup_();
