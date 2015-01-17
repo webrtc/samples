@@ -20,10 +20,11 @@ var InfoBox = function(infoDiv, remoteVideo, call) {
   this.call_ = call;
 
   this.errorMessages_ = [];
+  // Time when the call was intiated and accepted.
+  this.startTime_ = null;
+  this.answerTime_ = null;
   this.stats_ = null;
   this.prevStats_ = null;
-  this.startTime_ = null;
-  this.endTime_ = null;
   this.getStatsTimer_ = null;
 
   // Types of gathered ICE Candidates.
@@ -51,9 +52,9 @@ InfoBox.prototype.pushErrorMessage = function(msg) {
   this.showInfoDiv();
 };
 
-InfoBox.prototype.setSetupTimes = function(startTime, endTime) {
-  this.startTime_ = startTime;
-  this.endTime_ = endTime;
+InfoBox.prototype.setSetupTimes = function(startTime, answerTime) {
+  this.startTime_ =  startTime;
+  this.answerTime_ = answerTime;
 };
 
 InfoBox.prototype.showInfoDiv = function() {
@@ -146,9 +147,9 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
   if (this.endTime_ !== null) {
     contents += this.buildLine_('Call time',
-        this.formatInterval_(window.performance.now() - this.endTime_));
+        this.formatInterval_(window.performance.now() - this.answerTime_));
     contents += this.buildLine_('Setup time',
-        this.formatMsec_(this.endTime_ - this.startTime_));
+        this.formatMsec_(this.acceptTime_ - this.startTime_));
   }
   if (rtt !== null) {
     contents += this.buildLine_('RTT', this.formatMsec_(rtt));
