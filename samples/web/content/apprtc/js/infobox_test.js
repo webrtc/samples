@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals TestCase, assertEquals, formatBitrate, formatInterval */
+/* globals TestCase, assertEquals, InfoBox */
 
 'use strict';
 

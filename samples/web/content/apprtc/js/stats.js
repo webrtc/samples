@@ -85,7 +85,7 @@ function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
     return null;
   }
 
-  // Adding offset to get NTP time.
+  // Adding offset (milliseconds between 1900 and 1970) to get NTP time.
   var nowNTP = Date.now() + 2208988800000;
   return nowNTP - captureStart - remoteVideoCurrentTime * 1000;
 }
