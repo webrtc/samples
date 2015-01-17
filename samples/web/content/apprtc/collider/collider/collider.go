@@ -64,7 +64,7 @@ func (c *Collider) httpStatusHandler(w http.ResponseWriter, r *http.Request) {
 	if err := enc.Encode(rp); err != nil {
 		err = errors.New("Failed to encode to JSON: err=" + err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		c.dash.onHttpError(err)
+		c.dash.onHttpErr(err)
 	}
 }
 
@@ -149,7 +149,7 @@ loop:
 				break loop
 			}
 			registered, rid, cid = true, msg.RoomID, msg.ClientID
-			c.dash.incrWsCount()
+			c.dash.incrWs()
 
 			defer c.roomTable.deregister(rid, cid)
 			break
@@ -174,11 +174,11 @@ loop:
 func (c *Collider) httpError(msg string, w http.ResponseWriter) {
 	err := errors.New(msg)
 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	c.dash.onHttpError(err)
+	c.dash.onHttpErr(err)
 }
 
 func (c *Collider) wsError(msg string, ws *websocket.Conn) {
 	err := errors.New(msg)
 	sendServerErr(ws, msg)
-	c.dash.onWsError(err)
+	c.dash.onWsErr(err)
 }

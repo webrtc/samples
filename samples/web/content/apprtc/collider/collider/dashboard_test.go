@@ -50,43 +50,69 @@ func TestDashboardWsCount(t *testing.T) {
 	rt := createNewRoomTable()
 	db := newDashboard()
 	r := db.getReport(rt)
-	verifyIntValue(t, r, "OpenWs", 0, "db.getReport.OpenWs")
-	verifyIntValue(t, r, "TotalWs", 0, "db.getReport.TotalWs")
+	if r.OpenWs != 0 {
+		t.Errorf("db.getReport().OpenWs is %d, want 0", r.OpenWs)
+	}
+	if r.TotalWs != 0 {
+		t.Errorf("db.getReport().TotalWs is %d, want 0", r.TotalWs)
+	}
 
-	db.incrWsCount()
+	db.incrWs()
 	r = db.getReport(rt)
-	verifyIntValue(t, r, "OpenWs", 0, "db.getReport.OpenWs")
-	verifyIntValue(t, r, "TotalWs", 1, "db.getReport.TotalWs")
+	if r.OpenWs != 0 {
+		t.Errorf("db.getReport().OpenWs is %d, want 0", r.OpenWs)
+	}
+	if r.TotalWs != 1 {
+		t.Errorf("db.getReport().TotalWs is %d, want 1", r.TotalWs)
+	}
 
 	rt.register("r", "c", &collidertest.MockReadWriteCloser{Closed: false})
 	r = db.getReport(rt)
-	verifyIntValue(t, r, "OpenWs", 1, "db.getReport.OpenWs")
+	if r.OpenWs != 1 {
+		t.Errorf("db.getReport().OpenWs is %d, want 1", r.OpenWs)
+	}
 }
 
 func TestDashboardWsErr(t *testing.T) {
 	rt := createNewRoomTable()
 	db := newDashboard()
 	r := db.getReport(rt)
-	verifyIntValue(t, r, "WsErrors", 0, "db.getReport.WsErrors")
-	verifyArrayLen(t, r, "ErrLog", 0, "len(db.getReport.ErrLog)")
+	if r.WsErrs != 0 {
+		t.Errorf("db.getReport().WsErrs is %d, want 0", r.WsErrs)
+	}
+	if len(r.ErrLog) != 0 {
+		t.Errorf("len(db.getReport().ErrLog) is %d, want 0", len(r.ErrLog))
+	}
 
-	db.onWsError(errors.New("Fake error"))
+	db.onWsErr(errors.New("Fake error"))
 	r = db.getReport(rt)
-	verifyIntValue(t, r, "WsErrors", 1, "db.getReport.WsErrors")
-	verifyArrayLen(t, r, "ErrLog", 1, "len(db.getReport.ErrLog)")
+	if r.WsErrs != 1 {
+		t.Errorf("db.getReport().WsErrs is %d, want 1", r.WsErrs)
+	}
+	if len(r.ErrLog) != 1 {
+		t.Errorf("len(db.getReport().ErrLog) is %d, want 1", len(r.ErrLog))
+	}
 }
 
 func TestDashboardHttpErr(t *testing.T) {
 	rt := createNewRoomTable()
 	db := newDashboard()
 	r := db.getReport(rt)
-	verifyIntValue(t, r, "HttpErrors", 0, "db.getReport.HttpErrors")
-	verifyArrayLen(t, r, "ErrLog", 0, "len(db.getReport.ErrLog)")
+	if r.HttpErrs != 0 {
+		t.Errorf("db.getReport().HttpErrs is %d, want 0", r.HttpErrs)
+	}
+	if len(r.ErrLog) != 0 {
+		t.Errorf("len(db.getReport().ErrLog) is %d, want 0", len(r.ErrLog))
+	}
 
-	db.onHttpError(errors.New("Fake error"))
+	db.onHttpErr(errors.New("Fake error"))
 	r = db.getReport(rt)
-	verifyIntValue(t, r, "HttpErrors", 1, "db.getReport.HttpErrors")
-	verifyArrayLen(t, r, "ErrLog", 1, "len(db.getReport.ErrLog)")
+	if r.HttpErrs != 1 {
+		t.Errorf("db.getReport().HttpErrs is %d, want 1", r.HttpErrs)
+	}
+	if len(r.ErrLog) != 1 {
+		t.Errorf("len(db.getReport().ErrLog) is %d, want 1", len(r.ErrLog))
+	}
 }
 
 func TestDashboardErrLog(t *testing.T) {
@@ -94,16 +120,24 @@ func TestDashboardErrLog(t *testing.T) {
 	db := newDashboard()
 
 	for i := 0; i < maxErrLogLen+1; i++ {
-		db.onHttpError(errors.New(strconv.Itoa(i)))
+		db.onHttpErr(errors.New(strconv.Itoa(i)))
 	}
 	r := db.getReport(rt)
-	verifyIntValue(t, r, "HttpErrors", maxErrLogLen+1, "db.getReport.HttpErrors")
-	verifyArrayLen(t, r, "ErrLog", maxErrLogLen, "len(db.getReport.ErrLog)")
+
+	if r.HttpErrs != maxErrLogLen+1 {
+		t.Errorf("db.getReport().HttpErrs is %d, want %d", r.HttpErrs, maxErrLogLen+1)
+	}
+	if len(r.ErrLog) != maxErrLogLen {
+		t.Errorf("len(db.getReport().ErrLog) is %d, want %d", len(r.ErrLog), maxErrLogLen)
+	}
 
 	// Verifies the start and the end of the error log.
-	v := reflect.ValueOf(r)
-	f := v.FieldByName("ErrLog")
-	s, e := f.Index(0).Interface(), f.Index(maxErrLogLen-1).Interface()
-	verifyStringValue(t, s, "Err", "1", "db.getReport.ErrLog[0].Err")
-	verifyStringValue(t, e, "Err", strconv.Itoa(maxErrLogLen), "db.getReport.ErrLog[maxErrLogLen-1].Err")
+	expected_err := "1"
+	if r.ErrLog[0].Err != expected_err {
+		t.Errorf("The first error in db.getReport().ErrLog is %s, want %s", r.ErrLog[0].Err, expected_err)
+	}
+	expected_err = strconv.Itoa(maxErrLogLen)
+	if r.ErrLog[maxErrLogLen-1].Err != expected_err {
+		t.Errorf("The last error in db.getReport().ErrLog is %s, want %s", r.ErrLog[maxErrLogLen-1].Err, expected_err)
+	}
 }

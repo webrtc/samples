@@ -122,7 +122,7 @@ func (rm *room) wsCount() int {
 	count := 0
 	for _, c := range rm.clients {
 		if c.registered() {
-			count = count + 1
+			count += 1
 		}
 	}
 	return count

@@ -22,11 +22,11 @@ type dashboard struct {
 
 	startTime time.Time
 
-	totalWsCount      int
-	totalRecvMsgCount int
-	totalSendMsgCount int
-	wsErrorCount      int
-	httpErrorCount    int
+	totalWs       int
+	totalRecvMsgs int
+	totalSendMsgs int
+	wsErrs        int
+	httpErrs      int
 
 	// A circular buffer of the error events.
 	errLog      []errEvent
@@ -34,19 +34,19 @@ type dashboard struct {
 }
 
 type statusReport struct {
-	UpTimeSec  float64    `json:"upsec"`
-	OpenWs     int        `json:"openws"`
-	TotalWs    int        `json:"totalws"`
-	WsErrors   int        `json:"wserrors"`
-	HttpErrors int        `json:"httperrors"`
-	ErrLog     []errEvent `json:"errlog"`
+	UpTimeSec float64    `json:"upsec"`
+	OpenWs    int        `json:"openws"`
+	TotalWs   int        `json:"totalws"`
+	WsErrs    int        `json:"wserrors"`
+	HttpErrs  int        `json:"httperrors"`
+	ErrLog    []errEvent `json:"errlog"`
 }
 
 func newDashboard() *dashboard {
 	return &dashboard{startTime: time.Now(), errLog: make([]errEvent, 0)}
 }
 
-func (db *dashboard) getReport(rs *roomTable) interface{} {
+func (db *dashboard) getReport(rs *roomTable) statusReport {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
@@ -58,34 +58,34 @@ func (db *dashboard) getReport(rs *roomTable) interface{} {
 		copy(el[(maxErrLogLen-db.errLogStart):], db.errLog[:db.errLogStart])
 	}
 	return statusReport{
-		UpTimeSec:  upTime.Seconds(),
-		OpenWs:     rs.wsCount(),
-		TotalWs:    db.totalWsCount,
-		WsErrors:   db.wsErrorCount,
-		HttpErrors: db.httpErrorCount,
-		ErrLog:     el,
+		UpTimeSec: upTime.Seconds(),
+		OpenWs:    rs.wsCount(),
+		TotalWs:   db.totalWs,
+		WsErrs:    db.wsErrs,
+		HttpErrs:  db.httpErrs,
+		ErrLog:    el,
 	}
 }
 
-func (db *dashboard) incrWsCount() {
+func (db *dashboard) incrWs() {
 	db.lock.Lock()
 	defer db.lock.Unlock()
-	db.totalWsCount = db.totalWsCount + 1
+	db.totalWs += 1
 }
 
-func (db *dashboard) onWsError(err error) {
+func (db *dashboard) onWsErr(err error) {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	db.wsErrorCount = db.wsErrorCount + 1
+	db.wsErrs += 1
 	db.addErrEvent(err)
 }
 
-func (db *dashboard) onHttpError(err error) {
+func (db *dashboard) onHttpErr(err error) {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	db.httpErrorCount = db.httpErrorCount + 1
+	db.httpErrs += 1
 	db.addErrEvent(err)
 }
 
