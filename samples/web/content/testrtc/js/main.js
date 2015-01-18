@@ -409,6 +409,12 @@ function getVideoDeviceName_(stream) {
   return stream.getVideoTracks()[0].label;
 }
 
+function createLineChart() {
+  var chart = document.createElement('line-chart');
+  currentTest.output_.appendChild(chart);
+  return chart.addDatapoint.bind(chart);
+}
+
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
   var start = window.performance.now();
   var updateProgressBar = setInterval(function() {

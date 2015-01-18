@@ -5,17 +5,14 @@ threadsafe: true
 api_version: 1
 
 handlers:
-- url: /html
-  static_dir: html
-
-- url: /images
-  static_dir: images
-
 - url: /js
   static_dir: js
 
 - url: /css
   static_dir: css
+
+- url: /bower_components/testrtc
+  static_dir: .
 
 - url: /bower_components
   static_dir: bower_components
