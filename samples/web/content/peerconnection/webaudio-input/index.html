@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript">
+  <meta name="description" content="Client-side WebRTC code samples.">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>Web Audio input</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Web Audio input</span></h1>
+
+    <audio autoplay controls></audio>
+
+    <div id="options">
+      <input type="checkbox" id="renderLocally" disabled><label for="renderLocally">Add local audio to output</label>
+    </div>
+
+    <div id="buttons">
+      <button id="start">Start</button>
+      <button id="stop" disabled>Stop</button>
+    </div>
+
+    <div id="status"></div>
+
+    <p>Capture microphone input and stream it to a peer with processing applied to the audio.</p>
+
+    <p>The audio stream is:</p>
+
+    <ul>
+      <li>Recorded using <a href="http://www.html5audio.org/2012/09/live-audio-input-comes-to-googles-chrome-canary.html" title="Live audio input comes to Google's Chrome Canary">live audio input</a>.</li>
+      <li>Filtered using an HP filter with fc=1500 Hz.</li>
+      <li>Encoded using <a href="http://www.opus-codec.org/" title="Opus Codec">Opus</a>.</li>
+      <li>Transmitted (in loopback) to a remote peer using <a href="http://dev.w3.org/2011/webrtc/editor/webrtc.html#rtcpeerconnection-interface" title="RTCPeerConnection Interface">RTCPeerConnection</a> where it is decoded.</li>
+      <li>Finally, the received remote stream is used as source to an &lt;audio&gt; element and played out locally. </li>
+    </ul>
+
+    <p>Press any key to add an effect to the transmitted audio while talking.</p>
+
+    <p>Please note that:</p>
+    <ul>
+      <li>Linux is currently not supported.</li>
+      <li>Sample rate and channel configuration must be the same for input and
+        output sides on Windows.</li>
+        <li>Only the default microphone device can be used for capturing.</li>
+      </ul>
+
+      <p>For more information, see <a href="https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/webrtc-integration.html" title="Example 3: Capture microphone input and stream it out to a peer with a processing effect applied to the audio">WebRTC integration with the Web Audio API</a>.</p>
+
+
+      <a href="https://github.com/GoogleChrome/webrtc/tree/gh-pages/samples/web/content/peerconnection/webaudio-input" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+    </div>
+
+    <script src="../../../js/adapter.js"></script>
+    <script src="js/webaudioextended.js"></script>
+    <script src="js/main.js"></script>
+    <script src="../../../js/lib/ga.js"></script>
+  </body>
+  </html>

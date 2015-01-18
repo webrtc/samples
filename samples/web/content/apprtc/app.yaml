@@ -1,5 +1,5 @@
 application: apprtc
-version: 6
+version: 2
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -17,12 +17,13 @@ handlers:
 - url: /css
   static_dir: css
 
+- url: /probe.*
+  script: probers.app
+  secure: always
+
 - url: /.*
   script: apprtc.app
   secure: always
-
-inbound_services:
-- channel_presence
 
 libraries:
 - name: jinja2
