@@ -51,7 +51,7 @@ function getStatsReport(stats, statObj, statName, statVal) {
         // If |statName| is present, ensure |report| has that stat.
         // If |statVal| is present, ensure the value matches.
         if (statName) {
-          var val = report.stat(statName);
+          var val = statName === 'id' ? report.id : report.stat(statName);
           found = (statVal !== undefined) ? (val === statVal) : val;
         }
         if (found) {

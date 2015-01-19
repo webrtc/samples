@@ -65,16 +65,25 @@ function updateInfoDiv() {
       localAddr = activeCandPair.stat('googLocalAddress');
       remoteAddr = activeCandPair.stat('googRemoteAddress');
       localAddrType = activeCandPair.stat('googLocalCandidateType');
-      remoteAddrType = activeCandPair.stat('googRemoteCandidateType');
+      remoteAddrType = activeCandPair.stat('googRemoteCandidateType')
     }
     if (localAddr && remoteAddr) {
-      var localTypePref = getCandidateTypePreference(pc, activeCandPair);
-      var remoteTypePref = getCandidateTypePreference(pc, activeCandPair, true);
+      var localCandId = activeCandPair.stat('localCandidateId');
+      var remoteCandId = activeCandPair.stat('remoteCandidateId');
+      var localCand, remoteCand;
+      var localTypePref, remoteTypePref;
+      if (localCandId && remoteCandId) {
+        localCand = getStatsReport(stats, 'localcandidate', 'id', localCandId);
+        remoteCand = getStatsReport(stats, 'remotecandidate', 'id', remoteCandId);
+        localTypePref = localCand.stat('priority') >> 24;
+        remoteTypePref = remoteCand.stat('priority') >> 24;
+        // remoteAddrType = remoteCand.stat('candidateType'); // relayED
+      }
       contents += buildLine('LocalAddr', localAddr +
-          ' (' + localAddrType + (localAddrType === 'relay' ?
+          ' (' + localAddrType + (localTypePref !== undefined ?
             ' ' + formatTypePreference(localTypePref) : '') + ')');
       contents += buildLine('RemoteAddr', remoteAddr +
-          ' (' + remoteAddrType + (remoteAddrType === 'relay' ?
+          ' (' + remoteAddrType + (remoteTypePref !== undefined ?
             ' ' + formatTypePreference(remoteTypePref) : '') + ')');
     }
     contents += buildLine();
