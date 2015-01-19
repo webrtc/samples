@@ -4,7 +4,7 @@ For contributors external to Google, follow the instructions given in the [Googl
 
 In all cases, contributors must sign a contributor license agreement before a contribution can be accepted. Please complete the agreement for an [individual](https://developers.google.com/open-source/cla/individual) or a [corporation](https://developers.google.com/open-source/cla/corporate) as appropriate.
 
-If you plan to add a significant component or large chunk of code, it is recommended to bring this up on the [webrtc-discuss group](https://groups.google.com/forum/#!forum/discuss-webrtc) for a design discussion before writing code.
+If you plan to add a significant component or large chunk of code, we recommend you bring this up on the [webrtc-discuss group](https://groups.google.com/forum/#!forum/discuss-webrtc) for a design discussion before writing code.
 
 If appropriate, write a unit test which demonstrates that your code functions as expected. Tests are the best way to ensure that future contributors do not break your code accidentally.
 
