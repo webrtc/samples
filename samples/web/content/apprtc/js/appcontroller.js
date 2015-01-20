@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals trace, InfoBox, setUpFullScreen, isFullScreen,
-   RoomSelection, isChromeApp, chrome */
+   RoomSelection, isChromeApp */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -64,8 +64,6 @@ var AppController = function(loadingParams) {
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
-  
-  this.inCall_ = false;
 
   this.muteAudioIconSet_ = new AppController.IconSet_(
       UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
@@ -128,24 +126,21 @@ var AppController = function(loadingParams) {
     this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 
     this.roomSelection_ = null;
-    if (this.loadingParams_.connect !== false && this.loadingParams_.roomId) {
-      // If we already have a room to connect to, connect now.
-      this.call_.start(this.loadingParams_.roomId);
-      
+    // If the params has a roomId specified, we should connect to that room immediately.
+    // If not, show the room selection UI.
+    if (this.loadingParams_.roomId) {
       // Record this room in the recently used list.
       var recentlyUsedList = new RoomSelection.RecentlyUsedList();
       recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
-      
-      this.finishCallSetup_();
+      this.finishCallSetup_(this.loadingParams_.roomId);
     } else {
       // Display the room selection UI.
       var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
-      this.roomSelection_ = new RoomSelection(roomSelectionDiv, this.loadingParams_.suggestedRoomId);
+      this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
       this.show_(roomSelectionDiv);
       this.roomSelection_.onRoomSelected = function(roomName) {
         this.hide_(roomSelectionDiv);
-        this.call_.start(roomName);
-        this.finishCallSetup_();
+        this.finishCallSetup_(roomName);
       }.bind(this);
     }
   }.bind(this)).catch(function(error) {
@@ -153,8 +148,8 @@ var AppController = function(loadingParams) {
   }.bind(this));
 };
 
-AppController.prototype.finishCallSetup_ = function() {
-  this.inCall_ = true;
+AppController.prototype.finishCallSetup_ = function(roomId) {
+  this.call_.start(roomId);
   
   window.onbeforeunload = this.call_.hangup.bind(this.call_);
   document.onkeypress = this.onKeyPress_.bind(this);
@@ -189,7 +184,6 @@ AppController.prototype.hangup_ = function() {
   this.hide_(this.icons_);
   this.displayStatus_('Hanging up');
   this.transitionToDone_();
-  this.inCall_ = false;
 
   this.call_.hangup();
 };
@@ -311,10 +305,6 @@ AppController.prototype.transitionToDone_ = function() {
 // q: quit (hangup)
 // Return false to screen out original Chrome shortcuts.
 AppController.prototype.onKeyPress_ = function(event) {
-  if (!this.inCall_) {
-    return;
-  }
-  
   switch (String.fromCharCode(event.charCode)) {
     case ' ':
     case 'm':
@@ -382,18 +372,10 @@ AppController.prototype.toggleVideoMute_ = function() {
 AppController.prototype.toggleFullScreen_ = function() {
   if (isFullScreen()) {
     trace('Exiting fullscreen.');
-    if (isChromeApp()) {
-      chrome.app.window.current().restore();
-    } else {
-      document.cancelFullScreen();
-    }
+    document.cancelFullScreen();
   } else {
     trace('Entering fullscreen.');
-    if (isChromeApp()) {
-      chrome.app.window.current().fullscreen();
-    } else {
-      document.body.requestFullScreen();
-    }
+    document.body.requestFullScreen();
   }
   this.fullscreenIconSet_.toggle();
 };

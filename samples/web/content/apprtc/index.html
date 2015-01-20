@@ -40,18 +40,18 @@
   </div>
   
   <div id="room-selection" class="hidden">
-     <h1>AppRTC</h1>
-     <p id="instructions">Please enter a room name. Room names are shared with everyone, so think of something unique and send it to a friend.</p>
-     <div>
-       <input type="text" id="room-id-input"/>
-       <button id="join-button">Join</button>
-       <button id="random-button">Random</button>
-     </div>
-     <div id="recent-rooms">
-       <p>Recently used rooms:</p>
-       <ul id="recent-rooms-list"></ul>
-     </div>
-   </div>
+    <h1>AppRTC</h1>
+    <p id="instructions">Please enter a room name.</p>
+    <div>
+      <input type="text" id="room-id-input"/>
+      <button id="join-button">Join</button>
+      <button id="random-button">Random</button>
+    </div>
+    <div id="recent-rooms">
+      <p>Recently used rooms:</p>
+      <ul id="recent-rooms-list"></ul>
+    </div>
+  </div>
 
   <footer>
     <div id="sharing-div">
@@ -99,6 +99,7 @@
 
   <script src="/js/stats.js"></script>
   <script src="/js/util.js"></script>
+  <script src="/js/storage.js"></script>
   <script src="/js/adapter.js"></script>
 {% if not chromeapp %}
   {{ include_loopback_js }}
@@ -119,13 +120,9 @@
     var loadingParams = {
       errorMessages: {{ error_messages }},
       isLoopback: {{ is_loopback }},
-{% if connect %}
+{% if room_id %}
       roomId: '{{ room_id }}',
       roomLink: '{{ room_link }}',
-      connect: true,
-{% else %}
-      suggestedRoomId: '{{ room_id }}',
-      connect: false,
 {% endif %}
 
       mediaConstraints: {{ media_constraints | safe }},

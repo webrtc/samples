@@ -65,15 +65,11 @@ class AppRtcPageHandlerTest(unittest.TestCase):
   def testConnectingWithoutRoomIdServesIndex(self):
     response = self.makeGetRequest('/')
     self.assertEqual(response.status_int, 200)
-    self.assertRegexpMatches(response.body, 'suggestedRoomId: \'[0-9]{8}\'')
-    self.assertRegexpMatches(response.body, 'connect: false')
     self.assertNotRegexpMatches(response.body, 'roomId:')
 
   def testConnectingWithRoomIdServesIndex(self):
     response = self.makeGetRequest('/r/testRoom')
     self.assertEqual(response.status_int, 200)
-    self.assertNotRegexpMatches(response.body, 'suggestedRoomId:')
-    self.assertRegexpMatches(response.body, 'connect: true')
     self.assertRegexpMatches(response.body, 'roomId: \'testRoom\'')
     
   def testRegisterAndBye(self):

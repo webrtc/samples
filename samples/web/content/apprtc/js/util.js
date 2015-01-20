@@ -9,8 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* exported setUpFullScreen, fullScreenElement, isFullScreen, 
-   requestTurnServers, sendAsyncUrlRequest, randomString,
-   getStorage, setStorage */
+   requestTurnServers, sendAsyncUrlRequest, randomString */
 /* globals chrome */
 
 'use strict';
@@ -89,12 +88,24 @@ function filterTurnUrls(urls, protocol) {
 
 // Start shims for fullscreen
 function setUpFullScreen() {
-  document.cancelFullScreen = document.webkitCancelFullScreen ||
-  document.mozCancelFullScreen || document.cancelFullScreen;
+  if (isChromeApp()) {
+    document.cancelFullScreen = function() { 
+      chrome.app.window.current().restore();
+    };
+  } else {
+    document.cancelFullScreen = document.webkitCancelFullScreen ||
+        document.mozCancelFullScreen || document.cancelFullScreen;
+  }
   
-  document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-  document.body.mozRequestFullScreen || document.body.requestFullScreen;
-
+  if (isChromeApp()) {
+    document.body.requestFullScreen = function() {
+      chrome.app.window.current().fullscreen();
+    };
+  } else {
+    document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+        document.body.mozRequestFullScreen || document.body.requestFullScreen;
+  }
+  
   document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
 }
 
@@ -130,40 +141,4 @@ function isChromeApp() {
   return (typeof chrome !== 'undefined' &&
           typeof chrome.storage !== 'undefined' &&
           typeof chrome.storage.local !== 'undefined');
-}
-
-// Get a value from local browser storage. Calls callback with value.
-function getStorage(key, callback) {
-  if (isChromeApp()) {
-    // use chrome.storage.local
-    chrome.storage.local.get(key, function(values) {
-      // unwrap key/value pair
-      if (callback)
-      {
-        callback(values[key]);
-      }
-    });
-  } else {
-    // use localStorage
-    var value = localStorage.getItem(key);
-    if (callback) {
-      callback(value);
-    }
-  }
-}
-
-// Set a value in local browser storage. Calls callback after completion.
-function setStorage(key, value, callback) {
-  if (isChromeApp()) {
-    // use chrome.storage.local
-    var data = {};
-    data[key] = value;
-    chrome.storage.local.set(data, callback);
-  } else {
-    // use localStorage
-    localStorage.setItem(key, value);
-    if (callback) {
-      callback();
-    }
-  }
 }
