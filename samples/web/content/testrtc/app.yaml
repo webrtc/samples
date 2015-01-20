@@ -11,8 +11,8 @@ handlers:
 - url: /css
   static_dir: css
 
-- url: /bower_components/testrtc
-  static_dir: .
+- url: /bower_components/testrtc/ui
+  static_dir: ui
 
 - url: /bower_components
   static_dir: bower_components

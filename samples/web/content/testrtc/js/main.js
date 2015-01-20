@@ -412,7 +412,8 @@ function getVideoDeviceName_(stream) {
 function createLineChart() {
   var chart = document.createElement('line-chart');
   currentTest.output_.appendChild(chart);
-  return chart.addDatapoint.bind(chart);
+  currentTest.output_.opened = true;
+  return chart;
 }
 
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
