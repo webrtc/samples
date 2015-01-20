@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported setUpFullScreen, fullScreenElement, isFullScreen, 
+/* exported setUpFullScreen, fullScreenElement, isFullScreen,
    requestTurnServers, sendAsyncUrlRequest, randomString */
 /* globals chrome */
 
@@ -106,7 +106,8 @@ function setUpFullScreen() {
         document.body.mozRequestFullScreen || document.body.requestFullScreen;
   }
   
-  document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
+  document.onfullscreenchange = document.onfullscreenchange ||
+        document.onwebkitfullscreenchange || document.onmozfullscreenchange;
 }
 
 function isFullScreen(){
