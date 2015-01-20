@@ -43,7 +43,7 @@ window.onload = function() {
   }
   // Checks if the mobile UI should be used.
   registerResButtonsEvents();
-  screenCaptureExtensionHandler_()
+  screenCaptureExtensionHandler_();
 };
 
 // Disconnect before the tab is closed.
@@ -416,7 +416,7 @@ function screenCaptureExtensionHandler_() {
             maxHeight: window.screen.height
           }
         }
-      }
+      };
       doGetUserMedia_(JSON.stringify(constraints));
     }
 
