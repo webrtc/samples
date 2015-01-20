@@ -155,13 +155,13 @@ AppController.prototype.finishCallSetup_ = function(roomId) {
   if (!isChromeApp()) {
     window.onpopstate = function(event) {
       if (!event.state) {
-        // Resetting back to room selection page not yet supported, reload
-        // the initial page instead.
+        // TODO (chuckhays) : Resetting back to room selection page not 
+        // yet supported, reload the initial page instead.
         trace('Reloading main page.');
         location.href = location.origin;
       } else {
-        // This could be a forward request to open a room again
-        if (event.state && event.state.roomLink) {
+        // This could be a forward request to open a room again.
+        if (event.state.roomLink) {
           location.href = event.state.roomLink;
         }
       }

@@ -8,43 +8,44 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals UI_CONSTANTS, RoomSelection, assertMatch, assertTrue, assertEquals,
-   TestCase */
+/* globals UI_CONSTANTS, RoomSelection, assertMatch, assertEquals,
+   AsyncTestCase */
 
 'use strict';
 
-var RoomSelectionTest = new TestCase('RoomSelectionTest');
+var RoomSelectionTest = new AsyncTestCase('RoomSelectionTest');
 
 RoomSelectionTest.prototype.setUp = function() {
   var key = 'testRecentRoomsKey';
   localStorage.removeItem(key);
   localStorage.setItem(key, '["room1", "room2", "room3"]');
   
-  var targetDiv = document.createElement('div');
-  targetDiv.id = UI_CONSTANTS.roomSelectionDiv.substring(1);
+  this.targetDiv_ = document.createElement('div');
+  this.targetDiv_.id = UI_CONSTANTS.roomSelectionDiv.substring(1);
   
-  var inputBox = document.createElement('input');
-  inputBox.id = UI_CONSTANTS.roomSelectionInput.substring(1);
-  inputBox.type = 'text';
+  this.inputBox_ = document.createElement('input');
+  this.inputBox_.id = UI_CONSTANTS.roomSelectionInput.substring(1);
+  this.inputBox_.type = 'text';
   
-  var randomButton = document.createElement('button');
-  randomButton.id = UI_CONSTANTS.roomSelectionRandomButton.substring(1);
+  this.randomButton_ = document.createElement('button');
+  this.randomButton_.id = UI_CONSTANTS.roomSelectionRandomButton.substring(1);
   
-  var joinButton = document.createElement('button');
-  joinButton.id = UI_CONSTANTS.roomSelectionJoinButton.substring(1);
+  this.joinButton_ = document.createElement('button');
+  this.joinButton_.id = UI_CONSTANTS.roomSelectionJoinButton.substring(1);
   
-  var recentList = document.createElement('ul');
-  recentList.id = UI_CONSTANTS.roomSelectionRecentList.substring(1);
+  this.recentList_ = document.createElement('ul');
+  this.recentList_.id = UI_CONSTANTS.roomSelectionRecentList.substring(1);
   
-  targetDiv.appendChild(inputBox);
-  targetDiv.appendChild(randomButton);
-  targetDiv.appendChild(joinButton);
-  targetDiv.appendChild(recentList);
+  this.targetDiv_.appendChild(this.inputBox_);
+  this.targetDiv_.appendChild(this.randomButton_);
+  this.targetDiv_.appendChild(this.joinButton_);
+  this.targetDiv_.appendChild(this.recentList_);
   
-  this.roomSelection_ = new RoomSelection(targetDiv, UI_CONSTANTS, key);
+  this.roomSelection_ = new RoomSelection(this.targetDiv_, UI_CONSTANTS, key);
 };
 
 RoomSelectionTest.prototype.tearDown = function() {
+  localStorage.removeItem('testRecentRoomsKey');
   this.roomSelection_ = null;
 };
 
@@ -52,63 +53,80 @@ RoomSelectionTest.prototype.testInputFilter = function() {
   var validInputs = [ '123123', 'asdfs3', 'room1', '3254234523452345234523452345asdfasfdasdf'];
   var invalidInputs = ['', ' ', 'abcd', '123', '[5afasdf', 'ñsaer3'];
   
-  var testInput = function(roomSelection, input, expectedResult) {
-    roomSelection.roomIdInput_.value = input;
-    roomSelection.onRoomIdInput_();
-    assertEquals('Incorrect result with input: ' + input, expectedResult, roomSelection.roomJoinButton_.disabled);
-  };
+  var testInput = function(input, expectedResult) {
+    this.inputBox_.value = input;
+
+    var event = document.createEvent('UIEvent');
+    event.initUIEvent('input', true, true);
+    this.inputBox_.dispatchEvent(event);
+    
+    assertEquals('Incorrect result with input: "' + input + '"', expectedResult, this.joinButton_.disabled);
+  }.bind(this);
   
   for (var i = 0; i < validInputs.length; ++i) {
-    testInput(this.roomSelection_, validInputs[i], false);
+    testInput(validInputs[i], false);
   }
   
   for (i = 0; i < invalidInputs.length; ++i) {
-    testInput(this.roomSelection_, invalidInputs[i], true);
+    testInput(invalidInputs[i], true);
   }
 };
 
 RoomSelectionTest.prototype.testRandomButton = function() {
-  this.roomSelection_.roomIdInput_.value = '123';
-  this.roomSelection_.onRandomButton_();
-  assertMatch(/[0-9]{9}/, this.roomSelection_.roomIdInput_.value);
+  this.inputBox_.value = '123';
+  this.randomButton_.click();
+  assertMatch(/[0-9]{9}/, this.inputBox_.value);
 };
 
-RoomSelectionTest.prototype.testRecentListHasChildren = function() {
-  this.roomSelection_.buildRecentRoomList_(['room4', 'room5', 'room6', 'room7']);
-  var children = this.roomSelection_.roomRecentList_.children;
-  assertEquals('There should be 4 recent links.', 4, children.length);
-  assertEquals('The text of the first should be room4.', 'room4', children[0].innerText);
-  assertEquals('The first link should have 1 child.', 1, children[0].children.length);
-  assertMatch('That child should be an href with a link containing room4.', /room4/, children[0].children[0].href);
+RoomSelectionTest.prototype.testRecentListHasChildren = function(queue) {
+  queue.call('Step 1: wait for recent rooms list to be completed.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+    Promise.resolve(this.roomSelection_.recentRoomsListPromise).then(function() {
+      onCompleted();
+    });
+  });
+  
+  queue.call('Step 2: validate recent rooms list.', function() {
+    var children = this.recentList_.children;
+    assertEquals('There should be 3 recent links.', 3, children.length);
+    assertEquals('The text of the first should be room4.', 'room1', children[0].innerText);
+    assertEquals('The first link should have 1 child.', 1, children[0].children.length);
+    assertMatch('That child should be an href with a link containing room1.', /room1/, children[0].children[0].href);
+  });
 };
 
 RoomSelectionTest.prototype.testJoinButton = function() {
-  this.roomSelection_.roomIdInput_.value = 'targetRoom';
+  this.inputBox_.value = 'targetRoom';
   var joinedRoom = null;
   this.roomSelection_.onRoomSelected = function(room) {
     joinedRoom = room;
   };
-  this.roomSelection_.onJoinButton_();
+  this.joinButton_.click();
   
   assertEquals('targetRoom', joinedRoom);
 };
 
-RoomSelectionTest.prototype.testMakeClickHandler = function() {
-  var joinedRoom = null;
-  var mockObject = {
-    loadRoom_: function(room) {
-      joinedRoom = room;
-    }
-  };
-  var defaultPrevented = false;
-  var e = {
-    preventDefault: function() {
-      defaultPrevented = true;
-    }
-  };
-  var handler = this.roomSelection_.makeRecentlyUsedClickHandler_('targetRoom').bind(mockObject);
-  handler(e);
-  assertEquals('targetRoom', joinedRoom);
-  assertTrue(defaultPrevented);
+RoomSelectionTest.prototype.testMakeClickHandler = function(queue) {
+  queue.call('Step 1: wait for recent rooms list to be completed.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+    Promise.resolve(this.roomSelection_.recentRoomsListPromise).then(function() {
+      onCompleted();
+    });
+  });
   
+  queue.call('Step 2: validate that click handler works.', function() {
+    var children = this.recentList_.children;
+    var link = children[0].children[0];
+    
+    var joinedRoom = null;
+    this.roomSelection_.onRoomSelected = function(room) {
+      joinedRoom = room;
+    };
+    
+    var event = document.createEvent('UIEvent');
+    event.initUIEvent('click', true, true);
+    link.dispatchEvent(event);
+    
+    assertEquals('room1', joinedRoom);
+  });
 };

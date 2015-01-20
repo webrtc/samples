@@ -16,12 +16,10 @@
 var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey) {
   this.roomSelectionDiv_ = roomSelectionDiv;
   
-  this.uiConstants = uiConstants;
-  
-  this.roomIdInput_ = this.roomSelectionDiv_.querySelector(this.uiConstants.roomSelectionInput);
-  this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(this.uiConstants.roomSelectionJoinButton);
-  this.roomRandomButton_ = this.roomSelectionDiv_.querySelector(this.uiConstants.roomSelectionRandomButton);
-  this.roomRecentList_ = this.roomSelectionDiv_.querySelector(this.uiConstants.roomSelectionRecentList);
+  this.roomIdInput_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionInput);
+  this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionJoinButton);
+  this.roomRandomButton_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionRandomButton);
+  this.roomRecentList_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionRecentList);
   
   this.roomIdInput_.value = randomString(9);
   // Call onRoomIdInput_ now to validate initial state of input box.
@@ -34,11 +32,11 @@ var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey) {
   this.onRoomSelected = null;
   
   this.recentlyUsedList_ = new RoomSelection.RecentlyUsedList(recentRoomsKey);
-  this.startBuildingRecentRoomList_();
+  this.recentRoomsListPromise = this.startBuildingRecentRoomList_();
 };
 
 RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
-  this.recentlyUsedList_.getRecentRooms().then(this.buildRecentRoomList_.bind(this)).catch(function(error) {
+  return this.recentlyUsedList_.getRecentRooms().then(this.buildRecentRoomList_.bind(this)).catch(function(error) {
     trace('Error building recent rooms list: ' + error.message);
   }.bind(this));
 };
@@ -60,8 +58,9 @@ RoomSelection.prototype.buildRecentRoomList_ = function(recentRooms) {
 };
 
 RoomSelection.prototype.onRoomIdInput_ = function() {
-  // validate room id, enable/disable join button
-  // The server currently accepts only the \w character class
+  // Validate room id, enable/disable join button.
+  // The server currently accepts only the \w character class.
+  // TODO (chuckhays) : Add user hint for acceptable values.
   var room = this.roomIdInput_.value;
   var valid = room.length >= 5;
   var re = /^\w+$/;
@@ -103,25 +102,21 @@ RoomSelection.RecentlyUsedList = function(key) {
 // Add a room to the recently used list and store to local storage.
 RoomSelection.RecentlyUsedList.prototype.pushRecentRoom = function(roomId) {
   // Push recent room to top of recent list, keep max of 10 entries.
-  return new Promise(function(resolve, reject) {
-    if (!roomId) {
-      resolve();
-      return;
-    }
-    
-    this.getRecentRooms().then(function(recentRooms) {
-      recentRooms = [roomId].concat(recentRooms);
-      // Remove any duplicates from the list, leaving the first occurance.
-      recentRooms = recentRooms.filter(function(value, index, self) {
-        return self.indexOf(value) === index;
-      });
-      recentRooms = recentRooms.slice(0,9);
-      this.storage_.setStorage(this.RECENTROOMSKEY_, JSON.stringify(recentRooms), function() {
-        resolve();
-      });
-    }.bind(this)).catch(function(err) {
-      reject(err);
-    }.bind(this));
+  if (!roomId) {
+    return;
+  }
+  
+  this.getRecentRooms().then(function(recentRooms) {
+    recentRooms = [roomId].concat(recentRooms);
+    // Remove any duplicates from the list, leaving the first occurance.
+    recentRooms = recentRooms.filter(function(value, index, self) {
+      return self.indexOf(value) === index;
+    });
+    recentRooms = recentRooms.slice(0,9);
+    this.storage_.setStorage(this.RECENTROOMSKEY_, JSON.stringify(recentRooms), function() {
+    });
+  }.bind(this)).catch(function(err) {
+    trace('Error adding room ' + roomId + ' to recent rooms list: ' + err.message);
   }.bind(this));
 };
 

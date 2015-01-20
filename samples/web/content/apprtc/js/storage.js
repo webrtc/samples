@@ -19,9 +19,9 @@ var Storage = function() {};
 // Handles variation in API between localStorage and Chrome app storage.
 Storage.prototype.getStorage = function(key, callback) {
   if (isChromeApp()) {
-    // use chrome.storage.local
+    // Use chrome.storage.local.
     chrome.storage.local.get(key, function(values) {
-      // unwrap key/value pair
+      // Unwrap key/value pair.
       if (callback)
       {
         window.setTimeout(function() {
@@ -30,7 +30,7 @@ Storage.prototype.getStorage = function(key, callback) {
       }
     });
   } else {
-    // use localStorage
+    // Use localStorage.
     var value = localStorage.getItem(key);
     if (callback) {
       window.setTimeout(function() {
@@ -44,12 +44,12 @@ Storage.prototype.getStorage = function(key, callback) {
 // Handles variation in API between localStorage and Chrome app storage.
 Storage.prototype.setStorage = function(key, value, callback) {
   if (isChromeApp()) {
-    // use chrome.storage.local
+    // Use chrome.storage.local.
     var data = {};
     data[key] = value;
     chrome.storage.local.set(data, callback);
   } else {
-    // use localStorage
+    // Use localStorage.
     localStorage.setItem(key, value);
     if (callback) {
       window.setTimeout(callback, 0);

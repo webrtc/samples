@@ -328,9 +328,9 @@ Call.prototype.registerWithRoomServer_ = function() {
         reject(Error('Error parsing response JSON.'));
         return;
       }
-      if (responseObj.result === 'FULL') {
-        // TODO : handle room full state by returning to room selection state.
-      } else if (responseObj.result !== 'SUCCESS') {
+      if (responseObj.result !== 'SUCCESS') {
+        // TODO (chuckhays) : handle room full state by returning to room selection state.
+        // When room is full, responseObj.result === 'FULL'
         reject(Error('Registration error: ' + responseObj.result));
         return;
       }
