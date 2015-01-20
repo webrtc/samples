@@ -49,7 +49,6 @@ module.exports = function(grunt) {
       options: {
         config: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
-        'samples/web/content/manual-test/**/*',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
@@ -62,7 +61,6 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         ignores: [
-        'samples/web/content/manual-test/**/*',
         'samples/web/content/getusermedia/desktopcapture/**',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/apprtc/js/ga.js',
@@ -83,7 +81,7 @@ module.exports = function(grunt) {
         command: './run_python_tests.sh'
       },
     },
-    
+
     'grunt-chrome-build' : {
       apprtc: {
         options: {
@@ -105,7 +103,7 @@ module.exports = function(grunt) {
               '!**/*test.js',
               '**/*.css',
               'images/apprtc*.png',
-              'manifest.json',  
+              'manifest.json',
               '!*.pem'
             ],
             dest: 'build/chrome-app/'
