@@ -10,11 +10,10 @@
 
 var deviceList = [];
 var counter = 0;
-var checkGum;
 
 window.onload = function() {
   getSources_();
-}
+};
 
 function getSources_() {
   if (typeof MediaStreamTrack.getSources === 'undefined') {
@@ -42,7 +41,7 @@ function requestVideo_(id) {
 }
 
 function getUserMediaFailedCallback_(error) {
-  alert("User media request denied with error: " + error.name);
+  alert('User media request denied with error: ' + error.name);
 }
 
 function getUserMediaOkCallback_(stream) {
@@ -57,12 +56,12 @@ function getUserMediaOkCallback_(stream) {
   div.appendChild(video);
   videoArea.appendChild(div);
   if (typeof stream.getVideoTracks()[0].label !== 'undefined') {
-    var deviceLabel = document.createElement('p')
+    var deviceLabel = document.createElement('p');
     deviceLabel.innerHTML = stream.getVideoTracks()[0].label;
     div.appendChild(deviceLabel);
   }
   stream.getVideoTracks()[0].addEventListener('ended', errorMessage_);
-  attachMediaStream(document.getElementById("view" + counter), stream);
+  attachMediaStream(document.getElementById('view' + counter), stream);
   counter++;
 }
 
@@ -73,4 +72,4 @@ var errorMessage_ = function(event) {
                 'and try again.';
   document.getElementById('messages').innerHTML += event.target.label + ': ' +
                                                    message + '<br><br>';
-}
+};
