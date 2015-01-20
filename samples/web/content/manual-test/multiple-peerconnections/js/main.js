@@ -10,7 +10,7 @@
 // with an arbitrary number of auto-echoing data channels. It can run with
 // two separate cameras.
 
-/* exported call */
+/* exported call, userWroteSomethingIn, addDataChannel */
 
 'use strict';
 
@@ -33,33 +33,29 @@ var videoDeviceList = [];
 
 window.onload = function() {
   getSources_();
-  // startTest_();
 };
 
 function getSources_() {
   if (typeof MediaStreamTrack.getSources === 'undefined') {
-    console.log('Your browser does not support getSources, one camera will ' +
-                'be used.');
-    return;
-  }
-  MediaStreamTrack.getSources(function(devices) {
-    var requestId = 1;
-    for (var i = 0; i < devices.length; i++) {
-      if (devices[i].kind === 'video') {
-        videoDeviceList[i] = devices[i];
-        startTest_(videoDeviceList[i].id, requestId );
-        requestId++;
+    alert('Your browser does not support getSources, aborting');
+  } else {
+    MediaStreamTrack.getSources(function(devices) {
+      var requestId = 1;
+      for (var i = 0; i < devices.length; i++) {
+        if (devices[i].kind === 'video') {
+          videoDeviceList[i] = devices[i];
+          startTest_(videoDeviceList[i].id, requestId );
+          requestId++;
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 // Use source ID to selected two different cameras and
-function startTest_(sourceId, nbr) {
-  console.log('here', nbr);
+function startTest_(sourceId, requestId) {
   // Limit to two cameras only.
-  if (nbr > 3) {
-    console.log('leave');
+  if (requestId > 2) {
     return;
   }
   getUserMedia( {
@@ -67,7 +63,7 @@ function startTest_(sourceId, nbr) {
     audio: true },
     function(localStream) {
       gLocalStreams.push(localStream);
-      play_(localStream, 'local-view-' + nbr );
+      play_(localStream, 'local-view-' + requestId );
     },
     getUserMediaFailedCallback_);
 }
@@ -218,11 +214,11 @@ function addDataChannelSource_(peerNumber, connectionId, dataChannelId) {
        connectionId));
   anchor.innerHTML +=
     '<tr><td><input type="text" id="' + sourceId + '"' +
-    ' onchange="userWroteSomethingIn_(\'' + sourceId + '\', ' +
+    ' onchange="userWroteSomethingIn(\'' + sourceId + '\', ' +
     dataChannelId + ');"/></td></tr>';
 }
 
-function userWroteSomethingIn_(sourceId, dataChannelId) {
+function userWroteSomethingIn(sourceId, dataChannelId) {
   var source = document.getElementById(sourceId);
   var dataChannel = gSendingDataChannels[dataChannelId];
   dataChannel.send(source.value);
