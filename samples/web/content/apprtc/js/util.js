@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported setUpFullScreen, fullScreenElement, isFullScreen, 
+/* exported setUpFullScreen, fullScreenElement, isFullScreen,
    requestTurnServers, sendAsyncUrlRequest, randomString */
 
 'use strict';
@@ -89,11 +89,12 @@ function filterTurnUrls(urls, protocol) {
 function setUpFullScreen() {
   document.cancelFullScreen = document.webkitCancelFullScreen ||
   document.mozCancelFullScreen || document.cancelFullScreen;
-  
+
   document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
   document.body.mozRequestFullScreen || document.body.requestFullScreen;
 
-  document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
+  document.onfullscreenchange = document.onfullscreenchange ||
+    document.onwebkitfullscreenchange || document.onmozfullscreenchange;
 }
 
 function isFullScreen(){

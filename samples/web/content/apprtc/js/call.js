@@ -45,10 +45,10 @@ Call.prototype.isInitiator = function() {
   return this.params_.isInitiator;
 };
 
-Call.prototype.start = function() {
-  this.connectToRoom_(this.maybeGetMedia_(), this.maybeGetTurnServers_());
+Call.prototype.start = function(roomId) {
+  this.connectToRoom_(roomId, this.maybeGetMedia_(), this.maybeGetTurnServers_());
   if (this.params_.isLoopback) {
-    setupLoopback();
+    setupLoopback(this.params_.wssUrl, roomId);
   }
 };
 
@@ -150,7 +150,8 @@ Call.prototype.toggleAudioMute = function() {
 // tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
-Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
+Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
+  this.params_.roomId = roomId;
   // Asynchronously open a WebSocket connection to WSS.
   // TODO(jiayl): We don't need to wait for the signaling channel to open before
   // start signaling.
@@ -168,6 +169,7 @@ Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
         /* jshint ignore:start */
         this.params_.clientId = roomParams.client_id;
         this.params_.roomId = roomParams.room_id;
+        this.params_.roomLink = roomParams.room_link;
         this.params_.isInitiator = roomParams.is_initiator === 'true';
         /* jshint ignore:end */
         this.params_.messages = roomParams.messages;
@@ -294,7 +296,7 @@ Call.prototype.maybeCreatePcClient_ = function() {
 Call.prototype.startSignaling_ = function() {
   trace('Starting signaling.');
   if (this.isInitiator() && this.oncallerstarted) {
-    this.oncallerstarted();
+    this.oncallerstarted(this.params_.roomLink);
   }
 
   this.startTime = window.performance.now();

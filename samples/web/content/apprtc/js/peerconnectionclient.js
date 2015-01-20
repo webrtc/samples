@@ -181,10 +181,10 @@ PeerConnectionClient.prototype.doAnswer_ = function() {
 
 PeerConnectionClient.prototype.setLocalSdpAndNotify_ =
     function(sessionDescription) {
-  sessionDescription.sdp = maybePreferAudioReceiveCodec(sessionDescription.sdp);
-  sessionDescription.sdp = maybePreferVideoReceiveCodec(sessionDescription.sdp);
-  sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp);
-  sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp);
+  sessionDescription.sdp = maybePreferAudioReceiveCodec(sessionDescription.sdp, this.params_);
+  sessionDescription.sdp = maybePreferVideoReceiveCodec(sessionDescription.sdp, this.params_);
+  sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp, this.params_);
+  sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp, this.params_);
   this.pc_.setLocalDescription(sessionDescription,
       trace.bind(null, 'Set session description success.'),
       this.onError_.bind(this, 'setLocalDescription'));
@@ -216,11 +216,11 @@ PeerConnectionClient.prototype.setRemoteSdp_ = function(message) {
     message.sdp = setCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate',
         this.params_.opusMaxPbr);
   }
-  message.sdp = maybePreferAudioSendCodec(message.sdp);
-  message.sdp = maybePreferVideoSendCodec(message.sdp);
-  message.sdp = maybeSetAudioSendBitRate(message.sdp);
-  message.sdp = maybeSetVideoSendBitRate(message.sdp);
-  message.sdp = maybeSetVideoSendInitialBitRate(message.sdp);
+  message.sdp = maybePreferAudioSendCodec(message.sdp, this.params_);
+  message.sdp = maybePreferVideoSendCodec(message.sdp, this.params_);
+  message.sdp = maybeSetAudioSendBitRate(message.sdp, this.params_);
+  message.sdp = maybeSetVideoSendBitRate(message.sdp, this.params_);
+  message.sdp = maybeSetVideoSendInitialBitRate(message.sdp, this.params_);
   this.pc_.setRemoteDescription(new RTCSessionDescription(message),
       this.onSetRemoteDescriptionSuccess_.bind(this),
       this.onError_.bind(this,'setRemoteDescription'));
