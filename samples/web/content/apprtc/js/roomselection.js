@@ -13,8 +13,10 @@
 
 'use strict';
 
-var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey) {
+var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey, setupCompletedCallback) {  
   this.roomSelectionDiv_ = roomSelectionDiv;
+  
+  this.setupCompletedCallback_ = setupCompletedCallback;
   
   this.roomIdInput_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionInput);
   this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionJoinButton);
@@ -32,11 +34,17 @@ var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey) {
   this.onRoomSelected = null;
   
   this.recentlyUsedList_ = new RoomSelection.RecentlyUsedList(recentRoomsKey);
-  this.recentRoomsListPromise = this.startBuildingRecentRoomList_();
+  this.startBuildingRecentRoomList_();
 };
 
 RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
-  return this.recentlyUsedList_.getRecentRooms().then(this.buildRecentRoomList_.bind(this)).catch(function(error) {
+  this.recentlyUsedList_.getRecentRooms().then(function(recentRooms) {
+    this.buildRecentRoomList_(recentRooms);
+    if (this.setupCompletedCallback_)
+    {
+      this.setupCompletedCallback_();
+    }
+  }.bind(this)).catch(function(error) {
     trace('Error building recent rooms list: ' + error.message);
   }.bind(this));
 };
@@ -95,28 +103,35 @@ RoomSelection.prototype.loadRoom_ = function(roomName) {
 };
 
 RoomSelection.RecentlyUsedList = function(key) {
+  // This is the length of the most recently used list.
+  this.LISTLENGTH_ = 10;
+  
   this.RECENTROOMSKEY_ = key || 'recentRooms';
   this.storage_ = new Storage();
 };
 
 // Add a room to the recently used list and store to local storage.
 RoomSelection.RecentlyUsedList.prototype.pushRecentRoom = function(roomId) {
-  // Push recent room to top of recent list, keep max of 10 entries.
-  if (!roomId) {
-    return;
-  }
+  // Push recent room to top of recent list, keep max of this.LISTLENGTH_ entries.
+  return new Promise(function(resolve, reject) {
+    if (!roomId) {
+      resolve();
+      return;
+    }
   
-  this.getRecentRooms().then(function(recentRooms) {
-    recentRooms = [roomId].concat(recentRooms);
-    // Remove any duplicates from the list, leaving the first occurance.
-    recentRooms = recentRooms.filter(function(value, index, self) {
-      return self.indexOf(value) === index;
-    });
-    recentRooms = recentRooms.slice(0,9);
-    this.storage_.setStorage(this.RECENTROOMSKEY_, JSON.stringify(recentRooms), function() {
-    });
-  }.bind(this)).catch(function(err) {
-    trace('Error adding room ' + roomId + ' to recent rooms list: ' + err.message);
+    this.getRecentRooms().then(function(recentRooms) {
+      recentRooms = [roomId].concat(recentRooms);
+      // Remove any duplicates from the list, leaving the first occurance.
+      recentRooms = recentRooms.filter(function(value, index, self) {
+        return self.indexOf(value) === index;
+      });
+      recentRooms = recentRooms.slice(0, this.LISTLENGTH_);
+      this.storage_.setStorage(this.RECENTROOMSKEY_, JSON.stringify(recentRooms), function() {
+        resolve();
+      });
+    }.bind(this)).catch(function(err) {
+      reject(err);
+    }.bind(this));
   }.bind(this));
 };
 

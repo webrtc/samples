@@ -41,7 +41,11 @@ RoomSelectionTest.prototype.setUp = function() {
   this.targetDiv_.appendChild(this.joinButton_);
   this.targetDiv_.appendChild(this.recentList_);
   
-  this.roomSelection_ = new RoomSelection(this.targetDiv_, UI_CONSTANTS, key);
+  this.roomSelectionSetupCompletedPromise_ = new Promise(function(resolve) {
+    this.roomSelection_ = new RoomSelection(this.targetDiv_, UI_CONSTANTS, key, function() {
+      resolve();
+    }.bind(this));
+  }.bind(this));
 };
 
 RoomSelectionTest.prototype.tearDown = function() {
@@ -81,9 +85,9 @@ RoomSelectionTest.prototype.testRandomButton = function() {
 RoomSelectionTest.prototype.testRecentListHasChildren = function(queue) {
   queue.call('Step 1: wait for recent rooms list to be completed.', function(callbacks) {
     var onCompleted = callbacks.add(function() {});
-    Promise.resolve(this.roomSelection_.recentRoomsListPromise).then(function() {
+    this.roomSelectionSetupCompletedPromise_.then(function() {
       onCompleted();
-    });
+    }.bind(this));
   });
   
   queue.call('Step 2: validate recent rooms list.', function() {
@@ -109,9 +113,9 @@ RoomSelectionTest.prototype.testJoinButton = function() {
 RoomSelectionTest.prototype.testMakeClickHandler = function(queue) {
   queue.call('Step 1: wait for recent rooms list to be completed.', function(callbacks) {
     var onCompleted = callbacks.add(function() {});
-    Promise.resolve(this.roomSelection_.recentRoomsListPromise).then(function() {
+    this.roomSelectionSetupCompletedPromise_.then(function() {
       onCompleted();
-    });
+    }.bind(this));
   });
   
   queue.call('Step 2: validate that click handler works.', function() {
@@ -128,5 +132,100 @@ RoomSelectionTest.prototype.testMakeClickHandler = function(queue) {
     link.dispatchEvent(event);
     
     assertEquals('room1', joinedRoom);
+  });
+};
+
+var RecentlyUsedListTest = new AsyncTestCase('RecentlyUsedListTest');
+
+RecentlyUsedListTest.prototype.setUp = function() {
+  this.key_ = 'testRecentRoomsKey';
+  
+  this.fullList_ = '["room4","room5","room6","room7","room8","room9","room10","room11","room12","room13"]';
+  this.tooManyList_ = '["room1","room2","room3","room4","room5","room6","room7","room8","room9","room10","room11","room12","room13"]'
+  this.duplicatesList_ = '["room4","room4","room6","room7","room6","room9","room10","room4","room6","room13"]';
+  this.noDuplicatesList_ = '["room4","room6","room7","room9","room10","room13"]';
+  this.emptyList_ = '[]';
+  this.notAList_ = 'asdasd';
+  
+  this.recentlyUsedList_ = new RoomSelection.RecentlyUsedList(this.key_);
+};
+
+RecentlyUsedListTest.prototype.tearDown = function() {
+  localStorage.removeItem(this.key_);
+  this.recentlyUsedList_ = null;
+};
+
+RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomDuplicateList = function(queue) {
+  queue.call('Step 1: push new value.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+      localStorage.removeItem(this.key_);
+      localStorage.setItem(this.key_, this.duplicatesList_);
+    this.recentlyUsedList_.pushRecentRoom('newRoom').then(function() {
+      onCompleted();
+    }.bind(this));
+  });
+  queue.call('Step 2: verify results.', function() {
+    var result = localStorage.getItem(this.key_);
+    assertEquals(this.noDuplicatesList_.replace('"room4"', '"newRoom","room4"'), result);
+  });
+};
+
+RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomTooFullList = function(queue) {
+  queue.call('Step 1: push new value.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+      localStorage.removeItem(this.key_);
+      localStorage.setItem(this.key_, this.tooManyList_);
+    this.recentlyUsedList_.pushRecentRoom('newRoom').then(function() {
+      onCompleted();
+    }.bind(this));
+  });
+  queue.call('Step 2: verify results.', function() {
+    var result = localStorage.getItem(this.key_);
+    assertEquals(this.tooManyList_.replace(',"room10","room11","room12","room13"', '').replace('"room1"', '"newRoom","room1"'), result);
+  });
+};
+
+RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomFullList = function(queue) {
+  queue.call('Step 1: push new value.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+      localStorage.removeItem(this.key_);
+      localStorage.setItem(this.key_, this.fullList_);
+    this.recentlyUsedList_.pushRecentRoom('newRoom').then(function() {
+      onCompleted();
+    }.bind(this));
+  });
+  queue.call('Step 2: verify results.', function() {
+    var result = localStorage.getItem(this.key_);
+    assertEquals(this.fullList_.replace(',"room13"', '').replace('"room4"', '"newRoom","room4"'), result);
+  });
+};
+
+RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomNoExisting = function(queue) {
+  queue.call('Step 1: push new value.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+      localStorage.removeItem(this.key_);
+
+    this.recentlyUsedList_.pushRecentRoom('newRoom').then(function() {
+      onCompleted();
+    }.bind(this));
+  });
+  queue.call('Step 2: verify results.', function() {
+    var result = localStorage.getItem(this.key_);
+    assertEquals('["newRoom"]', result);
+  });
+};
+
+RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomInvalidExisting = function(queue) {
+  queue.call('Step 1: push new value.', function(callbacks) {
+    var onCompleted = callbacks.add(function() {});
+      localStorage.removeItem(this.key_);
+      localStorage.setItem(this.key_, this.notAList_);
+    this.recentlyUsedList_.pushRecentRoom('newRoom').then(function() {
+      onCompleted();
+    }.bind(this));
+  });
+  queue.call('Step 2: verify results.', function() {
+    var result = localStorage.getItem(this.key_);
+    assertEquals('["newRoom"]', result);
   });
 };
