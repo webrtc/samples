@@ -8,6 +8,9 @@
 'use strict';
 
 function Call(config) {
+  this.traceEvent = report.traceEventAsync('call');
+  this.traceEvent({ config: config });
+
   this.pc1 = new RTCPeerConnection(config);
   this.pc2 = new RTCPeerConnection(config);
 
@@ -19,10 +22,12 @@ function Call(config) {
 
 Call.prototype = {
   establishConnection: function () {
+    this.traceEvent({ state: 'start' });
     this.pc1.createOffer(this.gotOffer_.bind(this));
   },
 
   close: function () {
+    this.traceEvent({ state: 'end' });
     this.pc1.close();
     this.pc2.close();
   },
@@ -39,6 +44,30 @@ Call.prototype = {
   // Remove video FEC if available on the offer.
   disableVideoFec: function () {
     this.constrainOfferToRemoveVideoFec_ = true;
+  },
+
+  // When the peerConnection is closed the callback is called once returning
+  // with an array of gathered stats.
+  gatherStats: function(peerConnection, callback, interval) {
+    var stats = [];
+    getStats_();
+
+    function getStats_() {
+      if (peerConnection.signalingState === 'closed') {
+        callback(stats);
+        return;
+      }
+      setTimeout(function() {
+        peerConnection.getStats(gotStats_.bind(this));
+      }, interval);
+    }
+
+    function gotStats_(response) {
+      for (var index in response.result()) {
+        stats.push(response.result()[index]);
+      }
+      getStats_();
+    }
   },
 
   gotOffer_: function (offer) {
@@ -79,6 +108,10 @@ Call.noFilter = function () {
 
 Call.isRelay = function (candidate) {
   return candidate.type === 'relay';
+};
+
+Call.isNotHostCandidate = function (candidate) {
+  return candidate.type !== 'host';
 };
 
 Call.isIpv6 = function (candidate) {

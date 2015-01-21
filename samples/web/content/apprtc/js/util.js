@@ -8,7 +8,9 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported hasTurnServer, requestTurnServers, sendAsyncUrlRequest */
+/* exported setUpFullScreen, fullScreenElement, isFullScreen,
+   requestTurnServers, sendAsyncUrlRequest, randomString */
+/* globals chrome */
 
 'use strict';
 
@@ -32,18 +34,8 @@ function sendAsyncUrlRequest(method, url) {
   });
 }
 
-function hasTurnServer(params) {
-  var iceServers = params.peerConnectionConfig.iceServers;
-  for (var i = 0, len = iceServers.length; i < len; i++) {
-    if (iceServers[i].urls.substr(0, 5) === 'turn:') {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Returns a list of turn servers after requesting it from CEOD.
-function requestTurnServers(turnRequestUrl) {
+function requestTurnServers(turnRequestUrl, turnTransports) {
   return new Promise(function(resolve, reject) {
     sendAsyncUrlRequest('GET', turnRequestUrl).then(function(response) {
       var turnServerResponse = parseJSON(response);
@@ -51,6 +43,12 @@ function requestTurnServers(turnRequestUrl) {
         reject(Error('Error parsing response JSON: ' + response));
         return;
       }
+      // Filter the TURN URLs to only use the desired transport, if specified.
+      if (turnTransports.length > 0) {
+        filterTurnUrls(turnServerResponse.uris, turnTransports);
+      }
+
+      // Create the RTCIceServer objects from the response.
       var turnServers = createIceServers(turnServerResponse.uris,
           turnServerResponse.username, turnServerResponse.password);
       if (!turnServers) {
@@ -66,6 +64,7 @@ function requestTurnServers(turnRequestUrl) {
   });
 }
 
+// Parse the supplied JSON, or return null if parsing fails.
 function parseJSON(json) {
   try {
     return JSON.parse(json);
@@ -73,4 +72,76 @@ function parseJSON(json) {
     trace('Error parsing json: ' + json);
   }
   return null;
+}
+
+// Filter a list of TURN urls to only contain those with transport=|protocol|.
+function filterTurnUrls(urls, protocol) {
+  for (var i = 0; i < urls.length;) {
+    var parts = urls[i].split('?');
+    if (parts.length > 1 && parts[1] !== ('transport=' + protocol)) {
+      urls.splice(i, 1);
+    } else {
+      ++i;
+    }
+  }
+}
+
+// Start shims for fullscreen
+function setUpFullScreen() {
+  if (isChromeApp()) {
+    document.cancelFullScreen = function() {
+      chrome.app.window.current().restore();
+    };
+  } else {
+    document.cancelFullScreen = document.webkitCancelFullScreen ||
+        document.mozCancelFullScreen || document.cancelFullScreen;
+  }
+
+  if (isChromeApp()) {
+    document.body.requestFullScreen = function() {
+      chrome.app.window.current().fullscreen();
+    };
+  } else {
+    document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+        document.body.mozRequestFullScreen || document.body.requestFullScreen;
+  }
+
+  document.onfullscreenchange = document.onfullscreenchange ||
+        document.onwebkitfullscreenchange || document.onmozfullscreenchange;
+}
+
+function isFullScreen() {
+  if (isChromeApp()) {
+    return chrome.app.window.current().isFullscreen();
+  }
+
+  return !!(document.webkitIsFullScreen || document.mozFullScreen ||
+    document.isFullScreen); // if any defined and true
+}
+
+function fullScreenElement() {
+  return document.webkitFullScreenElement ||
+      document.webkitCurrentFullScreenElement ||
+      document.mozFullScreenElement ||
+      document.fullScreenElement;
+}
+
+// End shims for fullscreen
+
+// Return a random numerical string.
+function randomString(strLength) {
+  var result = [];
+  strLength = strLength || 5;
+  var charSet = '0123456789';
+  while (strLength--) {
+    result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
+  }
+  return result.join('');
+}
+
+// Returns true if the code is running in a packaged Chrome App.
+function isChromeApp() {
+  return (typeof chrome !== 'undefined' &&
+          typeof chrome.storage !== 'undefined' &&
+          typeof chrome.storage.local !== 'undefined');
 }

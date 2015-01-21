@@ -44,11 +44,14 @@ SdpUtilsTest.prototype.testDoesNothingIfPreferredCodecNotFound = function() {
                audioLine);
 };
 
-SdpUtilsTest.prototype.testMovesCodecEvenIfPayloadTypeIsSameAsUdpPort = function() {
-  var result = maybePreferCodec(SDP_WITH_AUDIO_CODECS, 'audio', 'send',
-                                'G722/8000');
-  var audioLine = result.split('\r\n')[1];
-  assertEquals('G722/8000 (of type 9) should be moved to front.',
-               'm=audio 9 RTP/SAVPF 9 111 103 104 0',
-               audioLine);
-};
+SdpUtilsTest.prototype.testMovesCodecEvenIfPayloadTypeIsSameAsUdpPort =
+    function() {
+      var result = maybePreferCodec(SDP_WITH_AUDIO_CODECS,
+                                    'audio',
+                                    'send',
+                                    'G722/8000');
+      var audioLine = result.split('\r\n')[1];
+      assertEquals('G722/8000 (of type 9) should be moved to front.',
+                   'm=audio 9 RTP/SAVPF 9 111 103 104 0',
+                   audioLine);
+    };

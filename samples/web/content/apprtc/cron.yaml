@@ -1,0 +1,4 @@
+cron:
+- description: bi-hourly CEOD probing job
+  url: /probe/ceod
+  schedule: every 2 hours synchronized

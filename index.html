@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <meta name="keywords" content="WebRTC, HTML5, JavaScript" />
   <meta name="description" content="Client-side WebRTC code samples." />
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
   <base target="_blank">
+
   <title>WebRTC samples</title>
+
+  <link rel="icon" sizes="192x192" href="samples/web/content/apprtc/images/webrtc-icon-192x192.png">
   <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="samples/web/css/main.css" />
+
   <style>
     h2 {
       font-size: 1.5em;
@@ -25,7 +31,7 @@
     section:last-child {
       border-bottom: none;
       margin: 0;
-      padding: ;
+      padding: 0;
     }
   </style>
 </head>
@@ -40,13 +46,15 @@
 
       <p>Some of the samples use new browser features. They may only work in <a href="//www.google.co.uk/intl/en/chrome/browser/canary.html" title="Download Chrome Canary">Chrome Canary</a> and/or <a href="http://www.mozilla.org/firefox/beta/" title="Download Firefox Beta">Firefox Beta</a>, and may require flags to be set.</p>
 
-      <p>Most of the samples use <a href="//github.com/GoogleChrome/webrtc/blob/master/samples/web/js/adapter.js">adapter.js</a>, a shim to insulate apps from spec changes and prefix differences. (In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see <a href="//www.webrtc.org/interop">webrtc.org/interop</a>.)</p>
+      <p>Most of the samples use <a href="//github.com/GoogleChrome/webrtc/blob/master/samples/web/js/adapter.js">adapter.js</a>, a shim to insulate apps from spec changes and prefix differences. (In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see <a href="//www.webrtc.org/web-apis/interop">webrtc.org/web-apis/interop</a>.)</p>
 
       <p>Please note that all samples that use <code>getUserMedia()</code> must be run from a server. Calling <code>getUserMedia()</code> from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.</p>
 
+      <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">webrtc.org/testing</a> lists command line flags useful for development and testing with Chrome.</p>
+
       <p>For more information about WebRTC, we maintain a list of <a href="//docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit">WebRTC Resources</a>. If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O <a href="//www.youtube.com/watch?v=p2HzZkd2A40">WebRTC presentation</a>.</p>
 
-      <p>Patches and issues welcome!</p>
+      <p>Patches and issues welcome! See <a href="https://github.com/GoogleChrome/webrtc/blob/master/CONTRIBUTING">CONTRIBUTING</a> for instructions. The <a href="https://bit.ly/webrtcdevguide">Developer's Guide</a> for this repo has more information about code style, structure and validation.</p>
 
     </section>
 
@@ -104,7 +112,9 @@
 
       <h3 id="videoChat">Video chat</h3>
 
-      <p><a href="//apprtc.appspot.com">AppRTC video chat client (based on Google App Engine)</a></p>
+      <p><a href="//apprtc.appspot.com">AppRTC video chat client</a> powered by Google App Engine</p>
+
+      <p><a href="//apprtc.appspot.com/html/params.html">AppRTC URL parameters</a></p>
 
     </section>
 

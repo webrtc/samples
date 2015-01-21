@@ -56,6 +56,11 @@ function CamCaptureTest() {
   this.video.setAttribute('muted','');
 }
 
+function resolutionMatchesIndependentOfRotation(aWidth, aHeight, bWidth, bHeight) {
+  return (aWidth === bWidth && aHeight === bHeight) ||
+         (aWidth === bHeight && aHeight === bWidth);
+}
+
 CamCaptureTest.prototype = {
   run: function() {
     doGetUserMedia(this.constraints, this.gotStream.bind(this));
@@ -134,13 +139,10 @@ CamCaptureTest.prototype = {
     if (info.isMuted === true) {
       reportError('Camera reported itself as muted.');
     }
-    if (info.videoWidth !== info.mandatoryMinWidth) {
-      reportError('Incorrect captured width.');
+    if (!resolutionMatchesIndependentOfRotation(info.videoWidth, info.videoHeight,
+                                                info.mandatoryMinWidth, info.mandatoryMinHeight)) {
+      reportError('Incorrect captured resolution.');
     }
-    if (info.videoHeight !== info.mandatoryMinHeight) {
-      reportError('Incorrect captured height.');
-    }
-
     if (info.testedFrames === 0) {
       reportError('Could not analyze any video frame.');
     } else {

@@ -33,18 +33,6 @@ function trace(text) {
   }
 }
 
-function maybeFixConfiguration(pcConfig) {
-  if (!pcConfig) {
-    return;
-  }
-  for (var i = 0; i < pcConfig.iceServers.length; i++) {
-    if (pcConfig.iceServers[i].hasOwnProperty('urls')) {
-      pcConfig.iceServers[i].url = pcConfig.iceServers[i].urls;
-      delete pcConfig.iceServers[i].urls;
-    }
-  }
-}
-
 if (navigator.mozGetUserMedia) {
   console.log('This appears to be Firefox');
 
@@ -56,7 +44,14 @@ if (navigator.mozGetUserMedia) {
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
     // .urls is not supported in FF yet.
-    maybeFixConfiguration(pcConfig);
+    if (pcConfig && pcConfig.iceServers) {
+      for (var i = 0; i < pcConfig.iceServers.length; i++) {
+        if (pcConfig.iceServers[i].hasOwnProperty('urls')) {
+          pcConfig.iceServers[i].url = pcConfig.iceServers[i].urls;
+          delete pcConfig.iceServers[i].urls;
+        }
+      }
+    }
     return new mozRTCPeerConnection(pcConfig, pcConstraints);
   };
 
@@ -75,8 +70,8 @@ if (navigator.mozGetUserMedia) {
   MediaStreamTrack.getSources = function(successCb) {
     setTimeout(function() {
       var infos = [
-        { kind: 'audio', id: 'default', label:'', facing:'' },
-        { kind: 'video', id: 'default', label:'', facing:'' }
+        {kind: 'audio', id: 'default', label:'', facing:''},
+        {kind: 'video', id: 'default', label:'', facing:''}
       ];
       successCb(infos);
     }, 0);
@@ -231,4 +226,3 @@ function requestUserMedia(constraints) {
     }
   });
 }
-
