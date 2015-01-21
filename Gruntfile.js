@@ -128,6 +128,7 @@ module.exports = function(grunt) {
     closurecompiler: {
       debug: {
         files: {
+          // Destination: [source files]
           'samples/web/content/apprtc/js/compiled/apprtc.debug.js': [
             'samples/web/content/apprtc/js/adapter.js',
             'samples/web/content/apprtc/js/appcontroller.js',
@@ -162,7 +163,7 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
                      'shell:runPythonTests', 'jstdPhantom',
                      'closurecompiler:debug']);
-  grunt.registerTask('build', ['grunt-chrome-build']);
+  grunt.registerTask('build', ['closurecompiler:debug', 'grunt-chrome-build']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
