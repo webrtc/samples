@@ -10,10 +10,10 @@
 
 'use strict';
 
-Function.prototype.bind = Function.prototype.bind || function (thisp) {
+Function.prototype.bind = Function.prototype.bind || function(thisp) {
   var fn = this;
-  return function () {
-      return fn.apply(thisp, arguments);
+  return function() {
+    return fn.apply(thisp, arguments);
   };
 };
 
@@ -135,17 +135,20 @@ var myChrome = {
     runtime: {
       onLaunched: {
         addListener: function(callback) {
-          console.log('chrome.app.runtime.onLaunched.addListener called:' + JSON.stringify(callback));
+          console.log(
+              'chrome.app.runtime.onLaunched.addListener called:' +
+               JSON.stringify(callback));
         }
       }
     },
     window: {
       create: function(fileName, callback) {
-        console.log('chrome.window.create called: ' + fileName + ', ' + JSON.stringify(callback));
+        console.log(
+            'chrome.window.create called: ' +
+            fileName + ', ' + JSON.stringify(callback));
       }
     }
   }
 };
 
 window.chrome = window.chrome || myChrome;
-

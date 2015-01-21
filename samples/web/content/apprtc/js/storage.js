@@ -22,8 +22,7 @@ Storage.prototype.getStorage = function(key, callback) {
     // Use chrome.storage.local.
     chrome.storage.local.get(key, function(values) {
       // Unwrap key/value pair.
-      if (callback)
-      {
+      if (callback) {
         window.setTimeout(function() {
           callback(values[key]);
         }, 0);

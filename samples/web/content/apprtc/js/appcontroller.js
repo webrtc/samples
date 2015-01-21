@@ -58,14 +58,16 @@ var AppController = function(loadingParams) {
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
-  this.muteAudioIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
-  this.muteVideoIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
-  this.fullscreenIconSet_ = new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
+  this.muteAudioIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
+  this.muteVideoIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
+  this.fullscreenIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
   this.loadingParams_ = loadingParams;
   var paramsPromise = Promise.resolve({});
-  if (this.loadingParams_.paramsFunction)
-  {
+  if (this.loadingParams_.paramsFunction) {
     // If we have a paramsFunction value, we need to call it
     // and use the returned values to merge with the passed
     // in params. In the Chrome app, this is used to initialize
@@ -140,22 +142,22 @@ var AppController = function(loadingParams) {
 
 AppController.prototype.finishCallSetup_ = function(roomId) {
   this.call_.start(roomId);
-  
+
   window.onbeforeunload = this.call_.hangup.bind(this.call_);
   document.onkeypress = this.onKeyPress_.bind(this);
   window.onmousemove = this.showIcons_.bind(this);
-  
+
   $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
   $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
   $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
   $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
 
   setUpFullScreen();
-  
+
   if (!isChromeApp()) {
     window.onpopstate = function(event) {
       if (!event.state) {
-        // TODO (chuckhays) : Resetting back to room selection page not 
+        // TODO (chuckhays) : Resetting back to room selection page not
         // yet supported, reload the initial page instead.
         trace('Reloading main page.');
         location.href = location.origin;
@@ -324,8 +326,10 @@ AppController.prototype.onKeyPress_ = function(event) {
 
 AppController.prototype.pushCallNavigation_ = function(roomId, roomLink) {
   if (!isChromeApp()) {
-    window.history.pushState({'roomId': roomId, 'roomLink': roomLink }, roomId, roomLink);
-  }  
+    window.history.pushState({'roomId': roomId, 'roomLink': roomLink},
+                             roomId,
+                             roomLink);
+  }
 };
 
 AppController.prototype.displaySharingInfo_ = function(roomId, roomLink) {
@@ -371,23 +375,23 @@ AppController.prototype.toggleFullScreen_ = function() {
   this.fullscreenIconSet_.toggle();
 };
 
-function $(selector){
+function $(selector) {
   return document.querySelector(selector);
 }
 
-AppController.prototype.hide_ = function(element){
+AppController.prototype.hide_ = function(element) {
   element.classList.add('hidden');
 };
 
-AppController.prototype.show_ = function(element){
+AppController.prototype.show_ = function(element) {
   element.classList.remove('hidden');
 };
 
-AppController.prototype.activate_ = function(element){
+AppController.prototype.activate_ = function(element) {
   element.classList.add('active');
 };
 
-AppController.prototype.deactivate_ = function(element){
+AppController.prototype.deactivate_ = function(element) {
   element.classList.remove('active');
 };
 
@@ -400,12 +404,12 @@ AppController.prototype.showIcons_ = function() {
   }
 };
 
-AppController.IconSet_ = function(iconSelector){
+AppController.IconSet_ = function(iconSelector) {
   this.iconElement = document.querySelector(iconSelector);
 };
 
 AppController.IconSet_.prototype.toggle = function() {
-  if (this.iconElement.classList.contains('on')){
+  if (this.iconElement.classList.contains('on')) {
     this.iconElement.classList.remove('on');
     // turn it off: CSS hides `svg path.on` and displays `svg path.off`
   } else {
@@ -413,4 +417,3 @@ AppController.IconSet_.prototype.toggle = function() {
     this.iconElement.classList.add('on');
   }
 };
-

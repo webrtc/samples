@@ -103,7 +103,10 @@ InfoBox.prototype.updateInfoDiv = function() {
 
     var activeCandPair = getStatsReport(this.stats_, 'googCandidatePair',
         'googActiveConnection', 'true');
-    var localAddr, remoteAddr, localAddrType, remoteAddrType;
+    var localAddr;
+    var remoteAddr;
+    var localAddrType;
+    var remoteAddrType;
     if (activeCandPair) {
       localAddr = activeCandPair.stat('googLocalAddress');
       remoteAddr = activeCandPair.stat('googRemoteAddress');
@@ -168,12 +171,22 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var rxPrevAudio = getStatsReport(this.prevStats_, 'ssrc', 'audioOutputLevel');
   var txPrevVideo = getStatsReport(this.prevStats_, 'ssrc', 'googFirsReceived');
   var rxPrevVideo = getStatsReport(this.prevStats_, 'ssrc', 'googFirsSent');
-  var txAudioCodec, txAudioBitrate, txAudioPacketRate;
-  var rxAudioCodec, rxAudioBitrate, rxAudioPacketRate;
-  var txVideoHeight, txVideoFps, txVideoCodec;
-  var txVideoBitrate, txVideoPacketRate;
-  var rxVideoHeight, rxVideoFps, rxVideoCodec;
-  var rxVideoBitrate, rxVideoPacketRate;
+  var txAudioCodec;
+  var txAudioBitrate;
+  var txAudioPacketRate;
+  var rxAudioCodec;
+  var rxAudioBitrate;
+  var rxAudioPacketRate;
+  var txVideoHeight;
+  var txVideoFps;
+  var txVideoCodec;
+  var txVideoBitrate;
+  var txVideoPacketRate;
+  var rxVideoHeight;
+  var rxVideoFps;
+  var rxVideoCodec;
+  var rxVideoBitrate;
+  var rxVideoPacketRate;
   if (txAudio) {
     txAudioCodec = txAudio.stat('googCodecName');
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
