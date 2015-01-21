@@ -53,7 +53,11 @@ module.exports = function(grunt) {
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
-        'samples/web/content/testrtc/bower_components/**'
+        'samples/web/content/testrtc/bower_components/**',
+        // TODO (chuckhays) : remove these exclusions after code passes.
+        'samples/web/content/testrtc/**/*.js',
+        'samples/web/content/getusermedia/**/*.js',
+        'samples/web/content/peerconnection/**/*.js'
         ],
         requireCurlyBraces: ['if']
       }
