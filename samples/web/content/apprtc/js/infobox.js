@@ -20,9 +20,11 @@ var InfoBox = function(infoDiv, remoteVideo, call) {
   this.call_ = call;
 
   this.errorMessages_ = [];
+  // Time when the call was intiated and accepted.
+  this.startTime_ = null;
+  this.connectTime_ = null;
   this.stats_ = null;
   this.prevStats_ = null;
-  this.callSetupDelay_ = null;
   this.getStatsTimer_ = null;
 
   // Types of gathered ICE Candidates.
@@ -50,12 +52,14 @@ InfoBox.prototype.pushErrorMessage = function(msg) {
   this.showInfoDiv();
 };
 
-InfoBox.prototype.setCallSetupDelay = function(delay) {
-  this.callSetupDelay_ = delay;
+InfoBox.prototype.setSetupTimes = function(startTime, connectTime) {
+  this.startTime_ =  startTime;
+  this.connectTime_ = connectTime;
 };
 
 InfoBox.prototype.showInfoDiv = function() {
   this.getStatsTimer_ = setInterval(this.refreshStats_.bind(this), 1000);
+  this.refreshStats_();
   this.infoDiv_.classList.add('active');
 };
 
@@ -144,15 +148,17 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var captureStart = extractStatAsInt(this.stats_, 'ssrc',
       'googCaptureStartNtpTimeMs');
   var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
-  if (this.callSetupDelay_ !== null) {
+  if (this.endTime_ !== null) {
+    contents += this.buildLine_('Call time',
+        this.formatInterval_(window.performance.now() - this.connectTime_));
     contents += this.buildLine_('Setup time',
-        this.callSetupDelay_.toFixed(0).toString() + 'ms');
+        this.formatMsec_(this.connectTime_ - this.startTime_));
   }
   if (rtt !== null) {
-    contents += this.buildLine_('RTT', rtt.toString() + 'ms');
+    contents += this.buildLine_('RTT', this.formatMsec_(rtt));
   }
   if (e2eDelay !== null) {
-    contents += this.buildLine_('End to end', e2eDelay.toString() + 'ms');
+    contents += this.buildLine_('End to end', this.formatMsec_(e2eDelay));
   }
 
   // Obtain resolution, framerate, and bitrate this.stats_.
@@ -242,6 +248,30 @@ InfoBox.prototype.buildLine_ = function(label, value) {
   return line;
 };
 
+// Convert a number of milliseconds into a '[HH:]MM:SS' string.
+InfoBox.prototype.formatInterval_ = function(value) {
+  var result = '';
+  var seconds = Math.floor(value / 1000);
+  var minutes = Math.floor(seconds / 60);
+  var hours = Math.floor(minutes / 60);
+  var formatTwoDigit = function(twodigit) {
+    return ((twodigit < 10) ? '0' : '') + twodigit.toString();
+  };
+
+  if (hours > 0) {
+    result += formatTwoDigit(hours) + ':';
+  }
+  result += formatTwoDigit(minutes - hours * 60) + ':';
+  result += formatTwoDigit(seconds - minutes * 60);
+  return result;
+};
+
+// Convert a number of milliesconds into a 'XXX ms' string.
+InfoBox.prototype.formatMsec_ = function(value) {
+  return value.toFixed(0).toString() + ' ms';
+};
+
+// Convert a bitrate into a 'XXX Xbps' string.
 InfoBox.prototype.formatBitrate_ = function(value) {
   if (!value) {
     return '- bps';
@@ -262,6 +292,7 @@ InfoBox.prototype.formatBitrate_ = function(value) {
   return str;
 };
 
+// Convert a packet rate into a 'XXX pps' string.
 InfoBox.prototype.formatPacketRate_ = function(value) {
   if (!value) {
     return '- pps';
