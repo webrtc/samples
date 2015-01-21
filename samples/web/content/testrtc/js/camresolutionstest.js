@@ -91,11 +91,12 @@ CamResolutionsTest.prototype = {
     var call = new Call();
     call.pc1.addStream(stream);
     call.establishConnection();
-    call.gatherStats(call.pc1, this.analyzeStats_.bind(this), 1000);
-    setTimeoutWithProgressBar( function() {
+    this.collectStatsStartTime = Date.now();
+    call.gatherStats(call.pc1, this.analyzeStats_.bind(this), this.encoderSetupTime_.bind(this), 100);
+    setTimeoutWithProgressBar(function() {
       call.close();
       stream.getVideoTracks()[0].stop();
-    }.bind(this), 5000);
+    }.bind(this), 8000);
   },
 
   analyzeStats_: function(stats) {
@@ -107,7 +108,6 @@ CamResolutionsTest.prototype = {
     for (var index = 0; index < stats.length - 1; index++) {
       if (stats[index].type === 'ssrc') {
         // Make sure to only capture stats after the encoder is setup.
-        // TODO(jansson) expand to cover audio as well.
         if (stats[index].stat('googFrameRateInput') > 0) {
           googAvgEncodeTime.push(parseInt(stats[index].stat('googAvgEncodeMs')));
           googAvgFrameRateInput.push(parseInt(stats[index].stat('googFrameRateInput')));
@@ -148,6 +148,10 @@ CamResolutionsTest.prototype = {
       }
     }
     this.finishTestOrRetrigger_();
+  },
+
+  encoderSetupTime_: function(timeForFirstFrame) {
+    reportInfo('Encode setup time: ' + JSON.stringify(timeForFirstFrame - this.collectStatsStartTime) + ' ms' );
   },
 
   failFunc_: function() {

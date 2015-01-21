@@ -32,7 +32,7 @@ var currentTest;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
-  gum.start(function () {
+  gum.start(function() {
     if (typeof MediaStreamTrack.getSources === 'undefined') {
       console.log('getSources is not supported, device selection not possible.');
     } else {
@@ -405,12 +405,12 @@ function getVideoDeviceName_(stream) {
 
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
   var start = window.performance.now();
-  var updateProgressBar = setInterval(function () {
+  var updateProgressBar = setInterval(function() {
     var now = window.performance.now();
     setTestProgress((now - start) * 100 / timeoutMs);
   }, 100);
 
-  setTimeout(function () {
+  setTimeout(function() {
     clearInterval(updateProgressBar);
     setTestProgress(100);
     timeoutCallback();

@@ -32,29 +32,32 @@ Call.prototype = {
     this.pc2.close();
   },
 
-  setIceCandidateFilter: function (filter) {
+  setIceCandidateFilter: function(filter) {
     this.iceCandidateFilter_ = filter;
   },
 
   // Constraint max video bitrate by modifying the SDP when creating an answer.
-  constrainVideoBitrate: function (maxVideoBitrateKbps) {
+  constrainVideoBitrate: function(maxVideoBitrateKbps) {
     this.constrainVideoBitrateKbps_ = maxVideoBitrateKbps;
   },
 
   // Remove video FEC if available on the offer.
-  disableVideoFec: function () {
+  disableVideoFec: function() {
     this.constrainOfferToRemoveVideoFec_ = true;
   },
 
-  // When the peerConnection is closed the callback is called once returning
-  // with an array of gathered stats.
-  gatherStats: function(peerConnection, callback, interval) {
+  // When the peerConnection is closed the statsFinishedCallback is called once returning
+  // with an array of gathered stats. timeForFirstFrameCallback will be called once when
+  // googFrameRateInput is > 0 with a timestamp in milliseconds.
+  // TODO (jansson) expand to cover audio as well.
+  gatherStats: function(peerConnection, statsFinishedCallback, timeForFirstFrameCallback, interval) {
+    var timeForFirstFrameCallbackSent = false;
     var stats = [];
     getStats_();
 
     function getStats_() {
       if (peerConnection.signalingState === 'closed') {
-        callback(stats);
+        statsFinishedcallback(stats);
         return;
       }
       setTimeout(function() {
@@ -65,6 +68,17 @@ Call.prototype = {
     function gotStats_(response) {
       for (var index in response.result()) {
         stats.push(response.result()[index]);
+        for (var index = 0; index < stats.length - 1; index++) {
+          // Check when the video encoder is setup via getStats.
+          if (stats[index].type === 'ssrc') {
+            if (stats[index].stat('googFrameRateInput') > 0 ) {
+              if (!timeForFirstFrameCallbackSent) {
+                timeForFirstFrameCallback(Date.now());
+                timeForFirstFrameCallbackSent = true;
+              }
+            }
+          }
+        }
       }
       getStats_();
     }
@@ -92,7 +106,7 @@ Call.prototype = {
     this.pc1.setRemoteDescription(answer);
   },
 
-  onIceCandidate_: function (otherPeer) {
+  onIceCandidate_: function(otherPeer) {
     if (event.candidate) {
       var parsed = Call.parseCandidate(event.candidate.candidate);
       if (this.iceCandidateFilter_(parsed)) {
@@ -102,24 +116,24 @@ Call.prototype = {
   }
 };
 
-Call.noFilter = function () {
+Call.noFilter = function() {
   return true;
 };
 
-Call.isRelay = function (candidate) {
+Call.isRelay = function(candidate) {
   return candidate.type === 'relay';
 };
 
-Call.isNotHostCandidate = function (candidate) {
+Call.isNotHostCandidate = function(candidate) {
   return candidate.type !== 'host';
 };
 
-Call.isIpv6 = function (candidate) {
+Call.isIpv6 = function(candidate) {
   return candidate.address.indexOf(':') !== -1;
 };
 
 // Parse a 'candidate:' line into a JSON object.
-Call.parseCandidate = function (text) {
+Call.parseCandidate = function(text) {
   var candidateStr = 'candidate:';
   var pos = text.indexOf(candidateStr) + candidateStr.length;
   var fields = text.substr(pos).split(' ');
@@ -132,7 +146,7 @@ Call.parseCandidate = function (text) {
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
 Call.CEOD_URL = 'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
-Call.asyncCreateTurnConfig = function (onSuccess, onError) {
+Call.asyncCreateTurnConfig = function(onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   function onResult() {
     if (xhr.readyState !== 4) {
