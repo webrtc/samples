@@ -245,7 +245,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   username = client_id if client_id is not None else generate_random(9)
   if len(turn_base_url) > 0:
     turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
-    
+
   pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
   offer_constraints = { 'mandatory': {}, 'optional': [] }
@@ -371,7 +371,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       room.add_client(client_id, Client(is_initiator))
       other_client.clear_messages()
 
-    if memcache_client.cas(key, room):
+    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
       logging.info('Added client %s in room %s, retries = %d' \
           %(client_id, room_id, retries))
       success = True
@@ -404,7 +404,7 @@ def remove_client_from_room(host, room_id, client_id):
     else:
       room = None
 
-    if memcache_client.cas(key, room):
+    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
       logging.info('Removed client %s from room %s, retries=%d' \
           %(client_id, room_id, retries))
       return {'error': None, 'room_state': str(room)}
@@ -434,7 +434,7 @@ def save_message_from_client(host, room_id, client_id, message):
 
     client = room.get_client(client_id)
     client.add_message(text)
-    if memcache_client.cas(key, room):
+    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
       logging.info('Saved message for client %s:%s in room %s, retries=%d' \
           %(client_id, str(client), room_id, retries))
       return {'error': None, 'saved': True}
