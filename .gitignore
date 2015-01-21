@@ -7,3 +7,4 @@ bower_components
 google_appengine*
 webtest-master*
 build
+samples/web/content/apprtc/js/compiled

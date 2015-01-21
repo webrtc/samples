@@ -38,7 +38,7 @@
     <video id="remote-video" autoplay></video>
     <video id="local-video" autoplay muted></video>
   </div>
-  
+
   <div id="room-selection" class="hidden">
     <h1>AppRTC</h1>
     <p id="instructions">Please enter a room name.</p>
@@ -97,20 +97,12 @@
 
   </div>
 
-  <script src="/js/stats.js"></script>
-  <script src="/js/util.js"></script>
-  <script src="/js/storage.js"></script>
-  <script src="/js/adapter.js"></script>
 {% if not chromeapp %}
   {{ include_loopback_js }}
 {% endif %}
-  <script src="/js/signalingchannel.js"></script>
-  <script src="/js/sdputils.js"></script>
-  <script src="/js/peerconnectionclient.js"></script>
-  <script src="/js/call.js"></script>
-  <script src="/js/infobox.js"></script>
-  <script src="/js/roomselection.js"></script>
-  <script src="/js/appcontroller.js"></script>
+
+  <script src="/js/compiled/apprtc.debug.js"></script>
+
 {% if chromeapp %}
   <script src="/js/appwindow.js"></script>
 {% endif %}

@@ -150,15 +150,15 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
   if (this.endTime_ !== null) {
     contents += this.buildLine_('Call time',
-        this.formatInterval_(window.performance.now() - this.connectTime_));
+        InfoBox.formatInterval_(window.performance.now() - this.connectTime_));
     contents += this.buildLine_('Setup time',
-        this.formatMsec_(this.connectTime_ - this.startTime_));
+        InfoBox.formatMsec_(this.connectTime_ - this.startTime_));
   }
   if (rtt !== null) {
-    contents += this.buildLine_('RTT', this.formatMsec_(rtt));
+    contents += this.buildLine_('RTT', InfoBox.formatMsec_(rtt));
   }
   if (e2eDelay !== null) {
-    contents += this.buildLine_('End to end', this.formatMsec_(e2eDelay));
+    contents += this.buildLine_('End to end', InfoBox.formatMsec_(e2eDelay));
   }
 
   // Obtain resolution, framerate, and bitrate this.stats_.
@@ -192,16 +192,16 @@ InfoBox.prototype.buildStatsSection_ = function() {
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
     txAudioPacketRate = computeRate(txAudio, txPrevAudio, 'packetsSent');
     contents += this.buildLine_('Audio Tx', txAudioCodec + ', ' +
-        this.formatBitrate_(txAudioBitrate) + ', ' +
-        this.formatPacketRate_(txAudioPacketRate));
+        InfoBox.formatBitrate_(txAudioBitrate) + ', ' +
+        InfoBox.formatPacketRate_(txAudioPacketRate));
   }
   if (rxAudio) {
     rxAudioCodec = rxAudio.stat('googCodecName');
     rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
     rxAudioPacketRate = computeRate(rxAudio, rxPrevAudio, 'packetsReceived');
     contents += this.buildLine_('Audio Rx', rxAudioCodec + ', ' +
-        this.formatBitrate_(rxAudioBitrate)  + ', ' +
-        this.formatPacketRate_(rxAudioPacketRate));
+        InfoBox.formatBitrate_(rxAudioBitrate)  + ', ' +
+        InfoBox.formatPacketRate_(rxAudioPacketRate));
   }
   if (txVideo) {
     txVideoCodec = txVideo.stat('googCodecName');
@@ -212,8 +212,8 @@ InfoBox.prototype.buildStatsSection_ = function() {
     contents += this.buildLine_('Video Tx',
         txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
         txVideoFps.toString() + ', ' +
-        this.formatBitrate_(txVideoBitrate) + ', ' +
-        this.formatPacketRate_(txVideoPacketRate));
+        InfoBox.formatBitrate_(txVideoBitrate) + ', ' +
+        InfoBox.formatPacketRate_(txVideoPacketRate));
   }
   if (rxVideo) {
     rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
@@ -225,8 +225,8 @@ InfoBox.prototype.buildStatsSection_ = function() {
     contents += this.buildLine_('Video Rx',
         rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
         rxVideoFps.toString() + ', ' +
-        this.formatBitrate_(rxVideoBitrate) + ', ' +
-        this.formatPacketRate_(rxVideoPacketRate));
+        InfoBox.formatBitrate_(rxVideoBitrate) + ', ' +
+        InfoBox.formatPacketRate_(rxVideoPacketRate));
   }
   return contents;
 };
@@ -249,7 +249,7 @@ InfoBox.prototype.buildLine_ = function(label, value) {
 };
 
 // Convert a number of milliseconds into a '[HH:]MM:SS' string.
-InfoBox.prototype.formatInterval_ = function(value) {
+InfoBox.formatInterval_ = function(value) {
   var result = '';
   var seconds = Math.floor(value / 1000);
   var minutes = Math.floor(seconds / 60);
@@ -267,12 +267,12 @@ InfoBox.prototype.formatInterval_ = function(value) {
 };
 
 // Convert a number of milliesconds into a 'XXX ms' string.
-InfoBox.prototype.formatMsec_ = function(value) {
+InfoBox.formatMsec_ = function(value) {
   return value.toFixed(0).toString() + ' ms';
 };
 
 // Convert a bitrate into a 'XXX Xbps' string.
-InfoBox.prototype.formatBitrate_ = function(value) {
+InfoBox.formatBitrate_ = function(value) {
   if (!value) {
     return '- bps';
   }
@@ -293,7 +293,7 @@ InfoBox.prototype.formatBitrate_ = function(value) {
 };
 
 // Convert a packet rate into a 'XXX pps' string.
-InfoBox.prototype.formatPacketRate_ = function(value) {
+InfoBox.formatPacketRate_ = function(value) {
   if (!value) {
     return '- pps';
   }
