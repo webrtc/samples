@@ -52,14 +52,16 @@ var AppController = function(loadingParams) {
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
-  this.muteAudioIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
-  this.muteVideoIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
-  this.fullscreenIconSet_ = new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
+  this.muteAudioIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
+  this.muteVideoIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
+  this.fullscreenIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
   this.loadingParams_ = loadingParams;
   var paramsPromise = Promise.resolve({});
-  if (this.loadingParams_.paramsFunction)
-  {
+  if (this.loadingParams_.paramsFunction) {
     // If we have a paramsFunction value, we need to call it
     // and use the returned values to merge with the passed
     // in params. In the Chrome app, this is used to initialize
@@ -318,23 +320,23 @@ AppController.prototype.toggleFullScreen_ = function() {
   this.fullscreenIconSet_.toggle();
 };
 
-function $(selector){
+function $(selector) {
   return document.querySelector(selector);
 }
 
-AppController.prototype.hide_ = function(element){
+AppController.prototype.hide_ = function(element) {
   element.classList.add('hidden');
 };
 
-AppController.prototype.show_ = function(element){
+AppController.prototype.show_ = function(element) {
   element.classList.remove('hidden');
 };
 
-AppController.prototype.activate_ = function(element){
+AppController.prototype.activate_ = function(element) {
   element.classList.add('active');
 };
 
-AppController.prototype.deactivate_ = function(element){
+AppController.prototype.deactivate_ = function(element) {
   element.classList.remove('active');
 };
 
@@ -347,12 +349,12 @@ AppController.prototype.showIcons_ = function() {
   }
 };
 
-AppController.IconSet_ = function(iconSelector){
+AppController.IconSet_ = function(iconSelector) {
   this.iconElement = document.querySelector(iconSelector);
 };
 
 AppController.IconSet_.prototype.toggle = function() {
-  if (this.iconElement.classList.contains('on')){
+  if (this.iconElement.classList.contains('on')) {
     this.iconElement.classList.remove('on');
     // turn it off: CSS hides `svg path.on` and displays `svg path.off`
   } else {
@@ -360,4 +362,3 @@ AppController.IconSet_.prototype.toggle = function() {
     this.iconElement.classList.add('on');
   }
 };
-

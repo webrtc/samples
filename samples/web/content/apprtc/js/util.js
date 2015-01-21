@@ -75,7 +75,7 @@ function parseJSON(json) {
 
 // Filter a list of TURN urls to only contain those with transport=|protocol|.
 function filterTurnUrls(urls, protocol) {
-  for (var i = 0; i < urls.length; ) {
+  for (var i = 0; i < urls.length;) {
     var parts = urls[i].split('?');
     if (parts.length > 1 && parts[1] !== ('transport=' + protocol)) {
       urls.splice(i, 1);
@@ -97,18 +97,19 @@ function setUpFullScreen() {
     document.onwebkitfullscreenchange || document.onmozfullscreenchange;
 }
 
-function isFullScreen(){
+function isFullScreen() {
   return !!(document.webkitIsFullScreen || document.mozFullScreen ||
     document.isFullScreen); // if any defined and true
 }
 
-function fullScreenElement(){
-  return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
-    document.mozFullScreenElement || document.fullScreenElement;
+function fullScreenElement() {
+  return document.webkitFullScreenElement ||
+      document.webkitCurrentFullScreenElement ||
+      document.mozFullScreenElement ||
+      document.fullScreenElement;
 }
 
 // End shims for fullscreen
-
 
 // Return a random numerical string.
 function randomString(strLength) {

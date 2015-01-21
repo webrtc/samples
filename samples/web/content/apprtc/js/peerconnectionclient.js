@@ -129,7 +129,7 @@ PeerConnectionClient.prototype.startAsCallee = function(initialMessages) {
 PeerConnectionClient.prototype.receiveSignalingMessage = function(message) {
   var messageObj = parseJSON(message);
   if (!messageObj) {
-      return;
+    return;
   }
   if ((this.isInitiator_ && messageObj.type === 'answer') ||
       (!this.isInitiator_ && messageObj.type === 'offer')) {
@@ -181,10 +181,18 @@ PeerConnectionClient.prototype.doAnswer_ = function() {
 
 PeerConnectionClient.prototype.setLocalSdpAndNotify_ =
     function(sessionDescription) {
-  sessionDescription.sdp = maybePreferAudioReceiveCodec(sessionDescription.sdp, this.params_);
-  sessionDescription.sdp = maybePreferVideoReceiveCodec(sessionDescription.sdp, this.params_);
-  sessionDescription.sdp = maybeSetAudioReceiveBitRate(sessionDescription.sdp, this.params_);
-  sessionDescription.sdp = maybeSetVideoReceiveBitRate(sessionDescription.sdp, this.params_);
+  sessionDescription.sdp = maybePreferAudioReceiveCodec(
+    sessionDescription.sdp,
+    this.params_);
+  sessionDescription.sdp = maybePreferVideoReceiveCodec(
+    sessionDescription.sdp,
+    this.params_);
+  sessionDescription.sdp = maybeSetAudioReceiveBitRate(
+    sessionDescription.sdp,
+    this.params_);
+  sessionDescription.sdp = maybeSetVideoReceiveBitRate(
+    sessionDescription.sdp,
+    this.params_);
   this.pc_.setLocalDescription(sessionDescription,
       trace.bind(null, 'Set session description success.'),
       this.onError_.bind(this, 'setLocalDescription'));
@@ -223,7 +231,7 @@ PeerConnectionClient.prototype.setRemoteSdp_ = function(message) {
   message.sdp = maybeSetVideoSendInitialBitRate(message.sdp, this.params_);
   this.pc_.setRemoteDescription(new RTCSessionDescription(message),
       this.onSetRemoteDescriptionSuccess_.bind(this),
-      this.onError_.bind(this,'setRemoteDescription'));
+      this.onError_.bind(this, 'setRemoteDescription'));
 };
 
 PeerConnectionClient.prototype.onSetRemoteDescriptionSuccess_ = function() {
@@ -262,7 +270,7 @@ PeerConnectionClient.prototype.processSignalingMessage_ = function(message) {
     this.recordIceCandidate_('Remote', candidate);
     this.pc_.addIceCandidate(candidate,
         trace.bind(null, 'Remote candidate added successfully.'),
-        this.onError_.bind(this,'addIceCandidate'));
+        this.onError_.bind(this, 'addIceCandidate'));
   } else {
     trace('WARNING: unexpected message: ' + JSON.stringify(message));
   }
@@ -371,4 +379,3 @@ PeerConnectionClient.prototype.onError_ = function(tag, error) {
     this.onerror(tag + ': ' + error.toString());
   }
 };
-

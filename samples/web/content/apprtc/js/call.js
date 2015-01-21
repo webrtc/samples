@@ -46,7 +46,9 @@ Call.prototype.isInitiator = function() {
 };
 
 Call.prototype.start = function(roomId) {
-  this.connectToRoom_(roomId, this.maybeGetMedia_(), this.maybeGetTurnServers_());
+  this.connectToRoom_(roomId,
+                      this.maybeGetMedia_(),
+                      this.maybeGetTurnServers_());
   if (this.params_.isLoopback) {
     setupLoopback(this.params_.wssUrl, roomId);
   }
@@ -80,7 +82,7 @@ Call.prototype.hangup = function() {
   xhr.send();
 
   // Send bye to other client.
-  this.channel_.send(JSON.stringify({ type: 'bye' }));
+  this.channel_.send(JSON.stringify({type: 'bye'}));
   this.channel_.close();
 
   this.params_.roomId = null;
@@ -167,10 +169,12 @@ Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
         // and the turn servers that we requested.
         // TODO(tkchin): clean up response format. JSHint doesn't like it.
         /* jshint ignore:start */
+        //jscs:disable requireCamelCaseOrUpperCaseIdentifiers
         this.params_.clientId = roomParams.client_id;
         this.params_.roomId = roomParams.room_id;
         this.params_.roomLink = roomParams.room_link;
         this.params_.isInitiator = roomParams.is_initiator === 'true';
+        //jscs:enable requireCamelCaseOrUpperCaseIdentifiers
         /* jshint ignore:end */
         this.params_.messages = roomParams.messages;
       }.bind(this)).catch(function(error) {

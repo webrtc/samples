@@ -57,9 +57,9 @@ module.exports = function(grunt) {
         // TODO (chuckhays) : remove these exclusions after code passes.
         'samples/web/content/testrtc/**/*.js',
         'samples/web/content/getusermedia/**/*.js',
-        'samples/web/content/peerconnection/**/*.js'
-        ],
-        requireCurlyBraces: ['if']
+        'samples/web/content/peerconnection/**/*.js',
+        'samples/web/content/datachannel/**/*.js'
+        ]
       }
     },
 
