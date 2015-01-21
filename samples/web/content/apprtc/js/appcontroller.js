@@ -166,10 +166,10 @@ AppController.prototype.onLocalStreamAdded_ = function(stream) {
 AppController.prototype.transitionToActive_ = function() {
   // Stop waiting for remote video.
   this.remoteVideo_.oncanplay = undefined;
-  var answerTime = window.performance.now();
-  this.infoBox_.setSetupTimes(this.call_.startTime, answerTime);
+  var connectTime = window.performance.now();
+  this.infoBox_.setSetupTimes(this.call_.startTime, connectTime);
   this.infoBox_.updateInfoDiv();
-  trace('Call setup time: ' + (answerTime - this.call_.startTime).toFixed(0) +
+  trace('Call setup time: ' + (connectTime - this.call_.startTime).toFixed(0) +
       'ms.');
 
   if (this.transitionToWaitingTimer_) {
