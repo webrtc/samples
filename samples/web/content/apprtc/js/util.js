@@ -10,6 +10,7 @@
 
 /* exported setUpFullScreen, fullScreenElement, isFullScreen,
    requestTurnServers, sendAsyncUrlRequest, randomString */
+/* globals chrome */
 
 'use strict';
 
@@ -87,17 +88,32 @@ function filterTurnUrls(urls, protocol) {
 
 // Start shims for fullscreen
 function setUpFullScreen() {
-  document.cancelFullScreen = document.webkitCancelFullScreen ||
-  document.mozCancelFullScreen || document.cancelFullScreen;
-
-  document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-  document.body.mozRequestFullScreen || document.body.requestFullScreen;
-
+  if (isChromeApp()) {
+    document.cancelFullScreen = function() { 
+      chrome.app.window.current().restore();
+    };
+  } else {
+    document.cancelFullScreen = document.webkitCancelFullScreen ||
+        document.mozCancelFullScreen || document.cancelFullScreen;
+  }
+  
+  if (isChromeApp()) {
+    document.body.requestFullScreen = function() {
+      chrome.app.window.current().fullscreen();
+    };
+  } else {
+    document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+        document.body.mozRequestFullScreen || document.body.requestFullScreen;
+  }
+  
   document.onfullscreenchange = document.onfullscreenchange ||
-    document.onwebkitfullscreenchange || document.onmozfullscreenchange;
+        document.onwebkitfullscreenchange || document.onmozfullscreenchange;
 }
 
 function isFullScreen(){
+  if (isChromeApp()) {
+    return chrome.app.window.current().isFullscreen();
+  }
   return !!(document.webkitIsFullScreen || document.mozFullScreen ||
     document.isFullScreen); // if any defined and true
 }
@@ -119,4 +135,11 @@ function randomString(strLength) {
     result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
   }
   return result.join('');
+}
+
+// Returns true if the code is running in a packaged Chrome App.
+function isChromeApp() {
+  return (typeof chrome !== 'undefined' &&
+          typeof chrome.storage !== 'undefined' &&
+          typeof chrome.storage.local !== 'undefined');
 }
