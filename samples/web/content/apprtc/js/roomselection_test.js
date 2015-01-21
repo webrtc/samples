@@ -141,7 +141,7 @@ RecentlyUsedListTest.prototype.setUp = function() {
   this.key_ = 'testRecentRoomsKey';
   
   this.fullList_ = '["room4","room5","room6","room7","room8","room9","room10","room11","room12","room13"]';
-  this.tooManyList_ = '["room1","room2","room3","room4","room5","room6","room7","room8","room9","room10","room11","room12","room13"]'
+  this.tooManyList_ = '["room1","room2","room3","room4","room5","room6","room7","room8","room9","room10","room11","room12","room13"]';
   this.duplicatesList_ = '["room4","room4","room6","room7","room6","room9","room10","room4","room6","room13"]';
   this.noDuplicatesList_ = '["room4","room6","room7","room9","room10","room13"]';
   this.emptyList_ = '[]';
@@ -170,7 +170,7 @@ RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomDuplicateList = function(
   });
 };
 
-RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomTooFullList = function(queue) {
+RecentlyUsedListTest.prototype.testPushRecentlyUsedRoomTooManyList = function(queue) {
   queue.call('Step 1: push new value.', function(callbacks) {
     var onCompleted = callbacks.add(function() {});
       localStorage.removeItem(this.key_);
