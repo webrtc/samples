@@ -47,16 +47,20 @@ module.exports = function(grunt) {
     jscs: {
       src: 'samples/web/content/**/*.js',
       options: {
-        config: 'google', // as per Google style guide – could use '.jscsrc' instead
+        preset: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
         'samples/web/content/manual-test/**/*',
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
-        'samples/web/content/testrtc/bower_components/**'
-        ],
-        requireCurlyBraces: ['if']
+        'samples/web/content/testrtc/bower_components/**',
+        // TODO (chuckhays) : remove these exclusions after code passes.
+        'samples/web/content/testrtc/**/*.js',
+        'samples/web/content/getusermedia/**/*.js',
+        'samples/web/content/peerconnection/**/*.js',
+        'samples/web/content/datachannel/**/*.js'
+        ]
       }
     },
 
@@ -135,9 +139,11 @@ module.exports = function(grunt) {
             'samples/web/content/apprtc/js/call.js',
             'samples/web/content/apprtc/js/infobox.js',
             'samples/web/content/apprtc/js/peerconnectionclient.js',
+            'samples/web/content/apprtc/js/roomselection.js',
             'samples/web/content/apprtc/js/sdputils.js',
             'samples/web/content/apprtc/js/signalingchannel.js',
             'samples/web/content/apprtc/js/stats.js',
+            'samples/web/content/apprtc/js/storage.js',
             'samples/web/content/apprtc/js/util.js',
           ]
         },

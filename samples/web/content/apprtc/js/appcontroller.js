@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals trace, InfoBox, setUpFullScreen, isFullScreen */
+/* globals trace, InfoBox, setUpFullScreen, isFullScreen,
+   RoomSelection, isChromeApp */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -32,6 +33,11 @@ var UI_CONSTANTS = {
 
   remoteVideo: '#remote-video',
   roomLinkHref: '#room-link-href',
+  roomSelectionDiv: '#room-selection',
+  roomSelectionInput: '#room-id-input',
+  roomSelectionJoinButton: '#join-button',
+  roomSelectionRandomButton: '#random-button',
+  roomSelectionRecentList: '#recent-rooms-list',
   sharingDiv: '#sharing-div',
   statusDiv: '#status-div',
   videosDiv: '#videos',
@@ -52,14 +58,16 @@ var AppController = function(loadingParams) {
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
-  this.muteAudioIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
-  this.muteVideoIconSet_ = new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
-  this.fullscreenIconSet_ = new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
+  this.muteAudioIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
+  this.muteVideoIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
+  this.fullscreenIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
   this.loadingParams_ = loadingParams;
   var paramsPromise = Promise.resolve({});
-  if (this.loadingParams_.paramsFunction)
-  {
+  if (this.loadingParams_.paramsFunction) {
     // If we have a paramsFunction value, we need to call it
     // and use the returned values to merge with the passed
     // in params. In the Chrome app, this is used to initialize
@@ -109,21 +117,58 @@ var AppController = function(loadingParams) {
     this.call_.onstatusmessage = this.displayStatus_.bind(this);
     this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 
-    this.call_.start(this.loadingParams_.roomId);
-
-    window.onbeforeunload = this.call_.hangup.bind(this.call_);
-    document.onkeypress = this.onKeyPress_.bind(this);
-    window.onmousemove = this.showIcons_.bind(this);
-
-    $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
-    $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
-    $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
-    $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
-
-    setUpFullScreen();
+    this.roomSelection_ = null;
+    // If the params has a roomId specified, we should connect to that room immediately.
+    // If not, show the room selection UI.
+    if (this.loadingParams_.roomId) {
+      // Record this room in the recently used list.
+      var recentlyUsedList = new RoomSelection.RecentlyUsedList();
+      recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
+      this.finishCallSetup_(this.loadingParams_.roomId);
+    } else {
+      // Display the room selection UI.
+      var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
+      this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
+      this.show_(roomSelectionDiv);
+      this.roomSelection_.onRoomSelected = function(roomName) {
+        this.hide_(roomSelectionDiv);
+        this.finishCallSetup_(roomName);
+      }.bind(this);
+    }
   }.bind(this)).catch(function(error) {
     trace('Error initializing: ' + error.message);
   }.bind(this));
+};
+
+AppController.prototype.finishCallSetup_ = function(roomId) {
+  this.call_.start(roomId);
+
+  window.onbeforeunload = this.call_.hangup.bind(this.call_);
+  document.onkeypress = this.onKeyPress_.bind(this);
+  window.onmousemove = this.showIcons_.bind(this);
+
+  $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
+  $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
+  $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
+  $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
+
+  setUpFullScreen();
+
+  if (!isChromeApp()) {
+    window.onpopstate = function(event) {
+      if (!event.state) {
+        // TODO (chuckhays) : Resetting back to room selection page not
+        // yet supported, reload the initial page instead.
+        trace('Reloading main page.');
+        location.href = location.origin;
+      } else {
+        // This could be a forward request to open a room again.
+        if (event.state.roomLink) {
+          location.href = event.state.roomLink;
+        }
+      }
+    };
+  }
 };
 
 AppController.prototype.hangup_ = function() {
@@ -184,10 +229,11 @@ AppController.prototype.onLocalStreamAdded_ = function(stream) {
 AppController.prototype.transitionToActive_ = function() {
   // Stop waiting for remote video.
   this.remoteVideo_.oncanplay = undefined;
-  var delay = window.performance.now() - this.call_.startTime;
-  this.infoBox_.setCallSetupDelay(delay);
-  trace('Call setup time: ' + delay.toFixed(0) + 'ms.');
+  var connectTime = window.performance.now();
+  this.infoBox_.setSetupTimes(this.call_.startTime, connectTime);
   this.infoBox_.updateInfoDiv();
+  trace('Call setup time: ' + (connectTime - this.call_.startTime).toFixed(0) +
+      'ms.');
 
   if (this.transitionToWaitingTimer_) {
     clearTimeout(this.transitionToWaitingTimer_);
@@ -278,10 +324,19 @@ AppController.prototype.onKeyPress_ = function(event) {
   }
 };
 
-AppController.prototype.displaySharingInfo_ = function(roomLink) {
+AppController.prototype.pushCallNavigation_ = function(roomId, roomLink) {
+  if (!isChromeApp()) {
+    window.history.pushState({'roomId': roomId, 'roomLink': roomLink},
+                             roomId,
+                             roomLink);
+  }
+};
+
+AppController.prototype.displaySharingInfo_ = function(roomId, roomLink) {
   this.roomLinkHref_.href = roomLink;
   this.roomLinkHref_.text = roomLink;
   this.roomLink_ = roomLink;
+  this.pushCallNavigation_(roomId, roomLink);
   this.activate_(this.sharingDiv_);
 };
 
@@ -311,30 +366,32 @@ AppController.prototype.toggleVideoMute_ = function() {
 
 AppController.prototype.toggleFullScreen_ = function() {
   if (isFullScreen()) {
+    trace('Exiting fullscreen.');
     document.cancelFullScreen();
   } else {
+    trace('Entering fullscreen.');
     document.body.requestFullScreen();
   }
   this.fullscreenIconSet_.toggle();
 };
 
-function $(selector){
+function $(selector) {
   return document.querySelector(selector);
 }
 
-AppController.prototype.hide_ = function(element){
+AppController.prototype.hide_ = function(element) {
   element.classList.add('hidden');
 };
 
-AppController.prototype.show_ = function(element){
+AppController.prototype.show_ = function(element) {
   element.classList.remove('hidden');
 };
 
-AppController.prototype.activate_ = function(element){
+AppController.prototype.activate_ = function(element) {
   element.classList.add('active');
 };
 
-AppController.prototype.deactivate_ = function(element){
+AppController.prototype.deactivate_ = function(element) {
   element.classList.remove('active');
 };
 
@@ -347,12 +404,12 @@ AppController.prototype.showIcons_ = function() {
   }
 };
 
-AppController.IconSet_ = function(iconSelector){
+AppController.IconSet_ = function(iconSelector) {
   this.iconElement = document.querySelector(iconSelector);
 };
 
 AppController.IconSet_.prototype.toggle = function() {
-  if (this.iconElement.classList.contains('on')){
+  if (this.iconElement.classList.contains('on')) {
     this.iconElement.classList.remove('on');
     // turn it off: CSS hides `svg path.on` and displays `svg path.off`
   } else {
@@ -360,4 +417,3 @@ AppController.IconSet_.prototype.toggle = function() {
     this.iconElement.classList.add('on');
   }
 };
-

@@ -70,8 +70,8 @@ if (navigator.mozGetUserMedia) {
   MediaStreamTrack.getSources = function(successCb) {
     setTimeout(function() {
       var infos = [
-        { kind: 'audio', id: 'default', label:'', facing:'' },
-        { kind: 'video', id: 'default', label:'', facing:'' }
+        {kind: 'audio', id: 'default', label:'', facing:''},
+        {kind: 'video', id: 'default', label:'', facing:''}
       ];
       successCb(infos);
     }, 0);
@@ -226,4 +226,3 @@ function requestUserMedia(constraints) {
     }
   });
 }
-
