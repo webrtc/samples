@@ -515,13 +515,18 @@ class RegisterPage(webapp2.RequestHandler):
     logging.info('Room ' + room_id + ' has state ' + result['room_state'])
 
 class MainPage(webapp2.RequestHandler):
+  def write_response(self, target_page, params={}):
+    template = jinja_environment.get_template(target_page)
+    content = template.render(params)
+    self.response.out.write(content)
+    
   def get(self):
-    """Redirects to a room page."""
-    room_id = generate_random(8)
-    redirect = '/r/' + room_id
-    redirect = append_url_arguments(self.request, redirect)
-    self.redirect(redirect)
-    logging.info('Redirecting visitor to base URL to ' + redirect)
+    """Renders index.html."""
+    # Parse out parameters from request.
+    params = get_room_parameters(self.request, None, None, None)
+    # room_id/room_link will not be included in the returned parameters
+    # so the client will show the landing page for room selection.
+    self.write_response('index.html', params)
 
 class RoomPage(webapp2.RequestHandler):
   def write_response(self, target_page, params={}):
@@ -542,6 +547,8 @@ class RoomPage(webapp2.RequestHandler):
         return
     # Parse out room parameters from request.
     params = get_room_parameters(self.request, room_id, None, None)
+    # room_id/room_link will be included in the returned parameters
+    # so the client will launch the requested room.
     self.write_response('index.html', params)
 
 class ParamsPage(webapp2.RequestHandler):
@@ -549,7 +556,6 @@ class ParamsPage(webapp2.RequestHandler):
     # Return room independent room parameters.
     params = get_room_parameters(self.request, None, None, None)
     self.response.write(json.dumps(params))
-    
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),

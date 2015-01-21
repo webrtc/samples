@@ -15,11 +15,11 @@
 // Generate random room id and connect.
 
 var roomServer = 'https://apprtc.appspot.com';
-
 var loadingParams = {
   errorMessages: [],
-  roomId: randomString(9),
+  suggestedRoomId: randomString(9),
   roomServer: roomServer,
+  connect: false,
   paramsFunction: function() {
     return new Promise(function(resolve, reject) {
       trace('Initializing; retrieving params from: ' + roomServer + '/params');

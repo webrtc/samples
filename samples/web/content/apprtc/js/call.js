@@ -300,7 +300,7 @@ Call.prototype.maybeCreatePcClient_ = function() {
 Call.prototype.startSignaling_ = function() {
   trace('Starting signaling.');
   if (this.isInitiator() && this.oncallerstarted) {
-    this.oncallerstarted(this.params_.roomLink);
+    this.oncallerstarted(this.params_.roomId, this.params_.roomLink);
   }
 
   this.startTime = window.performance.now();
@@ -333,6 +333,8 @@ Call.prototype.registerWithRoomServer_ = function() {
         return;
       }
       if (responseObj.result !== 'SUCCESS') {
+        // TODO (chuckhays) : handle room full state by returning to room selection state.
+        // When room is full, responseObj.result === 'FULL'
         reject(Error('Registration error: ' + responseObj.result));
         return;
       }
