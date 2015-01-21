@@ -141,7 +141,7 @@ class GCMRecord(ndb.Model):
                          gcm_id = gcm_id,
                          code = code,
                          verified = False,
-                         code_sent_time = datetime.datetime.now())
+                         code_sent_time = datetime.datetime.utcnow())
       record.put()
       logging.info(
           'GCM binding added, user_id=%s, gcm_id=%s' % (user_id, gcm_id))
@@ -154,7 +154,7 @@ class GCMRecord(ndb.Model):
       return constants.RESPONSE_INVALID_STATE
 
     records[0].code = code
-    records[0].code_sent_time = datetime.datetime.now()
+    records[0].code_sent_time = datetime.datetime.utcnow()
     records[0].put()
     logging.info(
           'GCM binding code updated, user_id=%s, gcm_id=%s' % (user_id, gcm_id))
