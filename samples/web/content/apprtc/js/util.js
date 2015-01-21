@@ -89,14 +89,14 @@ function filterTurnUrls(urls, protocol) {
 // Start shims for fullscreen
 function setUpFullScreen() {
   if (isChromeApp()) {
-    document.cancelFullScreen = function() { 
+    document.cancelFullScreen = function() {
       chrome.app.window.current().restore();
     };
   } else {
     document.cancelFullScreen = document.webkitCancelFullScreen ||
         document.mozCancelFullScreen || document.cancelFullScreen;
   }
-  
+
   if (isChromeApp()) {
     document.body.requestFullScreen = function() {
       chrome.app.window.current().fullscreen();
@@ -105,7 +105,7 @@ function setUpFullScreen() {
     document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
         document.body.mozRequestFullScreen || document.body.requestFullScreen;
   }
-  
+
   document.onfullscreenchange = document.onfullscreenchange ||
         document.onwebkitfullscreenchange || document.onmozfullscreenchange;
 }

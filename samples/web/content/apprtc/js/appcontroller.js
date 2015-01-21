@@ -142,22 +142,22 @@ var AppController = function(loadingParams) {
 
 AppController.prototype.finishCallSetup_ = function(roomId) {
   this.call_.start(roomId);
-  
+
   window.onbeforeunload = this.call_.hangup.bind(this.call_);
   document.onkeypress = this.onKeyPress_.bind(this);
   window.onmousemove = this.showIcons_.bind(this);
-  
+
   $(UI_CONSTANTS.muteAudioSvg).onclick = this.toggleAudioMute_.bind(this);
   $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
   $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
   $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
 
   setUpFullScreen();
-  
+
   if (!isChromeApp()) {
     window.onpopstate = function(event) {
       if (!event.state) {
-        // TODO (chuckhays) : Resetting back to room selection page not 
+        // TODO (chuckhays) : Resetting back to room selection page not
         // yet supported, reload the initial page instead.
         trace('Reloading main page.');
         location.href = location.origin;
@@ -325,8 +325,10 @@ AppController.prototype.onKeyPress_ = function(event) {
 
 AppController.prototype.pushCallNavigation_ = function(roomId, roomLink) {
   if (!isChromeApp()) {
-    window.history.pushState({'roomId': roomId, 'roomLink': roomLink }, roomId, roomLink);
-  }  
+    window.history.pushState({'roomId': roomId, 'roomLink': roomLink},
+                             roomId,
+                             roomLink);
+  }
 };
 
 AppController.prototype.displaySharingInfo_ = function(roomId, roomLink) {

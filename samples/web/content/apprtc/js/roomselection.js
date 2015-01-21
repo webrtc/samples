@@ -13,26 +13,34 @@
 
 'use strict';
 
-var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey, setupCompletedCallback) {  
+var RoomSelection = function(roomSelectionDiv,
+    uiConstants, recentRoomsKey, setupCompletedCallback) {
   this.roomSelectionDiv_ = roomSelectionDiv;
-  
+
   this.setupCompletedCallback_ = setupCompletedCallback;
-  
-  this.roomIdInput_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionInput);
-  this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionJoinButton);
-  this.roomRandomButton_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionRandomButton);
-  this.roomRecentList_ = this.roomSelectionDiv_.querySelector(uiConstants.roomSelectionRecentList);
-  
+
+  this.roomIdInput_ = this.roomSelectionDiv_.querySelector(
+      uiConstants.roomSelectionInput);
+  this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(
+      uiConstants.roomSelectionJoinButton);
+  this.roomRandomButton_ = this.roomSelectionDiv_.querySelector(
+      uiConstants.roomSelectionRandomButton);
+  this.roomRecentList_ = this.roomSelectionDiv_.querySelector(
+      uiConstants.roomSelectionRecentList);
+
   this.roomIdInput_.value = randomString(9);
   // Call onRoomIdInput_ now to validate initial state of input box.
   this.onRoomIdInput_();
-  this.roomIdInput_.addEventListener('input', this.onRoomIdInput_.bind(this), false);
-  this.roomRandomButton_.addEventListener('click', this.onRandomButton_.bind(this), false);
-  this.roomJoinButton_.addEventListener('click', this.onJoinButton_.bind(this), false);
-  
+  this.roomIdInput_.addEventListener('input',
+      this.onRoomIdInput_.bind(this), false);
+  this.roomRandomButton_.addEventListener('click',
+      this.onRandomButton_.bind(this), false);
+  this.roomJoinButton_.addEventListener('click',
+      this.onJoinButton_.bind(this), false);
+
   // Public callbacks. Keep it sorted.
   this.onRoomSelected = null;
-  
+
   this.recentlyUsedList_ = new RoomSelection.RecentlyUsedList(recentRoomsKey);
   this.startBuildingRecentRoomList_();
 };
@@ -40,8 +48,7 @@ var RoomSelection = function(roomSelectionDiv, uiConstants, recentRoomsKey, setu
 RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
   this.recentlyUsedList_.getRecentRooms().then(function(recentRooms) {
     this.buildRecentRoomList_(recentRooms);
-    if (this.setupCompletedCallback_)
-    {
+    if (this.setupCompletedCallback_) {
       this.setupCompletedCallback_();
     }
   }.bind(this)).catch(function(error) {
@@ -59,9 +66,10 @@ RoomSelection.prototype.buildRecentRoomList_ = function(recentRooms) {
     href.href = location.origin + '/r/' + encodeURIComponent(recentRooms[i]);
     li.appendChild(href);
     this.roomRecentList_.appendChild(li);
-  
+
     // Set up click handler to avoid browser navigation.
-    href.addEventListener('click', this.makeRecentlyUsedClickHandler_(recentRooms[i]).bind(this), false);
+    href.addEventListener('click',
+        this.makeRecentlyUsedClickHandler_(recentRooms[i]).bind(this), false);
   }
 };
 
@@ -105,7 +113,7 @@ RoomSelection.prototype.loadRoom_ = function(roomName) {
 RoomSelection.RecentlyUsedList = function(key) {
   // This is the length of the most recently used list.
   this.LISTLENGTH_ = 10;
-  
+
   this.RECENTROOMSKEY_ = key || 'recentRooms';
   this.storage_ = new Storage();
 };
@@ -118,7 +126,7 @@ RoomSelection.RecentlyUsedList.prototype.pushRecentRoom = function(roomId) {
       resolve();
       return;
     }
-  
+
     this.getRecentRooms().then(function(recentRooms) {
       recentRooms = [roomId].concat(recentRooms);
       // Remove any duplicates from the list, leaving the first occurance.
@@ -126,7 +134,8 @@ RoomSelection.RecentlyUsedList.prototype.pushRecentRoom = function(roomId) {
         return self.indexOf(value) === index;
       });
       recentRooms = recentRooms.slice(0, this.LISTLENGTH_);
-      this.storage_.setStorage(this.RECENTROOMSKEY_, JSON.stringify(recentRooms), function() {
+      this.storage_.setStorage(this.RECENTROOMSKEY_,
+          JSON.stringify(recentRooms), function() {
         resolve();
       });
     }.bind(this)).catch(function(err) {
