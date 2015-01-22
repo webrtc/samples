@@ -8,6 +8,7 @@ package main
 import (
 	"collider"
 	"flag"
+	"log"
 )
 
 var tls = flag.Bool("tls", true, "whether TLS is used")
@@ -16,5 +17,9 @@ var roomSrv = flag.String("room-server", "https://apprtc.appspot.com", "The orig
 
 func main() {
 	flag.Parse()
-	collider.Start(*tls, *port, *roomSrv)
+
+	log.Printf("Starting collider: tls = %t, port = %d, room-server=%s", *tls, *port, *roomSrv)
+
+	c := collider.NewCollider(*roomSrv)
+	c.Run(*port, *tls)
 }
