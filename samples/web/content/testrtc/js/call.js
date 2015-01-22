@@ -9,25 +9,27 @@
 
 function Call(config) {
   this.traceEvent = report.traceEventAsync('call');
-  this.traceEvent({ config: config });
+  this.traceEvent({config: config});
 
   this.pc1 = new RTCPeerConnection(config);
   this.pc2 = new RTCPeerConnection(config);
 
-  this.pc1.addEventListener('icecandidate', this.onIceCandidate_.bind(this, this.pc2));
-  this.pc2.addEventListener('icecandidate', this.onIceCandidate_.bind(this, this.pc1));
+  this.pc1.addEventListener('icecandidate', this.onIceCandidate_.bind(this,
+      this.pc2));
+  this.pc2.addEventListener('icecandidate', this.onIceCandidate_.bind(this,
+      this.pc1));
 
   this.iceCandidateFilter_ = Call.noFilter;
 }
 
 Call.prototype = {
-  establishConnection: function () {
-    this.traceEvent({ state: 'start' });
+  establishConnection: function() {
+    this.traceEvent({state: 'start'});
     this.pc1.createOffer(this.gotOffer_.bind(this));
   },
 
-  close: function () {
-    this.traceEvent({ state: 'end' });
+  close: function() {
+    this.traceEvent({state: 'end'});
     this.pc1.close();
     this.pc2.close();
   },
@@ -46,11 +48,13 @@ Call.prototype = {
     this.constrainOfferToRemoveVideoFec_ = true;
   },
 
-  // When the peerConnection is closed the statsFinishedCallback is called once returning
-  // with an array of gathered stats. timeForFirstFrameCallback will be called once when
-  // googFrameRateInput is > 0 with a timestamp in milliseconds.
+  // When the peerConnection is closed the statsFinishedCallback is called once
+  // returning with an array of gathered stats. timeForFirstFrameCallback will
+  // be called once when googFrameRateInput is > 0 with a timestamp in
+  // milliseconds.
   // TODO (jansson) expand to cover audio as well.
-  gatherStats: function(peerConnection, statsFinishedCallback, timeForFirstFrameCallback, interval) {
+  gatherStats: function(peerConnection, statsFinishedCallback,
+                        timeForFirstFrameCallback, interval) {
     var timeForFirstFrameCallbackSent = false;
     var stats = [];
     getStats_();
@@ -84,7 +88,7 @@ Call.prototype = {
     }
   },
 
-  gotOffer_: function (offer) {
+  gotOffer_: function(offer) {
     if (this.constrainOfferToRemoveVideoFec_) {
       offer.sdp = offer.sdp.replace(/(m=video 1 [^\r]+)(116 117)(\r\n)/g,
                                     '$1\r\n');
@@ -96,7 +100,7 @@ Call.prototype = {
     this.pc2.createAnswer(this.gotAnswer_.bind(this));
   },
 
-  gotAnswer_: function (answer) {
+  gotAnswer_: function(answer) {
     if (this.constrainVideoBitrateKbps_) {
       answer.sdp = answer.sdp.replace(
           /a=mid:video\r\n/g,
@@ -140,12 +144,13 @@ Call.parseCandidate = function(text) {
   return {
     'type': fields[7],
     'protocol': fields[2],
-    'address': fields[4],
+    'address': fields[4]
   };
 };
 
 // Ask computeengineondemand to give us TURN server credentials and URIs.
-Call.CEOD_URL = 'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
+Call.CEOD_URL =
+    'https://computeengineondemand.appspot.com/turn?username=1234&key=5678';
 Call.asyncCreateTurnConfig = function(onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   function onResult() {
@@ -164,7 +169,7 @@ Call.asyncCreateTurnConfig = function(onSuccess, onError) {
       'credential': response.password,
       'urls': response.uris
     };
-    onSuccess({ 'iceServers': [ iceServer ] });
+    onSuccess({'iceServers': [iceServer]});
   }
 
   xhr.onreadystatechange = onResult;

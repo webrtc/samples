@@ -17,7 +17,7 @@ function StatisticsAggregate(rampUpThreshold) {
 }
 
 StatisticsAggregate.prototype = {
-  add: function (time, datapoint) {
+  add: function(time, datapoint) {
     if (this.startTime_ === 0) {
       this.startTime_ = time;
     }
@@ -30,18 +30,18 @@ StatisticsAggregate.prototype = {
     this.count_++;
   },
 
-  getAverage: function () {
+  getAverage: function() {
     if (this.count_ === 0) {
       return 0;
     }
     return Math.round(this.sum_ / this.count_);
   },
 
-  getMax: function () {
+  getMax: function() {
     return this.max_;
   },
 
-  getRampUpTime: function () {
+  getRampUpTime: function() {
     return this.rampUpTime_ - this.startTime_;
   },
 };
