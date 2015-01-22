@@ -13,7 +13,8 @@
 function GumHandler() {
   this.gumPendingDialog_ = document.getElementById('gum-pending-dialog');
   this.gumErrorDialog_ = document.getElementById('gum-error-dialog');
-  this.gumNotSupportedDialog_ = document.getElementById('gum-not-supported-dialog');
+  this.gumNotSupportedDialog_ =
+      document.getElementById('gum-not-supported-dialog');
   this.gumErrorMessage_ = document.getElementById('gum-error-message');
   this.firstUserCheck_ = null;
   this.gumStreamSuccessCallback_ = null;
@@ -42,7 +43,8 @@ GumHandler.prototype = {
   gotStream_: function(stream) {
     clearTimeout(this.firstUserCheck_);
 
-    // Stop all tracks to ensure the camera and audio devices are shutdown directly.
+    // Stop all tracks to ensure the camera and audio devices are shutdown
+    // directly.
     for (var i = 0; i < stream.getTracks().length; i++) {
       stream.getTracks()[i].stop();
     }

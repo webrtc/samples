@@ -15,7 +15,7 @@ addTest('Connectivity', 'Ipv6 enabled', testHasIpv6Candidates);
 // Get a TURN config, and try to get a relay candidate using UDP.
 function testUdpConnectivity() {
   Call.asyncCreateTurnConfig(
-      function(config) { 
+      function(config) {
         filterConfig(config, 'udp');
         gatherCandidates(config, null, Call.isRelay);
       },
@@ -26,7 +26,7 @@ function testUdpConnectivity() {
 // Get a TURN config, and try to get a relay candidate using TCP.
 function testTcpConnectivity() {
   Call.asyncCreateTurnConfig(
-      function(config) { 
+      function(config) {
         filterConfig(config, 'tcp');
         gatherCandidates(config, null, Call.isRelay);
       },
@@ -36,7 +36,7 @@ function testTcpConnectivity() {
 // Test whether it is IPv6 enabled (TODO: test IPv6 to a destination).
 // Turn on IPv6, and try to get an IPv6 host candidate.
 function testHasIpv6Candidates() {
-  var params = { optional: [ { googIPv6: true } ] };
+  var params = {optional: [{googIPv6: true}]};
   gatherCandidates(null, params, Call.isIpv6);
 }
 
@@ -57,7 +57,7 @@ function filterConfig(config, protocol) {
 }
 
 // Create a PeerConnection, and gather candidates using RTCConfig |config|
-// and ctor params |params|. Succeed if any candidates pass the |isGood| 
+// and ctor params |params|. Succeed if any candidates pass the |isGood|
 // check, fail if we complete gathering without any passing.
 function gatherCandidates(config, params, isGood) {
   var pc = new RTCPeerConnection(config, params);
@@ -85,8 +85,8 @@ function gatherCandidates(config, params, isGood) {
 
   // Create an audio-only, recvonly offer, and setLD with it.
   // This will trigger candidate gathering.
-  var createOfferParams = { mandatory: { OfferToReceiveAudio: true } };
-  pc.createOffer(function(offer) { pc.setLocalDescription(offer, noop, noop); },
+  var createOfferParams = {mandatory: {OfferToReceiveAudio: true}};
+  pc.createOffer(function(offer) { pc.setLocalDescription(offer, noop, noop) ;},
                  noop, createOfferParams);
 }
 
