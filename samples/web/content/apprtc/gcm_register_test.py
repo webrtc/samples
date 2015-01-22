@@ -116,33 +116,5 @@ class BindPageHandlerTest(unittest.TestCase):
     result = json.loads(response.body)
     self.assertEqual(['foo'], result)
 
-  def testBindQueryGcmId(self):
-    body = {
-      gcm_register.PARAM_USER_ID: 'foo',
-      gcm_register.PARAM_GCM_ID: 'bar'
-    }
-    self.makePostRequest('/bind/new', json.dumps(body))
-    body = {
-      gcm_register.PARAM_GCM_ID: 'bar2'
-    }
-    response = self.makePostRequest('/bind/query', json.dumps(body))
-    self.assertEqual(constants.RESPONSE_NOT_FOUND, response.body)
-    body[gcm_register.PARAM_GCM_ID] = 'bar'
-    response = self.makePostRequest('/bind/query', json.dumps(body))
-    self.assertEqual(constants.RESPONSE_UNVERIFIED, response.body)
-
-    q = gcm_register.GCMRecord.query(ancestor=gcm_register.get_ancestor_key())
-    records = q.fetch()
-    body[gcm_register.PARAM_USER_ID] = 'foo'
-    body[gcm_register.PARAM_CODE] = records[0].code
-    self.makePostRequest('/bind/verify', json.dumps(body))
-
-    body = {
-      gcm_register.PARAM_GCM_ID: 'bar'
-    }
-    response = self.makePostRequest('/bind/query', json.dumps(body))
-    self.assertEqual(constants.RESPONSE_VERIFIED, response.body)
-
-
 if __name__ == '__main__':
   unittest.main()

@@ -25,11 +25,22 @@ PARAM_OLD_GCM_ID = 'oldGcmId'
 PARAM_NEW_GCM_ID = 'newGcmId'
 PARAM_USER_ID_LIST = 'userIdList'
 
+def has_msg_field(msg, field):
+  return msg and field in msg and len(msg[field]) > 0
+
+def has_msg_fields(msg, fields):
+  return reduce(lambda x, y: x and y,
+                map(lambda x: has_msg_field(msg, x), fields))
+
 class BindPage(webapp2.RequestHandler):
   def get_message_from_json(self):
     try:
       message = json.loads(self.request.body)
-      return message
+      if isinstance(message, dict):
+        return message
+      logging.warning('Expected dictionary message'
+          + ', request=' + self.request.body)
+      return None
     except Exception as e:
       logging.warning('JSON load error from BindPage: error=' + str(e)
           + ', request=' + self.request.body)
@@ -37,7 +48,7 @@ class BindPage(webapp2.RequestHandler):
 
   def handle_new(self):
     msg = self.get_message_from_json()
-    if msg and msg[PARAM_USER_ID] and msg[PARAM_GCM_ID]:
+    if has_msg_fields(msg, (PARAM_USER_ID, PARAM_GCM_ID)):
       # TODO(jiayl): validate the input, generate a random code, and send SMS.
       self.response.out.write(GCMRecord.add_or_update(
           msg[PARAM_USER_ID], msg[PARAM_GCM_ID], 'fake_code'))
@@ -46,8 +57,7 @@ class BindPage(webapp2.RequestHandler):
 
   def handle_update(self):
     msg = self.get_message_from_json()
-    if msg and msg[PARAM_USER_ID] \
-        and msg[PARAM_OLD_GCM_ID] and msg[PARAM_NEW_GCM_ID]:
+    if has_msg_fields(msg, (PARAM_USER_ID, PARAM_OLD_GCM_ID, PARAM_NEW_GCM_ID)):
       self.response.out.write(GCMRecord.update_gcm_id(
           msg[PARAM_USER_ID], msg[PARAM_OLD_GCM_ID], msg[PARAM_NEW_GCM_ID]))
     else:
@@ -55,7 +65,7 @@ class BindPage(webapp2.RequestHandler):
 
   def handle_verify(self):
     msg = self.get_message_from_json()
-    if msg and msg[PARAM_USER_ID] and msg[PARAM_GCM_ID] and msg[PARAM_CODE]:
+    if has_msg_fields(msg, (PARAM_USER_ID, PARAM_GCM_ID, PARAM_CODE)):
       self.response.out.write(GCMRecord.verify(
           msg[PARAM_USER_ID], msg[PARAM_GCM_ID], msg[PARAM_CODE]))
     else:
@@ -63,7 +73,7 @@ class BindPage(webapp2.RequestHandler):
 
   def handle_query(self):
     msg = self.get_message_from_json()
-    if msg.has_key(PARAM_USER_ID_LIST) and msg[PARAM_USER_ID_LIST]:
+    if has_msg_field(msg, PARAM_USER_ID_LIST):
       result = []
       for id in msg[PARAM_USER_ID_LIST]:
         # TODO(jiayl): Only return the verified users when SMS verification is
@@ -71,21 +81,12 @@ class BindPage(webapp2.RequestHandler):
         if len(GCMRecord.get_by_user_id(id)) > 0:
           result.append(id)
       self.response.out.write(json.dumps(result))
-    elif msg.has_key(PARAM_GCM_ID) and msg[PARAM_GCM_ID]:
-      records = GCMRecord.get_by_gcm_id(msg[PARAM_GCM_ID])
-      assert len(records) < 2
-      if len(records) == 0:
-        self.response.out.write(constants.RESPONSE_NOT_FOUND)
-      elif records[0].verified:
-        self.response.out.write(constants.RESPONSE_VERIFIED)
-      else:
-        self.response.out.write(constants.RESPONSE_UNVERIFIED)
     else:
       self.response.out.write(constants.RESPONSE_INVALID_ARGUMENT)
 
   def handle_del(self):
     msg = self.get_message_from_json()
-    if msg and msg[PARAM_USER_ID] and msg[PARAM_GCM_ID]:
+    if has_msg_fields(msg, [PARAM_USER_ID, PARAM_GCM_ID]):
       GCMRecord.remove(msg[PARAM_USER_ID], msg[PARAM_GCM_ID])
       self.response.out.write(constants.RESPONSE_SUCCESS)
     else:
@@ -112,36 +113,37 @@ class GCMRecord(ndb.Model):
   code = ndb.StringProperty()
   code_sent_time = ndb.DateTimeProperty()
   verified = ndb.BooleanProperty()
+  last_modified_time = ndb.DateTimeProperty()
 
-  @staticmethod
-  def get_by_user_id(user_id):
+  @classmethod
+  def get_by_user_id(cls, user_id):
     q = GCMRecord.query(ancestor=get_ancestor_key())
     return q.filter(GCMRecord.user_id == user_id).fetch()
 
-  @staticmethod
-  def get_by_gcm_id(gcm_id):
+  @classmethod
+  def get_by_gcm_id(cls, gcm_id):
     q = GCMRecord.query(ancestor=get_ancestor_key())
     return q.filter(GCMRecord.gcm_id == gcm_id).fetch()
 
-  @staticmethod
-  def has(user_id, gcm_id):
+  @classmethod
+  def get_by_ids(cls, user_id, gcm_id):
     q = GCMRecord.query(ancestor=get_ancestor_key()) \
         .filter(GCMRecord.user_id == user_id).filter(GCMRecord.gcm_id == gcm_id)
-    return len(q.fetch()) > 0
+    return q.fetch()
 
-  @staticmethod
+  @classmethod
   @ndb.transactional(retries=100)
-  def add_or_update(user_id, gcm_id, code):
-    q = GCMRecord.query(ancestor=get_ancestor_key()) \
-        .filter(GCMRecord.user_id == user_id).filter(GCMRecord.gcm_id == gcm_id)
-    records = q.fetch()
+  def add_or_update(cls, user_id, gcm_id, code):
+    records = GCMRecord.get_by_ids(user_id, gcm_id)
+    now = datetime.datetime.utcnow()
     if len(records) == 0:
       record = GCMRecord(parent = get_ancestor_key(),
                          user_id = user_id,
                          gcm_id = gcm_id,
                          code = code,
                          verified = False,
-                         code_sent_time = datetime.datetime.utcnow())
+                         code_sent_time = now,
+                         last_modified_time = now)
       record.put()
       logging.info(
           'GCM binding added, user_id=%s, gcm_id=%s' % (user_id, gcm_id))
@@ -154,19 +156,17 @@ class GCMRecord(ndb.Model):
       return constants.RESPONSE_INVALID_STATE
 
     records[0].code = code
-    records[0].code_sent_time = datetime.datetime.utcnow()
+    records[0].code_sent_time = now
+    records[0].last_modified_time = now
     records[0].put()
     logging.info(
           'GCM binding code updated, user_id=%s, gcm_id=%s' % (user_id, gcm_id))
     return constants.RESPONSE_CODE_RESENT
 
-  @staticmethod
+  @classmethod
   @ndb.transactional(retries=100)
-  def verify(user_id, gcm_id, code):
-    q = GCMRecord.query(ancestor=get_ancestor_key()) \
-        .filter(GCMRecord.user_id == user_id).filter(GCMRecord.gcm_id == gcm_id)
-    records = q.fetch()
-
+  def verify(cls, user_id, gcm_id, code):
+    records = GCMRecord.get_by_ids(user_id, gcm_id)
     assert len(records) < 2
     for record in records:
       if record.verified:
@@ -176,6 +176,7 @@ class GCMRecord(ndb.Model):
 
       if record.code == code:
         record.verified = True;
+        record.last_modified_time = datetime.datetime.utcnow()
         record.put()
         logging.info(
             'GCM binding verified, user_id=%s, gcm_id=%s' % (user_id, gcm_id))
@@ -184,31 +185,25 @@ class GCMRecord(ndb.Model):
         return constants.RESPONSE_INVALID_CODE
     return constants.RESPONSE_NOT_FOUND
 
-  @staticmethod
+  @classmethod
   @ndb.transactional(retries=100)
-  def remove(user_id, gcm_id):
-    q = GCMRecord.query(ancestor=get_ancestor_key()) \
-        .filter(GCMRecord.user_id == user_id).filter(GCMRecord.gcm_id == gcm_id)
-    records = q.fetch()
-
+  def remove(cls, user_id, gcm_id):
+    records = GCMRecord.get_by_ids(user_id, gcm_id)
     assert len(records) < 2
     for record in records:
       record.key.delete()
       logging.info(
           'GCM binding deleted, user_id=%s, gcm_id=%s' % (user_id, gcm_id))
 
-  @staticmethod
+  @classmethod
   @ndb.transactional(retries=100)
-  def update_gcm_id(user_id, old_gcm_id, new_gcm_id):
-    q = GCMRecord.query(ancestor=get_ancestor_key()) \
-        .filter(GCMRecord.user_id == user_id) \
-        .filter(GCMRecord.gcm_id == old_gcm_id)
-    records = q.fetch()
-
+  def update_gcm_id(cls, user_id, old_gcm_id, new_gcm_id):
+    records = GCMRecord.get_by_ids(user_id, old_gcm_id)
     assert len(records) < 2
     for record in records:
       if record.verified:
         record.gcm_id = new_gcm_id
+        record.last_modified_time = datetime.datetime.utcnow()
         record.put()
         logging.info(
             'GCM binding updated, user_id=%s, old_gcm_id=%s, new_gcm_id=%s' \
