@@ -138,7 +138,7 @@ MicTest.prototype = {
     if (db < this.lowVolumeThreshold) {
       // Use Math.round to display up to two decimal places.
       reportError('Audio input level = ' + Math.round(db * 1000) / 1000 +
-                  ' db' + 'Microphone input level is low, increase input ' +
+                  ' db.' + ' Microphone input level is low, increase input ' +
                   'volume or move closer to the microphone.');
     } else {
       reportSuccess('Audio power for channel ' + channel + '=' +
