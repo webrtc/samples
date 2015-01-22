@@ -33,6 +33,13 @@ class BindPageHandlerTest(unittest.TestCase):
   def makePostRequest(self, path, body=''):
     return self.test_app.post(path, body, headers={'User-Agent': 'Safari'})
 
+  def checkInvalidRequests(self, path, params):
+    body = {x: '' for x in params}
+    while len(body) > 0:
+      response = self.makePostRequest(path, json.dumps(body))
+      self.assertEqual(constants.RESPONSE_INVALID_ARGUMENT, response.body)
+      body.popitem()
+
   def testBindNew(self):
     body = {
       gcm_register.PARAM_USER_ID: 'foo',
@@ -50,6 +57,7 @@ class BindPageHandlerTest(unittest.TestCase):
                                   records[0].code)
     response = self.makePostRequest('/bind/new', json.dumps(body))
     self.assertEqual(constants.RESPONSE_INVALID_STATE, response.body)
+    self.checkInvalidRequests('/bind/new', body.keys())
 
   def testBindVerify(self):
     body = {
@@ -70,6 +78,7 @@ class BindPageHandlerTest(unittest.TestCase):
 
     response = self.makePostRequest('/bind/verify', json.dumps(body))
     self.assertEqual(constants.RESPONSE_INVALID_STATE, response.body)
+    self.checkInvalidRequests('/bind/verify', body.keys())
 
   def testBindUpdate(self):
     request_1 = {
@@ -92,6 +101,16 @@ class BindPageHandlerTest(unittest.TestCase):
     response = self.makePostRequest('/bind/update', json.dumps(request_2))
     self.assertEqual(constants.RESPONSE_SUCCESS, response.body)
 
+    request_2[gcm_register.PARAM_OLD_GCM_ID] = 'bar2'
+    request_2[gcm_register.PARAM_NEW_GCM_ID] = 'bar2'
+    response = self.makePostRequest('/bind/update', json.dumps(request_2))
+    self.assertEqual(constants.RESPONSE_SUCCESS, response.body)
+
+    request_2[gcm_register.PARAM_OLD_GCM_ID] = 'bar'
+    response = self.makePostRequest('/bind/update', json.dumps(request_2))
+    self.assertEqual(constants.RESPONSE_NOT_FOUND, response.body)
+    self.checkInvalidRequests('/bind/update', request_2.keys())
+
   def testBindDel(self):
     body = {
       gcm_register.PARAM_USER_ID: 'foo',
@@ -102,6 +121,7 @@ class BindPageHandlerTest(unittest.TestCase):
     q = gcm_register.GCMRecord.query(ancestor=gcm_register.get_ancestor_key())
     records = q.fetch()
     self.assertEqual(0, len(records))
+    self.checkInvalidRequests('/bind/del', body.keys())
 
   def testBindQueryList(self):
     body = {
@@ -115,6 +135,7 @@ class BindPageHandlerTest(unittest.TestCase):
     response = self.makePostRequest('/bind/query', json.dumps(body))
     result = json.loads(response.body)
     self.assertEqual(['foo'], result)
+    self.checkInvalidRequests('/bind/query', body.keys())
 
 if __name__ == '__main__':
   unittest.main()

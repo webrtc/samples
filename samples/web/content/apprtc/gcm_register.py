@@ -7,6 +7,7 @@
 This module implements user ID registration and verification.
 """
 
+import collections
 import constants
 import datetime
 import json
@@ -26,7 +27,9 @@ PARAM_NEW_GCM_ID = 'newGcmId'
 PARAM_USER_ID_LIST = 'userIdList'
 
 def has_msg_field(msg, field):
-  return msg and field in msg and len(msg[field]) > 0
+  return msg and field in msg and \
+      (not isinstance(msg[field], collections.Iterable) or \
+       len(msg[field]) > 0)
 
 def has_msg_fields(msg, fields):
   return reduce(lambda x, y: x and y,
@@ -73,7 +76,8 @@ class BindPage(webapp2.RequestHandler):
 
   def handle_query(self):
     msg = self.get_message_from_json()
-    if has_msg_field(msg, PARAM_USER_ID_LIST):
+    if has_msg_field(msg, PARAM_USER_ID_LIST) and \
+        isinstance(msg[PARAM_USER_ID_LIST], list):
       result = []
       for id in msg[PARAM_USER_ID_LIST]:
         # TODO(jiayl): Only return the verified users when SMS verification is
