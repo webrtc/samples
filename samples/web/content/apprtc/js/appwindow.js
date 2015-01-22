@@ -8,63 +8,68 @@
 
 /* More information about these options at jshint.com/docs/options */
 // Variables defined in and used from main.js.
-/* globals randomString, AppController, UI_CONSTANTS */
+/* globals randomString, AppController, sendAsyncUrlRequest, parseJSON */
 /* exported params */
 'use strict';
 
-// Provide default params set to the values returned by apprtc.appspot.com.
-var params = {
+// Generate random room id and connect.
+
+var roomServer = 'https://apprtc.appspot.com';
+var loadingParams = {
   errorMessages: [],
-  isLoopback: false,
-  mediaConstraints: {
-    'audio': true,
-    'video': {
-      'optional': [{
-        'minWidth': '1280'
-      }, {
-        'minHeight': '720'
-      }],
-      'mandatory': {}
-    }
-  },
-  offerConstraints: {
-    'optional': [],
-    'mandatory': {}
-  },
-  peerConnectionConfig: {
-    'iceServers': []
-  },
-  peerConnectionConstraints: {
-    'optional': [{
-      'googImprovedWifiBwe': true
-    }]
-  },
-  turnRequestUrl: 'https://computeengineondemand.appspot.com/turn?username=073557600&key=4080218913',
-  turnTransports: '',
-  audioSendBitrate: '',
-  audioSendCodec: '',
-  audioRecvBitrate: '',
-  audioRecvCodec: '',
-  isStereoscopic: '',
-  opusMaxPbr: '',
-  opusFec: '',
-  opusStereo: '',
-  videoSendBitrate: '',
-  videoSendInitialBitrate: '',
-  videoSendCodec: '',
-  videoRecvBitrate: '',
-  videoRecvCodec: '',
-  wssUrl: 'wss://apprtc-ws.webrtc.org:443/ws',
-  wssPostUrl: 'https://apprtc-ws.webrtc.org:443'
+  suggestedRoomId: randomString(9),
+  roomServer: roomServer,
+  connect: false,
+  paramsFunction: function() {
+    return new Promise(function(resolve, reject) {
+      trace('Initializing; retrieving params from: ' + roomServer + '/params');
+      sendAsyncUrlRequest('GET', roomServer + '/params').then(function(result) {
+        var serverParams = parseJSON(result);
+        var newParams = {};
+        if (!serverParams) {
+          resolve(newParams);
+          return;
+        }
+
+        // Convert from server format to expected format.
+        // TODO(tkchin): clean up response format. JSHint doesn't like it.
+        /* jshint ignore:start */
+        //jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+        newParams.isLoopback = serverParams.is_loopback === 'true';
+        newParams.mediaConstraints = parseJSON(serverParams.media_constraints);
+        newParams.offerConstraints = parseJSON(serverParams.offer_constraints);
+        newParams.peerConnectionConfig = parseJSON(serverParams.pc_config);
+        newParams.peerConnectionConstraints =
+            parseJSON(serverParams.pc_constraints);
+        newParams.turnRequestUrl = serverParams.turn_url;
+        newParams.turnTransports = serverParams.turn_transports;
+        newParams.audioSendBitrate = serverParams.asbr;
+        newParams.audioSendCodec = serverParams.audio_send_codec;
+        newParams.audioRecvBitrate = serverParams.arbr;
+        newParams.audioRecvCodec = serverParams.audio_receive_codec;
+        newParams.opusMaxPbr = serverParams.opusmaxpbr;
+        newParams.opusFec = serverParams.opusfec;
+        newParams.videoSendBitrate = serverParams.vsbr;
+        newParams.videoSendInitialBitrate = serverParams.vsibr;
+        newParams.videoSendCodec = serverParams.video_send_codec;
+        newParams.videoRecvBitrate = serverParams.vrbr;
+        newParams.videoRecvCodec = serverParams.video_receive_codec;
+        newParams.wssUrl = serverParams.wss_url;
+        newParams.wssPostUrl = serverParams.wss_post_url;
+        //jscs:enable requireCamelCaseOrUpperCaseIdentifiers
+        /* jshint ignore:end */
+        newParams.messages = serverParams.messages;
+
+        trace('Initializing; parameters from server: ');
+        trace(JSON.stringify(newParams));
+        resolve(newParams);
+      }).catch(function(error) {
+        trace('Initializing; error getting params from server: ' +
+            error.message);
+        reject(error);
+      });
+    });
+  }
 };
 
-// Generate random room id and connect.
-params.roomId = randomString(9);
-params.roomLink =  'https://apprtc.appspot.com/room/' + params.roomId;
-params.roomServer = 'https://apprtc.appspot.com';
-
-var joinRoomLink = document.querySelector(UI_CONSTANTS.roomLinkHref);
-joinRoomLink.href = params.roomLink;
-joinRoomLink.text = params.roomLink;
-
-new AppController(params);
+new AppController(loadingParams);

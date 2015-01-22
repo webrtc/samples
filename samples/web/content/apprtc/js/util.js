@@ -8,8 +8,9 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* exported setUpFullScreen, fullScreenElement, isFullScreen, 
+/* exported setUpFullScreen, fullScreenElement, isFullScreen,
    requestTurnServers, sendAsyncUrlRequest, randomString */
+/* globals chrome */
 
 'use strict';
 
@@ -75,7 +76,7 @@ function parseJSON(json) {
 
 // Filter a list of TURN urls to only contain those with transport=|protocol|.
 function filterTurnUrls(urls, protocol) {
-  for (var i = 0; i < urls.length; ) {
+  for (var i = 0; i < urls.length;) {
     var parts = urls[i].split('?');
     if (parts.length > 1 && parts[1] !== ('transport=' + protocol)) {
       urls.splice(i, 1);
@@ -87,27 +88,45 @@ function filterTurnUrls(urls, protocol) {
 
 // Start shims for fullscreen
 function setUpFullScreen() {
-  document.cancelFullScreen = document.webkitCancelFullScreen ||
-  document.mozCancelFullScreen || document.cancelFullScreen;
-  
-  document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
-  document.body.mozRequestFullScreen || document.body.requestFullScreen;
+  if (isChromeApp()) {
+    document.cancelFullScreen = function() {
+      chrome.app.window.current().restore();
+    };
+  } else {
+    document.cancelFullScreen = document.webkitCancelFullScreen ||
+        document.mozCancelFullScreen || document.cancelFullScreen;
+  }
 
-  document.onfullscreenchange = document.onwebkitfullscreenchange = document.onmozfullscreenchange;
+  if (isChromeApp()) {
+    document.body.requestFullScreen = function() {
+      chrome.app.window.current().fullscreen();
+    };
+  } else {
+    document.body.requestFullScreen = document.body.webkitRequestFullScreen ||
+        document.body.mozRequestFullScreen || document.body.requestFullScreen;
+  }
+
+  document.onfullscreenchange = document.onfullscreenchange ||
+        document.onwebkitfullscreenchange || document.onmozfullscreenchange;
 }
 
-function isFullScreen(){
+function isFullScreen() {
+  if (isChromeApp()) {
+    return chrome.app.window.current().isFullscreen();
+  }
+
   return !!(document.webkitIsFullScreen || document.mozFullScreen ||
     document.isFullScreen); // if any defined and true
 }
 
-function fullScreenElement(){
-  return document.webkitFullScreenElement || document.webkitCurrentFullScreenElement ||
-    document.mozFullScreenElement || document.fullScreenElement;
+function fullScreenElement() {
+  return document.webkitFullScreenElement ||
+      document.webkitCurrentFullScreenElement ||
+      document.mozFullScreenElement ||
+      document.fullScreenElement;
 }
 
 // End shims for fullscreen
-
 
 // Return a random numerical string.
 function randomString(strLength) {
@@ -118,4 +137,11 @@ function randomString(strLength) {
     result.push(charSet.charAt(Math.floor(Math.random() * charSet.length)));
   }
   return result.join('');
+}
+
+// Returns true if the code is running in a packaged Chrome App.
+function isChromeApp() {
+  return (typeof chrome !== 'undefined' &&
+          typeof chrome.storage !== 'undefined' &&
+          typeof chrome.storage.local !== 'undefined');
 }

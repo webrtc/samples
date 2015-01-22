@@ -31,6 +31,7 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  color: #fff;
 }
 
 #remote-canvas {
@@ -164,12 +165,103 @@ label {
   z-index: 1;
 }
 
+/*////// room selection start ///////////////////*/
+#recent-rooms-list {
+  list-style-type: none;
+}
+
+button {
+  background-color: #69b;
+  border: none;
+  border-radius: 2px;
+  color: white;
+  font-size: 0.8em;
+  margin: 0 10px 20px 0;
+  width: 90px;
+  padding: 0.5em 0.7em 0.6em 0.7em;
+}
+
+button:active {
+  background-color: #7ac;
+}
+
+button:hover {
+  background-color: #7ac;
+}
+
+button[disabled] {
+  color: #ccc;
+}
+
+button[disabled]:hover {
+  background-color: #69b;
+}
+
+input[type=text] {
+  border: 3px solid #444;
+  border-radius: 2px;
+  font-size: 0.8em;
+  background-color: #000000;
+  color: #fff;
+  font-weight: 300;
+  padding:.4em;
+  margin-right: 20px;
+}
+
+h1 {
+  font-weight: 300;
+  margin: 0 0 0.8em 0;
+  padding: 0 0 0.2em 0;
+}
+
+div#room-selection {
+  margin: 0 auto 0 auto;
+  padding: 1em 1.5em 1.3em 1.5em;
+}
+
+p {
+  color: #eee;
+  font-weight: 300;
+  line-height: 1.6em;
+}
+
+/*////// room selection end /////////////////////*/
+
 /*////// icons CSS start ////////////////////////*/
 
 #icons {
   bottom: 77px;
   left: 6vw;
   position: absolute;
+}
+
+circle {
+  fill: #666;
+  fill-opacity: 0.6;
+}
+
+svg.on circle {
+  fill-opacity: 0;
+}
+
+/* on icons are hidden by default */
+path.on {
+  display: none;
+}
+
+/* off icons are displayed by default */
+path.off {
+  display: block;
+}
+
+/* on icons are displayed when parent svg has class 'on' */
+svg.on path.on {
+  display: block;
+}
+
+/* off icons are hidden when parent svg has class 'on' */
+svg.on path.off {
+  display: none;
 }
 
 svg {
@@ -194,7 +286,8 @@ svg:hover {
   transition: 40ms;
 }
 
-#mute-audio:hover {
+#mute-audio:hover,
+#mute-audio.on {
   background: #ab47bc;
 }
 
@@ -206,7 +299,8 @@ svg:hover {
   transition: 120ms;
 }
 
-#mute-video:hover {
+#mute-video:hover,
+#mute-video.on {
   background: #ff9f00;
 }
 
@@ -230,7 +324,8 @@ svg:hover {
   transition: 280ms;
 }
 
-#fullscreen:hover {
+#fullscreen:hover,
+#fullscreen.on {
   background: #407cf7;
 }
 

@@ -29,6 +29,7 @@
     "grunt-jinja": "^0.3.0",
     "grunt-jscs": ">=0.8.1",
     "grunt-shell": "^1.1.1",
-    "grunt-jstestdriver-phantomjs": ">=0.0.7"
+    "grunt-jstestdriver-phantomjs": ">=0.0.7",
+    "grunt-closurecompiler": ">=0.0.21"
   }
 }

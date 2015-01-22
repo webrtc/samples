@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals trace, InfoBox, setUpFullScreen, isFullScreen */
+/* globals trace, InfoBox, setUpFullScreen, isFullScreen,
+   RoomSelection, isChromeApp */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -19,8 +20,6 @@ var remoteVideo = $('#remote-video');
 
 // Keep this in sync with the HTML element id attributes. Keep it sorted.
 var UI_CONSTANTS = {
-  fullscreenOffSvg: '#fullscreen-off',
-  fullscreenOnSvg: '#fullscreen-on',
   fullscreenSvg: '#fullscreen',
 
   hangupSvg: '#hangup',
@@ -29,24 +28,25 @@ var UI_CONSTANTS = {
   localVideo: '#local-video',
   miniVideo: '#mini-video',
 
-  muteAudioOffSvg: '#mute-audio-off',
-  muteAudioOnSvg: '#mute-audio-on',
   muteAudioSvg: '#mute-audio',
-
-  muteVideoOffSvg: '#mute-video-off',
-  muteVideoOnSvg: '#mute-video-on',
   muteVideoSvg: '#mute-video',
 
   remoteVideo: '#remote-video',
   roomLinkHref: '#room-link-href',
+  roomSelectionDiv: '#room-selection',
+  roomSelectionInput: '#room-id-input',
+  roomSelectionJoinButton: '#join-button',
+  roomSelectionRandomButton: '#random-button',
+  roomSelectionRecentList: '#recent-rooms-list',
   sharingDiv: '#sharing-div',
   statusDiv: '#status-div',
   videosDiv: '#videos',
 };
 
 // The controller that connects the Call with the UI.
-var AppController = function(params) {
-  trace('Initializing; room=' + params.roomId + '.');
+var AppController = function(loadingParams) {
+  trace('Initializing; server= ' + loadingParams.roomServer + '.');
+  trace('Initializing; room=' + loadingParams.roomId + '.');
 
   this.hangupSvg_ = $(UI_CONSTANTS.hangupSvg);
   this.icons_ = $(UI_CONSTANTS.icons);
@@ -56,48 +56,92 @@ var AppController = function(params) {
   this.statusDiv_ = $(UI_CONSTANTS.statusDiv);
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
+  this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
 
-  this.muteAudioIconSet_ = new AppController.IconSet_(
-      UI_CONSTANTS.muteAudioOnSvg, UI_CONSTANTS.muteAudioOffSvg);
-  this.muteVideoIconSet_ = new AppController.IconSet_(
-      UI_CONSTANTS.muteVideoOnSvg, UI_CONSTANTS.muteVideoOffSvg);
-  this.fullscreenIconSet_ = new AppController.IconSet_(
-      UI_CONSTANTS.fullscreenOnSvg, UI_CONSTANTS.fullscreenOffSvg);
+  this.muteAudioIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
+  this.muteVideoIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.muteVideoSvg);
+  this.fullscreenIconSet_ =
+      new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
-  this.params_ = params;
-
-  this.call_ = new Call(params);
-  this.infoBox_ =
-      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
-
-  this.transitionToWaitingTimer_ = null;
-
-  var roomErrors = params.errorMessages;
-  if (roomErrors.length > 0) {
-    for (var i = 0; i < roomErrors.length; ++i) {
-      this.infoBox_.pushErrorMessage(roomErrors[i]);
-    }
-    return;
+  this.loadingParams_ = loadingParams;
+  var paramsPromise = Promise.resolve({});
+  if (this.loadingParams_.paramsFunction) {
+    // If we have a paramsFunction value, we need to call it
+    // and use the returned values to merge with the passed
+    // in params. In the Chrome app, this is used to initialize
+    // the app with params from the server.
+    paramsPromise = this.loadingParams_.paramsFunction();
   }
 
-  // TODO(jiayl): replace callbacks with events.
-  this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
-  this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
-  this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
-  this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
+  Promise.resolve(paramsPromise).then(function(newParams) {
+    // Merge newly retrieved params with loadingParams.
+    if (newParams) {
+      Object.keys(newParams).forEach(function(key) {
+        this.loadingParams_[key] = newParams[key];
+      }.bind(this));
+    }
 
-  this.call_.onsignalingstatechange =
-      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-  this.call_.oniceconnectionstatechange =
-      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-  this.call_.onnewicecandidate =
-      this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+    // Proceed with call set up.
+    this.roomLink_ = '';
 
-  this.call_.onerror = this.displayError_.bind(this);
-  this.call_.onstatusmessage = this.displayStatus_.bind(this);
-  this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+    this.call_ = new Call(this.loadingParams_);
+    this.infoBox_ =
+        new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
 
-  this.call_.start();
+    this.transitionToWaitingTimer_ = null;
+
+    var roomErrors = this.loadingParams_.errorMessages;
+    if (roomErrors.length > 0) {
+      for (var i = 0; i < roomErrors.length; ++i) {
+        this.infoBox_.pushErrorMessage(roomErrors[i]);
+      }
+      return;
+    }
+
+    // TODO(jiayl): replace callbacks with events.
+    this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
+    this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
+    this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
+    this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
+
+    this.call_.onsignalingstatechange =
+        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+    this.call_.oniceconnectionstatechange =
+        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+    this.call_.onnewicecandidate =
+        this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+
+    this.call_.onerror = this.displayError_.bind(this);
+    this.call_.onstatusmessage = this.displayStatus_.bind(this);
+    this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+
+    this.roomSelection_ = null;
+    // If the params has a roomId specified, we should connect to that room immediately.
+    // If not, show the room selection UI.
+    if (this.loadingParams_.roomId) {
+      // Record this room in the recently used list.
+      var recentlyUsedList = new RoomSelection.RecentlyUsedList();
+      recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
+      this.finishCallSetup_(this.loadingParams_.roomId);
+    } else {
+      // Display the room selection UI.
+      var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
+      this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
+      this.show_(roomSelectionDiv);
+      this.roomSelection_.onRoomSelected = function(roomName) {
+        this.hide_(roomSelectionDiv);
+        this.finishCallSetup_(roomName);
+      }.bind(this);
+    }
+  }.bind(this)).catch(function(error) {
+    trace('Error initializing: ' + error.message);
+  }.bind(this));
+};
+
+AppController.prototype.finishCallSetup_ = function(roomId) {
+  this.call_.start(roomId);
 
   window.onbeforeunload = this.call_.hangup.bind(this.call_);
   document.onkeypress = this.onKeyPress_.bind(this);
@@ -107,8 +151,24 @@ var AppController = function(params) {
   $(UI_CONSTANTS.muteVideoSvg).onclick = this.toggleVideoMute_.bind(this);
   $(UI_CONSTANTS.fullscreenSvg).onclick = this.toggleFullScreen_.bind(this);
   $(UI_CONSTANTS.hangupSvg).onclick = this.hangup_.bind(this);
-  
+
   setUpFullScreen();
+
+  if (!isChromeApp()) {
+    window.onpopstate = function(event) {
+      if (!event.state) {
+        // TODO (chuckhays) : Resetting back to room selection page not
+        // yet supported, reload the initial page instead.
+        trace('Reloading main page.');
+        location.href = location.origin;
+      } else {
+        // This could be a forward request to open a room again.
+        if (event.state.roomLink) {
+          location.href = event.state.roomLink;
+        }
+      }
+    };
+  }
 };
 
 AppController.prototype.hangup_ = function() {
@@ -169,10 +229,11 @@ AppController.prototype.onLocalStreamAdded_ = function(stream) {
 AppController.prototype.transitionToActive_ = function() {
   // Stop waiting for remote video.
   this.remoteVideo_.oncanplay = undefined;
-  var delay = window.performance.now() - this.call_.startTime;
-  this.infoBox_.setCallSetupDelay(delay);
-  trace('Call setup time: ' + delay.toFixed(0) + 'ms.');
+  var connectTime = window.performance.now();
+  this.infoBox_.setSetupTimes(this.call_.startTime, connectTime);
   this.infoBox_.updateInfoDiv();
+  trace('Call setup time: ' + (connectTime - this.call_.startTime).toFixed(0) +
+      'ms.');
 
   if (this.transitionToWaitingTimer_) {
     clearTimeout(this.transitionToWaitingTimer_);
@@ -227,7 +288,7 @@ AppController.prototype.transitionToDone_ = function() {
   this.deactivate_(this.miniVideo_);
   this.hide_(this.hangupSvg_);
   this.displayStatus_('You have left the call. <a href=\'' +
-      this.params_.roomLink + '\'>Click here</a> to rejoin.');
+      this.roomLink_ + '\'>Click here</a> to rejoin.');
 };
 
 // Spacebar, or m: toggle audio mute.
@@ -263,7 +324,19 @@ AppController.prototype.onKeyPress_ = function(event) {
   }
 };
 
-AppController.prototype.displaySharingInfo_ = function() {
+AppController.prototype.pushCallNavigation_ = function(roomId, roomLink) {
+  if (!isChromeApp()) {
+    window.history.pushState({'roomId': roomId, 'roomLink': roomLink},
+                             roomId,
+                             roomLink);
+  }
+};
+
+AppController.prototype.displaySharingInfo_ = function(roomId, roomLink) {
+  this.roomLinkHref_.href = roomLink;
+  this.roomLinkHref_.text = roomLink;
+  this.roomLink_ = roomLink;
+  this.pushCallNavigation_(roomId, roomLink);
   this.activate_(this.sharingDiv_);
 };
 
@@ -293,30 +366,32 @@ AppController.prototype.toggleVideoMute_ = function() {
 
 AppController.prototype.toggleFullScreen_ = function() {
   if (isFullScreen()) {
+    trace('Exiting fullscreen.');
     document.cancelFullScreen();
   } else {
+    trace('Entering fullscreen.');
     document.body.requestFullScreen();
   }
   this.fullscreenIconSet_.toggle();
 };
 
-function $(selector){
+function $(selector) {
   return document.querySelector(selector);
 }
 
-AppController.prototype.hide_ = function(element){
+AppController.prototype.hide_ = function(element) {
   element.classList.add('hidden');
 };
 
-AppController.prototype.show_ = function(element){
+AppController.prototype.show_ = function(element) {
   element.classList.remove('hidden');
 };
 
-AppController.prototype.activate_ = function(element){
+AppController.prototype.activate_ = function(element) {
   element.classList.add('active');
 };
 
-AppController.prototype.deactivate_ = function(element){
+AppController.prototype.deactivate_ = function(element) {
   element.classList.remove('active');
 };
 
@@ -329,22 +404,16 @@ AppController.prototype.showIcons_ = function() {
   }
 };
 
-AppController.IconSet_ = function(icon0, icon1){
-  this.icon0 = document.querySelector(icon0);
-  this.icon1 = document.querySelector(icon1);
+AppController.IconSet_ = function(iconSelector) {
+  this.iconElement = document.querySelector(iconSelector);
 };
 
 AppController.IconSet_.prototype.toggle = function() {
-  if (this.icon0.classList.contains('hidden')){
-    this.icon0.classList.remove('hidden');
+  if (this.iconElement.classList.contains('on')) {
+    this.iconElement.classList.remove('on');
+    // turn it off: CSS hides `svg path.on` and displays `svg path.off`
   } else {
-    this.icon0.classList.add('hidden');
-  }
-
-  if (this.icon1.classList.contains('hidden')){
-    this.icon1.classList.remove('hidden');
-  } else {
-    this.icon1.classList.add('hidden');
+    // turn it on: CSS displays `svg.on path.on` and hides `svg.on path.off`
+    this.iconElement.classList.add('on');
   }
 };
-

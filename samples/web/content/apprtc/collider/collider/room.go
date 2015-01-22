@@ -14,15 +14,19 @@ import (
 	"time"
 )
 
+const maxRoomCapacity = 2
+
 type room struct {
 	parent *roomTable
 	id     string
 	// A mapping from the client ID to the client object.
-	clients map[string]*client
+	clients         map[string]*client
+	registerTimeout time.Duration
+	roomSrvUrl      string
 }
 
-func newRoom(p *roomTable, id string) *room {
-	return &room{parent: p, id: id, clients: make(map[string]*client)}
+func newRoom(p *roomTable, id string, to time.Duration, rs string) *room {
+	return &room{parent: p, id: id, clients: make(map[string]*client), registerTimeout: to, roomSrvUrl: rs}
 }
 
 // client returns the client, or creates it if it does not exist and the room is not full.
@@ -37,7 +41,7 @@ func (rm *room) client(clientID string) (*client, error) {
 
 	var timer *time.Timer
 	if rm.parent != nil {
-		timer = time.AfterFunc(time.Second*registerTimeoutSec, func() {
+		timer = time.AfterFunc(rm.registerTimeout, func() {
 			if c := rm.clients[clientID]; c != nil {
 				rm.parent.removeIfUnregistered(rm.id, c)
 			}
@@ -102,9 +106,9 @@ func (rm *room) remove(clientID string) {
 		log.Printf("Removed client %s from room %s", clientID, rm.id)
 
 		// Send bye to the room Server.
-		_, err := http.Post(roomServerUrlBase+"/bye/"+rm.id+"/"+clientID, "text", nil)
+		_, err := http.Post(rm.roomSrvUrl+"/bye/"+rm.id+"/"+clientID, "text", nil)
 		if err != nil {
-			log.Printf("Failed to post BYE to room server %s: %v", roomServerUrlBase, err)
+			log.Printf("Failed to post BYE to room server %s: %v", rm.roomSrvUrl, err)
 		}
 	}
 }
@@ -112,4 +116,14 @@ func (rm *room) remove(clientID string) {
 // empty returns true if there is no client in the room.
 func (rm *room) empty() bool {
 	return len(rm.clients) == 0
+}
+
+func (rm *room) wsCount() int {
+	count := 0
+	for _, c := range rm.clients {
+		if c.registered() {
+			count += 1
+		}
+	}
+	return count
 }

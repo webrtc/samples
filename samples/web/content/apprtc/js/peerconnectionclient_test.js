@@ -136,7 +136,7 @@ PeerConnectionClientTest.prototype.testConstructor = function() {
 };
 
 PeerConnectionClientTest.prototype.testAddStream = function() {
-  var stream = { 'foo': 'bar' };
+  var stream = {'foo': 'bar'};
   this.pcClient.addStream(stream);
   assertEquals(1, peerConnections[0].streams.length);
   assertEquals(stream, peerConnections[0].streams[0]);

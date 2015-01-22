@@ -25,20 +25,20 @@ addTest('Camera', 'Supported resolutions', function() {
 
 function CamResolutionsTest() {
   // Each resolution has width, height and 'mandatory' fields.
-  this.resolutions = [ [ 160, 120, false],
-                       [ 320, 180, false],
-                       [ 320, 240,  true],  // QVGA
-                       [ 640, 360, false],
-                       [ 640, 480,  true],  // VGA
-                       [ 768, 576, false],  // PAL
-                       [1024, 576, false],
-                       [1280, 720,  true],  // HD
-                       [1280, 768, false],
-                       [1280, 800, false],
-                       [1920,1080, false],  // Full HD
-                       [1920,1200, false],
-                       [3840,2160, false],  // 4K
-                       [4096,2160, false] ];
+  this.resolutions = [[160, 120, false],
+                      [320, 180, false],
+                      [320, 240,  true],  // QVGA
+                      [640, 360, false],
+                      [640, 480,  true],  // VGA
+                      [768, 576, false],  // PAL
+                      [1024, 576, false],
+                      [1280, 720,  true],  // HD
+                      [1280, 768, false],
+                      [1280, 800, false],
+                      [1920, 1080, false],  // Full HD
+                      [1920, 1200, false],
+                      [3840, 2160, false],  // 4K
+                      [4096, 2160, false]];
   this.mandatoryUnsupportedResolutions = 0;
   this.numResolutions = this.resolutions.length;
   this.counter = 0;
@@ -91,8 +91,8 @@ CamResolutionsTest.prototype = {
     var call = new Call();
     call.pc1.addStream(stream);
     call.establishConnection();
-    call.gatherStats(call.pc1, this.analyzeStats_.bind(this), 100);
-    setTimeoutWithProgressBar( function() {
+    call.gatherStats(call.pc1, this.analyzeStats_.bind(this), 1000);
+    setTimeoutWithProgressBar(function() {
       call.close();
       stream.getVideoTracks()[0].stop();
     }.bind(this), 5000);
@@ -101,13 +101,20 @@ CamResolutionsTest.prototype = {
   analyzeStats_: function(stats) {
     var currentRes = this.currentResolutionForCheckEncodeTime;
     var googAvgEncodeTime = [];
+    var googAvgFrameRateInput = [];
+    var googAvgFrameRateSent = [];
 
     for (var index = 0; index < stats.length - 1; index++) {
       if (stats[index].type === 'ssrc') {
         // Make sure to only capture stats after the encoder is setup.
         // TODO(jansson) expand to cover audio as well.
         if (stats[index].stat('googFrameRateInput') > 0) {
-          googAvgEncodeTime.push(parseInt(stats[index].stat('googAvgEncodeMs')));
+          googAvgEncodeTime.push(
+              parseInt(stats[index].stat('googAvgEncodeMs')));
+          googAvgFrameRateInput.push(
+              parseInt(stats[index].stat('googFrameRateInput')));
+          googAvgFrameRateSent.push(
+              parseInt(stats[index].stat('googFrameRateSent')));
         }
       }
     }
@@ -115,16 +122,36 @@ CamResolutionsTest.prototype = {
     var avgEncodeMs = arrayAverage(googAvgEncodeTime);
     var minEncodeMs = arrayMin(googAvgEncodeTime);
     var maxEncodeMs = arrayMax(googAvgEncodeTime);
-    report.traceEventInstant('encode-stats', { width: currentRes[0],
-                                               height: currentRes[1],
-                                               minEncodeMs: minEncodeMs,
-                                               maxEncodeMs: maxEncodeMs,
-                                               avgEncodeMs: avgEncodeMs });
+    var avgFPSInput = arrayAverage(googAvgFrameRateInput);
+    var minFPSInput = arrayMin(googAvgFrameRateInput);
+    var maxFPSInput = arrayMax(googAvgFrameRateInput);
+    var avgFPSSent = arrayAverage(googAvgFrameRateSent);
+    var minFPSSent = arrayMin(googAvgFrameRateSent);
+    var maxFPSSent = arrayMax(googAvgFrameRateSent);
+    report.traceEventInstant('video-stats', {width: currentRes[0],
+                                             height: currentRes[1],
+                                             minEncodeMs: minEncodeMs,
+                                             maxEncodeMs: maxEncodeMs,
+                                             avgEncodeMs: avgEncodeMs,
+                                             minFPSInput: minFPSInput,
+                                             maxFPSInput: maxFPSInput,
+                                             avgFPSInput: avgFPSInput,
+                                             minFPSSent: minFPSSent,
+                                             maxFPSSent: maxFPSSent,
+                                             avgFPSSent: avgFPSSent});
 
     if (googAvgEncodeTime.length === 0) {
       reportError('No stats collected. Check your camera.');
     } else {
-      reportInfo('Encode time (ms): ' + minEncodeMs + ' min / ' + avgEncodeMs + ' avg / ' + maxEncodeMs + ' max');
+      reportInfo('Encode time (ms): ' + minEncodeMs + ' min / ' + avgEncodeMs +
+                 ' avg / ' + maxEncodeMs + ' max');
+      reportInfo('Input FPS: ' + minFPSInput + ' min / ' + avgFPSInput +
+                 ' avg / ' + maxFPSInput + ' max');
+      reportInfo('Sent FPS: ' + minFPSSent + ' min / ' + avgFPSSent +
+                 ' avg / ' + maxFPSSent + ' max');
+      if (avgFPSSent < 5) {
+        reportError('Low average sent FPS: ' + avgFPSSent);
+      }
     }
     this.finishTestOrRetrigger_();
   },

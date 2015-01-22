@@ -19,6 +19,7 @@
     "audioCapture",
     "videoCapture",
     "storage",
+    "fullscreen",
     "https://apprtc.appspot.com/",
     "https://computeengineondemand.appspot.com/"
   ]

@@ -45,10 +45,12 @@ Call.prototype.isInitiator = function() {
   return this.params_.isInitiator;
 };
 
-Call.prototype.start = function() {
-  this.connectToRoom_(this.maybeGetMedia_(), this.maybeGetTurnServers_());
+Call.prototype.start = function(roomId) {
+  this.connectToRoom_(roomId,
+                      this.maybeGetMedia_(),
+                      this.maybeGetTurnServers_());
   if (this.params_.isLoopback) {
-    setupLoopback();
+    setupLoopback(this.params_.wssUrl, roomId);
   }
 };
 
@@ -80,7 +82,7 @@ Call.prototype.hangup = function() {
   xhr.send();
 
   // Send bye to other client.
-  this.channel_.send(JSON.stringify({ type: 'bye' }));
+  this.channel_.send(JSON.stringify({type: 'bye'}));
   this.channel_.close();
 
   this.params_.roomId = null;
@@ -150,7 +152,8 @@ Call.prototype.toggleAudioMute = function() {
 // tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
-Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
+Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
+  this.params_.roomId = roomId;
   // Asynchronously open a WebSocket connection to WSS.
   // TODO(jiayl): We don't need to wait for the signaling channel to open before
   // start signaling.
@@ -166,9 +169,12 @@ Call.prototype.connectToRoom_ = function(mediaPromise, turnPromise) {
         // and the turn servers that we requested.
         // TODO(tkchin): clean up response format. JSHint doesn't like it.
         /* jshint ignore:start */
+        //jscs:disable requireCamelCaseOrUpperCaseIdentifiers
         this.params_.clientId = roomParams.client_id;
         this.params_.roomId = roomParams.room_id;
+        this.params_.roomLink = roomParams.room_link;
         this.params_.isInitiator = roomParams.is_initiator === 'true';
+        //jscs:enable requireCamelCaseOrUpperCaseIdentifiers
         /* jshint ignore:end */
         this.params_.messages = roomParams.messages;
       }.bind(this)).catch(function(error) {
@@ -294,7 +300,7 @@ Call.prototype.maybeCreatePcClient_ = function() {
 Call.prototype.startSignaling_ = function() {
   trace('Starting signaling.');
   if (this.isInitiator() && this.oncallerstarted) {
-    this.oncallerstarted();
+    this.oncallerstarted(this.params_.roomId, this.params_.roomLink);
   }
 
   this.startTime = window.performance.now();
@@ -327,6 +333,8 @@ Call.prototype.registerWithRoomServer_ = function() {
         return;
       }
       if (responseObj.result !== 'SUCCESS') {
+        // TODO (chuckhays) : handle room full state by returning to room selection state.
+        // When room is full, responseObj.result === 'FULL'
         reject(Error('Registration error: ' + responseObj.result));
         return;
       }
