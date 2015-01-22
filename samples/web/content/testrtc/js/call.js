@@ -48,10 +48,9 @@ Call.prototype = {
     this.constrainOfferToRemoveVideoFec_ = true;
   },
 
-  // When the peerConnection is closed the statsFinishedCallback is called once
-  // returning with an array of gathered stats. timeForFirstFrameCallback will
-  // be called once when googFrameRateInput is > 0 with a timestamp in
-  // milliseconds.
+  // When the peerConnection is closed the statsCb is called once returning
+  // with an array of gathered stats. firstFrameCb will be called at once when
+  // googFrameRateInput is > 0 with a timestamp in milliseconds.
   // TODO (jansson) expand to cover audio as well.
   gatherStats: function(peerConnection, statsCb, firstFrameCb, interval) {
     var firstFrameCbSent = false;
