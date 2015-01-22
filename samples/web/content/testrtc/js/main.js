@@ -424,7 +424,7 @@ function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
 }
 
 // Parse URL parameters and configure test filters.
-var parseUrlParameters = function() {
+function parseUrlParameters() {
   var output = {};
   // python SimpleHTTPServer always adds a / on the end of the request.
   // Remove it so developers can easily run testrtc on their machines.
@@ -435,7 +435,7 @@ var parseUrlParameters = function() {
     output[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
   }
   return output;
-};
+}
 
 var parameters = parseUrlParameters();
 var filterParameterName = 'test_filter';
