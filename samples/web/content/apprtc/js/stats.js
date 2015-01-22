@@ -81,11 +81,11 @@ function computeBitrate(newReport, oldReport, statName) {
 // Computes end to end delay based on the capture start time (in NTP format)
 // and the current render time (in seconds since start of render).
 function computeE2EDelay(captureStart, remoteVideoCurrentTime) {
-  if (captureStart) {
-    // Adding offset to get NTP time.
-    var nowNTP = Date.now() + 2208988800000;
-    var e2eDelay = nowNTP - captureStart - remoteVideoCurrentTime * 1000;
-    return e2eDelay.toFixed(0);
+  if (!captureStart) {
+    return null;
   }
-  return null;
+
+  // Adding offset (milliseconds between 1900 and 1970) to get NTP time.
+  var nowNTP = Date.now() + 2208988800000;
+  return nowNTP - captureStart - remoteVideoCurrentTime * 1000;
 }
