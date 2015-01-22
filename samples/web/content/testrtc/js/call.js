@@ -53,15 +53,14 @@ Call.prototype = {
   // be called once when googFrameRateInput is > 0 with a timestamp in
   // milliseconds.
   // TODO (jansson) expand to cover audio as well.
-  gatherStats: function(peerConnection, statsFinishedCallback,
-                        timeForFirstFrameCallback, interval) {
-    var timeForFirstFrameCallbackSent = false;
+  gatherStats: function(peerConnection, statsCb, firstFrameCb, interval) {
+    var firstFrameCbSent = false;
     var stats = [];
     getStats_();
 
     function getStats_() {
       if (peerConnection.signalingState === 'closed') {
-        statsFinishedcallback(stats);
+        statsCb(stats);
         return;
       }
       setTimeout(function() {
@@ -72,13 +71,13 @@ Call.prototype = {
     function gotStats_(response) {
       for (var index in response.result()) {
         stats.push(response.result()[index]);
-        for (var index = 0; index < stats.length - 1; index++) {
+        for (var statsIndex = 0; statsIndex < stats.length - 1; statsIndex++) {
           // Check when the video encoder is setup via getStats.
-          if (stats[index].type === 'ssrc') {
-            if (stats[index].stat('googFrameRateInput') > 0 ) {
-              if (!timeForFirstFrameCallbackSent) {
-                timeForFirstFrameCallback(Date.now());
-                timeForFirstFrameCallbackSent = true;
+          if (stats[statsIndex].type === 'ssrc') {
+            if (stats[statsIndex].stat('googFrameRateInput') > 0) {
+              if (!firstFrameCbSent) {
+                firstFrameCb(Date.now());
+                firstFrameCbSent = true;
               }
             }
           }

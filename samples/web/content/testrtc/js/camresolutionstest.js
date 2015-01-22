@@ -92,7 +92,8 @@ CamResolutionsTest.prototype = {
     call.pc1.addStream(stream);
     call.establishConnection();
     this.collectStatsStartTime = Date.now();
-    call.gatherStats(call.pc1, this.analyzeStats_.bind(this), 1000);
+    call.gatherStats(call.pc1, this.analyzeStats_.bind(this),
+                     this.encoderSetupTime_.bind(this), 1000);
     setTimeoutWithProgressBar(function() {
       call.close();
       stream.getVideoTracks()[0].stop();
@@ -157,9 +158,9 @@ CamResolutionsTest.prototype = {
   },
 
   encoderSetupTime_: function(timeForFirstFrame) {
-    reportInfo('Encode setup time: ' +
+    reportInfo('Encoder setup time: ' +
                JSON.stringify(timeForFirstFrame - this.collectStatsStartTime) +
-               ' ms' );
+               ' ms');
   },
 
   failFunc_: function() {
