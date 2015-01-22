@@ -9,55 +9,67 @@
 <html>
 <head>
 
-<meta name="keywords" content="WebRTC, HTML5, JavaScript">
-<meta name="description" content="WebRTC Reference App">
-<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1">
+  <meta charset="utf-8">
+  <meta name="description" content="AppRTC: room full">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="AppRTC: room full">
+  <meta itemprop="image" content="/images/webrtc-icon-192x192.png">
+  <meta itemprop="name" content="AppRTC: room full">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
 
-<meta itemprop="name" content="Invitation to video chat">
-<meta itemprop="description" content="Video chat using the reference WebRTC application">
-<meta itemprop="image" content="images/webrtcLogo.png">
+  <base target="_blank">
 
-<base target="_blank">
+  <title>WebRTC Reference App: room full</title>
 
-<title>WebRTC Reference App: room full</title>
+  <link rel="icon" sizes="192x192" href="/images/webrtc-icon-192x192.png">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="canonical" href="{{ room_link }}">
+  <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet">
 
-<link rel="stylesheet" href="css/main.css">
-<link rel="canonical" href="{{ room_link }}">
-<link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet">
+  <style>
+    body {
+      padding: 25% 0 0 0;
+    }
 
-<style>
-body {
-  padding: 25% 0 0 0;
-}
+    button {
+      display: block;
+      font-size: 1.5em;
+      margin: 0 auto;
+      padding: .5em;
+      width: 10em;
+    }
 
-button {
-  display: block;
-  font-size: 1.5em;
-  margin: 0 auto;
-  padding: .5em;
-  width: 10em;
-}
-
-div {
-  color: white;
-  font-size: 2em;
-  margin: 0 0 2em 0;
-  text-align: center;
-}
-</style>
+    div {
+      color: white;
+      font-size: 2em;
+      margin: 0 0 2em 0;
+      text-align: center;
+    }
+  </style>
 
 </head>
 <body>
 
-<div>Sorry, this room is full.</div>
-<button>Open a new room</button>
+  <div>Sorry, this room is full.</div>
+  <button>Open a new room</button>
 
 
-<script>
-document.querySelector("button").onclick = function() {
-  location.href = location.origin;
-};
-</script>
+  <script>
+    document.querySelector("button").onclick = function() {
+      location.href = location.origin;
+    };
+  </script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-48530561-2', 'auto');
+    ga('send', 'pageview');
+  </script>
 
 </body>
 </html>
