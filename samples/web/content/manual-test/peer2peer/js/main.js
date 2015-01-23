@@ -70,11 +70,11 @@ function registerResButtonsEvents() {
       }
       lastResButtonPressed = $(elementAndRes[0]);
       updateGetUserMediaConstraints();
-    }, false );
+    }, false);
   }
 
   for (var i in elementIdAndResolutions) {
-   setResolution(elementIdAndResolutions[i]);
+    setResolution(elementIdAndResolutions[i]);
   }
 }
 
@@ -106,7 +106,7 @@ function editConstraints(elementId) {
   $(elementId).style.zIndex = '9';
   $(elementId).focus();
   $(elementId).onblur = function() {
-      $(elementId).style.display = 'none';
+    $(elementId).style.display = 'none';
   };
 }
 
@@ -115,7 +115,7 @@ function connectFromHere() {
   var server = $('pc-server').value;
   if ($('peer-id').value === '') {
     // Generate a random name to distinguish us from other tabs:
-    $('peer-id').value = 'peer_' + Math.floor(Math.random()*10000);
+    $('peer-id').value = 'peer_' + Math.floor(Math.random() * 10000);
     print_('Our name from now on will be ' + $('peer-id').value);
   }
   connect(server, $('peer-id').value);
@@ -390,13 +390,13 @@ function screenCaptureExtensionHandler_() {
                         '5. Reload this page over https';
           alert(message);
         }
-        window.postMessage({ type: 'SS_UI_REQUEST', text: 'start' }, '*');
+        window.postMessage({type: 'SS_UI_REQUEST', text: 'start'}, '*');
       });
 
   // listen for messages from the content-script
-  window.addEventListener('message', function (event) {
+  window.addEventListener('message', function(event) {
     if (event.origin !== window.location.origin) {
-        return;
+      return;
     }
 
     // content-script will send a 'SS_PING' msg if extension is installed
@@ -568,7 +568,7 @@ function createDataChannel(peerConnection, label) {
   }
 
   global.dataChannel = peerConnection.createDataChannel(label,
-      { reliable: false });
+      {reliable: false});
   print_('DataChannel with label ' + global.dataChannel.label + ' initiated ' +
          'locally.');
   hookupDataChannelEvents();
@@ -696,7 +696,6 @@ function hangUp() {
   print_('ok-call-hung-up');
 }
 
-
 // Start accepting incoming calls.
 function acceptIncomingCalls() {
   global.acceptsIncomingCalls = true;
@@ -796,7 +795,6 @@ function disconnect_() {
   print_('ok-disconnected');
 }
 
-
 // Returns true if we are disconnected from peerconnection_server.
 function isDisconnected_() {
   return global.ourPeerId === 'undefined';
@@ -850,7 +848,6 @@ function obtainGetUserMediaResult_() {
   }
   return global.requestWebcamAndMicrophoneResult;
 }
-
 
 // Negotiates a call with the other side. This will create a peer connection on
 // the other side if there isn't one.
@@ -1103,13 +1100,13 @@ function error_(message) {
 // @param {string} textField Element ID of where to print.
 // @param {string} color Color of the text.
 function printHandler_(message, color) {
-  if (color === 'green' ) {
+  if (color === 'green') {
     message += ' success';
   }
   $('messages').innerHTML += '<span style="color:' + color + ';">' + message +
                             '</span><br>';
   console.log(message);
-  if (color === 'red' ) {
+  if (color === 'red') {
     throw new Error(message);
   }
 }
@@ -1201,7 +1198,7 @@ function parseRemotePeerIdIfConnected_(responseText) {
     var parsed = peerList[i].split(',');
     var name = parsed[0];
     var id = parseInt(parsed[1]);
-    if (id !== global.ourPeerId  ) {
+    if (id !== global.ourPeerId) {
       print_('Found remote peer with name ' + name + ', id ' +
                 id + ' when connecting.');
       // There should be at most one remote peer in this test.
