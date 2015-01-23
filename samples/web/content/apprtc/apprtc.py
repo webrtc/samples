@@ -348,7 +348,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       # 'set' and another 'gets' are needed for CAS to work.
       if not memcache_client.set(key, Room()):
         logging.warning('memcache.Client.set failed for key ' + key)
-        error = constants.RESPONSE_ERROR_INTERNAL
+        error = constants.RESPONSE_INTERNAL_ERROR
         break
       room = memcache_client.gets(key)
 
