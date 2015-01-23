@@ -49,16 +49,20 @@ UtilsTest.prototype.testRandomReturnsCorrectLength = function() {
   assertEquals('10 length string', 10, randomString(10).length);
 };
 
-UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() { 
+UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() {
   var str = randomString(500);
 
   // randromString should return only the digits 0-9.
   var positiveRe = /^[0-9]+$/;
   var negativeRe = /[^0-9]/;
-  
+
   var positiveResult = positiveRe.exec(str);
   var negativeResult = negativeRe.exec(str);
-  
-  assertEquals('Number only regular expression should match.', 0, positiveResult.index);
-  assertEquals('Anything other than digits regular expression should not match.', null, negativeResult);
+
+  assertEquals(
+      'Number only regular expression should match.',
+      0, positiveResult.index);
+  assertEquals(
+      'Anything other than digits regular expression should not match.',
+      null, negativeResult);
 };

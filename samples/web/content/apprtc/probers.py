@@ -10,6 +10,7 @@ This module implements CEOD and collider probers.
 import constants
 import logging
 import json
+import numbers
 import webapp2
 from google.appengine.api import mail
 from google.appengine.api import urlfetch
@@ -40,11 +41,10 @@ def has_non_empty_array_value(dict, key):
 
 class ProbeCEODPage(webapp2.RequestHandler):
   def handle_ceod_response(self, error_message, status_code):
+    self.response.set_status(status_code)
     if error_message is not None:
       send_alert_email('CEOD Error', error_message)
 
-    self.response.set_status(status_code)
-    if error_message is not None:
       logging.warning('CEOD prober error: ' + error_message)
       self.response.out.write(error_message)
     else:
@@ -91,6 +91,55 @@ class ProbeCEODPage(webapp2.RequestHandler):
 
     self.handle_ceod_response(error_message, status_code)
 
+class ProbeColliderPage(webapp2.RequestHandler):
+  def handle_collider_response(self, error_message, status_code):
+    self.response.set_status(status_code)
+    if error_message is not None:
+      send_alert_email('Collider Error', error_message)
+
+      logging.warning('Collider prober error: ' + error_message)
+      self.response.out.write(error_message)
+    else:
+      self.response.out.write('Success!')
+
+  def get(self):
+    url = 'https://' + constants.WSS_HOST_PORT_PAIR + '/status';
+
+    error_message = None
+    result = None
+    try:
+      result = urlfetch.fetch(url=url, method=urlfetch.GET)
+    except Exception as e:
+      error_message = 'urlfetch throws exception: ' + str(e) + ', url = ' + url
+      self.handle_collider_response(error_message, 500)
+      return
+
+    status_code = result.status_code
+    if status_code != 200:
+      error_message = 'Unexpected collider response: %d, requested URL: %s' \
+          % (result.status_code, url)
+    else:
+      try:
+        status_report = json.loads(result.content)
+        if not 'upsec' in status_report or \
+            not isinstance(status_report['upsec'], numbers.Number):
+          error_message = """
+          Invalid 'upsec' field in Collider status response,
+          status = %s
+          """ % result.content
+          status_code = 500
+      except Exception as e:
+        error_message = """
+        Collider status response cannot be decoded as JSON:
+        exception = %s,
+        response = %s,
+        url = %s
+        """ % (str(e), result.content, url)
+        status_code = 500
+
+    self.handle_collider_response(error_message, status_code)
+
 app = webapp2.WSGIApplication([
     ('/probe/ceod', ProbeCEODPage),
+    ('/probe/collider', ProbeColliderPage),
 ], debug=True)

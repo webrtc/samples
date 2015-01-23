@@ -20,9 +20,11 @@ var InfoBox = function(infoDiv, remoteVideo, call) {
   this.call_ = call;
 
   this.errorMessages_ = [];
+  // Time when the call was intiated and accepted.
+  this.startTime_ = null;
+  this.connectTime_ = null;
   this.stats_ = null;
   this.prevStats_ = null;
-  this.callSetupDelay_ = null;
   this.getStatsTimer_ = null;
 
   // Types of gathered ICE Candidates.
@@ -50,12 +52,14 @@ InfoBox.prototype.pushErrorMessage = function(msg) {
   this.showInfoDiv();
 };
 
-InfoBox.prototype.setCallSetupDelay = function(delay) {
-  this.callSetupDelay_ = delay;
+InfoBox.prototype.setSetupTimes = function(startTime, connectTime) {
+  this.startTime_ =  startTime;
+  this.connectTime_ = connectTime;
 };
 
 InfoBox.prototype.showInfoDiv = function() {
   this.getStatsTimer_ = setInterval(this.refreshStats_.bind(this), 1000);
+  this.refreshStats_();
   this.infoDiv_.classList.add('active');
 };
 
@@ -99,7 +103,10 @@ InfoBox.prototype.updateInfoDiv = function() {
 
     var activeCandPair = getStatsReport(this.stats_, 'googCandidatePair',
         'googActiveConnection', 'true');
-    var localAddr, remoteAddr, localAddrType, remoteAddrType;
+    var localAddr;
+    var remoteAddr;
+    var localAddrType;
+    var remoteAddrType;
     if (activeCandPair) {
       localAddr = activeCandPair.stat('googLocalAddress');
       remoteAddr = activeCandPair.stat('googRemoteAddress');
@@ -141,15 +148,17 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var captureStart = extractStatAsInt(this.stats_, 'ssrc',
       'googCaptureStartNtpTimeMs');
   var e2eDelay = computeE2EDelay(captureStart, this.remoteVideo_.currentTime);
-  if (this.callSetupDelay_ !== null) {
+  if (this.endTime_ !== null) {
+    contents += this.buildLine_('Call time',
+        InfoBox.formatInterval_(window.performance.now() - this.connectTime_));
     contents += this.buildLine_('Setup time',
-        this.callSetupDelay_.toFixed(0).toString() + 'ms');
+        InfoBox.formatMsec_(this.connectTime_ - this.startTime_));
   }
   if (rtt !== null) {
-    contents += this.buildLine_('RTT', rtt.toString() + 'ms');
+    contents += this.buildLine_('RTT', InfoBox.formatMsec_(rtt));
   }
   if (e2eDelay !== null) {
-    contents += this.buildLine_('End to end', e2eDelay.toString() + 'ms');
+    contents += this.buildLine_('End to end', InfoBox.formatMsec_(e2eDelay));
   }
 
   // Obtain resolution, framerate, and bitrate this.stats_.
@@ -162,27 +171,37 @@ InfoBox.prototype.buildStatsSection_ = function() {
   var rxPrevAudio = getStatsReport(this.prevStats_, 'ssrc', 'audioOutputLevel');
   var txPrevVideo = getStatsReport(this.prevStats_, 'ssrc', 'googFirsReceived');
   var rxPrevVideo = getStatsReport(this.prevStats_, 'ssrc', 'googFirsSent');
-  var txAudioCodec, txAudioBitrate, txAudioPacketRate;
-  var rxAudioCodec, rxAudioBitrate, rxAudioPacketRate;
-  var txVideoHeight, txVideoFps, txVideoCodec;
-  var txVideoBitrate, txVideoPacketRate;
-  var rxVideoHeight, rxVideoFps, rxVideoCodec;
-  var rxVideoBitrate, rxVideoPacketRate;
+  var txAudioCodec;
+  var txAudioBitrate;
+  var txAudioPacketRate;
+  var rxAudioCodec;
+  var rxAudioBitrate;
+  var rxAudioPacketRate;
+  var txVideoHeight;
+  var txVideoFps;
+  var txVideoCodec;
+  var txVideoBitrate;
+  var txVideoPacketRate;
+  var rxVideoHeight;
+  var rxVideoFps;
+  var rxVideoCodec;
+  var rxVideoBitrate;
+  var rxVideoPacketRate;
   if (txAudio) {
     txAudioCodec = txAudio.stat('googCodecName');
     txAudioBitrate = computeBitrate(txAudio, txPrevAudio, 'bytesSent');
     txAudioPacketRate = computeRate(txAudio, txPrevAudio, 'packetsSent');
     contents += this.buildLine_('Audio Tx', txAudioCodec + ', ' +
-        this.formatBitrate_(txAudioBitrate) + ', ' +
-        this.formatPacketRate_(txAudioPacketRate));
+        InfoBox.formatBitrate_(txAudioBitrate) + ', ' +
+        InfoBox.formatPacketRate_(txAudioPacketRate));
   }
   if (rxAudio) {
     rxAudioCodec = rxAudio.stat('googCodecName');
     rxAudioBitrate = computeBitrate(rxAudio, rxPrevAudio, 'bytesReceived');
     rxAudioPacketRate = computeRate(rxAudio, rxPrevAudio, 'packetsReceived');
     contents += this.buildLine_('Audio Rx', rxAudioCodec + ', ' +
-        this.formatBitrate_(rxAudioBitrate)  + ', ' +
-        this.formatPacketRate_(rxAudioPacketRate));
+        InfoBox.formatBitrate_(rxAudioBitrate)  + ', ' +
+        InfoBox.formatPacketRate_(rxAudioPacketRate));
   }
   if (txVideo) {
     txVideoCodec = txVideo.stat('googCodecName');
@@ -193,8 +212,8 @@ InfoBox.prototype.buildStatsSection_ = function() {
     contents += this.buildLine_('Video Tx',
         txVideoCodec + ', ' + txVideoHeight.toString() + 'p' +
         txVideoFps.toString() + ', ' +
-        this.formatBitrate_(txVideoBitrate) + ', ' +
-        this.formatPacketRate_(txVideoPacketRate));
+        InfoBox.formatBitrate_(txVideoBitrate) + ', ' +
+        InfoBox.formatPacketRate_(txVideoPacketRate));
   }
   if (rxVideo) {
     rxVideoCodec = 'TODO';  // rxVideo.stat('googCodecName');
@@ -206,8 +225,8 @@ InfoBox.prototype.buildStatsSection_ = function() {
     contents += this.buildLine_('Video Rx',
         rxVideoCodec + ', ' + rxVideoHeight.toString() + 'p' +
         rxVideoFps.toString() + ', ' +
-        this.formatBitrate_(rxVideoBitrate) + ', ' +
-        this.formatPacketRate_(rxVideoPacketRate));
+        InfoBox.formatBitrate_(rxVideoBitrate) + ', ' +
+        InfoBox.formatPacketRate_(rxVideoPacketRate));
   }
   return contents;
 };
@@ -229,7 +248,31 @@ InfoBox.prototype.buildLine_ = function(label, value) {
   return line;
 };
 
-InfoBox.prototype.formatBitrate_ = function(value) {
+// Convert a number of milliseconds into a '[HH:]MM:SS' string.
+InfoBox.formatInterval_ = function(value) {
+  var result = '';
+  var seconds = Math.floor(value / 1000);
+  var minutes = Math.floor(seconds / 60);
+  var hours = Math.floor(minutes / 60);
+  var formatTwoDigit = function(twodigit) {
+    return ((twodigit < 10) ? '0' : '') + twodigit.toString();
+  };
+
+  if (hours > 0) {
+    result += formatTwoDigit(hours) + ':';
+  }
+  result += formatTwoDigit(minutes - hours * 60) + ':';
+  result += formatTwoDigit(seconds - minutes * 60);
+  return result;
+};
+
+// Convert a number of milliesconds into a 'XXX ms' string.
+InfoBox.formatMsec_ = function(value) {
+  return value.toFixed(0).toString() + ' ms';
+};
+
+// Convert a bitrate into a 'XXX Xbps' string.
+InfoBox.formatBitrate_ = function(value) {
   if (!value) {
     return '- bps';
   }
@@ -249,7 +292,8 @@ InfoBox.prototype.formatBitrate_ = function(value) {
   return str;
 };
 
-InfoBox.prototype.formatPacketRate_ = function(value) {
+// Convert a packet rate into a 'XXX pps' string.
+InfoBox.formatPacketRate_ = function(value) {
   if (!value) {
     return '- pps';
   }

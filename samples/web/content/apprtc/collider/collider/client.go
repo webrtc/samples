@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const maxQueuedMsgCount = 1024
+
 type client struct {
 	id string
 	// rwc is the interface to access the websocket connection.

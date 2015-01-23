@@ -11,7 +11,8 @@
 // with 1024 chars as possible while keeping dataChannel bufferedAmmount above
 // zero.
 addTest('Connectivity', 'Data throughput',
-  Call.asyncCreateTurnConfig.bind(null, testDataChannelThroughput, reportFatal));
+  Call.asyncCreateTurnConfig.bind(null, testDataChannelThroughput,
+                                  reportFatal));
 
 function testDataChannelThroughput(config) {
   var call = new Call(config);
@@ -41,8 +42,8 @@ function testDataChannelThroughput(config) {
   call.establishConnection();
 
   function onReceiverChannel(event) {
-     receiveChannel = event.channel;
-     receiveChannel.addEventListener('message', onMessageReceived);
+    receiveChannel = event.channel;
+    receiveChannel.addEventListener('message', onMessageReceived);
   }
 
   function sendingStep() {
@@ -155,19 +156,23 @@ function testVideoBandwidth(config) {
     call.close();
     reportSuccess('RTT average: ' + rttStats.getAverage() + ' ms');
     reportSuccess('RTT max: ' + rttStats.getMax() + ' ms');
-    reportSuccess('Send bandwidth estimate average: ' + bweStats.getAverage() + ' bps');
+    reportSuccess('Send bandwidth estimate average: ' + bweStats.getAverage() +
+                  ' bps');
     reportSuccess('Send bandwidth estimate max: ' + bweStats.getMax() + ' bps');
-    reportSuccess('Send bandwidth ramp-up time: ' + bweStats.getRampUpTime() + ' ms');
+    reportSuccess('Send bandwidth ramp-up time: ' + bweStats.getRampUpTime() +
+                  ' ms');
     reportSuccess('Test finished');
     testFinished();
   }
 }
 
 addExplicitTest('Connectivity', 'WiFi Periodic Scan',
-  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null, Call.isNotHostCandidate), reportFatal));
+  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null,
+      Call.isNotHostCandidate), reportFatal));
 
 addExplicitTest('Connectivity', 'WiFi Periodic Scan - Relay',
-  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null, Call.isRelay), reportFatal));
+  Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null,
+      Call.isRelay), reportFatal));
 
 function testForWiFiPeriodicScan(candidateFilter, config) {
   var testDurationMs = 5 * 60 * 1000;
@@ -178,7 +183,8 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
   var call = new Call(config);
   call.setIceCandidateFilter(candidateFilter);
 
-  var senderChannel = call.pc1.createDataChannel({ ordered: false, maxRetransmits: 0 });
+  var senderChannel = call.pc1.createDataChannel({ordered: false,
+                                                  maxRetransmits: 0});
   senderChannel.addEventListener('open', send);
   call.pc2.addEventListener('datachannel', onReceiverChannel);
   call.establishConnection();
@@ -186,7 +192,7 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
   setTimeoutWithProgressBar(finishTest, testDurationMs);
 
   function onReceiverChannel(event) {
-     event.channel.addEventListener('message', receive);
+    event.channel.addEventListener('message', receive);
   }
 
   function send() {
@@ -204,7 +210,8 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
   }
 
   function finishTest() {
-    report.traceEventInstant('periodic-delay', { delays: delays, recvTimeStamps: recvTimeStamps });
+    report.traceEventInstant('periodic-delay', {delays: delays,
+        recvTimeStamps: recvTimeStamps});
     running = false;
     call.close();
 
@@ -216,13 +223,15 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
     reportInfo('Max delay: ' + max + ' ms.');
 
     if (delays.length < 0.8 * testDurationMs / sendIntervalMs) {
-      reportError('Not enough samples gathered. Keep the page on the foreground while the test is running.');
+      reportError('Not enough samples gathered. Keep the page on the ' +
+                  'foreground while the test is running.');
     } else {
       reportSuccess('Collected ' + delays.length + ' delay samples.');
     }
 
     if (max > (min + 100) * 2) {
-        reportError('There is a big difference between the min and max delay of packets. Your network appears unstable.');
+      reportError('There is a big difference between the min and max delay ' +
+                  'of packets. Your network appears unstable.');
     }
     testFinished();
   }
