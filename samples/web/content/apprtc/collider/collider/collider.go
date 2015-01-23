@@ -8,36 +8,79 @@ package collider
 
 import (
 	"code.google.com/p/go.net/websocket"
+	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const maxQueuedMsgCount = 1024
-const maxRoomCapacity = 2
-const registerTimeoutSec = 5
+const registerTimeoutSec = 10
 
-var roomServerUrlBase string
+type Collider struct {
+	*roomTable
+	dash *dashboard
+}
 
-var rooms *roomTable
+func NewCollider(rs string) *Collider {
+	return &Collider{
+		roomTable: newRoomTable(time.Second*registerTimeoutSec, rs),
+		dash:      newDashboard(),
+	}
+}
 
-// httpHandler is a HTTP handler that handles POST/DELETE requests.
+// Run starts the collider server and blocks the thread until the program exits.
+func (c *Collider) Run(p int, tls bool) {
+	http.Handle("/ws", websocket.Handler(c.wsHandler))
+	http.HandleFunc("/status", c.httpStatusHandler)
+	http.HandleFunc("/", c.httpHandler)
+
+	var e error
+
+	pstr := ":" + strconv.Itoa(p)
+	if tls {
+		e = http.ListenAndServeTLS(pstr, "/cert/cert.pem", "/cert/key.pem", nil)
+	} else {
+		e = http.ListenAndServe(pstr, nil)
+	}
+
+	if e != nil {
+		log.Fatal("Run: " + e.Error())
+	}
+}
+
+// httpStatusHandler is a HTTP handler that handles GET requests to get the
+// status of collider.
+func (c *Collider) httpStatusHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "GET")
+
+	rp := c.dash.getReport(c.roomTable)
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(rp); err != nil {
+		err = errors.New("Failed to encode to JSON: err=" + err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.dash.onHttpErr(err)
+	}
+}
+
+// httpHandler is a HTTP handler that handles GET/POST/DELETE requests.
 // POST request to path "/$ROOMID/$CLIENTID" is used to send a message to the other client of the room.
 // $CLIENTID is the source client ID.
 // The request must have a form value "msg", which is the message to send.
 // DELETE request to path "/$ROOMID/$CLIENTID" is used to delete all records of a client, including the queued message from the client.
 // "OK" is returned if the request is valid.
-func httpHandler(w http.ResponseWriter, r *http.Request) {
+func (c *Collider) httpHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "POST, DELETE")
 
 	p := strings.Split(r.URL.Path, "/")
 	if len(p) != 3 {
-		log.Printf("path %d, %s", len(p), r.URL.Path)
-		http.Error(w, "Invalid path", http.StatusBadRequest)
+		c.httpError("Invalid path: "+r.URL.Path, w)
 		return
 	}
 	rid, cid := p[1], p[2]
@@ -46,20 +89,20 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+			c.httpError("Failed to read request body: "+err.Error(), w)
 			return
 		}
 		m := string(body)
 		if m == "" {
-			http.Error(w, "Empty request body", http.StatusBadRequest)
+			c.httpError("Empty request body", w)
 			return
 		}
-		if err := rooms.send(rid, cid, m); err != nil {
-			http.Error(w, "Failed to send the message: "+err.Error(), http.StatusBadRequest)
+		if err := c.roomTable.send(rid, cid, m); err != nil {
+			c.httpError("Failed to send the message: "+err.Error(), w)
 			return
 		}
 	case "DELETE":
-		rooms.remove(rid, cid)
+		c.roomTable.remove(rid, cid)
 	default:
 		return
 	}
@@ -77,7 +120,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 // The message may be cached by the server if the other client has not joined.
 //
 // Unexpected messages will cause the WebSocket connection to be closed.
-func wsHandler(ws *websocket.Conn) {
+func (c *Collider) wsHandler(ws *websocket.Conn) {
 	var rid, cid string
 
 	registered := false
@@ -87,66 +130,57 @@ loop:
 	for {
 		err := websocket.JSON.Receive(ws, &msg)
 		if err != nil {
-			sendServerErr(ws, "Server error: "+err.Error())
+			if err.Error() != "EOF" {
+				c.wsError("websocket.JSON.Receive error: "+err.Error(), ws)
+			}
 			break
 		}
 
 		switch msg.Cmd {
 		case "register":
 			if registered {
-				sendServerErr(ws, "Duplicated register request.")
+				c.wsError("Duplicated register request", ws)
 				break loop
 			}
 			if msg.RoomID == "" || msg.ClientID == "" {
-				sendServerErr(ws, "Invalid register request: missing 'clientid' or 'roomid'.")
+				c.wsError("Invalid register request: missing 'clientid' or 'roomid'", ws)
 				break loop
 			}
-			if err = rooms.register(msg.RoomID, msg.ClientID, ws); err != nil {
-				sendServerErr(ws, "Invalid client id or room id")
+			if err = c.roomTable.register(msg.RoomID, msg.ClientID, ws); err != nil {
+				c.wsError(err.Error(), ws)
 				break loop
 			}
 			registered, rid, cid = true, msg.RoomID, msg.ClientID
+			c.dash.incrWs()
 
-			defer rooms.deregister(rid, cid)
+			defer c.roomTable.deregister(rid, cid)
 			break
 		case "send":
 			if !registered {
-				sendServerErr(ws, "Client not registered.")
+				c.wsError("Client not registered", ws)
 				break loop
 			}
 			if msg.Msg == "" {
-				sendServerErr(ws, "Invalid send request: missing 'msg'.")
+				c.wsError("Invalid send request: missing 'msg'", ws)
 				break loop
 			}
-			rooms.send(rid, cid, msg.Msg)
+			c.roomTable.send(rid, cid, msg.Msg)
 			break
 		default:
-			sendServerErr(ws, "Invalid message: unexpected 'cmd'.")
+			c.wsError("Invalid message: unexpected 'cmd'", ws)
 			break
 		}
 	}
 }
 
-func Start(tls bool, port int, roomSrv string) {
-	log.Printf("Starting servers: tls = %t, port = %d, room-server=%s", tls, port, roomSrv)
+func (c *Collider) httpError(msg string, w http.ResponseWriter) {
+	err := errors.New(msg)
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	c.dash.onHttpErr(err)
+}
 
-	roomServerUrlBase = roomSrv
-
-	http.Handle("/ws", websocket.Handler(wsHandler))
-	http.HandleFunc("/", httpHandler)
-
-	rooms = newRoomTable()
-
-	var e error
-
-	pstr := ":" + strconv.Itoa(port)
-	if tls {
-		e = http.ListenAndServeTLS(pstr, "/cert/cert.pem", "/cert/key.pem", nil)
-	} else {
-		e = http.ListenAndServe(pstr, nil)
-	}
-
-	if e != nil {
-		log.Fatal("Start: " + e.Error())
-	}
+func (c *Collider) wsError(msg string, ws *websocket.Conn) {
+	err := errors.New(msg)
+	sendServerErr(ws, msg)
+	c.dash.onWsErr(err)
 }

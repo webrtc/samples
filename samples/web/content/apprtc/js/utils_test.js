@@ -8,7 +8,7 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals TestCase, filterTurnUrls, assertEquals */
+/* globals TestCase, filterTurnUrls, assertEquals, randomString */
 
 'use strict';
 
@@ -43,3 +43,26 @@ UtilsTest.prototype.testFilterTurnUrlsTcp = function() {
   assertEquals('Only transport=tcp URLs should remain.', TURN_URLS_TCP, urls);
 };
 
+UtilsTest.prototype.testRandomReturnsCorrectLength = function() {
+  assertEquals('13 length string', 13, randomString(13).length);
+  assertEquals('5 length string', 5, randomString(5).length);
+  assertEquals('10 length string', 10, randomString(10).length);
+};
+
+UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() {
+  var str = randomString(500);
+
+  // randromString should return only the digits 0-9.
+  var positiveRe = /^[0-9]+$/;
+  var negativeRe = /[^0-9]/;
+
+  var positiveResult = positiveRe.exec(str);
+  var negativeResult = negativeRe.exec(str);
+
+  assertEquals(
+      'Number only regular expression should match.',
+      0, positiveResult.index);
+  assertEquals(
+      'Anything other than digits regular expression should not match.',
+      null, negativeResult);
+};

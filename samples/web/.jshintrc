@@ -10,6 +10,7 @@
   "undef": true,
   "unused": "strict",
   "globals": {
+    "addExplicitTest": true,
     "addTest": true,
     "arrayAverage": true,
     "arrayMax": true,
@@ -41,7 +42,6 @@
     "setTestProgress": true,
     "setTimeoutWithProgressBar": true,
     "Ssim": true,
-    "startButton": true,
     "StatisticsAggregate": true,
     "testFinished": true,
     "trace": true,

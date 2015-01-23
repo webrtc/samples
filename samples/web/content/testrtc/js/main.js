@@ -7,12 +7,17 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
+/* exported addExplicitTest, addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
 // There is a very finite number of WebAudio contexts.
-var audioContext = new AudioContext();
+try {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  var audioContext = new AudioContext();
+} catch (e) {
+  console.log('Failed to instantiate an audio context, error: ' + e);
+}
 var contentDiv = document.getElementById('content');
 var startButton = document.getElementById('start-button');
 var audioSelect = document.querySelector('select#audioSource');
@@ -27,7 +32,15 @@ var currentTest;
 
 window.addEventListener('polymer-ready', function() {
   var gum = new GumHandler();
-  gum.start();
+  gum.start(function() {
+    if (typeof MediaStreamTrack.getSources === 'undefined') {
+      console.log('getSources is not supported, device selection not ' +
+                  'possible.');
+    } else {
+      MediaStreamTrack.getSources(gotSources);
+    }
+    startButton.removeAttribute('disabled');
+  });
 });
 
 // A test suite is a composition of many tests.
@@ -66,7 +79,8 @@ TestSuite.prototype = {
     this.content_.opened = true;
     this.toolbar_.setAttribute('state', 'pending');
     this.statusIcon_.setAttribute('icon', 'more-horiz');
-    runAllSequentially(this.tests, this.allTestFinished.bind(this, doneCallback));
+    runAllSequentially(this.tests, this.allTestFinished.bind(this,
+                                                             doneCallback));
   },
 
   allTestFinished: function(doneCallback) {
@@ -146,7 +160,7 @@ Test.prototype = {
     this.traceTestEvent = report.traceEventAsync('test-run');
 
     currentTest = this;
-    this.traceTestEvent({ name: this.name, status: 'Running' });
+    this.traceTestEvent({name: this.name, status: 'Running'});
     if (!this.isDisabled) {
       this.func();
     } else {
@@ -158,8 +172,9 @@ Test.prototype = {
   done: function() {
     this.setProgress(null);
     var success = (this.errorCount === 0 && this.successCount > 0);
-    var statusString = (success ? 'Success' : (this.isDisabled ? 'Disabled' : 'Failure'));
-    this.traceTestEvent({ status: statusString });
+    var statusString = (success ? 'Success' :
+                       (this.isDisabled ? 'Disabled' : 'Failure'));
+    this.traceTestEvent({status: statusString});
     report.logTestRunResult(this.name, statusString);
 
     if (success) {
@@ -192,7 +207,8 @@ Test.prototype = {
 
   expectEquals: function(expected, actual, failMsg, okMsg) {
     if (expected !== actual) {
-      this.reportError('Failed expectation: ' + expected + ' !== ' + actual + ': ' + failMsg);
+      this.reportError('Failed expectation: ' + expected + ' !== ' + actual +
+                       ': ' + failMsg);
     } else if (okMsg) {
       this.reportSuccess(okMsg);
     }
@@ -201,19 +217,19 @@ Test.prototype = {
   reportSuccess: function(str) {
     this.reportMessage_(PREFIX_OK, str);
     this.successCount++;
-    this.traceTestEvent({ success: str });
+    this.traceTestEvent({success: str});
   },
 
   reportError: function(str) {
     this.output_.opened = true;
     this.reportMessage_(PREFIX_FAILED, str);
     this.errorCount++;
-    this.traceTestEvent({ error: str });
+    this.traceTestEvent({error: str});
   },
 
   reportInfo: function(str) {
     this.reportMessage_(PREFIX_INFO, str);
-    this.traceTestEvent({ info: str });
+    this.traceTestEvent({info: str});
   },
 
   reportFatal: function(str) {
@@ -245,7 +261,8 @@ function reportFatal(str) { currentTest.reportFatal(str); }
 function reportInfo(str) { currentTest.reportInfo(str); }
 function setTestProgress(value) { currentTest.setProgress(value); }
 function testFinished() { currentTest.done(); }
-function expectEquals() { currentTest.expectEquals.apply(currentTest, arguments); }
+function expectEquals() { currentTest.expectEquals.apply(currentTest,
+                                                         arguments); }
 
 function addTest(suiteName, testName, func) {
   for (var i = 0; i !== testSuites.length; ++i) {
@@ -258,6 +275,14 @@ function addTest(suiteName, testName, func) {
   var testSuite = new TestSuite(suiteName, contentDiv);
   testSuite.addTest(testName, func);
   testSuites.push(testSuite);
+}
+
+// Add a test that only runs if it is explicitly enabled with
+// ?test_filter=<TEST NAME>
+function addExplicitTest(suiteName, testName, func) {
+  if (testIsExplicitlyEnabled(testName)) {
+    addTest(suiteName, testName, func);
+  }
 }
 
 // Helper to run a list of tasks sequentially:
@@ -295,15 +320,16 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
   var successFunc = function(stream) {
     var cam = getVideoDeviceName_(stream);
     var mic = getAudioDeviceName_(stream);
-    traceGumEvent({ 'status': 'success', 'camera': cam, 'microphone': mic });
+    traceGumEvent({'status': 'success', 'camera': cam, 'microphone': mic});
     onSuccess.apply(this, arguments);
   };
   var failFunc = function(error) {
-    traceGumEvent({ 'status': 'fail', 'error': error });
+    traceGumEvent({'status': 'fail', 'error': error});
     if (onFail) {
       onFail.apply(this, arguments);
     } else {
-      reportFatal('Failed to get access to local media. Error name was ' + error.name);
+      reportFatal('Failed to get access to local media. Error name was ' +
+                  error.name);
     }
   };
   try {
@@ -311,10 +337,10 @@ function doGetUserMedia(constraints, onSuccess, onFail) {
     appendSourceId(audioSelect.value, 'audio', constraints);
     appendSourceId(videoSelect.value, 'video', constraints);
 
-    traceGumEvent({ 'status': 'pending', 'constraints': constraints });
+    traceGumEvent({'status': 'pending', 'constraints': constraints});
     getUserMedia(constraints, successFunc, failFunc);
   } catch (e) {
-    traceGumEvent({ 'status': 'exception', 'error': e.message });
+    traceGumEvent({'status': 'exception', 'error': e.message});
     return reportFatal('getUserMedia failed with exception: ' + e.message);
   }
 }
@@ -351,23 +377,20 @@ function appendOption(sourceInfo, option) {
   }
 }
 
-if (typeof MediaStreamTrack === 'undefined') {
-  reportFatal('This browser does not support MediaStreamTrack.\n Try Chrome Canary.');
-} else {
-  MediaStreamTrack.getSources(gotSources);
-}
-
 function testIsDisabled(testName) {
   if (testFilters.length === 0) {
     return false;
   }
+  return !testIsExplicitlyEnabled(testName);
+}
 
+function testIsExplicitlyEnabled(testName) {
   for (var i = 0; i !== testFilters.length; ++i) {
     if (testFilters[i] === testName) {
-      return false;
+      return true;
     }
   }
-  return true;
+  return false;
 }
 
 // Return the first audio device label on the track.
@@ -388,12 +411,12 @@ function getVideoDeviceName_(stream) {
 
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
   var start = window.performance.now();
-  var updateProgressBar = setInterval(function () {
+  var updateProgressBar = setInterval(function() {
     var now = window.performance.now();
     setTestProgress((now - start) * 100 / timeoutMs);
   }, 100);
 
-  setTimeout(function () {
+  setTimeout(function() {
     clearInterval(updateProgressBar);
     setTestProgress(100);
     timeoutCallback();
@@ -401,23 +424,21 @@ function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
 }
 
 // Parse URL parameters and configure test filters.
-{
-  var parseUrlParameters = function() {
-    var output = {};
-    // python SimpleHTTPServer always adds a / on the end of the request.
-    // Remove it so developers can easily run testrtc on their machines.
-    // Note that an actual / is still sent in most cases as %2F.
-    var args = window.location.search.replace(/\//g, '').substr(1).split('&');
-    for (var i = 0; i !== args.length; ++i) {
-      var split = args[i].split('=');
-      output[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
-    }
-    return output;
-  };
-
-  var parameters = parseUrlParameters();
-  var filterParameterName = 'test_filter';
-  if (filterParameterName in parameters) {
-    testFilters = parameters[filterParameterName].split(',');
+function parseUrlParameters() {
+  var output = {};
+  // python SimpleHTTPServer always adds a / on the end of the request.
+  // Remove it so developers can easily run testrtc on their machines.
+  // Note that an actual / is still sent in most cases as %2F.
+  var args = window.location.search.replace(/\//g, '').substr(1).split('&');
+  for (var i = 0; i !== args.length; ++i) {
+    var split = args[i].split('=');
+    output[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
   }
+  return output;
+}
+
+var parameters = parseUrlParameters();
+var filterParameterName = 'test_filter';
+if (filterParameterName in parameters) {
+  testFilters = parameters[filterParameterName].split(',');
 }

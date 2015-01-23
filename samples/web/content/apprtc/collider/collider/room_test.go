@@ -8,11 +8,16 @@ package collider
 import (
 	"collidertest"
 	"testing"
+	"time"
 )
+
+func createNewRoom(id string) *room {
+	return newRoom(nil, id, time.Second, "")
+}
 
 func TestNewRoom(t *testing.T) {
 	id := "abc"
-	r := newRoom(nil, id)
+	r := createNewRoom(id)
 	if r.id != id {
 		t.Errorf("newRoom(%q).id = %q, want %q", id, r.id, id)
 	}
@@ -22,7 +27,7 @@ func TestNewRoom(t *testing.T) {
 }
 
 func TestGetOrCreateClient(t *testing.T) {
-	r := newRoom(nil, "ab")
+	r := createNewRoom("ab")
 	id1 := "1"
 	c1, err := r.client(id1)
 	if err != nil {
@@ -49,7 +54,7 @@ func TestGetOrCreateClient(t *testing.T) {
 
 // Tests that registering a client will deliver the queued message from the first client.
 func TestRoomRegister(t *testing.T) {
-	r := newRoom(nil, "a")
+	r := createNewRoom("a")
 	id1 := "1"
 	c1, _ := r.client(id1)
 	c1.enqueue("hello")
@@ -72,7 +77,7 @@ func TestRoomRegister(t *testing.T) {
 
 // Tests that the message sent before the second client joins will be queued.
 func TestRoomSendQueued(t *testing.T) {
-	r := newRoom(nil, "a")
+	r := createNewRoom("a")
 	id := "1"
 	m := "hi"
 	if err := r.send(id, m); err != nil {
@@ -87,7 +92,7 @@ func TestRoomSendQueued(t *testing.T) {
 
 // Tests that the message sent after the second client joins will be delivered.
 func TestRoomSendImmediately(t *testing.T) {
-	r := newRoom(nil, "a")
+	r := createNewRoom("a")
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 	id1, id2, m := "1", "2", "hi"
 	r.register(id2, &rwc)
@@ -106,7 +111,7 @@ func TestRoomSendImmediately(t *testing.T) {
 
 // Tests that the client is closed and removed by room.remove.
 func TestRoomDelete(t *testing.T) {
-	r := newRoom(nil, "a")
+	r := createNewRoom("a")
 	rwc := collidertest.MockReadWriteCloser{Closed: false}
 	id := "1"
 	r.register(id, &rwc)

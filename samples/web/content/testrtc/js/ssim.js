@@ -7,9 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* jshint camelcase: false */
 'use strict';
-
 
 /* This is an implementation of the algorithm for calculating the Structural
  * SIMilarity (SSIM) index between two images. Please refer to the article [1],
@@ -36,20 +34,20 @@ Ssim.prototype = {
     for (i = 0; i < a.length; ++i) {
       accu += a[i];
     }
-    var mean_a = accu / (a.length - 1);
+    var meanA = accu / (a.length - 1);
     var diff = 0;
     for (i = 1; i < a.length; ++i) {
-      diff = a[i - 1] - mean_a;
+      diff = a[i - 1] - meanA;
       accu += a[i] + (diff * diff);
     }
-    return { mean : mean_a, variance : accu / a.length };
+    return {mean : meanA, variance : accu / a.length};
   },
 
   // Implementation of Eq.11., cov(Y, Z) = E((Y - uY), (Z - uZ)).
-  covariance: function(a, b, mean_a, mean_b) {
+  covariance: function(a, b, meanA, meanB) {
     var accu = 0;
     for (var i = 0; i < a.length; i += 1) {
-      accu += (a[i] - mean_a) * (b[i] - mean_b);
+      accu += (a[i] - meanA) * (b[i] - meanB);
     }
     return accu / a.length;
   },
@@ -67,23 +65,23 @@ Ssim.prototype = {
     var C2 = (K2 * L) * (K2 * L);
     var C3 = C2 / 2;
 
-    var stats_x = this.statistics(x);
-    var mu_x = stats_x.mean;
-    var sigma_x2 = stats_x.variance;
-    var sigma_x = Math.sqrt(sigma_x2);
-    var stats_y = this.statistics(y);
-    var mu_y = stats_y.mean;
-    var sigma_y2 = stats_y.variance;
-    var sigma_y = Math.sqrt(sigma_y2);
-    var sigma_xy = this.covariance(x, y, mu_x, mu_y);
+    var statsX = this.statistics(x);
+    var muX = statsX.mean;
+    var sigmaX2 = statsX.variance;
+    var sigmaX = Math.sqrt(sigmaX2);
+    var statsY = this.statistics(y);
+    var muY = statsY.mean;
+    var sigmaY2 = statsY.variance;
+    var sigmaY = Math.sqrt(sigmaY2);
+    var sigmaXy = this.covariance(x, y, muX, muY);
 
     // Implementation of Eq.6.
-    var luminance = (2 * mu_x * mu_y + C1) /
-        ((mu_x * mu_x) + (mu_y * mu_y) + C1);
+    var luminance = (2 * muX * muY + C1) /
+        ((muX * muX) + (muY * muY) + C1);
     // Implementation of Eq.10.
-    var structure = (sigma_xy + C3) / (sigma_x * sigma_y + C3);
+    var structure = (sigmaXy + C3) / (sigmaX * sigmaY + C3);
     // Implementation of Eq.9.
-    var contrast = (2 * sigma_x * sigma_y + C2) / (sigma_x2 + sigma_y2 + C2);
+    var contrast = (2 * sigmaX * sigmaY + C2) / (sigmaX2 + sigmaY2 + C2);
 
     // Implementation of Eq.12.
     return luminance * contrast * structure;

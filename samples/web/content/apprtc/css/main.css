@@ -31,6 +31,7 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  color: #fff;
 }
 
 #remote-canvas {
@@ -101,28 +102,6 @@ footer > div.active {
   opacity: .8;
 }
 
-@-webkit-keyframes rotate {
-  0% {
-    -webkit-transform: rotateY(0);
-    transform: rotateY(0);
-  }
-
-  100% {
-    -webkit-transform: rotateY(180deg);
-    transform: rotateY(180deg);
-  }
-}
-
-@keyframes rotate {
-  0% {
-    transform: rotateY(0);
-  }
-
-  100% {
-    transform: rotateY(180deg);
-  }
-}
-
 html {
   height: 100%;
   margin: 0;
@@ -185,3 +164,185 @@ label {
   opacity: 1;
   z-index: 1;
 }
+
+/*////// room selection start ///////////////////*/
+#recent-rooms-list {
+  list-style-type: none;
+}
+
+button {
+  background-color: #69b;
+  border: none;
+  border-radius: 2px;
+  color: white;
+  font-size: 0.8em;
+  margin: 0 10px 20px 0;
+  width: 90px;
+  padding: 0.5em 0.7em 0.6em 0.7em;
+}
+
+button:active {
+  background-color: #7ac;
+}
+
+button:hover {
+  background-color: #7ac;
+}
+
+button[disabled] {
+  color: #ccc;
+}
+
+button[disabled]:hover {
+  background-color: #69b;
+}
+
+input[type=text] {
+  border: 3px solid #444;
+  border-radius: 2px;
+  font-size: 0.8em;
+  background-color: #000000;
+  color: #fff;
+  font-weight: 300;
+  padding:.4em;
+  margin-right: 20px;
+}
+
+h1 {
+  font-weight: 300;
+  margin: 0 0 0.8em 0;
+  padding: 0 0 0.2em 0;
+}
+
+div#room-selection {
+  margin: 0 auto 0 auto;
+  padding: 1em 1.5em 1.3em 1.5em;
+}
+
+p {
+  color: #eee;
+  font-weight: 300;
+  line-height: 1.6em;
+}
+
+/*////// room selection end /////////////////////*/
+
+/*////// icons CSS start ////////////////////////*/
+
+#icons {
+  bottom: 77px;
+  left: 6vw;
+  position: absolute;
+}
+
+circle {
+  fill: #666;
+  fill-opacity: 0.6;
+}
+
+svg.on circle {
+  fill-opacity: 0;
+}
+
+/* on icons are hidden by default */
+path.on {
+  display: none;
+}
+
+/* off icons are displayed by default */
+path.off {
+  display: block;
+}
+
+/* on icons are displayed when parent svg has class 'on' */
+svg.on path.on {
+  display: block;
+}
+
+/* off icons are hidden when parent svg has class 'on' */
+svg.on path.off {
+  display: none;
+}
+
+svg {
+  box-shadow: 2px 2px 24px #444;
+  border-radius: 48px;
+  display: block;
+  margin: 0 0 3vh 0;
+  transform: translateX(calc(-6vw - 96px));
+  transition: all .1s;
+  transition-timing-function: ease-in-out;
+}
+
+svg:hover {
+  box-shadow: 4px 4px 48px #666;
+}
+
+#icons.active svg {
+  transform: translateX(0);
+}
+
+#mute-audio {
+  transition: 40ms;
+}
+
+#mute-audio:hover,
+#mute-audio.on {
+  background: #ab47bc;
+}
+
+#mute-audio:hover circle {
+  fill: #ab47bc;
+}
+
+#mute-video {
+  transition: 120ms;
+}
+
+#mute-video:hover,
+#mute-video.on {
+  background: #ff9f00;
+}
+
+#mute-video:hover circle {
+  fill: #ff9f00;
+}
+
+#switch-video {
+  transition: 200ms;
+}
+
+#switch-video:hover {
+  background: #12a256;
+}
+
+#switch-video:hover circle {
+  fill: #12a256;
+}
+
+#fullscreen {
+  transition: 280ms;
+}
+
+#fullscreen:hover,
+#fullscreen.on {
+  background: #407cf7;
+}
+
+#fullscreen:hover circle {
+  fill: #407cf7;
+}
+
+#hangup {
+  transition: 360ms;
+}
+
+#hangup:hover {
+  background: #dd2c00;
+}
+#hangup:hover circle {
+  fill: #dd2c00;
+}
+
+/*////// icons CSS end /////////////////////////*/
+

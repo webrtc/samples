@@ -7,26 +7,6 @@
  */
 'use strict';
 
-// Test spec
-// 1. TODO: Enumerate cameras.
-// 2. Try opening the (a) camera in VGA.
-// 3. TODO: Try camera in other resolutions, particularly HD.
-// 4. TODO: Translate gum failures to user friendly messages, using
-//   MediaStreamError.name in { NotSupportedError, PermissionDeniedError,
-//   ConstrainNotSatisfiedError, OverconstrainedError, NotFoundError,
-//   AbortError, SourceUnavailableError }.
-// 4.Check that the MediaStreamTrack associated with the camera looks good.
-// 4.a Capture for a couple of seconds and monitor the events on the
-//   MediaStreamTrack: onEnded(), onMute(), onUnmute().
-// 4.b If onEnded() fires, reportFatal() is called (e.g. camera is unplugged).
-// 4.c We keep a local |isMuted| state during the capture period (4.a) to check
-//   it at the end. (TODO: local isMuted can be deprecated once
-//   mediaStreamTrack.muted property is wired up in Chrome).
-// 4.d After the wait period we check that the video tag where the |stream| is
-//   plugged in has the appropriate width and height.
-// 4.e We also check that all frames were non-near-black.
-// 5. Tear down the |stream|. TODO: this should be done in the test harness.
-
 addTest('Camera', 'Test video feed', function() {
   var test = new CamCaptureTest();
   test.run();
@@ -47,13 +27,19 @@ function CamCaptureTest() {
   this.frameComparator = new Ssim();
 
   this.constraints = {
-    video: { mandatory: { minWidth: 640, minHeight: 480} }
+    video: {mandatory: {minWidth: 640, minHeight: 480}}
   };
   this.video = document.createElement('video');
   this.video.width = this.constraints.video.mandatory.minWidth;
   this.video.height = this.constraints.video.mandatory.minHeight;
-  this.video.setAttribute('autoplay','');
-  this.video.setAttribute('muted','');
+  this.video.setAttribute('autoplay', '');
+  this.video.setAttribute('muted', '');
+}
+
+function resolutionMatchesIndependentOfRotation(aWidth, aHeight,
+                                                bWidth, bHeight) {
+  return (aWidth === bWidth && aHeight === bHeight) ||
+         (aWidth === bHeight && aHeight === bWidth);
 }
 
 CamCaptureTest.prototype = {
@@ -72,7 +58,8 @@ CamCaptureTest.prototype = {
     this.setupCanvas();
     reportInfo('Checking if your camera is delivering frames for five ' +
                'seconds...');
-    setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video), 5000);
+    setTimeoutWithProgressBar(this.checkVideoFinish.bind(this, this.video),
+                                                         5000);
   },
 
   checkVideoTracks: function(stream) {
@@ -134,13 +121,12 @@ CamCaptureTest.prototype = {
     if (info.isMuted === true) {
       reportError('Camera reported itself as muted.');
     }
-    if (info.videoWidth !== info.mandatoryMinWidth) {
-      reportError('Incorrect captured width.');
+    if (!resolutionMatchesIndependentOfRotation(info.videoWidth,
+                                                info.videoHeight,
+                                                info.mandatoryMinWidth,
+                                                info.mandatoryMinHeight)) {
+      reportError('Incorrect captured resolution.');
     }
-    if (info.videoHeight !== info.mandatoryMinHeight) {
-      reportError('Incorrect captured height.');
-    }
-
     if (info.testedFrames === 0) {
       reportError('Could not analyze any video frame.');
     } else {
@@ -192,9 +178,9 @@ CamCaptureTest.prototype = {
     var accuLuma = 0;
     for (var i = 4; i < length; i += 4) {
       // Use Luma as in Rec. 709: Y′709 = 0.21R + 0.72G + 0.07B;
-      accuLuma += 0.21 * data[i] +  0.72 * data[i+1] + 0.07 * data[i+2];
+      accuLuma += 0.21 * data[i] +  0.72 * data[i + 1] + 0.07 * data[i + 2];
       // Early termination if the average Luma so far is bright enough.
-      if (accuLuma  > (thresh * i / 4)) {
+      if (accuLuma > (thresh * i / 4)) {
         return false;
       }
     }

@@ -23,7 +23,7 @@ function MicTest() {
   this.constraints = {
     audio: {
       optional: [
-        { echoCancellation: false }
+        {echoCancellation: false}
       ]
     }
   };
@@ -31,11 +31,17 @@ function MicTest() {
 
 MicTest.prototype = {
   run: function() {
-    doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    if (typeof audioContext === 'undefined') {
+      reportError('WebAudio is not supported, test cannot run.');
+      testFinished();
+    } else {
+      doGetUserMedia(this.constraints, this.gotStream.bind(this));
+    }
   },
 
   gotStream: function(stream) {
     if (!this.checkAudioTracks(stream)) {
+      testFinished();
       return;
     }
     this.createAudioBuffer(stream);
@@ -45,7 +51,7 @@ MicTest.prototype = {
     this.stream = stream;
     var audioTracks = stream.getAudioTracks();
     if (audioTracks.length < 1) {
-      reportFatal('No audio track in returned stream.');
+      reportError('No audio track in returned stream.');
       return false;
     }
     reportSuccess('Audio track created using device=' + audioTracks[0].label);
@@ -76,7 +82,7 @@ MicTest.prototype = {
   },
 
   testNumberOfActiveChannels: function(buffer) {
-    var sampleData = [ [], [] ];
+    var sampleData = [[], []];
     var numberOfChannels = buffer.numberOfChannels;
     var activeChannels = [];
     for (var channel = 0; channel < numberOfChannels; channel++) {
@@ -88,7 +94,7 @@ MicTest.prototype = {
           numberOfZeroSamples++;
         }
       }
-      if (numberOfZeroSamples !== buffer.length ) {
+      if (numberOfZeroSamples !== buffer.length) {
         activeChannels[channel] = this.testInputVolume(buffer, channel);
       }
     }
@@ -106,7 +112,7 @@ MicTest.prototype = {
     if (activeChannels.length === 2) {
       var samplesMatched = 0;
       var epsilon = buffer.length * 0.15;
-      for (var i= 0; i < sampleData[0].length; i++) {
+      for (var i = 0; i < sampleData[0].length; i++) {
         if (sampleData[0][i] === sampleData[1][i]) {
           samplesMatched++;
         }
@@ -131,11 +137,12 @@ MicTest.prototype = {
     // Check input audio level.
     if (db < this.lowVolumeThreshold) {
       // Use Math.round to display up to two decimal places.
-      reportError('Audio input level = ' + Math.round(db * 1000) / 1000 + ' db' +
-                  'Microphone input level is low, increase input volume or' +
-                  'move closer to the microphone.');
+      reportError('Audio input level = ' + Math.round(db * 1000) / 1000 +
+                  ' db.' + ' Microphone input level is low, increase input ' +
+                  'volume or move closer to the microphone.');
     } else {
-      reportSuccess('Audio power for channel ' + channel + '=' + Math.round(db * 1000) / 1000 + ' db');
+      reportSuccess('Audio power for channel ' + channel + '=' +
+                    Math.round(db * 1000) / 1000 + ' db');
     }
   }
 };
