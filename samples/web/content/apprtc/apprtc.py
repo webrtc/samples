@@ -240,7 +240,7 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     include_loopback_js = ''
 
   # TODO(tkchin): We want to provide a TURN request url on the initial get,
-  # but we don't provide client_id until a register. For now just generate
+  # but we don't provide client_id until a join. For now just generate
   # a random id, but we should make this better.
   username = client_id if client_id is not None else generate_random(9)
   if len(turn_base_url) > 0:
@@ -440,7 +440,7 @@ def save_message_from_client(host, room_id, client_id, message):
       return {'error': None, 'saved': True}
     retries = retries + 1
 
-class ByePage(webapp2.RequestHandler):
+class LeavePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
     result = remove_client_from_room(
         self.request.host_url, room_id, client_id)
@@ -477,14 +477,14 @@ class MessagePage(webapp2.RequestHandler):
       return
     self.write_response(constants.RESPONSE_SUCCESS)
     if not result['saved']:
-      # Other client registered, forward to collider. Do this outside the lock.
+      # Other client joined, forward to collider. Do this outside the lock.
       # Note: this may fail in local dev server due to not having the right
       # certificate file locally for SSL validation.
       # Note: loopback scenario follows this code path.
       # TODO(tkchin): consider async fetch here.
       self.send_message_to_collider(room_id, client_id, message_json)
 
-class RegisterPage(webapp2.RequestHandler):
+class JoinPage(webapp2.RequestHandler):
   def write_response(self, result, params, messages):
     # TODO(tkchin): Clean up response format. For simplicity put everything in
     # params for now.
@@ -511,7 +511,7 @@ class RegisterPage(webapp2.RequestHandler):
 
     self.write_room_parameters(
         room_id, client_id, result['messages'], result['is_initiator'])
-    logging.info('User ' + client_id + ' registered in room ' + room_id)
+    logging.info('User ' + client_id + ' joined room ' + room_id)
     logging.info('Room ' + room_id + ' has state ' + result['room_state'])
 
 class MainPage(webapp2.RequestHandler):
@@ -519,7 +519,7 @@ class MainPage(webapp2.RequestHandler):
     template = jinja_environment.get_template(target_page)
     content = template.render(params)
     self.response.out.write(content)
-    
+
   def get(self):
     """Renders index.html."""
     # Parse out parameters from request.
@@ -559,11 +559,13 @@ class ParamsPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/bye/(\w+)/(\w+)', ByePage),
+    ('/leave/(\w+)/(\w+)', LeavePage),
     ('/message/(\w+)/(\w+)', MessagePage),
-    ('/register/(\w+)', RegisterPage),
-    # TODO(jiayl): Remove support of /room/ when all clients are updated.
-    ('/room/(\w+)', RoomPage),
+    ('/join/(\w+)', JoinPage),
     ('/r/(\w+)', RoomPage),
     ('/params', ParamsPage),
+    # TODO(jiayl): Remove support of the old APIs when all clients are updated.
+    ('/room/(\w+)', RoomPage),
+    ('/register/(\w+)', JoinPage),
+    ('/bye/(\w+)/(\w+)', LeavePage),
 ], debug=True)
