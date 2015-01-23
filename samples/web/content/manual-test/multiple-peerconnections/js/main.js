@@ -44,7 +44,7 @@ function getSources_() {
       for (var i = 0; i < devices.length; i++) {
         if (devices[i].kind === 'video') {
           videoDeviceList[i] = devices[i];
-          startTest_(videoDeviceList[i].id, requestId );
+          startTest_(videoDeviceList[i].id, requestId);
           requestId++;
         }
       }
@@ -58,12 +58,12 @@ function startTest_(sourceId, requestId) {
   if (requestId > 2) {
     return;
   }
-  getUserMedia( {
-    video: { optional: [ { sourceId: sourceId } ] },
-    audio: true },
+  getUserMedia({
+    video: {optional: [{sourceId: sourceId}]},
+    audio: true},
     function(localStream) {
       gLocalStreams.push(localStream);
-      play_(localStream, 'local-view-' + requestId );
+      play_(localStream, 'local-view-' + requestId);
     },
     getUserMediaFailedCallback_);
 }
@@ -139,8 +139,8 @@ function negotiate_(connection1, connection2) {
 
 function addDataChannelAnchor_(connection1, connection2) {
   var connectionId = gNumConnections++;
-  gAllConnections[connectionId] = { connection1: connection1,
-                                    connection2: connection2 };
+  gAllConnections[connectionId] = {connection1: connection1,
+                                    connection2: connection2};
   addOneAnchor_(1, connectionId);
   addOneAnchor_(2, connectionId);
 }
@@ -185,7 +185,7 @@ function configureChannels_(connection1, connection2, targetFor1, targetFor2,
                             dataChannelId) {
   // Label the channel so we know where to send the data later in dispatch.
   var sendChannel = connection1.createDataChannel(
-      targetFor2, { reliable : false });
+      targetFor2, {reliable : false});
   sendChannel.onmessage = function(messageEvent) {
     document.getElementById(targetFor1).value = messageEvent.data;
   };
