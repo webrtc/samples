@@ -71,11 +71,11 @@ Call.prototype.hangup = function() {
     this.pcClient_ = null;
   }
 
-  // Send bye to GAE. This must complete before saying BYE to other client.
+  // Send 'leave' to GAE. This must complete before saying BYE to other client.
   // When the other client sees BYE it attempts to post offer and candidates to
   // GAE. GAE needs to know that we're disconnected at that point otherwise
   // it will forward messages to this client instead of storing them.
-  var path = this.roomServer_ + '/bye/' + this.params_.roomId +
+  var path = this.roomServer_ + '/leave/' + this.params_.roomId +
       '/' + this.params_.clientId;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, false);
@@ -148,7 +148,7 @@ Call.prototype.toggleAudioMute = function() {
 };
 
 // Connects client to the room. This happens by simultaneously requesting
-// media, requesting turn, and registering with GAE. Once all three of those
+// media, requesting turn, and join the room. Once all three of those
 // tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
@@ -162,9 +162,9 @@ Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
     return Promise.reject(error);
   }.bind(this));
 
-  // Asynchronously register with GAE.
-  var registerPromise =
-      this.registerWithRoomServer_().then(function(roomParams) {
+  // Asynchronously join the room.
+  var joinPromise =
+      this.joinRoom_().then(function(roomParams) {
         // The only difference in parameters should be clientId and isInitiator,
         // and the turn servers that we requested.
         // TODO(tkchin): clean up response format. JSHint doesn't like it.
@@ -178,13 +178,13 @@ Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
         /* jshint ignore:end */
         this.params_.messages = roomParams.messages;
       }.bind(this)).catch(function(error) {
-        this.onError_('Room server register error: ' + error.message);
+        this.onError_('Room server join error: ' + error.message);
         return Promise.reject(error);
       }.bind(this));
 
   // We only register with WSS if the web socket connection is open and if we're
   // already registered with GAE.
-  Promise.all([channelPromise, registerPromise]).then(function() {
+  Promise.all([channelPromise, joinPromise]).then(function() {
     this.channel_.register(this.params_.roomId, this.params_.clientId);
 
     // We only start signaling after we have registered the signaling channel
@@ -317,13 +317,13 @@ Call.prototype.startSignaling_ = function() {
   }
 };
 
-// Registers with GAE and returns room parameters.
-Call.prototype.registerWithRoomServer_ = function() {
+// Join the room and returns room parameters.
+Call.prototype.joinRoom_ = function() {
   return new Promise(function(resolve, reject) {
     if (!this.params_.roomId) {
       reject(Error('Missing room id.'));
     }
-    var path = this.roomServer_ + '/register/' +
+    var path = this.roomServer_ + '/join/' +
         this.params_.roomId + window.location.search;
 
     sendAsyncUrlRequest('POST', path).then(function(response) {
@@ -338,10 +338,10 @@ Call.prototype.registerWithRoomServer_ = function() {
         reject(Error('Registration error: ' + responseObj.result));
         return;
       }
-      trace('Registered with GAE.');
+      trace('Joined the room.');
       resolve(responseObj.params);
     }.bind(this)).catch(function(error) {
-      reject(Error('Failed to register with GAE: ' + error.message));
+      reject(Error('Failed to join the room: ' + error.message));
       return;
     }.bind(this));
   }.bind(this));
