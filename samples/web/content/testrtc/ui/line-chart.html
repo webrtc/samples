@@ -10,9 +10,9 @@
 `<line-chart>` is used to display a line chart updating in real-time to the user
 in an efficient way and without locking the js thread for too long.
 
-It is not a very advanced or a pretty line chart render, but it is very specialized
-for the testrtc use case where delaying the JS thread incurs delays on measuring
-the round-trip time.
+It is not a very advanced or a pretty line chart render, but it is very
+specialized for the testrtc use case where delaying the JS thread incurs delays
+on measuring the round-trip time.
 -->
 <link rel="import" href="../../polymer/polymer.html">
 <polymer-element name="line-chart">
@@ -31,38 +31,54 @@ the round-trip time.
       xStart: null,
       xOffset: null,
       lastSlowRender: null,
-      addDatapoint: function (timestamp, value) {
-        var start = window.performance.now();
+      addDatapoint: function(timestamp, value) {
+        var startRender = window.performance.now();
         this.ctx = this.$.canvas.getContext('2d');
 
         var index = this.x.length;
         this.x.push(timestamp / 100.0 * 2);
         this.y.push(this.calculateY(value));
 
-        if (this.xStart === null || this.x[index] - this.xStart > this.$.canvas.width) {
+        var xCoord = this.x[index] - this.xStart;
+        if (this.xStart === null || xCoord > this.$.canvas.width) {
           // First point added or a point added that clears the chart.
           this.setupChart();
           this.xStart = this.x[index] - this.xOffset;
         } else {
-          this.ctx.strokeStyle = (Math.min(this.y[index], this.y[index-1]) < 50 ? 'red': 'green');
+          var oldXCoord = this.x[index - 1] - this.xStart;
+          this.ctx.save();
           this.ctx.beginPath();
-          this.ctx.moveTo(this.x[index - 1] - this.xStart, this.y[index - 1]);
-          this.ctx.lineTo(this.x[index] - this.xStart, this.y[index]);
+          this.ctx.fillStyle = this.dotColor(this.y[index - 1]);
+          this.ctx.fillRect(oldXCoord - 1.5, this.y[index - 1] - 1.5, 3, 3);
+          this.ctx.moveTo(oldXCoord, this.y[index - 1]);
+          this.ctx.lineTo(xCoord, this.y[index]);
           this.ctx.stroke();
           this.ctx.closePath();
+          this.ctx.restore();
         }
 
         var now = window.performance.now();
-        var interval = now - start;
-        if (interval > 5 && (this.lastSlowRender === null || (now - this.lastSlowRender) > 5000)) {
+        this.maybeAlertAboutRenderPerformance(now - startRender);
+      },
+
+      maybeAlertAboutRenderPerformance: function(renderMs) {
+        if (renderMs < 5) {
+          return;
+        }
+        var now = window.performance.now();
+        if (this.lastSlowRender === null ||
+            now - this.lastSlowRender > 5000) {
           this.lastSlowRender = now;
-          console.log('Updating the graph was slow and might affect results. Graph update took ' + interval + ' ms');
+          console.log('Updating the graph was slow and might affect results.'
+                      + ' Graph update took ' + renderMs + ' ms');
         }
       },
 
-      setupChart: function () {
+      setupChart: function() {
         this.ctx.clearRect (0 , 0, this.$.canvas.width, this.$.canvas.height);
         this.ctx.lineWidth = window.devicePixelRatio;
+        this.ctx.strokeStyle = 'grey';
+
         this.ctx.save();
 
         this.ctx.lineWidth = window.devicePixelRatio;
@@ -78,7 +94,9 @@ the round-trip time.
         this.ctx.beginPath();
         this.xOffset = 0;
         for (var index = 0; index != this.yLabels.length; index++) {
-          this.xOffset = Math.max(this.xOffset, this.ctx.measureText(this.yLabels[index] + ' ms ').width);
+          var yLabel = this.yLabels[index] + ' ms ';
+          var yLabelWidth = this.ctx.measureText(yLabel).width;
+          this.xOffset = Math.max(this.xOffset, yLabelWidth);
         }
 
         for (var index = 0; index != this.yLabels.length; index++) {
@@ -109,7 +127,11 @@ the round-trip time.
         this.ctx.restore();
       },
 
-      calculateY: function (value) {
+      dotColor: function(value) {
+        return value < 300 ? 'green' : 'red';
+      },
+
+      calculateY: function(value) {
         if (value > this.yScale[1]) { value = this.yScale[1] - 10; }
         var y = (value - this.yScale[0])/(this.yScale[1] - this.yScale[0]);
         return this.$.canvas.height * (1 - y) - 5;
