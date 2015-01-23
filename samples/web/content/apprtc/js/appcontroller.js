@@ -35,6 +35,7 @@ var UI_CONSTANTS = {
   roomLinkHref: '#room-link-href',
   roomSelectionDiv: '#room-selection',
   roomSelectionInput: '#room-id-input',
+  roomSelectionInputLabel: '#room-id-input-label',
   roomSelectionJoinButton: '#join-button',
   roomSelectionRandomButton: '#random-button',
   roomSelectionRecentList: '#recent-rooms-list',
