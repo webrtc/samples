@@ -11,12 +11,12 @@
 }
 
 a {
-  color: #69d;
+  color: #4285F4;
   text-decoration: none;
 }
 
 a:hover {
-  color: #8bf;
+  color: #3B78E7;
   text-decoration: underline;
 }
 
@@ -25,7 +25,7 @@ a:hover {
 }
 
 body {
-  background-color: black;
+  background-color: #333;
   font-family: 'Roboto', 'Open Sans', 'Lucida Grande', sans-serif;
   height: 100%;
   margin: 0;
@@ -168,44 +168,80 @@ label {
 /*////// room selection start ///////////////////*/
 #recent-rooms-list {
   list-style-type: none;
+  padding: 0 15px;
 }
 
 button {
-  background-color: #69b;
+  background-color: #4285F4;
   border: none;
   border-radius: 2px;
   color: white;
   font-size: 0.8em;
   margin: 0 10px 20px 0;
-  width: 90px;
-  padding: 0.5em 0.7em 0.6em 0.7em;
+  width: 8em;
+  height: 2.75em;
+  padding: 0.5em 0.7em 0.5em 0.7em;
+  -webkit-box-shadow: 1px 1px 5px 0 rgba(0,0,0,.5);
+  -moz-box-shadow: 1px 1px 5px 0 rgba(0,0,0,.5);
+  box-shadow: 1px 1px 5px 0 rgba(0,0,0,.5);
 }
 
 button:active {
-  background-color: #7ac;
+  background-color: #3367D6;
 }
 
 button:hover {
-  background-color: #7ac;
+  background-color: #3B78E7;
+}
+
+button:focus {
+  outline: none;
+  -webkit-box-shadow: 0 10px 15px 0 rgba(0,0,0,.5);
+  -moz-box-shadow: 0 10px 15px 0 rgba(0,0,0,.5);
+  box-shadow: 0 10px 15px 0 rgba(0,0,0,.5);
 }
 
 button[disabled] {
-  color: #ccc;
-}
-
-button[disabled]:hover {
-  background-color: #69b;
+  color: rgb(76, 76, 76);
+  color: rgba(255, 255, 255, 0.3);
+  background-color: rgb(30, 30, 30);
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 input[type=text] {
-  border: 3px solid #444;
-  border-radius: 2px;
-  font-size: 0.8em;
-  background-color: #000000;
+  border: none;
+  border-bottom: solid 1px #4c4c4f;
+  font-size: 1em;
+  background-color: transparent;
   color: #fff;
-  font-weight: 300;
-  padding:.4em;
+  padding:.4em 0;
   margin-right: 20px;
+  width: 100%;
+  display: block;
+}
+
+input[type="text"]:focus {
+  border-bottom: solid 2px #4285F4;
+  outline: none;
+}
+
+input[type="text"].invalid {
+  border-bottom: solid 2px #F44336;
+}
+
+label.error-label {
+  color: #F44336;
+  font-size: .85em;
+  font-weight: 200;
+  margin: 0;
+}
+
+#room-id-input-div {
+  margin: 15px;
+}
+
+#room-id-input-buttons {
+  margin: 15px;
 }
 
 h1 {
@@ -215,7 +251,8 @@ h1 {
 }
 
 div#room-selection {
-  margin: 0 auto 0 auto;
+  margin: 3em auto 0 auto;
+  width: 25em;
   padding: 1em 1.5em 1.3em 1.5em;
 }
 
