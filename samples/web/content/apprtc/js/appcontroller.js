@@ -90,7 +90,7 @@ var AppController = function(loadingParams) {
     this.infoBox_ =
         new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
 
-    this.transitionToWaitingTimer_ = null;
+    this.remoteVideoResetTimer_ = null;
 
     var roomErrors = this.loadingParams_.errorMessages;
     if (roomErrors.length > 0) {
@@ -214,6 +214,11 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
   this.deactivate_(this.sharingDiv_);
   trace('Remote stream added.');
   attachMediaStream(this.remoteVideo_, stream);
+
+  if (this.remoteVideoResetTimer_) {
+    clearTimeout(this.remoteVideoResetTimer_);
+    this.remoteVideoResetTimer_ = null;
+  }
 };
 
 AppController.prototype.onLocalStreamAdded_ = function(stream) {
@@ -234,11 +239,6 @@ AppController.prototype.transitionToActive_ = function() {
   this.infoBox_.updateInfoDiv();
   trace('Call setup time: ' + (connectTime - this.call_.startTime).toFixed(0) +
       'ms.');
-
-  if (this.transitionToWaitingTimer_) {
-    clearTimeout(this.transitionToWaitingTimer_);
-    this.transitionToWaitingTimer_ = null;
-  }
 
   // Prepare the remote video and PIP elements.
   trace('reattachMediaStream: ' + this.localVideo_.src);
@@ -264,11 +264,14 @@ AppController.prototype.transitionToWaiting_ = function() {
   // Rotate the div containing the videos -180 deg with a CSS transform.
   this.deactivate_(this.videosDiv_);
 
-  this.transitionToWaitingTimer_ = setTimeout(function() {
-    this.transitionToWaitingTimer_ = null;
-    this.miniVideo_.src = '';
-    this.remoteVideo_.src = '';
-  }.bind(this), 800);
+  if (!this.remoteVideoResetTimer_) {
+    this.remoteVideoResetTimer_ = setTimeout(function() {
+      this.remoteVideoResetTimer_ = null;
+      trace('Resetting remoteVideo src after transitioning to waiting.');
+      this.remoteVideo_.src = '';
+    }.bind(this), 800);
+  }
+
   // Set localVideo.src now so that the local stream won't be lost if the call
   // is restarted before the timeout.
   this.localVideo_.src = this.miniVideo_.src;
