@@ -216,7 +216,7 @@ input[type=text] {
   color: #fff;
   padding:.4em 0;
   margin-right: 20px;
-  min-width: 40em;
+  width: 100%;
   display: block;
 }
 
@@ -229,7 +229,7 @@ input[type="text"].invalid {
   border-bottom: solid 2px #F44336;
 }
 
-label.errorLabel {
+label.error-label {
   color: #F44336;
   font-size: .85em;
   font-weight: 200;
@@ -251,7 +251,8 @@ h1 {
 }
 
 div#room-selection {
-  margin: 0 auto 0 auto;
+  margin: 3em auto 0 auto;
+  width: 25em;
   padding: 1em 1.5em 1.3em 1.5em;
 }
 
