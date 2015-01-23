@@ -4,6 +4,7 @@ import unittest
 import webtest
 
 import apprtc
+import constants
 import json
 from google.appengine.api import memcache
 from google.appengine.ext import testbed
@@ -53,7 +54,7 @@ class AppRtcPageHandlerTest(unittest.TestCase):
     self.assertEqual(response.status_int, 200)
     response_json = json.loads(response.body)
 
-    self.assertEqual('SUCCESS', response_json['result'])
+    self.assertEqual(constants.RESPONSE_SUCCESS, response_json['result'])
     params = response_json['params']
     caller_id = params['client_id']
     self.assertTrue(len(caller_id) > 0)
@@ -86,7 +87,7 @@ class AppRtcPageHandlerTest(unittest.TestCase):
     response = self.makePostRequest('/join/' + room_id)
     self.assertEqual(response.status_int, 200)
     response_json = json.loads(response.body)
-    self.assertEqual('FULL', response_json['result'])
+    self.assertEqual(constants.RESPONSE_ROOM_FULL, response_json['result'])
 
     # The caller and the callee leave.
     self.makePostRequest('/leave/' + room_id + '/' + caller_id)
@@ -107,7 +108,7 @@ class AppRtcPageHandlerTest(unittest.TestCase):
     for msg in messages:
       response = self.makePostRequest(path, msg)
       response_json = json.loads(response.body)
-      self.assertEqual('SUCCESS', response_json['result'])
+      self.assertEqual(constants.RESPONSE_SUCCESS, response_json['result'])
 
     response = self.makePostRequest('/join/' + room_id)
     callee_id = self.verifyJoinSuccessResponse(response, False, room_id)

@@ -9,6 +9,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 
 import cgi
 import constants
+import gcm_register
 import logging
 import os
 import random
@@ -347,7 +348,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       # 'set' and another 'gets' are needed for CAS to work.
       if not memcache_client.set(key, Room()):
         logging.warning('memcache.Client.set failed for key ' + key)
-        error = constants.RESPONSE_ERROR
+        error = constants.RESPONSE_INTERNAL_ERROR
         break
       room = memcache_client.gets(key)
 
@@ -415,7 +416,7 @@ def save_message_from_client(host, room_id, client_id, message):
   try:
       text = message.encode(encoding='utf-8', errors='strict')
   except Exception as e:
-    return {'error': constants.RESPONSE_ERROR, 'saved': False}
+    return {'error': constants.RESPONSE_INVALID_ARGUMENT, 'saved': False}
 
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
@@ -559,6 +560,7 @@ class ParamsPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/bind/(\w+)', gcm_register.BindPage),
     ('/leave/(\w+)/(\w+)', LeavePage),
     ('/message/(\w+)/(\w+)', MessagePage),
     ('/join/(\w+)', JoinPage),
