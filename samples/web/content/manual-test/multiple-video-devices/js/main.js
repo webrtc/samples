@@ -31,13 +31,13 @@ function getSources_() {
 }
 
 function requestVideo_(id) {
-  getUserMedia( {
-      video: { optional: [ { sourceId: id } ] },
-      audio: false},
-      function(stream) {
-         getUserMediaOkCallback_(stream);
-      },
-      getUserMediaFailedCallback_);
+  getUserMedia({
+    video: {optional: [{sourceId: id}]},
+    audio: false},
+    function(stream) {
+      getUserMediaOkCallback_(stream);
+    },
+    getUserMediaFailedCallback_);
 }
 
 function getUserMediaFailedCallback_(error) {
