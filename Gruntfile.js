@@ -148,7 +148,8 @@ module.exports = function(grunt) {
         },
         options: {
           'compilation_level': 'WHITESPACE_ONLY',
-          'language_in': 'ECMASCRIPT5'
+          'language_in': 'ECMASCRIPT5',
+          'formatting': 'PRETTY_PRINT'
         },
       },
     },
