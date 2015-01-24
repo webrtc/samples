@@ -12,6 +12,7 @@ import constants
 import datetime
 import json
 import logging
+import util
 import webapp2
 
 from google.appengine.ext import ndb
@@ -26,55 +27,15 @@ PARAM_OLD_GCM_ID = 'oldGcmId'
 PARAM_NEW_GCM_ID = 'newGcmId'
 PARAM_USER_ID_LIST = 'userIdList'
 
-def has_msg_field(msg, field, field_type):
-  """Checks if |field| is a key in the |msg| dictionary with a value with type
-  |field_type|.
-
-  Returns True if key exists and its value is of type |field_type| and
-  non-empty if it is an Iterable.
-  """
-  return msg and field in msg and \
-      isinstance(msg[field], field_type) and \
-      (not isinstance(msg[field], collections.Iterable) or \
-       len(msg[field]) > 0)
-
-def has_msg_fields(msg, fields):
-  """Checks if all the (|field|, |field_type|) items in |fields| are valid in
-  the |msg| dictionary.
-
-  Returns True if all keys exist and their values are non-empty if they are
-  Iterable.
-  """
-  return reduce(lambda x, y: x and y,
-                map(lambda x: has_msg_field(msg, x[0], x[1]), fields))
-
 class BindPage(webapp2.RequestHandler):
-  def get_message_from_json(self):
-    """Parses JSON from request body.
-
-    Returns parsed JSON object if JSON is valid and the represented object is a
-    dictionary, otherwise returns None.
-    """
-    try:
-      message = json.loads(self.request.body)
-      if isinstance(message, dict):
-        return message
-      logging.warning('Expected dictionary message'
-          + ', request=' + self.request.body)
-      return None
-    except Exception as e:
-      logging.warning('JSON load error from BindPage: error=' + str(e)
-          + ', request=' + self.request.body)
-      return None
-
   def handle_new(self):
     """Handles a new registration for a user id and gcm id pair.
 
     The gcm id is associated with the user id in the datastore together with a
     newly generated verification code.
     """
-    msg = self.get_message_from_json()
-    if has_msg_fields(msg, ((PARAM_USER_ID, basestring),
+    msg = util.get_message_from_json(self.request.body)
+    if util.has_msg_fields(msg, ((PARAM_USER_ID, basestring),
         (PARAM_GCM_ID, basestring))):
       # TODO(jiayl): validate the input, generate a random code, and send SMS.
       self.response.out.write(GCMRecord.add_or_update(
@@ -88,8 +49,8 @@ class BindPage(webapp2.RequestHandler):
     The gcm id previously associated with the user id is replaced with the new
     gcm id in the datastore.
     """
-    msg = self.get_message_from_json()
-    if has_msg_fields(msg, ((PARAM_USER_ID, basestring),
+    msg = util.get_message_from_json(self.request.body)
+    if util.has_msg_fields(msg, ((PARAM_USER_ID, basestring),
         (PARAM_OLD_GCM_ID, basestring), (PARAM_NEW_GCM_ID, basestring))):
       self.response.out.write(GCMRecord.update_gcm_id(
           msg[PARAM_USER_ID], msg[PARAM_OLD_GCM_ID], msg[PARAM_NEW_GCM_ID]))
@@ -102,8 +63,8 @@ class BindPage(webapp2.RequestHandler):
     Marks a registration as verified if the supplied code matches the previously
     generated code stored in the datastore.
     """
-    msg = self.get_message_from_json()
-    if has_msg_fields(msg, ((PARAM_USER_ID, basestring),
+    msg = util.get_message_from_json(self.request.body)
+    if util.has_msg_fields(msg, ((PARAM_USER_ID, basestring),
         (PARAM_GCM_ID, basestring), (PARAM_CODE, basestring))):
       self.response.out.write(GCMRecord.verify(
           msg[PARAM_USER_ID], msg[PARAM_GCM_ID], msg[PARAM_CODE]))
@@ -116,8 +77,8 @@ class BindPage(webapp2.RequestHandler):
     Responds with a list containing the subset of the user ids in the query
     that have at least one verified gcm id associated with it.
     """
-    msg = self.get_message_from_json()
-    if has_msg_field(msg, PARAM_USER_ID_LIST, list):
+    msg = util.get_message_from_json(self.request.body)
+    if util.has_msg_field(msg, PARAM_USER_ID_LIST, list):
       result = []
       for id in msg[PARAM_USER_ID_LIST]:
         # TODO(jiayl): Only return the verified users when SMS verification is
@@ -133,8 +94,8 @@ class BindPage(webapp2.RequestHandler):
 
     Removes the supplied registration from the datastore.
     """
-    msg = self.get_message_from_json()
-    if has_msg_fields(msg, ((PARAM_USER_ID, basestring),
+    msg = util.get_message_from_json(self.request.body)
+    if util.has_msg_fields(msg, ((PARAM_USER_ID, basestring),
         (PARAM_GCM_ID, basestring))):
       GCMRecord.remove(msg[PARAM_USER_ID], msg[PARAM_GCM_ID])
       self.response.out.write(constants.RESPONSE_SUCCESS)
