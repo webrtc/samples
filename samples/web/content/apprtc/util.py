@@ -20,7 +20,7 @@ def has_msg_field(msg, field, field_type):
   Returns True if key exists and its value is of type |field_type| and
   non-empty if it is an Iterable.
   """
-  return msg and field in msg and \
+  return msg != None and field in msg and \
       isinstance(msg[field], field_type) and \
       (not isinstance(msg[field], collections.Iterable) or \
        len(msg[field]) > 0)

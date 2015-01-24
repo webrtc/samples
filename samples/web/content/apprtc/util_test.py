@@ -43,6 +43,12 @@ class UtilTest(unittest.TestCase):
     self.assertEqual(
         True,
         util.has_msg_field(testObject, "g", dict))
+    self.assertEqual(
+        False,
+        util.has_msg_field(testObject, "h", dict))
+    self.assertEqual(
+        False,
+        util.has_msg_field(None, "a", dict))
 
   def testHasMsgFields(self):
     testObject = {
