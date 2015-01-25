@@ -56,7 +56,6 @@ module.exports = function(grunt) {
         'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
         'samples/web/content/testrtc/bower_components/**',
         // TODO (chuckhays) : remove these exclusions after code passes.
-        'samples/web/content/testrtc/**/*.js',
         'samples/web/content/getusermedia/**/*.js',
         'samples/web/content/peerconnection/**/*.js',
         'samples/web/content/datachannel/**/*.js'
@@ -149,7 +148,8 @@ module.exports = function(grunt) {
         },
         options: {
           'compilation_level': 'WHITESPACE_ONLY',
-          'language_in': 'ECMASCRIPT5'
+          'language_in': 'ECMASCRIPT5',
+          'formatting': 'PRETTY_PRINT'
         },
       },
     },

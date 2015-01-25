@@ -21,6 +21,8 @@ var RoomSelection = function(roomSelectionDiv,
 
   this.roomIdInput_ = this.roomSelectionDiv_.querySelector(
       uiConstants.roomSelectionInput);
+  this.roomIdInputLabel_ = this.roomSelectionDiv_.querySelector(
+      uiConstants.roomSelectionInputLabel);
   this.roomJoinButton_ = this.roomSelectionDiv_.querySelector(
       uiConstants.roomSelectionJoinButton);
   this.roomRandomButton_ = this.roomSelectionDiv_.querySelector(
@@ -83,13 +85,18 @@ RoomSelection.prototype.onRoomIdInput_ = function() {
   valid = valid && re.exec(room);
   if (valid) {
     this.roomJoinButton_.disabled = false;
+    this.roomIdInput_.classList.remove('invalid');
+    this.roomIdInputLabel_.classList.add('hidden');
   } else {
     this.roomJoinButton_.disabled = true;
+    this.roomIdInput_.classList.add('invalid');
+    this.roomIdInputLabel_.classList.remove('hidden');
   }
 };
 
 RoomSelection.prototype.onRandomButton_ = function() {
   this.roomIdInput_.value = randomString(9);
+  this.onRoomIdInput_();
 };
 
 RoomSelection.prototype.onJoinButton_ = function() {

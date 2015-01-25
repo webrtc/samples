@@ -49,7 +49,7 @@ class AppRtcPageHandlerTest(unittest.TestCase):
   def makePostRequest(self, path, body=''):
     return self.test_app.post(path, body, headers={'User-Agent': 'Safari'})
 
-  def verifyRegisterSuccessResponse(self, response, is_initiator, room_id):
+  def verifyJoinSuccessResponse(self, response, is_initiator, room_id):
     self.assertEqual(response.status_int, 200)
     response_json = json.loads(response.body)
 
@@ -71,36 +71,36 @@ class AppRtcPageHandlerTest(unittest.TestCase):
     response = self.makeGetRequest('/r/testRoom')
     self.assertEqual(response.status_int, 200)
     self.assertRegexpMatches(response.body, 'roomId: \'testRoom\'')
-    
-  def testRegisterAndBye(self):
-    room_id = 'foo'
-    # Register the caller.
-    response = self.makePostRequest('/register/' + room_id)
-    caller_id = self.verifyRegisterSuccessResponse(response, True, room_id)
 
-    # Register the callee.
-    response = self.makePostRequest('/register/' + room_id)
-    callee_id = self.verifyRegisterSuccessResponse(response, False, room_id)
+  def testJoinAndLeave(self):
+    room_id = 'foo'
+    # Join the caller.
+    response = self.makePostRequest('/join/' + room_id)
+    caller_id = self.verifyJoinSuccessResponse(response, True, room_id)
+
+    # Join the callee.
+    response = self.makePostRequest('/join/' + room_id)
+    callee_id = self.verifyJoinSuccessResponse(response, False, room_id)
 
     # The third user will get an error.
-    response = self.makePostRequest('/register/' + room_id)
+    response = self.makePostRequest('/join/' + room_id)
     self.assertEqual(response.status_int, 200)
     response_json = json.loads(response.body)
     self.assertEqual('FULL', response_json['result'])
 
     # The caller and the callee leave.
-    self.makePostRequest('/bye/' + room_id + '/' + caller_id)
-    self.makePostRequest('/bye/' + room_id + '/' + callee_id)
+    self.makePostRequest('/leave/' + room_id + '/' + caller_id)
+    self.makePostRequest('/leave/' + room_id + '/' + callee_id)
     # Another user becomes the new caller.
-    response = self.makePostRequest('/register/' + room_id)
-    caller_id = self.verifyRegisterSuccessResponse(response, True, room_id)
-    self.makePostRequest('/bye/' + room_id + '/' + caller_id)
+    response = self.makePostRequest('/join/' + room_id)
+    caller_id = self.verifyJoinSuccessResponse(response, True, room_id)
+    self.makePostRequest('/leave/' + room_id + '/' + caller_id)
 
   def testCallerMessagesForwardedToCallee(self):
     room_id = 'foo'
-    # Register the caller.
-    response = self.makePostRequest('/register/' + room_id)
-    caller_id = self.verifyRegisterSuccessResponse(response, True, room_id)
+    # Join the caller.
+    response = self.makePostRequest('/join/' + room_id)
+    caller_id = self.verifyJoinSuccessResponse(response, True, room_id)
     # Caller's messages should be saved.
     messages = ['1', '2', '3']
     path = '/message/' + room_id + '/' + caller_id
@@ -109,13 +109,13 @@ class AppRtcPageHandlerTest(unittest.TestCase):
       response_json = json.loads(response.body)
       self.assertEqual('SUCCESS', response_json['result'])
 
-    response = self.makePostRequest('/register/' + room_id)
-    callee_id = self.verifyRegisterSuccessResponse(response, False, room_id)
+    response = self.makePostRequest('/join/' + room_id)
+    callee_id = self.verifyJoinSuccessResponse(response, False, room_id)
     received_msgs = json.loads(response.body)['params']['messages']
     self.assertEqual(messages, received_msgs)
 
-    self.makePostRequest('/bye/' + room_id + '/' + caller_id)
-    self.makePostRequest('/bye/' + room_id + '/' + callee_id)
+    self.makePostRequest('/leave/' + room_id + '/' + caller_id)
+    self.makePostRequest('/leave/' + room_id + '/' + callee_id)
 
 if __name__ == '__main__':
   unittest.main()

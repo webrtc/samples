@@ -130,7 +130,9 @@ loop:
 	for {
 		err := websocket.JSON.Receive(ws, &msg)
 		if err != nil {
-			c.wsError("websocket.JSON.Receive error: "+err.Error(), ws)
+			if err.Error() != "EOF" {
+				c.wsError("websocket.JSON.Receive error: "+err.Error(), ws)
+			}
 			break
 		}
 
