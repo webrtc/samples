@@ -181,6 +181,7 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
   var delays = [];
   var recvTimeStamps = [];
   var call = new Call(config);
+  var chart = createLineChart();
   call.setIceCandidateFilter(candidateFilter);
 
   var senderChannel = call.pc1.createDataChannel({ordered: false,
@@ -207,6 +208,7 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
     var delay = Date.now() - sendTime;
     recvTimeStamps.push(sendTime);
     delays.push(delay);
+    chart.addDatapoint(sendTime + delay, delay);
   }
 
   function finishTest() {
@@ -214,6 +216,7 @@ function testForWiFiPeriodicScan(candidateFilter, config) {
         recvTimeStamps: recvTimeStamps});
     running = false;
     call.close();
+    chart.parentElement.removeChild(chart);
 
     var avg = arrayAverage(delays);
     var max = arrayMax(delays);
