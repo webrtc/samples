@@ -27,6 +27,9 @@ RoomSelectionTest.prototype.setUp = function() {
   this.inputBox_.id = UI_CONSTANTS.roomSelectionInput.substring(1);
   this.inputBox_.type = 'text';
 
+  this.inputBoxLabel_ = document.createElement('label');
+  this.inputBoxLabel_.id = UI_CONSTANTS.roomSelectionInputLabel.substring(1);
+
   this.randomButton_ = document.createElement('button');
   this.randomButton_.id = UI_CONSTANTS.roomSelectionRandomButton.substring(1);
 
@@ -37,6 +40,7 @@ RoomSelectionTest.prototype.setUp = function() {
   this.recentList_.id = UI_CONSTANTS.roomSelectionRecentList.substring(1);
 
   this.targetDiv_.appendChild(this.inputBox_);
+  this.targetDiv_.appendChild(this.inputBoxLabel_);
   this.targetDiv_.appendChild(this.randomButton_);
   this.targetDiv_.appendChild(this.joinButton_);
   this.targetDiv_.appendChild(this.recentList_);

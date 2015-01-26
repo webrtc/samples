@@ -22,6 +22,7 @@
     "Call": true,
     "createIceServers": true,
     "createIceServer": true,
+    "createLineChart": true,
     "doGetUserMedia": true,
     "expectEquals": true,
     "getUserMedia": true,

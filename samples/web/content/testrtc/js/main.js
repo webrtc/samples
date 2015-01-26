@@ -7,7 +7,7 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* exported addExplicitTest, addTest, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
+/* exported addExplicitTest, addTest, createLineChart, doGetUserMedia, reportInfo, expectEquals, testFinished, start, setTestProgress, audioContext, reportSuccess, reportError, settingsDialog, setTimeoutWithProgressBar */
 'use strict';
 
 // Global WebAudio context that can be shared by all tests.
@@ -265,6 +265,10 @@ function expectEquals() { currentTest.expectEquals.apply(currentTest,
                                                          arguments); }
 
 function addTest(suiteName, testName, func) {
+  if (testIsDisabled(testName)) {
+    return;
+  }
+
   for (var i = 0; i !== testSuites.length; ++i) {
     if (testSuites[i].name === suiteName) {
       testSuites[i].addTest(testName, func);
@@ -407,6 +411,13 @@ function getVideoDeviceName_(stream) {
     return null;
   }
   return stream.getVideoTracks()[0].label;
+}
+
+function createLineChart() {
+  var chart = document.createElement('line-chart');
+  currentTest.output_.appendChild(chart);
+  currentTest.output_.opened = true;
+  return chart;
 }
 
 function setTimeoutWithProgressBar(timeoutCallback, timeoutMs) {
