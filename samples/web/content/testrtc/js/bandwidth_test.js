@@ -166,11 +166,11 @@ function testVideoBandwidth(config) {
   }
 }
 
-addExplicitTest('Connectivity', 'WiFi Periodic Scan',
+addExplicitTest('Connectivity', 'Network Latency',
   Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null,
       Call.isNotHostCandidate), reportFatal));
 
-addExplicitTest('Connectivity', 'WiFi Periodic Scan - Relay',
+addExplicitTest('Connectivity', 'Network Latency - Relay',
   Call.asyncCreateTurnConfig.bind(null, testForWiFiPeriodicScan.bind(null,
       Call.isRelay), reportFatal));
 

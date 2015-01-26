@@ -265,6 +265,10 @@ function expectEquals() { currentTest.expectEquals.apply(currentTest,
                                                          arguments); }
 
 function addTest(suiteName, testName, func) {
+  if (testIsDisabled(testName)) {
+    return;
+  }
+
   for (var i = 0; i !== testSuites.length; ++i) {
     if (testSuites[i].name === suiteName) {
       testSuites[i].addTest(testName, func);
