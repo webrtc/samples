@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals trace, InfoBox, setUpFullScreen, isFullScreen,
-   RoomSelection, isChromeApp */
+   RoomSelection, isChromeApp, $ */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -20,17 +20,17 @@ var remoteVideo = $('#remote-video');
 
 // Keep this in sync with the HTML element id attributes. Keep it sorted.
 var UI_CONSTANTS = {
+  confirmJoinButton: '#confirm-join-button',
+  confirmJoinDiv: '#confirm-join-div',
+  confirmJoinRoomSpan: '#confirm-join-room-span',
   fullscreenSvg: '#fullscreen',
-
   hangupSvg: '#hangup',
   icons: '#icons',
   infoDiv: '#info-div',
   localVideo: '#local-video',
   miniVideo: '#mini-video',
-
   muteAudioSvg: '#mute-audio',
   muteVideoSvg: '#mute-video',
-
   remoteVideo: '#remote-video',
   roomLinkHref: '#room-link-href',
   roomSelectionDiv: '#room-selection',
@@ -94,7 +94,7 @@ var AppController = function(loadingParams) {
     this.remoteVideoResetTimer_ = null;
 
     var roomErrors = this.loadingParams_.errorMessages;
-    if (roomErrors.length > 0) {
+    if (roomErrors && roomErrors.length > 0) {
       for (var i = 0; i < roomErrors.length; ++i) {
         this.infoBox_.pushErrorMessage(roomErrors[i]);
       }
@@ -119,13 +119,25 @@ var AppController = function(loadingParams) {
     this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 
     this.roomSelection_ = null;
-    // If the params has a roomId specified, we should connect to that room immediately.
-    // If not, show the room selection UI.
+    this.localStream_ = null;
+
+    // If the params has a roomId specified, we should connect to that room
+    // immediately. If not, show the room selection UI.
     if (this.loadingParams_.roomId) {
-      // Record this room in the recently used list.
-      var recentlyUsedList = new RoomSelection.RecentlyUsedList();
-      recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
-      this.finishCallSetup_(this.loadingParams_.roomId);
+      // Ask the user to confirm.
+      $(UI_CONSTANTS.confirmJoinRoomSpan).textContent =
+          this.loadingParams_.roomId;
+      var confirmJoinDiv = $(UI_CONSTANTS.confirmJoinDiv);
+      this.show_(confirmJoinDiv);
+
+      $(UI_CONSTANTS.confirmJoinButton).onclick = function() {
+        this.hide_(confirmJoinDiv);
+
+        // Record this room in the recently used list.
+        var recentlyUsedList = new RoomSelection.RecentlyUsedList();
+        recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
+        this.finishCallSetup_(this.loadingParams_.roomId);
+      }.bind(this);
     } else {
       // Display the room selection UI.
       var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
@@ -134,6 +146,11 @@ var AppController = function(loadingParams) {
       this.roomSelection_.onRoomSelected = function(roomName) {
         this.hide_(roomSelectionDiv);
         this.finishCallSetup_(roomName);
+
+        this.roomSelection_ = null;
+        if (this.localStream_) {
+          this.attachLocalStream_();
+        }
       }.bind(this);
     }
   }.bind(this)).catch(function(error) {
@@ -224,8 +241,16 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
 
 AppController.prototype.onLocalStreamAdded_ = function(stream) {
   trace('User has granted access to local media.');
+  this.localStream_ = stream;
+
+  if (!this.roomSelection_) {
+    this.attachLocalStream_();
+  }
+};
+
+AppController.prototype.attachLocalStream_ = function() {
   // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(this.localVideo_, stream);
+  attachMediaStream(this.localVideo_, this.localStream_);
 
   this.displayStatus_('');
   this.activate_(this.localVideo_);
@@ -378,10 +403,6 @@ AppController.prototype.toggleFullScreen_ = function() {
   }
   this.fullscreenIconSet_.toggle();
 };
-
-function $(selector) {
-  return document.querySelector(selector);
-}
 
 AppController.prototype.hide_ = function(element) {
   element.classList.add('hidden');

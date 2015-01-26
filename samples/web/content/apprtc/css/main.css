@@ -165,6 +165,19 @@ label {
   z-index: 1;
 }
 
+#confirm-join-div {
+  z-index: 5;
+  position: absolute;
+  top: 80%;
+  width: 100%;
+  text-align: center;
+}
+
+#confirm-join-div div {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
 /*////// room selection start ///////////////////*/
 #recent-rooms-list {
   list-style-type: none;

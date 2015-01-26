@@ -39,6 +39,9 @@ var Call = function(params) {
   this.onremotestreamadded = null;
   this.onsignalingstatechange = null;
   this.onstatusmessage = null;
+
+  this.getMediaPromise_ = this.maybeGetMedia_();
+  this.getTurnServersPromise_ = this.maybeGetTurnServers_();
 };
 
 Call.prototype.isInitiator = function() {
@@ -46,9 +49,7 @@ Call.prototype.isInitiator = function() {
 };
 
 Call.prototype.start = function(roomId) {
-  this.connectToRoom_(roomId,
-                      this.maybeGetMedia_(),
-                      this.maybeGetTurnServers_());
+  this.connectToRoom_(roomId);
   if (this.params_.isLoopback) {
     setupLoopback(this.params_.wssUrl, roomId);
   }
@@ -152,7 +153,7 @@ Call.prototype.toggleAudioMute = function() {
 // tasks is complete, the signaling process begins. At the same time, a
 // WebSocket connection is opened using |wss_url| followed by a subsequent
 // registration once GAE registration completes.
-Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
+Call.prototype.connectToRoom_ = function(roomId) {
   this.params_.roomId = roomId;
   // Asynchronously open a WebSocket connection to WSS.
   // TODO(jiayl): We don't need to wait for the signaling channel to open before
@@ -191,11 +192,12 @@ Call.prototype.connectToRoom_ = function(roomId, mediaPromise, turnPromise) {
     // and have media and TURN. Since we send candidates as soon as the peer
     // connection generates them we need to wait for the signaling channel to be
     // ready.
-    Promise.all([turnPromise, mediaPromise]).then(function() {
-      this.startSignaling_();
-    }.bind(this)).catch(function(error) {
-      this.onError_('Failed to start signaling: ' + error.message);
-    }.bind(this));
+    Promise.all([this.getTurnServersPromise_, this.getMediaPromise_])
+        .then(function() {
+          this.startSignaling_();
+        }.bind(this)).catch(function(error) {
+          this.onError_('Failed to start signaling: ' + error.message);
+        }.bind(this));
   }.bind(this)).catch(function(error) {
     this.onError_('WebSocket register error: ' + error.message);
   }.bind(this));
