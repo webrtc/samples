@@ -6,6 +6,7 @@ import webtest
 import apprtc
 import constants
 import gcm_register
+import gcmrecord
 import json
 from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import ndb
@@ -50,9 +51,9 @@ class BindPageHandlerTest(unittest.TestCase):
     response = self.makePostRequest('/bind/new', json.dumps(body))
     self.assertEqual(constants.RESPONSE_CODE_RESENT, response.body)
 
-    q = gcm_register.GCMRecord.query(ancestor=gcm_register.get_ancestor_key())
+    q = gcmrecord.GCMRecord.query(ancestor=gcmrecord.get_ancestor_key())
     records = q.fetch()
-    gcm_register.GCMRecord.verify(body[gcm_register.PARAM_USER_ID],
+    gcmrecord.GCMRecord.verify(body[gcm_register.PARAM_USER_ID],
                                   body[gcm_register.PARAM_GCM_ID],
                                   records[0].code)
     response = self.makePostRequest('/bind/new', json.dumps(body))
@@ -65,7 +66,7 @@ class BindPageHandlerTest(unittest.TestCase):
       gcm_register.PARAM_GCM_ID: 'bar'
     }
     self.makePostRequest('/bind/new', json.dumps(body))
-    q = gcm_register.GCMRecord.query(ancestor=gcm_register.get_ancestor_key())
+    q = gcmrecord.GCMRecord.query(ancestor=gcmrecord.get_ancestor_key())
     records = q.fetch()
 
     body[gcm_register.PARAM_CODE] = 'wrong'
@@ -94,7 +95,7 @@ class BindPageHandlerTest(unittest.TestCase):
     response = self.makePostRequest('/bind/update', json.dumps(request_2))
     self.assertEqual(constants.RESPONSE_INVALID_STATE, response.body)
 
-    q = gcm_register.GCMRecord.query(ancestor=gcm_register.get_ancestor_key())
+    q = gcmrecord.GCMRecord.query(ancestor=gcmrecord.get_ancestor_key())
     records = q.fetch()
     request_1[gcm_register.PARAM_CODE] = records[0].code
     self.makePostRequest('/bind/verify', json.dumps(request_1))
@@ -118,7 +119,7 @@ class BindPageHandlerTest(unittest.TestCase):
     }
     self.makePostRequest('/bind/new', json.dumps(body))
     self.makePostRequest('/bind/del', json.dumps(body))
-    q = gcm_register.GCMRecord.query(ancestor=gcm_register.get_ancestor_key())
+    q = gcmrecord.GCMRecord.query(ancestor=gcmrecord.get_ancestor_key())
     records = q.fetch()
     self.assertEqual(0, len(records))
     self.checkInvalidRequests('/bind/del', body.keys())
