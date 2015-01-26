@@ -15,7 +15,3 @@ html /deep/ paper-dialog,
 html /deep/ paper-action-dialog {
   top: 2em;
 }
-
-html /deep/ #bug-report {
-  overflow: hidden;
-}
