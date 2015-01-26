@@ -93,7 +93,7 @@ CamResolutionsTest.prototype = {
     call.establishConnection();
     this.collectStatsStartTime = Date.now();
     call.gatherStats(call.pc1, this.analyzeStats_.bind(this),
-                     this.encoderSetupTime_.bind(this), 1000);
+                     this.encoderSetupTime_.bind(this), 100);
     setTimeoutWithProgressBar(function() {
       call.close();
       stream.getVideoTracks()[0].stop();
