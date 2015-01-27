@@ -47,6 +47,10 @@ var RoomSelection = function(roomSelectionDiv,
   this.startBuildingRecentRoomList_();
 };
 
+RoomSelection.matchRandomRoomPattern = function(input) {
+  return input.match(/^\d{9}$/) !== null;
+};
+
 RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
   this.recentlyUsedList_.getRecentRooms().then(function(recentRooms) {
     this.buildRecentRoomList_(recentRooms);

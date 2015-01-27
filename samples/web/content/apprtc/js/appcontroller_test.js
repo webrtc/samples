@@ -19,6 +19,9 @@ MockRoomSelection.RecentlyUsedList = function() {
     pushRecentRoom: function() {}
   };
 };
+MockRoomSelection.matchRandomRoomPattern = function() {
+  return false;
+};
 
 var MockCall = function() {};
 MockCall.prototype.start = function() {};
@@ -58,7 +61,7 @@ AppControllerTest.prototype.testConfirmToJoin = function() {
 
   // Verifies that the confirm-to-join UI is visible and the text matches the
   // room.
-  assertEquals(this.loadingParams_.roomId,
+  assertEquals(' "' + this.loadingParams_.roomId + '"',
                $(UI_CONSTANTS.confirmJoinRoomSpan).textContent);
   assertFalse($(UI_CONSTANTS.confirmJoinDiv).classList.contains('hidden'));
 

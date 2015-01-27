@@ -84,49 +84,21 @@ var AppController = function(loadingParams) {
       }.bind(this));
     }
 
-    // Proceed with call set up.
     this.roomLink_ = '';
-
-    this.call_ = new Call(this.loadingParams_);
-    this.infoBox_ =
-        new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
-
-    this.remoteVideoResetTimer_ = null;
-
-    var roomErrors = this.loadingParams_.errorMessages;
-    if (roomErrors && roomErrors.length > 0) {
-      for (var i = 0; i < roomErrors.length; ++i) {
-        this.infoBox_.pushErrorMessage(roomErrors[i]);
-      }
-      return;
-    }
-
-    // TODO(jiayl): replace callbacks with events.
-    this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
-    this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
-    this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
-    this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
-
-    this.call_.onsignalingstatechange =
-        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-    this.call_.oniceconnectionstatechange =
-        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-    this.call_.onnewicecandidate =
-        this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
-
-    this.call_.onerror = this.displayError_.bind(this);
-    this.call_.onstatusmessage = this.displayStatus_.bind(this);
-    this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
-
     this.roomSelection_ = null;
     this.localStream_ = null;
 
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
     if (this.loadingParams_.roomId) {
+      this.createCall_();
+
       // Ask the user to confirm.
-      $(UI_CONSTANTS.confirmJoinRoomSpan).textContent =
-          this.loadingParams_.roomId;
+      if (!RoomSelection.matchRandomRoomPattern(this.loadingParams_.roomId)) {
+        // Show the room name only if it does not match the random room pattern.
+        $(UI_CONSTANTS.confirmJoinRoomSpan).textContent = ' "' +
+            this.loadingParams_.roomId + '"';
+      }
       var confirmJoinDiv = $(UI_CONSTANTS.confirmJoinDiv);
       this.show_(confirmJoinDiv);
 
@@ -145,6 +117,7 @@ var AppController = function(loadingParams) {
       this.show_(roomSelectionDiv);
       this.roomSelection_.onRoomSelected = function(roomName) {
         this.hide_(roomSelectionDiv);
+        this.createCall_();
         this.finishCallSetup_(roomName);
 
         this.roomSelection_ = null;
@@ -156,6 +129,39 @@ var AppController = function(loadingParams) {
   }.bind(this)).catch(function(error) {
     trace('Error initializing: ' + error.message);
   }.bind(this));
+};
+
+AppController.prototype.createCall_ = function() {
+  this.call_ = new Call(this.loadingParams_);
+  this.infoBox_ =
+      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
+
+  this.remoteVideoResetTimer_ = null;
+
+  var roomErrors = this.loadingParams_.errorMessages;
+  if (roomErrors && roomErrors.length > 0) {
+    for (var i = 0; i < roomErrors.length; ++i) {
+      this.infoBox_.pushErrorMessage(roomErrors[i]);
+    }
+    return;
+  }
+
+  // TODO(jiayl): replace callbacks with events.
+  this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
+  this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
+  this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
+  this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
+
+  this.call_.onsignalingstatechange =
+      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+  this.call_.oniceconnectionstatechange =
+      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+  this.call_.onnewicecandidate =
+      this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+
+  this.call_.onerror = this.displayError_.bind(this);
+  this.call_.onstatusmessage = this.displayStatus_.bind(this);
+  this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
 };
 
 AppController.prototype.finishCallSetup_ = function(roomId) {

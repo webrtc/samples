@@ -162,6 +162,25 @@ RoomSelectionTest.prototype.testMakeClickHandler = function(queue) {
   });
 };
 
+RoomSelectionTest.prototype.testMatchRandomRoomPattern = function() {
+  var testCases = [
+    'abcdefghi',
+    '1abcdefgh',
+    '1abcdefg1',
+    '12345678',
+    '12345678a',
+    'a12345678',
+    '123456789'
+  ];
+  var expected = [
+    false, false, false, false, false, false, true
+  ];
+  for (var i = 0; i < testCases.length; ++i) {
+    assertEquals(expected[i],
+                 RoomSelection.matchRandomRoomPattern(testCases[i]));
+  }
+};
+
 var RecentlyUsedListTest = new AsyncTestCase('RecentlyUsedListTest');
 
 RecentlyUsedListTest.prototype.setUp = function() {
