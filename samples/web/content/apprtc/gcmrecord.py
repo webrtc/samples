@@ -28,19 +28,27 @@ class GCMRecord(ndb.Model):
   last_modified_time = ndb.DateTimeProperty()
 
   @classmethod
-  def get_by_user_id(cls, user_id):
-    q = GCMRecord.query(ancestor=get_ancestor_key())
-    return q.filter(GCMRecord.user_id == user_id).fetch()
+  def get_by_user_id(cls, user_id, verified_only = False):
+    q = GCMRecord.query(ancestor=get_ancestor_key()) \
+        .filter(GCMRecord.user_id == user_id)
+    if verified_only:
+      q = q.filter(GCMRecord.verified == True)
+    return q.fetch()
 
   @classmethod
-  def get_by_gcm_id(cls, gcm_id):
-    q = GCMRecord.query(ancestor=get_ancestor_key())
-    return q.filter(GCMRecord.gcm_id == gcm_id).fetch()
+  def get_by_gcm_id(cls, gcm_id, verified_only = False):
+    q = GCMRecord.query(ancestor=get_ancestor_key()) \
+        .filter(GCMRecord.gcm_id == gcm_id)
+    if verified_only:
+      q = q.filter(GCMRecord.verified == True)
+    return q.fetch()
 
   @classmethod
-  def get_by_ids(cls, user_id, gcm_id):
+  def get_by_ids(cls, user_id, gcm_id, verified_only = False):
     q = GCMRecord.query(ancestor=get_ancestor_key()) \
         .filter(GCMRecord.user_id == user_id).filter(GCMRecord.gcm_id == gcm_id)
+    if verified_only:
+      q = q.filter(GCMRecord.verified == True)
     return q.fetch()
 
   @classmethod

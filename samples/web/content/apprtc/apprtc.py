@@ -9,6 +9,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 
 import cgi
 import constants
+import gcmrecord
 import gcm_register
 import logging
 import os
@@ -310,16 +311,36 @@ class Client:
     return '{%r, %d}' % (self.is_initiator, len(self.messages))
 
 class Room:
-  def __init__(self):
+  # Room used for simple named rooms, can be joined by knowing the room name.
+  TYPE_OPEN = 1
+  # Room used for direct calling, can only be joined by allowed clients.
+  TYPE_DIRECT = 2
+  
+  def __init__(self, room_type):
     self.clients = {}
+    # The list of allowed clients will include the initiator and other
+    # clients allowed to join the room. If no clients are added, no
+    # list is enforced, and is_client_allowed will always return true.
+    self.allowed_clients = None;
+    if room_type != Room.TYPE_OPEN and room_type != Room.TYPE_DIRECT:
+      room_type = Room.TYPE_OPEN
+    self.room_type = room_type
   def add_client(self, client_id, client):
     self.clients[client_id] = client
+  def add_allowed_client(self, client_id):
+    if self.allowed_clients is None:
+      self.allowed_clients = []
+    if client_id not in self.allowed_clients:
+      self.allowed_clients.append(client_id)
   def remove_client(self, client_id):
     del self.clients[client_id]
   def get_occupancy(self):
     return len(self.clients)
   def has_client(self, client_id):
     return client_id in self.clients
+  def is_client_allowed(self, client_id):
+    # If allowed_clients is None, don't enforce allowed_client list.
+    return self.allowed_clients is None or client_id in self.allowed_clients
   def get_client(self, client_id):
     return self.clients[client_id]
   def get_other_client(self, client_id):
@@ -333,7 +354,15 @@ class Room:
 def get_memcache_key_for_room(host, room_id):
   return '%s/%s' % (host, room_id)
 
-def add_client_to_room(host, room_id, client_id, is_loopback):
+def has_room(host, room_id):
+  key = get_memcache_key_for_room(host, room_id)
+  memcache_client = memcache.Client()
+  room = memcache_client.get(key)
+  return room is not None
+
+def add_client_to_room(host, room_id, client_id,
+    is_loopback, room_type, allowed_clients = None):
+  
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
   error = None
@@ -347,7 +376,7 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
     room = memcache_client.gets(key)
     if room is None:
       # 'set' and another 'gets' are needed for CAS to work.
-      if not memcache_client.set(key, Room()):
+      if not memcache_client.set(key, Room(room_type)):
         logging.warning('memcache.Client.set failed for key ' + key)
         error = constants.RESPONSE_INTERNAL_ERROR
         break
@@ -361,17 +390,33 @@ def add_client_to_room(host, room_id, client_id, is_loopback):
       error = constants.RESPONSE_DUPLICATE_CLIENT
       break
 
+    if room.room_type != room_type:
+      logging.warning('Room type did not match while adding client ' +
+          client_id + ' to room ' + room_id + ' room type is ' +
+          str(room.room_type) + ' requested room type is ' + str(room_type))
+      error = constants.RESPONSE_INVALID_ROOM
+      break
+
     if occupancy == 0:
       is_initiator = True
       room.add_client(client_id, Client(is_initiator))
       if is_loopback:
         room.add_client(constants.LOOPBACK_CLIENT_ID, Client(False))
+      if allowed_clients is not None:
+        for allowed_client in allowed_clients:
+          room.add_allowed_client(allowed_client)
     else:
       is_initiator = False
       other_client = room.get_other_client(client_id)
       messages = other_client.messages
       room.add_client(client_id, Client(is_initiator))
       other_client.clear_messages()
+      # Check if the callee was the callee intended by the caller.
+      if not room.is_client_allowed(client_id):
+        logging.warning('Client ' + client_id + ' not allowed in room ' + 
+            room_id + ' allowed clients: ' + ','.join(room.allowed_clients))
+        error = constants.RESPONSE_INVALID_ROOM
+        break;
 
     if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
       logging.info('Added client %s in room %s, retries = %d' \
@@ -495,16 +540,142 @@ class JoinPage(webapp2.RequestHandler):
       'result': result,
       'params': params
     }))
+    
+  def report_error(self, error):
+    self.write_response(error, {}, [])
 
   def write_room_parameters(self, room_id, client_id, messages, is_initiator):
     params = get_room_parameters(self.request, room_id, client_id, is_initiator)
     self.write_response('SUCCESS', params, messages)
+    
+  def handle_call(self, msg, room_id):
+    """Handles a new call request."""
+    if not util.has_msg_fields(msg, ((constants.PARAM_CALLER_GCM_ID, basestring),
+        (constants.PARAM_CALLEE_ID, basestring))):
+      self.report_error(constants.RESPONSE_INVALID_ARGUMENT)
+      return
+      
+    caller_gcm_id = msg[constants.PARAM_CALLER_GCM_ID]
+    callee_id = msg[constants.PARAM_CALLEE_ID]
+    # Look up and validate caller by gcm id.
+    # TODO (chuckhays): Once registration is enabled, turn on restriction
+    # to only return verified records.
+    caller_records = gcmrecord.GCMRecord.get_by_gcm_id(caller_gcm_id, False)
+    if len(caller_records) < 1:
+      self.report_error(constants.RESPONSE_INVALID_CALLER)
+      return
+    caller_id = caller_records[0].user_id
+    # Look up callee by id.
+    # TODO (chuckhays): Once registration is enabled, turn on restriction
+    # to only return verified records.
+    callee_records = gcmrecord.GCMRecord.get_by_user_id(callee_id, False)
+    if len(callee_records) < 1:
+      self.report_error(constants.RESPONSE_INVALID_CALLEE)
+      return
+
+    if has_room(self.request.host_url, room_id):
+      logging.warning('Room ' + room_id + ' already existed when trying to ' +
+          'initiate a new call. Caller gcm id: ' + caller_gcm_id + 
+          ' callee id: ' + callee_id)
+      self.report_error(constants.RESPONSE_INVALID_ROOM)
+      return
+
+    allowed_gcm_ids = map(lambda x: x.gcm_id, callee_records)
+    allowed_gcm_ids.append(caller_gcm_id)
+
+    result = add_client_to_room(
+        self.request.host_url,
+        room_id,
+        caller_gcm_id,
+        False,
+        Room.TYPE_DIRECT,
+        allowed_gcm_ids)
+    if result['error'] is not None:
+      logging.info('Error adding client to room: ' + result['error'] + \
+          ', room_state=' + result['room_state'])
+      self.write_response(result['error'], {}, [])
+      return
+    
+    # TODO (chuckhays): Initiate message to verified gcm ids to ring.
+    
+    self.write_room_parameters(
+        room_id, caller_id, result['messages'], result['is_initiator'])
+      
+    logging.info('User ' + caller_id + ' initiated call to ' + callee_id + \
+        ' from gcmId ' + caller_gcm_id)
+    logging.info('User ' + caller_id + ' joined room ' + room_id +
+        ' with state ' + result['room_state'])
+
+  def handle_accept(self, msg, room_id):
+    """Handles a callee accepting a call request."""
+    if not util.has_msg_field(msg, constants.PARAM_CALLEE_GCM_ID, basestring):
+      self.report_error(constants.RESPONSE_INVALID_ARGUMENT)
+      return
+
+    callee_gcm_id = msg[constants.PARAM_CALLEE_GCM_ID]
+    
+    if not has_room(self.request.host_url, room_id):
+      logging.warning('Room ' + room_id + ' does not exist when trying to ' +
+          'accept a call. Callee gcm id: ' + callee_gcm_id)
+      self.report_error(constants.RESPONSE_INVALID_ROOM)
+      return
+
+    # Look up and validate callee by gcm id.
+    # TODO (chuckhays): Once registration is enabled, turn on restriction
+    # to only return verified records.
+    callee_records = gcmrecord.GCMRecord.get_by_gcm_id(callee_gcm_id, False)
+    if len(callee_records) < 1:
+      self.report_error(constants.RESPONSE_INVALID_CALLEE)
+      return
+
+    callee_id = callee_records[0].user_id
+
+    result = add_client_to_room(
+        self.request.host_url,
+        room_id,
+        callee_gcm_id,
+        False,
+        Room.TYPE_DIRECT)
+    if result['error'] is not None:
+      logging.info('Error adding client to room: ' + result['error'] + \
+          ', room_state=' + result['room_state'])
+      self.write_response(result['error'], {}, [])
+      return
+    
+    # TODO (chuckhays): Send message to ringing clients to stop ringing.
+    
+    self.write_room_parameters(
+        room_id, callee_id, result['messages'], result['is_initiator'])
+      
+    logging.info('User ' + callee_id + ' accepted call ' + \
+        'from gcmId ' + callee_gcm_id)
+    logging.info('User ' + callee_id + ' joined room ' + room_id + 
+        ' with state ' + result['room_state'])
 
   def post(self, room_id):
+    # Check request body to determine what action to take.
+    msg = util.get_message_from_json(self.request.body)
+    if util.has_msg_field(msg, constants.PARAM_ACTION, basestring):
+      action = msg[constants.PARAM_ACTION]
+      if action == constants.ACTION_CALL:
+        self.handle_call(msg, room_id)
+        return
+      elif action == constants.ACTION_ACCEPT:
+        self.handle_accept(msg, room_id)
+        return
+      else:
+        self.report_error(constants.RESPONSE_INVALID_ARGUMENT)
+        return
+
+    # If there is no PARAM_ACTION field, join the room.
     client_id = generate_random(8)
     is_loopback = self.request.get('debug') == 'loopback'
     result = add_client_to_room(
-        self.request.host_url, room_id, client_id, is_loopback)
+        self.request.host_url,
+        room_id,
+        client_id,
+        is_loopback,
+        Room.TYPE_OPEN)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])
@@ -513,8 +684,8 @@ class JoinPage(webapp2.RequestHandler):
 
     self.write_room_parameters(
         room_id, client_id, result['messages'], result['is_initiator'])
-    logging.info('User ' + client_id + ' joined room ' + room_id)
-    logging.info('Room ' + room_id + ' has state ' + result['room_state'])
+    logging.info('User ' + client_id + ' joined room ' + room_id +
+        ' with state ' + result['room_state'])
 
 class MainPage(webapp2.RequestHandler):
   def write_response(self, target_page, params={}):
