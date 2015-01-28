@@ -30,38 +30,34 @@ var resolutions = [[160, 120, false],
                    [4096, 2160, false]];
 
 /*
- * "Analyze performance for "resolution"" test uses getStats, canvas and the video
- * element to analyze the video frames from a capture device. It will report
- * number of black frames, frozen frames, tested frames and various stats like
- * average encode time and FPS. A test case will be created per mandatory
- * resolution found in the "resolutions" array-
+ * "Analyze performance for "resolution"" test uses getStats, canvas and the
+ * video element to analyze the video frames from a capture device. It will
+ * report number of black frames, frozen frames, tested frames and various stats
+ * like average encode time and FPS. A test case will be created per mandatory
+ * resolution found in the "resolutions" array.
  */
 for (var index = 0; index < resolutions.length; index++) {
   if (resolutions[index][2]) {
-    addTest('Camera', 'Analyze performance for ' + resolutions[index][0] + 'x' +
-            resolutions[index][1],
-            createTest_(resolutions[index]));
+    var testTitle = 'Check ' + resolutions[index][0] + 'x' +
+                    resolutions[index][1] + ' resolution';
+    addTest('Camera', testTitle, testCamera_.bind(null, [resolutions[index]]));
   }
 }
 
-function createTest_(resolution) {
-  return function() {
-    var test = new CamResolutionsTest([resolution]);
-    test.run();
-  };
-}
-
 /*
- * "Supported resolutions" test tries calling getUserMedia() with each resolution
- * from the list below. Each gUM() call triggers a success or a fail callback;
- * we report ok/nok and schedule another gUM() with the next resolution until
- * the list is exhausted. Some resolutions are mandatory and make the test fail
- * if not supported.
+ * "Supported resolutions" test tries calling getUserMedia() with each
+ * resolution from the list below. Each gUM() call triggers a success or a fail
+ * callback; we report ok/nok and schedule another gUM() with the next
+ * resolution until the list is exhausted. Some resolutions are mandatory and
+ * make the test fail if not supported.
  */
-addTest('Camera', 'Supported resolutions', function() {
+addTest('Camera', 'Check supported resolutions', testCamera_.bind(null,
+        resolutions));
+
+function testCamera_(resolutions) {
   var test = new CamResolutionsTest(resolutions);
   test.run();
-});
+}
 
 function CamResolutionsTest(resolutionArray) {
   this.resolutions = resolutionArray;
