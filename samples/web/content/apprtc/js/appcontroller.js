@@ -88,11 +88,10 @@ var AppController = function(loadingParams) {
     this.roomSelection_ = null;
     this.localStream_ = null;
 
+    this.createCall_();
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
     if (this.loadingParams_.roomId) {
-      this.createCall_();
-
       // Ask the user to confirm.
       if (!RoomSelection.matchRandomRoomPattern(this.loadingParams_.roomId)) {
         // Show the room name only if it does not match the random room pattern.
@@ -112,18 +111,17 @@ var AppController = function(loadingParams) {
       }.bind(this);
     } else {
       // Display the room selection UI.
+      this.dim_(this.localVideo_);
       var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
       this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
       this.show_(roomSelectionDiv);
       this.roomSelection_.onRoomSelected = function(roomName) {
+        this.undim_(this.localVideo_);
         this.hide_(roomSelectionDiv);
-        this.createCall_();
+        
         this.finishCallSetup_(roomName);
 
         this.roomSelection_ = null;
-        if (this.localStream_) {
-          this.attachLocalStream_();
-        }
       }.bind(this);
     }
   }.bind(this)).catch(function(error) {
@@ -248,10 +246,7 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
 AppController.prototype.onLocalStreamAdded_ = function(stream) {
   trace('User has granted access to local media.');
   this.localStream_ = stream;
-
-  if (!this.roomSelection_) {
-    this.attachLocalStream_();
-  }
+  this.attachLocalStream_();
 };
 
 AppController.prototype.attachLocalStream_ = function() {
@@ -424,6 +419,14 @@ AppController.prototype.activate_ = function(element) {
 
 AppController.prototype.deactivate_ = function(element) {
   element.classList.remove('active');
+};
+
+AppController.prototype.dim_ = function(element) {
+  element.classList.add('dimmed');
+};
+
+AppController.prototype.undim_ = function(element) {
+  element.classList.remove('dimmed');
 };
 
 AppController.prototype.showIcons_ = function() {

@@ -126,6 +126,15 @@ label {
   width: 100%;
 }
 
+#local-video.dimmed {
+  opacity: .1;
+  filter: blur(10px);
+  -webkit-filter: blur(10px);
+  -moz-filter: blur(10px);
+  -o-filter: blur(10px);
+  -ms-filter: blur(10px);
+}
+
 #mini-video {
   border: 1px solid gray;
   bottom: 20px;
@@ -263,10 +272,17 @@ h1 {
   padding: 0 0 0.2em 0;
 }
 
+#room-selection-container {
+  position: absolute;
+  z-index: 6;
+  width: 100%;
+  top: 3em;
+}
+
 div#room-selection {
-  margin: 3em auto 0 auto;
+  margin: 0 auto 0 auto;
   width: 25em;
-  padding: 1em 1.5em 1.3em 1.5em;
+  padding: 1em;
 }
 
 p {
