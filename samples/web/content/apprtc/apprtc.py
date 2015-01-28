@@ -252,6 +252,9 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   media_constraints = make_media_stream_constraints(audio, video,
                                                     firefox_fake_device)
   wss_url, wss_post_url = get_wss_parameters(request)
+
+  bypass_join_confirmation = os.environ['BYPASS_JOIN_CONFIRMATION'] == 'True'
+
   params = {
     'error_messages': error_messages,
     'is_loopback' : json.dumps(debug == 'loopback'),
@@ -275,7 +278,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'video_receive_codec': video_receive_codec,
     'include_loopback_js' : include_loopback_js,
     'wss_url': wss_url,
-    'wss_post_url': wss_post_url
+    'wss_post_url': wss_post_url,
+    'bypass_join_confirmation': json.dumps(bypass_join_confirmation)
   }
 
   if room_id is not None:

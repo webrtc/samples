@@ -110,6 +110,10 @@ var AppController = function(loadingParams) {
         recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
         this.finishCallSetup_(this.loadingParams_.roomId);
       }.bind(this);
+
+      if (this.loadingParams_.bypassJoinConfirmation) {
+        $(UI_CONSTANTS.confirmJoinButton).onclick();
+      }
     } else {
       // Display the room selection UI.
       var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
