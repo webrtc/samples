@@ -60,6 +60,11 @@
     </div>
   </div>
 
+  <div id="confirm-join-div" class="hidden">
+    <div>Ready to join<span id="confirm-join-room-span"></span>?</div>
+    <button id="confirm-join-button">JOIN</button>
+  </div>
+
   <footer>
     <div id="sharing-div">
       <div id="room-link">Waiting for someone to join this room: <a id="room-link-href" href="{{ room_link }}" target="_blank">{{ room_link }}</a></div>
@@ -145,7 +150,8 @@
       videoRecvBitrate: '{{ vrbr }}',
       videoRecvCodec: '{{ video_receive_codec }}',
       wssUrl: '{{ wss_url }}',
-      wssPostUrl: '{{ wss_post_url }}'
+      wssPostUrl: '{{ wss_post_url }}',
+      bypassJoinConfirmation: {{ bypass_join_confirmation }}
     };
 
     var appController;

@@ -9,10 +9,14 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* exported setUpFullScreen, fullScreenElement, isFullScreen,
-   requestTurnServers, sendAsyncUrlRequest, randomString */
+   requestTurnServers, sendAsyncUrlRequest, randomString, $ */
 /* globals chrome */
 
 'use strict';
+
+function $(selector) {
+  return document.querySelector(selector);
+}
 
 // Sends the URL request and returns a Promise as the result.
 function sendAsyncUrlRequest(method, url, body) {

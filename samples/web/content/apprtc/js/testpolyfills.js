@@ -83,7 +83,9 @@ MyPromise.prototype.then = function(onResolve, onReject) {
     onResolve(this.value_);
     break;
   case PROMISE_STATE.REJECTED:
-    onReject(this.reason_);
+    if (onReject) {
+      onReject(this.reason_);
+    }
     break;
   }
   return this;

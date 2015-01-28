@@ -28,3 +28,6 @@ handlers:
 libraries:
 - name: jinja2
   version: latest
+
+env_variables:
+  BYPASS_JOIN_CONFIRMATION: false
