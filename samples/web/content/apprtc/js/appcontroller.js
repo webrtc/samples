@@ -31,7 +31,12 @@ var UI_CONSTANTS = {
   miniVideo: '#mini-video',
   muteAudioSvg: '#mute-audio',
   muteVideoSvg: '#mute-video',
+  newRoomButton: '#new-room-button',
+  newRoomLink: '#new-room-link',
   remoteVideo: '#remote-video',
+  rejoinButton: '#rejoin-button',
+  rejoinDiv: '#rejoin-div',
+  rejoinLink: '#rejoin-link',
   roomLinkHref: '#room-link-href',
   roomSelectionDiv: '#room-selection',
   roomSelectionInput: '#room-id-input',
@@ -58,6 +63,16 @@ var AppController = function(loadingParams) {
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
+  this.rejoinDiv_ = $(UI_CONSTANTS.rejoinDiv);
+  this.rejoinLink_ = $(UI_CONSTANTS.rejoinLink);
+  this.newRoomLink_ = $(UI_CONSTANTS.newRoomLink);
+  this.rejoinButton_ = $(UI_CONSTANTS.rejoinButton);
+  this.newRoomButton_ = $(UI_CONSTANTS.newRoomButton);
+
+  this.newRoomButton_.addEventListener('click',
+      this.onNewRoomClick_.bind(this), false);
+  this.rejoinButton_.addEventListener('click',
+      this.onRejoinClick_.bind(this), false);
 
   this.muteAudioIconSet_ =
       new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
@@ -87,6 +102,7 @@ var AppController = function(loadingParams) {
     this.roomLink_ = '';
     this.roomSelection_ = null;
     this.localStream_ = null;
+    this.remoteVideoResetTimer_ = null;
 
     // If the params has a roomId specified, we should connect to that room
     // immediately. If not, show the room selection UI.
@@ -116,19 +132,7 @@ var AppController = function(loadingParams) {
       }
     } else {
       // Display the room selection UI.
-      var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
-      this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
-      this.show_(roomSelectionDiv);
-      this.roomSelection_.onRoomSelected = function(roomName) {
-        this.hide_(roomSelectionDiv);
-        this.createCall_();
-        this.finishCallSetup_(roomName);
-
-        this.roomSelection_ = null;
-        if (this.localStream_) {
-          this.attachLocalStream_();
-        }
-      }.bind(this);
+      this.showRoomSelection_();
     }
   }.bind(this)).catch(function(error) {
     trace('Error initializing: ' + error.message);
@@ -139,8 +143,6 @@ AppController.prototype.createCall_ = function() {
   this.call_ = new Call(this.loadingParams_);
   this.infoBox_ =
       new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
-
-  this.remoteVideoResetTimer_ = null;
 
   var roomErrors = this.loadingParams_.errorMessages;
   if (roomErrors && roomErrors.length > 0) {
@@ -166,6 +168,22 @@ AppController.prototype.createCall_ = function() {
   this.call_.onerror = this.displayError_.bind(this);
   this.call_.onstatusmessage = this.displayStatus_.bind(this);
   this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+};
+
+AppController.prototype.showRoomSelection_ = function() {
+  var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
+  this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
+  this.show_(roomSelectionDiv);
+  this.roomSelection_.onRoomSelected = function(roomName) {
+    this.hide_(roomSelectionDiv);
+    this.createCall_();
+    this.finishCallSetup_(roomName);
+
+    this.roomSelection_ = null;
+    if (this.localStream_) {
+      this.attachLocalStream_();
+    }
+  }.bind(this);
 };
 
 AppController.prototype.finishCallSetup_ = function(roomId) {
@@ -326,8 +344,21 @@ AppController.prototype.transitionToDone_ = function() {
   this.deactivate_(this.remoteVideo_);
   this.deactivate_(this.miniVideo_);
   this.hide_(this.hangupSvg_);
-  this.displayStatus_('You have left the call. <a href=\'' +
-      this.roomLink_ + '\'>Click here</a> to rejoin.');
+  this.activate_(this.rejoinDiv_);
+  this.show_(this.rejoinDiv_);
+  this.displayStatus_('');
+};
+
+AppController.prototype.onRejoinClick_ = function() {
+  this.deactivate_(this.rejoinDiv_);
+  this.hide_(this.rejoinDiv_);
+  this.call_.restart();
+};
+
+AppController.prototype.onNewRoomClick_ = function() {
+  this.deactivate_(this.rejoinDiv_);
+  this.hide_(this.rejoinDiv_);
+  this.showRoomSelection_();
 };
 
 // Spacebar, or m: toggle audio mute.

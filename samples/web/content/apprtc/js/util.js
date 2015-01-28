@@ -19,7 +19,7 @@ function $(selector) {
 }
 
 // Sends the URL request and returns a Promise as the result.
-function sendAsyncUrlRequest(method, url) {
+function sendAsyncUrlRequest(method, url, body) {
   return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -34,7 +34,7 @@ function sendAsyncUrlRequest(method, url) {
       resolve(xhr.responseText);
     };
     xhr.open(method, url, true);
-    xhr.send();
+    xhr.send(body);
   });
 }
 

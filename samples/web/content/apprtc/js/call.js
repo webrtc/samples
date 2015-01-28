@@ -55,6 +55,10 @@ Call.prototype.start = function(roomId) {
   }
 };
 
+Call.prototype.restart = function() {
+  this.start(this.params_.previousRoomId);
+};
+
 Call.prototype.hangup = function() {
   this.startTime = null;
 
@@ -86,6 +90,7 @@ Call.prototype.hangup = function() {
   this.channel_.send(JSON.stringify({type: 'bye'}));
   this.channel_.close();
 
+  this.params_.previousRoomId = this.params_.roomId;
   this.params_.roomId = null;
   this.params_.clientId = null;
 };

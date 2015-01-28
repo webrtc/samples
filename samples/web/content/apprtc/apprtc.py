@@ -244,7 +244,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # a random id, but we should make this better.
   username = client_id if client_id is not None else generate_random(9)
   if len(turn_base_url) > 0:
-    turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
+    turn_url = constants.TURN_URL_TEMPLATE % \
+        (turn_base_url, username, constants.CEOD_KEY)
 
   pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
@@ -253,7 +254,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
                                                     firefox_fake_device)
   wss_url, wss_post_url = get_wss_parameters(request)
 
-  bypass_join_confirmation = os.environ['BYPASS_JOIN_CONFIRMATION'] == 'True'
+  bypass_join_confirmation = 'BYPASS_JOIN_CONFIRMATION' in os.environ and \
+      os.environ['BYPASS_JOIN_CONFIRMATION'] == 'True'
 
   params = {
     'error_messages': error_messages,
