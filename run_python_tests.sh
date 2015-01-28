@@ -32,13 +32,6 @@ if [ ! -d 'webtest-master' ]; then
   echo "Downloading webtest-master..."
   download $WEBTEST_FILE $WEBTEST_URL
   tar xvf $WEBTEST_FILE
-
-  # At least on my box, we must have root to modify your system python.
-  # This package only needs to be installed once.
-  echo "Missing webtest; must run sudo to install."
-  cd webtest-master
-  sudo python setup.py install
-  cd ..
 fi
 
 python run_python_tests.py google_appengine/ samples/web/content/apprtc/ webtest-master/
