@@ -124,7 +124,7 @@ CamResolutionsTest.prototype = {
     this.stream = stream;
     this.supportedResolutions++;
     var selectedResolution = this.resolutions[this.counter++];
-    // Measure performance for mandatory resolutions only.
+    // Measure performance only when testing one resolution.
     if (selectedResolution[2] && this.numResolutions === 1) {
       this.video.width = selectedResolution[0];
       this.video.height = selectedResolution[1];
