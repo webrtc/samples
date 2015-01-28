@@ -7,18 +7,7 @@
  */
 'use strict';
 
- /*
- * Analyze performance for X resolution uses getStats, canvas and the video
- * element to analyze the video frames from a capture device. It will report
- * number of black frames, frozen frames, tested frames and various stats like
- * average encode time and FPS.
- *
- * Supported resolution test tries calling getUserMedia() with each resolution
- * from the list below. Each gUM() call triggers a success or a fail callback;
- * we report ok/nok and schedule another gUM() with the next resolution until
- * the list is exhausted. Some resolutions are mandatory and make the test fail
- * if not supported.
- *
+/*
  * In generic cameras using Chrome rescaler, all resolutions should be supported
  * up to a given one and none beyond there. Special cameras, such as digitizers,
  * might support only one resolution.
@@ -40,16 +29,21 @@ var resolutions = [[160, 120, false],
                    [3840, 2160, false],  // 4K
                    [4096, 2160, false]];
 
-// Loop through resolutions array and create a test case where video performance
-// is analyzed for for each mandatory resolution.
+/*
+ * "Analyze performance for "resolution"" test uses getStats, canvas and the video
+ * element to analyze the video frames from a capture device. It will report
+ * number of black frames, frozen frames, tested frames and various stats like
+ * average encode time and FPS. A test case will be created per mandatory
+ * resolution found in the "resolutions" array-
+ */
 for (var index = 0; index < resolutions.length; index++) {
   if (resolutions[index][2]) {
-    addTest('Camera', 'Analyze performance for ' +
-            JSON.stringify(resolutions[index][0]) + 'x' +
-            JSON.stringify(resolutions[index][1]),
+    addTest('Camera', 'Analyze performance for ' + resolutions[index][0] + 'x' +
+            resolutions[index][1],
             createTest_(resolutions[index]));
   }
 }
+
 function createTest_(resolution) {
   return function() {
     var test = new CamResolutionsTest([resolution]);
@@ -57,7 +51,13 @@ function createTest_(resolution) {
   };
 }
 
-// List resolutions supported by getUserMedia.
+/*
+ * "Supported resolutions" test tries calling getUserMedia() with each resolution
+ * from the list below. Each gUM() call triggers a success or a fail callback;
+ * we report ok/nok and schedule another gUM() with the next resolution until
+ * the list is exhausted. Some resolutions are mandatory and make the test fail
+ * if not supported.
+ */
 addTest('Camera', 'Supported resolutions', function() {
   var test = new CamResolutionsTest(resolutions);
   test.run();
@@ -127,16 +127,17 @@ CamResolutionsTest.prototype = {
   successFunc_: function(stream) {
     this.stream = stream;
     this.supportedResolutions++;
-    var theResolution = this.resolutions[this.counter++];
+    var selectedResolution = this.resolutions[this.counter++];
     // Measure performance for mandatory resolutions only.
-    if (theResolution[2] && this.numResolutions === 1) {
-      this.video.width = theResolution[0];
-      this.video.height = theResolution[1];
-      this.currentResolutionForCheckEncodeTime = theResolution;
+    if (selectedResolution[2] && this.numResolutions === 1) {
+      this.video.width = selectedResolution[0];
+      this.video.height = selectedResolution[1];
+      this.currentResolutionForCheckEncodeTime = selectedResolution;
       this.collectAndAnalyzeStats_(stream);
       return;
     } else {
-      reportInfo('Supported ' + theResolution[0] + 'x' + theResolution[1]);
+      reportInfo('Supported ' + selectedResolution[0] + 'x' +
+                 selectedResolution[1]);
     }
     stream.getVideoTracks()[0].stop();
     this.finishTestOrRetrigger_();
@@ -213,16 +214,16 @@ CamResolutionsTest.prototype = {
       // values clearer.
       statsReport.actualVideoWidth = this.video.videoWidth;
       statsReport.actualVideoHeight = this.video.videoHeight;
-      statsReport.encodeSetupTime = this.timeForFirstFrameMs + ' (ms)';
-      statsReport.avgEncodeTime = arrayAverage(googAvgEncodeTime) + ' (ms)';
-      statsReport.minEncodeTime = arrayMin(googAvgEncodeTime) + ' (ms)';
-      statsReport.maxEncodeTime = arrayMax(googAvgEncodeTime) + ' (ms)';
-      statsReport.avgInput = arrayAverage(googAvgFrameRateInput) + ' (fps)';
-      statsReport.minInput = arrayMin(googAvgFrameRateInput) + ' (fps)';
-      statsReport.maxInput = arrayMax(googAvgFrameRateInput) + ' (fps)';
-      statsReport.avgSent = arrayAverage(googAvgFrameRateSent) + ' (fps)';
-      statsReport.minSent = arrayMin(googAvgFrameRateSent) + ' (fps)';
-      statsReport.maxSent = arrayMax(googAvgFrameRateSent) + ' (fps)';
+      statsReport.encodeSetupTimeMs = this.timeForFirstFrameMs;
+      statsReport.avgEncodeTimeMs = arrayAverage(googAvgEncodeTime);
+      statsReport.minEncodeTimeMs = arrayMin(googAvgEncodeTime);
+      statsReport.maxEncodeTimeMs = arrayMax(googAvgEncodeTime);
+      statsReport.avgInputFps = arrayAverage(googAvgFrameRateInput);
+      statsReport.minInputFps = arrayMin(googAvgFrameRateInput);
+      statsReport.maxInputFps = arrayMax(googAvgFrameRateInput);
+      statsReport.avgSentFps = arrayAverage(googAvgFrameRateSent);
+      statsReport.minSentFps = arrayMin(googAvgFrameRateSent);
+      statsReport.maxSentFps = arrayMax(googAvgFrameRateSent);
       statsReport.isMuted = this.isMuted;
       statsReport.readyState = this.stream.getVideoTracks()[0].readyState;
       statsReport.testedFrames = this.numFrames;
@@ -247,15 +248,15 @@ CamResolutionsTest.prototype = {
       }
     }
 
-    if (info.avgFPSSent < 5) {
-      reportError('Low average sent FPS: ' + info.avgFPSSent);
+    if (info.avgSentFps < 5) {
+      reportError('Low average sent FPS: ' + info.avgSentFps);
     } else {
       reportSuccess('Average FPS above threshold');
     }
     if (!resolutionMatchesIndependentOfRotation_(info.videoWidth,
-                                                info.videoHeight,
-                                                info.mandatoryMinWidth,
-                                                info.mandatoryMinHeight)) {
+                                                 info.videoHeight,
+                                                 info.mandatoryMinWidth,
+                                                 info.mandatoryMinHeight)) {
       reportError('Incorrect captured resolution.');
     } else {
       reportSuccess('Captured video using expected resolution.');
@@ -323,14 +324,14 @@ CamResolutionsTest.prototype = {
 
   failFunc_: function() {
     this.unsupportedResolutions++;
-    var theResolution = this.resolutions[this.counter++];
-    if (theResolution[2]) {
+    var selectedResolution = this.resolutions[this.counter++];
+    if (selectedResolution[2]) {
       this.mandatoryUnsupportedResolutions++;
       reportError('Camera does not support a mandatory resolution: ' +
-                  theResolution[0] + 'x' + theResolution[1]);
+                  selectedResolution[0] + 'x' + selectedResolution[1]);
     } else {
-      reportInfo('NOT supported ' + theResolution[0] + 'x' +
-                 theResolution[1]);
+      reportInfo('NOT supported ' + selectedResolution[0] + 'x' +
+                 selectedResolution[1]);
     }
     this.finishTestOrRetrigger_();
   },
