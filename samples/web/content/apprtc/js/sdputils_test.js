@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals TestCase, maybePreferCodec, assertEquals */
+/* globals TestCase, maybePreferCodec, removeCodecParam, setCodecParam,
+   assertEquals */
 
 'use strict';
 
@@ -75,7 +76,7 @@ SdpUtilsTest.prototype.testRemoveAndSetCodecParamModifyFmtpLine =
                    'a=fmtp:111 useinbandfec=1', audioLine);
 
       var newResult = removeCodecParam(result, 'opus/48000', 'minptime');
-      assertEquals('removeCodecParam should not affect sdp ' + 
+      assertEquals('removeCodecParam should not affect sdp ' +
                    'if param did not exist', result, newResult);
     };
 
@@ -91,4 +92,3 @@ SdpUtilsTest.prototype.testRemoveAndSetCodecParamRemoveAndAddFmtpLineIfNeeded =
       assertEquals('a=fmtp:111 line should be added.',
                    'a=fmtp:111 inbandfec=1', audioLine);
     };
-   
