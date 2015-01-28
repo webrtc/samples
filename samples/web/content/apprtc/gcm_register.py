@@ -34,6 +34,8 @@ class BindPage(webapp2.RequestHandler):
     if util.has_msg_fields(msg, ((PARAM_USER_ID, basestring),
         (PARAM_GCM_ID, basestring))):
       # TODO(jiayl): validate the input, generate a random code, and send SMS.
+      # Once this is done, turn on verified record verification in the
+      # JoinPage handlers.
       self.response.out.write(gcmrecord.GCMRecord.add_or_update(
           msg[PARAM_USER_ID], msg[PARAM_GCM_ID], 'fake_code'))
     else:
