@@ -55,3 +55,40 @@ SdpUtilsTest.prototype.testMovesCodecEvenIfPayloadTypeIsSameAsUdpPort =
                    'm=audio 9 RTP/SAVPF 9 111 103 104 0',
                    audioLine);
     };
+
+SdpUtilsTest.prototype.testRemoveAndSetCodecParamModifyFmtpLine =
+    function() {
+      var result = setCodecParam(SDP_WITH_AUDIO_CODECS, 'opus/48000',
+                                    'minptime', '20');
+      var audioLine = result.split('\r\n')[4];
+      assertEquals('minptime=10 should be modified in a=fmtp:111 line.',
+                   'a=fmtp:111 minptime=20', audioLine);
+
+      result = setCodecParam(result, 'opus/48000', 'useinbandfec', '1');
+      audioLine = result.split('\r\n')[4];
+      assertEquals('useinbandfec=1 should be added to a=fmtp:111 line.',
+                   'a=fmtp:111 minptime=20; useinbandfec=1', audioLine);
+
+      result = removeCodecParam(result, 'opus/48000', 'minptime');
+      audioLine = result.split('\r\n')[4];
+      assertEquals('minptime should be removed from a=fmtp:111 line.',
+                   'a=fmtp:111 useinbandfec=1', audioLine);
+
+      var newResult = removeCodecParam(result, 'opus/48000', 'minptime');
+      assertEquals('removeCodecParam should not affect sdp ' + 
+                   'if param did not exist', result, newResult);
+    };
+
+SdpUtilsTest.prototype.testRemoveAndSetCodecParamRemoveAndAddFmtpLineIfNeeded =
+    function() {
+      var result = removeCodecParam(SDP_WITH_AUDIO_CODECS, 'opus/48000',
+                                    'minptime');
+      var audioLine = result.split('\r\n')[4];
+      assertEquals('a=fmtp:111 line should be deleted.',
+                   'a=rtpmap:103 ISAC/16000', audioLine);
+      result = setCodecParam(result, 'opus/48000', 'inbandfec', '1');
+      audioLine = result.split('\r\n')[4];
+      assertEquals('a=fmtp:111 line should be added.',
+                   'a=fmtp:111 inbandfec=1', audioLine);
+    };
+   
