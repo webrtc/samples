@@ -200,32 +200,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     logging.error(message)
     error_messages.append(message)
 
-  # Allow preferred audio and video codecs to be overridden.
-  audio_send_codec = request.get('asc', default_value = '')
-  audio_receive_codec = request.get('arc', default_value = '')
-  video_send_codec = request.get('vsc', default_value = '')
-  video_receive_codec = request.get('vrc', default_value = '')
-
-  # Read url param controlling whether we send stereo.
-  stereo = request.get('stereo', default_value = '')
-
-  # Read url param controlling whether we send Opus FEC.
-  opusfec = request.get('opusfec', default_value = '')
-
-  # Read url param for Opus max sample rate.
-  opusmaxpbr = request.get('opusmaxpbr', default_value = '')
-
-  # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
-  asbr = request.get('asbr', default_value = '')
-  arbr = request.get('arbr', default_value = '')
-
-  # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
-  vsbr = request.get('vsbr', default_value = '')
-  vrbr = request.get('vrbr', default_value = '')
-
-  # Read url params for the initial video send bitrate (vsibr)
-  vsibr = request.get('vsibr', default_value = '')
-
   # Options for controlling various networking features.
   dtls = request.get('dtls')
   dscp = request.get('dscp')
@@ -266,18 +240,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'media_constraints': json.dumps(media_constraints),
     'turn_url': turn_url,
     'turn_transports': turn_transports,
-    'stereo': stereo,
-    'opusfec': opusfec,
-    'opusmaxpbr': opusmaxpbr,
-    'arbr': arbr,
-    'asbr': asbr,
-    'vrbr': vrbr,
-    'vsbr': vsbr,
-    'vsibr': vsibr,
-    'audio_send_codec': audio_send_codec,
-    'audio_receive_codec': audio_receive_codec,
-    'video_send_codec': video_send_codec,
-    'video_receive_codec': video_receive_codec,
     'include_loopback_js' : include_loopback_js,
     'wss_url': wss_url,
     'wss_post_url': wss_post_url,

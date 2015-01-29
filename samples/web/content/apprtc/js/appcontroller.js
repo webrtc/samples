@@ -82,6 +82,8 @@ var AppController = function(loadingParams) {
       new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
   this.loadingParams_ = loadingParams;
+  this.loadUrlParams_();
+
   var paramsPromise = Promise.resolve({});
   if (this.loadingParams_.paramsFunction) {
     // If we have a paramsFunction value, we need to call it
@@ -468,6 +470,28 @@ AppController.prototype.showIcons_ = function() {
       this.deactivate_(this.icons_);
     }.bind(this), 5000);
   }
+};
+
+AppController.prototype.loadUrlParams_ = function() {
+  /* jshint ignore:start */
+  // Suppressing jshint warns about using urlParams['KEY'] instead of
+  // urlParams.KEY, since we'd like to use string literals to avoid the Closure
+  // compiler renaming the properties.
+  var urlParams = queryStringToDictionary();
+
+  this.loadingParams_.audioSendBitrate = urlParams['asbr'];
+  this.loadingParams_.audioSendCodec = urlParams['asc'];
+  this.loadingParams_.audioRecvBitrate = urlParams['arbr'];
+  this.loadingParams_.audioRecvCodec = urlParams['arc'];
+  this.loadingParams_.opusMaxPbr = urlParams['opusmaxpbr'];
+  this.loadingParams_.opusFec = urlParams['opusfec'];
+  this.loadingParams_.opusStereo = urlParams['stereo'];
+  this.loadingParams_.videoSendBitrate = urlParams['vsbr'];
+  this.loadingParams_.videoSendInitialBitrate = urlParams['vsibr'];
+  this.loadingParams_.videoSendCodec = urlParams['vsc'];
+  this.loadingParams_.videoRecvBitrate = urlParams['vrbr'];
+  this.loadingParams_.videoRecvCodec = urlParams['vrc'];
+  /* jshint ignore:end */
 };
 
 AppController.IconSet_ = function(iconSelector) {

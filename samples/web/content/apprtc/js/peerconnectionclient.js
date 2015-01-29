@@ -14,7 +14,7 @@
    maybeSetAudioSendBitRate, maybeSetVideoSendBitRate,
    maybeSetAudioReceiveBitRate, maybeSetVideoSendInitialBitRate,
    maybeSetVideoReceiveBitRate, maybeSetVideoSendInitialBitRate,
-   setCodecParam, removeCodecParam */
+   maybeSetOpusOptions */
 
 /* exported PeerConnectionClient */
 
@@ -203,27 +203,7 @@ PeerConnectionClient.prototype.setLocalSdpAndNotify_ =
 };
 
 PeerConnectionClient.prototype.setRemoteSdp_ = function(message) {
-  // Set Opus in Stereo, if stereo is true, unset it, if stereo is false, and
-  // do nothing if otherwise.
-  if (this.params_.opusStereo === 'true') {
-    message.sdp = setCodecParam(message.sdp, 'opus/48000', 'stereo', '1');
-  } else if (this.params_.opusStereo === 'false') {
-    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'stereo');
-  }
-
-  // Set Opus FEC, if opusfec is true, unset it, if opusfec is false, and
-  // do nothing if otherwise.
-  if (this.params_.opusFec === 'true') {
-    message.sdp = setCodecParam(message.sdp, 'opus/48000', 'useinbandfec', '1');
-  } else if (this.params_.opusFec === 'false') {
-    message.sdp = removeCodecParam(message.sdp, 'opus/48000', 'useinbandfec');
-  }
-
-  // Set Opus maxplaybackrate, if requested.
-  if (this.params_.opusMaxPbr) {
-    message.sdp = setCodecParam(message.sdp, 'opus/48000', 'maxplaybackrate',
-        this.params_.opusMaxPbr);
-  }
+  message.sdp = maybeSetOpusOptions(message.sdp, this.params_);
   message.sdp = maybePreferAudioSendCodec(message.sdp, this.params_);
   message.sdp = maybePreferVideoSendCodec(message.sdp, this.params_);
   message.sdp = maybeSetAudioSendBitRate(message.sdp, this.params_);
