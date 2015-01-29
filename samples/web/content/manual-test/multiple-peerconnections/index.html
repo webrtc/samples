@@ -14,27 +14,20 @@
   <table border="0">
     <tr>
       <td colspan="2">
-        Notes:
-        <ul>
-          <li>Due to https://code.google.com/p/webrtc/issues/detail?id=1203,
-          you must create a data channel to actually get a call negotiated. Add
-          one call at a time and click "add echoing data channel" for each and
-          you'll be fine.</li>
-          <li>For unknown reasons, adding a new data channel will clear the
-          input field contents for all other channels on the same call. This is
-          not the data channel's fault though.</li>
-        </ul>
+        This page can create an arbitrary number of peer connection calls, each
+        with an arbitrary number of auto-echoing data channels. It can run with
+        two separate cameras.
       </td>
     </tr>
     <tr>
-      <td>Local Preview for Peer 1</td>
-      <td>Local Preview for Peer 2</td>
+      <td><h2>Local Preview for Peer 1</h2></td>
+      <td><h2>Local Preview for Peer 2</h2></td>
     </tr>
     <tr>
-      <td><video width="320" height="240" id="local-view-1"
-          autoplay="autoplay"></video></td>
-      <td><video width="320" height="240" id="local-view-2"
-          autoplay="autoplay"></video></td>
+      <td><video width="320" height="240" id="local-view-1" autoplay>
+          </video></td>
+      <td><video width="320" height="240" id="local-view-2" autoplay>
+          </video></td>
     </tr>
     <tr>
       <td><button id="add-call" onclick="call();">Add Call</button></td>
@@ -43,19 +36,20 @@
       <td>
         <table id="remote-views-1">
           <tr>
-            <td>Remote (Incoming to Peer 1)</td>
+            <td><h2>Remote (Incoming to Peer 1)</h2></td>
           </tr>
         </table>
       </td>
       <td>
         <table id="remote-views-2">
           <tr>
-            <td>Remote (Incoming to Peer 2)</td>
+            <td><h2>Remote (Incoming to Peer 2)</h2></td>
           </tr>
         </table>
       </td>
     </tr>
   </table>
+  <script src="../../../js/adapter.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
