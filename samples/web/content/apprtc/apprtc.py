@@ -7,10 +7,14 @@
 This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
+# Enables loading third_party modules
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
+
 import cgi
 import constants
 import logging
-import os
 import random
 import json
 import jinja2
