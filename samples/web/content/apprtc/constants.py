@@ -34,6 +34,11 @@ BIGQUERY_DATASET_LOCAL='dev'
 # BigQuery table within the dataset.
 BIGQUERY_TABLE='analytics'
 
+class EventType:
+  # Event signifying that a room enters the state of having exactly
+  # two participants.
+  ROOM_SIZE_2='room_size_2'
+
 class LogField:
   pass
 
