@@ -22,10 +22,6 @@ class AppRtcUnitTest(unittest.TestCase):
   def tearDown(self):
     self.testbed.deactivate()
 
-  def testGenerateRandomGeneratesStringOfRightLength(self):
-    self.assertEqual(17, len(apprtc.generate_random(17)))
-    self.assertEqual(23, len(apprtc.generate_random(23)))
-
 
 class AppRtcPageHandlerTest(unittest.TestCase):
   def setUp(self):
