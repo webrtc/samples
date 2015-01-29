@@ -47,6 +47,10 @@ var RoomSelection = function(roomSelectionDiv,
   this.startBuildingRecentRoomList_();
 };
 
+RoomSelection.matchRandomRoomPattern = function(input) {
+  return input.match(/^\d{9}$/) !== null;
+};
+
 RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
   this.recentlyUsedList_.getRecentRooms().then(function(recentRooms) {
     this.buildRecentRoomList_(recentRooms);
@@ -59,6 +63,12 @@ RoomSelection.prototype.startBuildingRecentRoomList_ = function() {
 };
 
 RoomSelection.prototype.buildRecentRoomList_ = function(recentRooms) {
+  var lastChild = this.roomRecentList_.lastChild;
+  while (lastChild) {
+    this.roomRecentList_.removeChild(lastChild);
+    lastChild = this.roomRecentList_.lastChild;
+  }
+
   for (var i = 0; i < recentRooms.length; ++i) {
     // Create link in recent list
     var li = document.createElement('li');

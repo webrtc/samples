@@ -10,11 +10,12 @@
 // with an arbitrary number of auto-echoing data channels. It can run with
 // two separate cameras.
 
+/* exported call, userWroteSomethingIn, addDataChannel */
+
 'use strict';
 
-// Our two local video / audio streams.
-var gLocalStream1 = null;
-var gLocalStream2 = null;
+// Local stream array.
+var gLocalStreams = [];
 
 // The number of remote view windows (2x number of calls).
 var gNumRemoteViews = 0;
@@ -28,56 +29,78 @@ var gNumConnections = 0;
 var gSendingDataChannels = [];
 var gTotalNumSendChannels = 0;
 
-function startTest() {
-  navigator.webkitGetUserMedia(
-      {video: true, audio: true},
-      function(localStream) {
-        gLocalStream1 = localStream;
-        play(localStream, 'local-view-1');
-      },
-      getUserMediaFailedCallback);
-  navigator.webkitGetUserMedia(
-      {video: true, audio: true},
-      function(localStream) {
-        gLocalStream2 = localStream;
-        play(localStream, 'local-view-2');
-      },
-      getUserMediaFailedCallback);
+var videoDeviceList = [];
+
+window.onload = function() {
+  getSources_();
+};
+
+function getSources_() {
+  if (typeof MediaStreamTrack.getSources === 'undefined') {
+    alert('Your browser does not support getSources, aborting');
+  } else {
+    MediaStreamTrack.getSources(function(devices) {
+      var requestId = 1;
+      for (var i = 0; i < devices.length; i++) {
+        if (devices[i].kind === 'video') {
+          videoDeviceList[i] = devices[i];
+          startTest_(videoDeviceList[i].id, requestId);
+          requestId++;
+        }
+      }
+    });
+  }
 }
 
-function playStreamInNewRemoteView(stream, peerNumber) {
+// Use source ID to selected two different cameras and
+function startTest_(sourceId, requestId) {
+  // Limit to two cameras only.
+  if (requestId > 2) {
+    return;
+  }
+  getUserMedia({
+    video: {optional: [{sourceId: sourceId}]},
+    audio: true},
+    function(localStream) {
+      gLocalStreams.push(localStream);
+      play_(localStream, 'local-view-' + requestId);
+    },
+    getUserMediaFailedCallback_);
+}
+
+function playStreamInNewRemoteView_(stream, peerNumber) {
   console.log('Remote stream to connection ' + peerNumber +
       ': ' + stream.label);
   gNumRemoteViews++;
   var viewName = 'remote-view-' + gNumRemoteViews;
-  addRemoteView(viewName, peerNumber);
-  play(stream, viewName);
+  addRemoteView_(viewName, peerNumber);
+  play_(stream, viewName);
 }
 
-function addRemoteView(elementName, peerNumber) {
-  var remoteViews = $('remote-views-' + peerNumber);
+function addRemoteView_(elementName, peerNumber) {
+  var remoteViews = document.getElementById('remote-views-' + peerNumber);
   remoteViews.innerHTML +=
     '<tr><td><video width="320" height="240" id="' + elementName + '" ' +
     'autoplay="autoplay"></video></td></tr>';
 }
 
-function play(stream, videoElement) {
+function play_(stream, videoElement) {
   var streamUrl = URL.createObjectURL(stream);
-  $(videoElement).src = streamUrl;
+  document.getElementById(videoElement).src = streamUrl;
 }
 
-function getUserMediaFailedCallback(error) {
+function getUserMediaFailedCallback_(error) {
   console.log('getUserMedia request failed with code ' + error.code);
 }
 
 function call() {
-  var connection1 = new webkitRTCPeerConnection(null,
+  var connection1 = new RTCPeerConnection(null,
       {optional:[{RtpDataChannels: true}]});
-  connection1.addStream(gLocalStream1);
+  connection1.addStream(gLocalStreams[0]);
 
-  var connection2 = new webkitRTCPeerConnection(
+  var connection2 = new RTCPeerConnection(
       null, {optional:[{RtpDataChannels: true}]});
-  connection2.addStream(gLocalStream2);
+  connection2.addStream(gLocalStreams[1]);
   connection2.onicecandidate = function(event) {
     if (event.candidate) {
       var candidate = new RTCIceCandidate(event.candidate);
@@ -92,21 +115,17 @@ function call() {
     }
   };
   connection1.onaddstream = function(event) {
-    playStreamInNewRemoteView(event.stream, 1);
-    //addDataChannelAnchor(connection1, connection2);
+    playStreamInNewRemoteView_(event.stream, 1);
+    addDataChannelAnchor_(connection1, connection2);
   };
   connection2.onaddstream = function(event) {
-    playStreamInNewRemoteView(event.stream, 2);
+    playStreamInNewRemoteView_(event.stream, 2);
   };
-  // TODO(phoglund): hack to work around
-  // https://code.google.com/p/webrtc/issues/detail?id=1203. When it is fixed,
-  // uncomment the negotiate call, remove addDataChannel and uncomment in
-  // connection1.onaddstream. Also remove the notice at the top of the HTML!
-  // negotiate(connection1, connection2);
-  addDataChannelAnchor(connection1, connection2);
+  negotiate_(connection1, connection2);
+  addDataChannelAnchor_(connection1, connection2);
 }
 
-function negotiate(connection1, connection2) {
+function negotiate_(connection1, connection2) {
   connection1.createOffer(function(offer) {
     connection1.setLocalDescription(offer);
     connection2.setRemoteDescription(offer);
@@ -118,111 +137,105 @@ function negotiate(connection1, connection2) {
   });
 }
 
-function addDataChannelAnchor(connection1, connection2) {
+function addDataChannelAnchor_(connection1, connection2) {
   var connectionId = gNumConnections++;
-  gAllConnections[connectionId] = { connection1: connection1,
-                                    connection2: connection2 };
-  addOneAnchor(1, connectionId);
-  addOneAnchor(2, connectionId);
+  gAllConnections[connectionId] = {connection1: connection1,
+                                    connection2: connection2};
+  addOneAnchor_(1, connectionId);
+  addOneAnchor_(2, connectionId);
 }
 
-function makeDataChannelAnchorName(peerId, connectionId) {
+function makeDataChannelAnchorName_(peerId, connectionId) {
   return 'data-channels-peer' + peerId + '-' + connectionId;
 }
 
 // This adds a target table we'll add our input fields to later.
-function addOneAnchor(peerId, connectionId) {
+function addOneAnchor_(peerId, connectionId) {
   var newButtonId = 'add-data-channel-' + connectionId;
   var remoteViewContainer = 'remote-views-' + peerId;
-  $(remoteViewContainer).innerHTML +=
-      '<tr><td><button id="' + newButtonId + '" ' +
-      'onclick="addDataChannel(' + connectionId + ')">' +
-      '    Add Echoing Data Channel</button></td></tr>';
+  document.getElementById(remoteViewContainer).innerHTML +=
+    '<tr><td><button id="' + newButtonId + '" ' +
+    'onclick="addDataChannel(' + connectionId + ')"> ' +
+    'Add Echoing Data Channel</button></td></tr>';
 
-  var anchorName = makeDataChannelAnchorName(peerId, connectionId);
-  $(remoteViewContainer).innerHTML +=
-      '<tr><td><table id="' + anchorName + '"></table></td></tr>';
+  var anchorName = makeDataChannelAnchorName_(peerId, connectionId);
+  document.getElementById(remoteViewContainer).innerHTML +=
+    '<tr><td><table id="' + anchorName + '"></table></td></tr>';
 }
 
-// Called by clicking Add Echoing Data Channel.
 function addDataChannel(connectionId) {
   var dataChannelId = gTotalNumSendChannels++;
 
-  var peer1SinkId = addDataChannelSink(1, connectionId, dataChannelId);
-  var peer2SinkId = addDataChannelSink(2, connectionId, dataChannelId);
+  var peer1SinkId = addDataChannelSink_(1, connectionId, dataChannelId);
+  var peer2SinkId = addDataChannelSink_(2, connectionId, dataChannelId);
   var connections = gAllConnections[connectionId];
 
-  configureChannels(connections.connection1, connections.connection2,
+  configureChannels_(connections.connection1, connections.connection2,
                     peer1SinkId, peer2SinkId, dataChannelId);
 
-  // Add the field the user types in, and a
-  // dummy field so everything lines up nicely.
-  addDataChannelSource(1, connectionId, dataChannelId);
-  addDisabledInputField(2, connectionId, '(the above is echoed)');
+  // Add the field the user types in, and a dummy field so everything lines up
+  // nicely.
+  addDataChannelSource_(1, connectionId, dataChannelId);
+  addDisabledInputField_(2, connectionId, '(the above is echoed)');
 
-  negotiate(connections.connection1, connections.connection2);
+  negotiate_(connections.connection1, connections.connection2);
 }
 
-function configureChannels(connection1, connection2, targetFor1, targetFor2,
-                           dataChannelId) {
+function configureChannels_(connection1, connection2, targetFor1, targetFor2,
+                            dataChannelId) {
   // Label the channel so we know where to send the data later in dispatch.
   var sendChannel = connection1.createDataChannel(
-      targetFor2, { reliable : false });
+      targetFor2, {reliable : false});
   sendChannel.onmessage = function(messageEvent) {
-    $(targetFor1).value = messageEvent.data;
-  }
+    document.getElementById(targetFor1).value = messageEvent.data;
+  };
 
   gSendingDataChannels[dataChannelId] = sendChannel;
 
   connection2.ondatachannel = function(event) {
     // The channel got created by a message from a sending channel: hook this
     // new receiver channel up to dispatch and then echo any messages.
-    event.channel.onmessage = dispatchAndEchoDataMessage;
-  }
+    event.channel.onmessage = dispatchAndEchoDataMessage_;
+  };
 }
 
-function addDataChannelSink(peerNumber, connectionId, dataChannelId) {
+function addDataChannelSink_(peerNumber, connectionId, dataChannelId) {
   var sinkId = 'data-sink-peer' + peerNumber + '-' + dataChannelId;
-  var anchor = $(makeDataChannelAnchorName(peerNumber, connectionId));
+  var anchor = document.getElementById(makeDataChannelAnchorName_(peerNumber,
+      connectionId));
   anchor.innerHTML +=
     '<tr><td><input type="text" id="' + sinkId + '" disabled/></td></tr>';
   return sinkId;
 }
 
-function addDataChannelSource(peerNumber, connectionId, dataChannelId) {
+function addDataChannelSource_(peerNumber, connectionId, dataChannelId) {
   var sourceId = 'data-source-peer' + peerNumber + '-' + dataChannelId;
-  var anchor = $(makeDataChannelAnchorName(peerNumber, connectionId));
+  var anchor = document.getElementById(makeDataChannelAnchorName_(peerNumber,
+       connectionId));
   anchor.innerHTML +=
     '<tr><td><input type="text" id="' + sourceId + '"' +
-        ' onchange="userWroteSomethingIn(\'' + sourceId + '\', ' +
-        dataChannelId + ');"/></td></tr>';
+    ' onchange="userWroteSomethingIn(\'' + sourceId + '\', ' +
+    dataChannelId + ');"/></td></tr>';
 }
 
 function userWroteSomethingIn(sourceId, dataChannelId) {
-  var source = $(sourceId);
+  var source = document.getElementById(sourceId);
   var dataChannel = gSendingDataChannels[dataChannelId];
   dataChannel.send(source.value);
 }
 
-function addDisabledInputField(peerNumber, connectionId, text) {
-  var anchor = $(makeDataChannelAnchorName(peerNumber, connectionId));
+function addDisabledInputField_(peerNumber, connectionId, text) {
+  var anchor = document.getElementById(makeDataChannelAnchorName_(peerNumber,
+      connectionId));
   anchor.innerHTML +=
     '<tr><td><input type="text" value="' + text + '" disabled/></td></tr>';
 }
 
-function dispatchAndEchoDataMessage(messageEvent) {
+function dispatchAndEchoDataMessage_(messageEvent) {
   // Since we labeled the channel earlier, we know to which input element
   // we should send the data.
   var dataChannel = messageEvent.currentTarget;
-  var targetInput = $(dataChannel.label);
+  var targetInput = document.getElementById(dataChannel.label);
   targetInput.value = messageEvent.data;
   dataChannel.send('echo: ' + messageEvent.data);
 }
-
-window.onload = function() {
-  startTest();
-}
-
-var $ = function(id) {
-  return document.getElementById(id);
-};

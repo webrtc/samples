@@ -49,7 +49,6 @@ module.exports = function(grunt) {
       options: {
         preset: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
-        'samples/web/content/manual-test/**/*',
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
@@ -66,7 +65,6 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         ignores: [
-        'samples/web/content/manual-test/**/*',
         'samples/web/content/getusermedia/desktopcapture/**',
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/stereoscopic.js',

@@ -76,8 +76,6 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/GoogleChrome/w
 
 [Audio and Video streams](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/audio-and-video)
 
-[Constraints](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/constraints)
-
 [Iframe apprtc](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/iframe-apprtc)
 
 [Iframe video](https://googlechrome.github.io/webrtc/samples/web/content/manual-test/iframe-video)

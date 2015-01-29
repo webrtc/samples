@@ -88,13 +88,11 @@
   </paper-dialog>
 
   <!-- Report dialog -->
-  <paper-action-dialog id="report-dialog" heading="Bug Report" backdrop autoCloseDisabled transition="paper-dialog-transision-center">
-    <div>
-      <p>Please file a bug in the <a id="report-link">Chromium bug tracker</a> and attach the report from this page.</p>
-      <paper-button flex id="report-download" onclick="report.downloadReport()">Download Report</paper-button>
-      <paper-button affirmative>Close</paper-button>
-    </div>
-  </paper-action-dialog>
+  <paper-dialog id="report-dialog" heading="Bug Report" backdrop autoCloseDisabled transition="paper-dialog-transition-center">
+    <p>Please file a bug in the <a id="report-link">Chromium bug tracker</a> and attach the report from this page.</p>
+    <paper-button id="report-download" onclick="report.downloadReport()">Download Report</paper-button>
+    <paper-button onclick="this.parentElement.close()">Close</paper-button>
+  </paper-dialog>
 
   <!-- Add common files after this line. -->
   <script src="js/adapter.js"></script>
@@ -108,7 +106,6 @@
 
   <!-- Add tests after this line. -->
   <script src="js/mictest.js"></script>
-  <script src="js/camtest.js"></script>
   <script src="js/camresolutionstest.js"></script>
   <script src="js/conntest.js"></script>
   <script src="js/bandwidth_test.js"></script>
