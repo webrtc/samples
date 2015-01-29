@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals trace */
-/* exported setCodecParam, iceCandidateType,
+/* exported setCodecParam, iceCandidateType, maybeSetOpusOptions,
    maybePreferAudioReceiveCodec, maybePreferAudioSendCodec,
    maybeSetAudioReceiveBitRate, maybeSetAudioSendBitRate,
    maybePreferVideoReceiveCodec, maybePreferVideoSendCodec,
@@ -32,6 +32,31 @@ function mergeConstraints(cons1, cons2) {
 
 function iceCandidateType(candidateStr) {
   return candidateStr.split(' ')[7];
+}
+
+function maybeSetOpusOptions(sdp, params) {
+  // Set Opus in Stereo, if stereo is true, unset it, if stereo is false, and
+  // do nothing if otherwise.
+  if (params.opusStereo === 'true') {
+    sdp = setCodecParam(sdp, 'opus/48000', 'stereo', '1');
+  } else if (params.opusStereo === 'false') {
+    sdp = removeCodecParam(sdp, 'opus/48000', 'stereo');
+  }
+
+  // Set Opus FEC, if opusfec is true, unset it, if opusfec is false, and
+  // do nothing if otherwise.
+  if (params.opusFec === 'true') {
+    sdp = setCodecParam(sdp, 'opus/48000', 'useinbandfec', '1');
+  } else if (params.opusFec === 'false') {
+    sdp = removeCodecParam(sdp, 'opus/48000', 'useinbandfec');
+  }
+
+  // Set Opus maxplaybackrate, if requested.
+  if (params.opusMaxPbr) {
+    sdp = setCodecParam(
+        sdp, 'opus/48000', 'maxplaybackrate', params.opusMaxPbr);
+  }
+  return sdp;
 }
 
 function maybeSetAudioSendBitRate(sdp, params) {

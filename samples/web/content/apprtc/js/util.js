@@ -9,13 +9,26 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* exported setUpFullScreen, fullScreenElement, isFullScreen,
-   requestTurnServers, sendAsyncUrlRequest, randomString, $ */
+   requestTurnServers, sendAsyncUrlRequest, randomString, $,
+   queryStringToDictionary */
 /* globals chrome */
 
 'use strict';
 
 function $(selector) {
   return document.querySelector(selector);
+}
+
+// Returns the URL query key-value pairs as a dictionary object.
+function queryStringToDictionary() {
+  var pairs = location.search.slice(1).split('&');
+
+  var result = {};
+  pairs.forEach(function(pair) {
+    pair = pair.split('=');
+    result[pair[0]] = decodeURIComponent(pair[1] || '');
+  });
+  return result;
 }
 
 // Sends the URL request and returns a Promise as the result.
