@@ -60,7 +60,7 @@ SdpUtilsTest.prototype.testMovesCodecEvenIfPayloadTypeIsSameAsUdpPort =
 SdpUtilsTest.prototype.testRemoveAndSetCodecParamModifyFmtpLine =
     function() {
       var result = setCodecParam(SDP_WITH_AUDIO_CODECS, 'opus/48000',
-                                    'minptime', '20');
+                                 'minptime', '20');
       var audioLine = result.split('\r\n')[4];
       assertEquals('minptime=10 should be modified in a=fmtp:111 line.',
                    'a=fmtp:111 minptime=20', audioLine);
