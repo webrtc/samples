@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals TestCase, filterTurnUrls, assertEquals, randomString */
+/* globals TestCase, filterTurnUrls, assertEquals, randomString,
+   queryStringToDictionary */
 
 'use strict';
 
@@ -65,4 +66,39 @@ UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() {
   assertEquals(
       'Anything other than digits regular expression should not match.',
       null, negativeResult);
+};
+
+UtilsTest.prototype.testQueryStringToDictionary = function() {
+  var dictionary = {
+    'foo': 'a',
+    'bar': 'b',
+    'tee': ''
+  };
+  var query = '?';
+  for (var key in dictionary) {
+    query += key + '=' + dictionary[key] + '&';
+  }
+  window.location.search = query;
+  var result = queryStringToDictionary();
+  assertEquals(JSON.stringify(dictionary), JSON.stringify(result));
+
+  window.location.search = '?';
+  result = queryStringToDictionary();
+  assertEquals(0, Object.keys(result).length);
+
+  window.location.search = '?=';
+  result = queryStringToDictionary();
+  assertEquals(0, Object.keys(result).length);
+
+  window.location.search = '?&=';
+  result = queryStringToDictionary();
+  assertEquals(0, Object.keys(result).length);
+
+  window.location.search = '';
+  result = queryStringToDictionary();
+  assertEquals(0, Object.keys(result).length);
+
+  window.location.search = '?=abc';
+  result = queryStringToDictionary();
+  assertEquals(0, Object.keys(result).length);
 };
