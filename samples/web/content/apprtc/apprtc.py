@@ -8,6 +8,7 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 import cgi
+import client
 import constants
 import gcmrecord
 import gcm_register
@@ -16,6 +17,7 @@ import os
 import random
 import json
 import jinja2
+import room
 import threading
 import urllib
 import util
@@ -260,171 +262,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     params['is_initiator'] = json.dumps(is_initiator)
   return params
 
-# For now we have (room_id, client_id) pairs are 'unique' but client_ids are
-# not. Uniqueness is not enforced however and bad things may happen if RNG
-# generates non-unique numbers. We also have a special loopback client id.
-# TODO(tkchin): Generate room/client IDs in a unique way while handling
-# loopback scenario correctly.
-class Client:
-  def __init__(self, is_initiator):
-    self.is_initiator = is_initiator
-    self.messages = []
-  def add_message(self, msg):
-    self.messages.append(msg)
-  def clear_messages(self):
-    self.messages = []
-  def set_initiator(self, initiator):
-    self.is_initiator = initiator
-  def __str__(self):
-    return '{%r, %d}' % (self.is_initiator, len(self.messages))
-
-class Room:
-  # Room used for simple named rooms, can be joined by knowing the room name.
-  TYPE_OPEN = 1
-  # Room used for direct calling, can only be joined by allowed clients.
-  TYPE_DIRECT = 2
-  
-  def __init__(self, room_type):
-    self.clients = {}
-    # The list of allowed clients will include the initiator and other
-    # clients allowed to join the room. If no clients are added, no
-    # list is enforced, and is_client_allowed will always return true.
-    self.allowed_clients = None;
-    if room_type != Room.TYPE_OPEN and room_type != Room.TYPE_DIRECT:
-      room_type = Room.TYPE_OPEN
-    self.room_type = room_type
-  def add_client(self, client_id, client):
-    self.clients[client_id] = client
-  def add_allowed_client(self, client_id):
-    if self.allowed_clients is None:
-      self.allowed_clients = []
-    if client_id not in self.allowed_clients:
-      self.allowed_clients.append(client_id)
-  def remove_client(self, client_id):
-    del self.clients[client_id]
-  def get_occupancy(self):
-    return len(self.clients)
-  def has_client(self, client_id):
-    return client_id in self.clients
-  def is_client_allowed(self, client_id):
-    # If allowed_clients is None, don't enforce allowed_client list.
-    return self.allowed_clients is None or client_id in self.allowed_clients
-  def get_client(self, client_id):
-    return self.clients[client_id]
-  def get_other_client(self, client_id):
-    for key, client in self.clients.items():
-      if key is not client_id:
-        return client
-    return None
-  def __str__(self):
-    return str(self.clients.keys())
-
-def get_memcache_key_for_room(host, room_id):
-  return '%s/%s' % (host, room_id)
-
-def has_room(host, room_id):
-  key = get_memcache_key_for_room(host, room_id)
-  memcache_client = memcache.Client()
-  room = memcache_client.get(key)
-  return room is not None
-
-def add_client_to_room(host, room_id, client_id,
-    is_loopback, room_type, allowed_clients = None):
-  
-  key = get_memcache_key_for_room(host, room_id)
-  memcache_client = memcache.Client()
-  error = None
-  retries = 0
-  room = None
-  # Compare and set retry loop.
-  while True:
-    is_initiator = None
-    messages = []
-    room_state = ''
-    room = memcache_client.gets(key)
-    if room is None:
-      # 'set' and another 'gets' are needed for CAS to work.
-      if not memcache_client.set(key, Room(room_type)):
-        logging.warning('memcache.Client.set failed for key ' + key)
-        error = constants.RESPONSE_INTERNAL_ERROR
-        break
-      room = memcache_client.gets(key)
-
-    occupancy = room.get_occupancy()
-    if occupancy >= 2:
-      error = constants.RESPONSE_ROOM_FULL
-      break
-    if room.has_client(client_id):
-      error = constants.RESPONSE_DUPLICATE_CLIENT
-      break
-
-    if room.room_type != room_type:
-      logging.warning('Room type did not match while adding client ' +
-          client_id + ' to room ' + room_id + ' room type is ' +
-          str(room.room_type) + ' requested room type is ' + str(room_type))
-      error = constants.RESPONSE_INVALID_ROOM
-      break
-
-    if occupancy == 0:
-      is_initiator = True
-      room.add_client(client_id, Client(is_initiator))
-      if is_loopback:
-        room.add_client(constants.LOOPBACK_CLIENT_ID, Client(False))
-      if allowed_clients is not None:
-        for allowed_client in allowed_clients:
-          room.add_allowed_client(allowed_client)
-    else:
-      is_initiator = False
-      other_client = room.get_other_client(client_id)
-      messages = other_client.messages
-      room.add_client(client_id, Client(is_initiator))
-      other_client.clear_messages()
-      # Check if the callee was the callee intended by the caller.
-      if not room.is_client_allowed(client_id):
-        logging.warning('Client ' + client_id + ' not allowed in room ' + 
-            room_id + ' allowed clients: ' + ','.join(room.allowed_clients))
-        error = constants.RESPONSE_INVALID_ROOM
-        break;
-
-    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
-      logging.info('Added client %s in room %s, retries = %d' \
-          %(client_id, room_id, retries))
-      success = True
-      break
-    else:
-      retries = retries + 1
-  return {'error': error, 'is_initiator': is_initiator,
-          'messages': messages, 'room_state': str(room)}
-
-def remove_client_from_room(host, room_id, client_id):
-  key = get_memcache_key_for_room(host, room_id)
-  memcache_client = memcache.Client()
-  retries = 0
-  # Compare and set retry loop.
-  while True:
-    room = memcache_client.gets(key)
-    if room is None:
-      logging.warning('remove_client_from_room: Unknown room ' + room_id)
-      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'room_state': None}
-    if not room.has_client(client_id):
-      logging.warning('remove_client_from_room: Unknown client ' + client_id + \
-          ' for room ' + room_id)
-      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'room_state': None}
-
-    room.remove_client(client_id)
-    if room.has_client(constants.LOOPBACK_CLIENT_ID):
-      room.remove_client(constants.LOOPBACK_CLIENT_ID)
-    if room.get_occupancy() > 0:
-      room.get_other_client(client_id).set_initiator(True)
-    else:
-      room = None
-
-    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
-      logging.info('Removed client %s from room %s, retries=%d' \
-          %(client_id, room_id, retries))
-      return {'error': None, 'room_state': str(room)}
-    retries = retries + 1
-
 def save_message_from_client(host, room_id, client_id, message):
   text = None
   try:
@@ -432,24 +269,24 @@ def save_message_from_client(host, room_id, client_id, message):
   except Exception as e:
     return {'error': constants.RESPONSE_INVALID_ARGUMENT, 'saved': False}
 
-  key = get_memcache_key_for_room(host, room_id)
+  key = room.get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
   retries = 0
   # Compare and set retry loop.
   while True:
-    room = memcache_client.gets(key)
-    if room is None:
+    clientRoom = memcache_client.gets(key)
+    if clientRoom is None:
       logging.warning('Unknown room: ' + room_id)
       return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'saved': False}
-    if not room.has_client(client_id):
+    if not clientRoom.has_client(client_id):
       logging.warning('Unknown client: ' + client_id)
       return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'saved': False}
-    if room.get_occupancy() > 1:
+    if clientRoom.get_occupancy() > 1:
       return {'error': None, 'saved': False}
 
-    client = room.get_client(client_id)
+    client = clientRoom.get_client(client_id)
     client.add_message(text)
-    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
+    if memcache_client.cas(key, clientRoom, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
       logging.info('Saved message for client %s:%s in room %s, retries=%d' \
           %(client_id, str(client), room_id, retries))
       return {'error': None, 'saved': True}
@@ -457,7 +294,7 @@ def save_message_from_client(host, room_id, client_id, message):
 
 class LeavePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
-    result = remove_client_from_room(
+    result = room.remove_client_from_room(
         self.request.host_url, room_id, client_id)
     if result['error'] is None:
       logging.info('Room ' + room_id + ' has state ' + result['room_state'])
@@ -541,7 +378,7 @@ class JoinPage(webapp2.RequestHandler):
       self.report_error(constants.RESPONSE_INVALID_CALLEE)
       return
 
-    if has_room(self.request.host_url, room_id):
+    if room.has_room(self.request.host_url, room_id):
       logging.warning('Room ' + room_id + ' already existed when trying to ' +
           'initiate a new call. Caller gcm id: ' + caller_gcm_id + 
           ' callee id: ' + callee_id)
@@ -551,12 +388,12 @@ class JoinPage(webapp2.RequestHandler):
     allowed_gcm_ids = map(lambda x: x.gcm_id, callee_records)
     allowed_gcm_ids.append(caller_gcm_id)
 
-    result = add_client_to_room(
+    result = room.add_client_to_room(
         self.request.host_url,
         room_id,
         caller_gcm_id,
         False,
-        Room.TYPE_DIRECT,
+        room.Room.TYPE_DIRECT,
         allowed_gcm_ids)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
@@ -582,7 +419,7 @@ class JoinPage(webapp2.RequestHandler):
 
     callee_gcm_id = msg[constants.PARAM_CALLEE_GCM_ID]
     
-    if not has_room(self.request.host_url, room_id):
+    if not room.has_room(self.request.host_url, room_id):
       logging.warning('Room ' + room_id + ' does not exist when trying to ' +
           'accept a call. Callee gcm id: ' + callee_gcm_id)
       self.report_error(constants.RESPONSE_INVALID_ROOM)
@@ -598,12 +435,12 @@ class JoinPage(webapp2.RequestHandler):
 
     callee_id = callee_records[0].user_id
 
-    result = add_client_to_room(
+    result = room.add_client_to_room(
         self.request.host_url,
         room_id,
         callee_gcm_id,
         False,
-        Room.TYPE_DIRECT)
+        room.Room.TYPE_DIRECT)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])
@@ -638,12 +475,12 @@ class JoinPage(webapp2.RequestHandler):
     # If there is no PARAM_ACTION field, join the room.
     client_id = generate_random(8)
     is_loopback = self.request.get('debug') == 'loopback'
-    result = add_client_to_room(
+    result = room.add_client_to_room(
         self.request.host_url,
         room_id,
         client_id,
         is_loopback,
-        Room.TYPE_OPEN)
+        room.Room.TYPE_OPEN)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])
@@ -678,11 +515,11 @@ class RoomPage(webapp2.RequestHandler):
   def get(self, room_id):
     """Renders index.html or full.html."""
     # Check if room is full.
-    room = memcache.get(
-        get_memcache_key_for_room(self.request.host_url, room_id))
-    if room is not None:
-      logging.info('Room ' + room_id + ' has state ' + str(room))
-      if room.get_occupancy() >= 2:
+    clientRoom = memcache.get(
+        room.get_memcache_key_for_room(self.request.host_url, room_id))
+    if clientRoom is not None:
+      logging.info('Room ' + room_id + ' has state ' + str(clientRoom))
+      if clientRoom.get_occupancy() >= 2:
         logging.info('Room ' + room_id + ' is full')
         self.write_response('full.html')
         return

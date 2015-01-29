@@ -5,6 +5,7 @@ import webtest
 
 import apprtc
 import constants
+import room
 from google.appengine.ext import testbed
 
 class RoomUnitTest(unittest.TestCase):
@@ -20,21 +21,21 @@ class RoomUnitTest(unittest.TestCase):
     self.testbed.deactivate()
 
   def testAllowedClientList(self):
-    room = apprtc.Room(apprtc.Room.TYPE_DIRECT)
+    clientRoom = room.Room(room.Room.TYPE_DIRECT)
     # If no allowed clients are specified, any ids are allowed.
     allowed = ['a', 'b', 'c', 'abc', '123']
     not_allowed = ['d', 'e', 'f', 'def', '456', '', None, {}, []]
     for item in not_allowed:
-      self.assertEqual(True, room.is_client_allowed(item))
+      self.assertEqual(True, clientRoom.is_client_allowed(item))
     
     for item in allowed:
-      room.add_allowed_client(item)
+      clientRoom.add_allowed_client(item)
     
     for item in allowed:
-      self.assertEqual(True, room.is_client_allowed(item))
+      self.assertEqual(True, clientRoom.is_client_allowed(item))
       
     for item in not_allowed:
-      self.assertEqual(False, room.is_client_allowed(item))
+      self.assertEqual(False, clientRoom.is_client_allowed(item))
 
 if __name__ == '__main__':
   unittest.main()
