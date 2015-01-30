@@ -71,34 +71,46 @@ UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() {
 UtilsTest.prototype.testQueryStringToDictionary = function() {
   var dictionary = {
     'foo': 'a',
+    'baz': '',
     'bar': 'b',
-    'tee': ''
+    'tee': '',
   };
-  var query = '?';
-  for (var key in dictionary) {
-    query += key + '=' + dictionary[key] + '&';
-  }
-  window.location.search = query;
-  var result = queryStringToDictionary();
+
+  var buildQuery = function(data, includeEqualsOnEmpty) {
+    var queryString = '?';
+    for (var key in data) {
+      queryString += key;
+      if (data[key] || includeEqualsOnEmpty) {
+        queryString += '=';
+      }
+      queryString += data[key] + '&';
+    }
+    queryString = queryString.slice(0, -1);
+    return queryString;
+  };
+
+  // Build query where empty value is formatted as &tee=&.
+  var query = buildQuery(dictionary, true);
+  var result = queryStringToDictionary(query);
   assertEquals(JSON.stringify(dictionary), JSON.stringify(result));
 
-  window.location.search = '?';
-  result = queryStringToDictionary();
+  // Build query where empty value is formatted as &tee&.
+  query = buildQuery(dictionary, false);
+  result = queryStringToDictionary(query);
+  assertEquals(JSON.stringify(dictionary), JSON.stringify(result));
+
+  result = queryStringToDictionary('?');
   assertEquals(0, Object.keys(result).length);
 
-  window.location.search = '?=';
-  result = queryStringToDictionary();
+  result = queryStringToDictionary('?=');
   assertEquals(0, Object.keys(result).length);
 
-  window.location.search = '?&=';
-  result = queryStringToDictionary();
+  result = queryStringToDictionary('?&=');
   assertEquals(0, Object.keys(result).length);
 
-  window.location.search = '';
-  result = queryStringToDictionary();
+  result = queryStringToDictionary('');
   assertEquals(0, Object.keys(result).length);
 
-  window.location.search = '?=abc';
-  result = queryStringToDictionary();
+  result = queryStringToDictionary('?=abc');
   assertEquals(0, Object.keys(result).length);
 };
