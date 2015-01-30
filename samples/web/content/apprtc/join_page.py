@@ -13,6 +13,7 @@ import gcmrecord
 import logging
 import os
 import json
+import parameter_handling
 import room
 import util
 import webapp2
@@ -32,7 +33,7 @@ class JoinPage(webapp2.RequestHandler):
     self.write_response(error, {}, [])
 
   def write_room_parameters(self, room_id, client_id, messages, is_initiator):
-    params = room.get_room_parameters(self.request, room_id, client_id, is_initiator)
+    params = parameter_handling.get_room_parameters(self.request, room_id, client_id, is_initiator)
     self.write_response('SUCCESS', params, messages)
     
   def handle_call(self, msg, room_id):

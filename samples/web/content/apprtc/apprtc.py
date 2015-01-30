@@ -17,6 +17,7 @@ import logging
 import os
 import json
 import jinja2
+import parameter_handling
 import room as room_module
 import threading
 import urllib
@@ -27,7 +28,6 @@ from google.appengine.api import urlfetch
 
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-
 
 class LeavePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
@@ -82,7 +82,7 @@ class MainPage(webapp2.RequestHandler):
   def get(self):
     """Renders index.html."""
     # Parse out parameters from request.
-    params = room_module.get_room_parameters(self.request, None, None, None)
+    params = parameter_handling.get_room_parameters(self.request, None, None, None)
     # room_id/room_link will not be included in the returned parameters
     # so the client will show the landing page for room selection.
     self.write_response('index.html', params)
@@ -99,13 +99,13 @@ class RoomPage(webapp2.RequestHandler):
     room = memcache.get(
         room_module.get_memcache_key_for_room(self.request.host_url, room_id))
     if room is not None:
-      logging.info('Room ' + room_id + ' has state ' + str(clientRoom))
+      logging.info('Room ' + room_id + ' has state ' + str(room))
       if room.get_occupancy() >= 2:
         logging.info('Room ' + room_id + ' is full')
         self.write_response('full.html')
         return
     # Parse out room parameters from request.
-    params = room_module.get_room_parameters(self.request, room_id, None, None)
+    params = parameter_handling.get_room_parameters(self.request, room_id, None, None)
     # room_id/room_link will be included in the returned parameters
     # so the client will launch the requested room.
     self.write_response('index.html', params)
@@ -113,7 +113,7 @@ class RoomPage(webapp2.RequestHandler):
 class ParamsPage(webapp2.RequestHandler):
   def get(self):
     # Return room independent room parameters.
-    params = room_module.get_room_parameters(self.request, None, None, None)
+    params = parameter_handling.get_room_parameters(self.request, None, None, None)
     self.response.write(json.dumps(params))
 
 app = webapp2.WSGIApplication([
