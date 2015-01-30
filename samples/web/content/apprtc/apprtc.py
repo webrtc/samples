@@ -17,7 +17,7 @@ import logging
 import os
 import json
 import jinja2
-import room
+import room as room_module
 import threading
 import urllib
 import util
@@ -29,40 +29,9 @@ jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
 
-
-def save_message_from_client(host, room_id, client_id, message):
-  text = None
-  try:
-      text = message.encode(encoding='utf-8', errors='strict')
-  except Exception as e:
-    return {'error': constants.RESPONSE_INVALID_ARGUMENT, 'saved': False}
-
-  key = room.get_memcache_key_for_room(host, room_id)
-  memcache_client = memcache.Client()
-  retries = 0
-  # Compare and set retry loop.
-  while True:
-    clientRoom = memcache_client.gets(key)
-    if clientRoom is None:
-      logging.warning('Unknown room: ' + room_id)
-      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'saved': False}
-    if not clientRoom.has_client(client_id):
-      logging.warning('Unknown client: ' + client_id)
-      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'saved': False}
-    if clientRoom.get_occupancy() > 1:
-      return {'error': None, 'saved': False}
-
-    client = clientRoom.get_client(client_id)
-    client.add_message(text)
-    if memcache_client.cas(key, clientRoom, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
-      logging.info('Saved message for client %s:%s in room %s, retries=%d' \
-          %(client_id, str(client), room_id, retries))
-      return {'error': None, 'saved': True}
-    retries = retries + 1
-
 class LeavePage(webapp2.RequestHandler):
   def post(self, room_id, client_id):
-    result = room.remove_client_from_room(
+    result = room_module.remove_client_from_room(
         self.request.host_url, room_id, client_id)
     if result['error'] is None:
       logging.info('Room ' + room_id + ' has state ' + result['room_state'])
@@ -90,7 +59,7 @@ class MessagePage(webapp2.RequestHandler):
 
   def post(self, room_id, client_id):
     message_json = self.request.body
-    result = save_message_from_client(
+    result = room_module.save_message_from_client(
         self.request.host_url, room_id, client_id, message_json)
     if result['error'] is not None:
       self.write_response(result['error'])
@@ -113,7 +82,7 @@ class MainPage(webapp2.RequestHandler):
   def get(self):
     """Renders index.html."""
     # Parse out parameters from request.
-    params = room.get_room_parameters(self.request, None, None, None)
+    params = room_module.get_room_parameters(self.request, None, None, None)
     # room_id/room_link will not be included in the returned parameters
     # so the client will show the landing page for room selection.
     self.write_response('index.html', params)
@@ -127,16 +96,16 @@ class RoomPage(webapp2.RequestHandler):
   def get(self, room_id):
     """Renders index.html or full.html."""
     # Check if room is full.
-    clientRoom = memcache.get(
-        room.get_memcache_key_for_room(self.request.host_url, room_id))
-    if clientRoom is not None:
+    room = memcache.get(
+        room_module.get_memcache_key_for_room(self.request.host_url, room_id))
+    if room is not None:
       logging.info('Room ' + room_id + ' has state ' + str(clientRoom))
-      if clientRoom.get_occupancy() >= 2:
+      if room.get_occupancy() >= 2:
         logging.info('Room ' + room_id + ' is full')
         self.write_response('full.html')
         return
     # Parse out room parameters from request.
-    params = room.get_room_parameters(self.request, room_id, None, None)
+    params = room_module.get_room_parameters(self.request, room_id, None, None)
     # room_id/room_link will be included in the returned parameters
     # so the client will launch the requested room.
     self.write_response('index.html', params)
@@ -144,7 +113,7 @@ class RoomPage(webapp2.RequestHandler):
 class ParamsPage(webapp2.RequestHandler):
   def get(self):
     # Return room independent room parameters.
-    params = room.get_room_parameters(self.request, None, None, None)
+    params = room_module.get_room_parameters(self.request, None, None, None)
     self.response.write(json.dumps(params))
 
 app = webapp2.WSGIApplication([

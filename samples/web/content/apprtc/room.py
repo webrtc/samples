@@ -163,6 +163,36 @@ def remove_client_from_room(host, room_id, client_id):
       return {'error': None, 'room_state': str(room)}
     retries = retries + 1
 
+def save_message_from_client(host, room_id, client_id, message):
+  text = None
+  try:
+      text = message.encode(encoding='utf-8', errors='strict')
+  except Exception as e:
+    return {'error': constants.RESPONSE_INVALID_ARGUMENT, 'saved': False}
+
+  key = get_memcache_key_for_room(host, room_id)
+  memcache_client = memcache.Client()
+  retries = 0
+  # Compare and set retry loop.
+  while True:
+    room = memcache_client.gets(key)
+    if room is None:
+      logging.warning('Unknown room: ' + room_id)
+      return {'error': constants.RESPONSE_UNKNOWN_ROOM, 'saved': False}
+    if not room.has_client(client_id):
+      logging.warning('Unknown client: ' + client_id)
+      return {'error': constants.RESPONSE_UNKNOWN_CLIENT, 'saved': False}
+    if room.get_occupancy() > 1:
+      return {'error': None, 'saved': False}
+
+    client = room.get_client(client_id)
+    client.add_message(text)
+    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
+      logging.info('Saved message for client %s:%s in room %s, retries=%d' \
+          %(client_id, str(client), room_id, retries))
+      return {'error': None, 'saved': True}
+    retries = retries + 1
+
 # HD is on by default for desktop Chrome, but not Android or Firefox (yet)
 def get_hd_default(user_agent):
   if 'Android' in user_agent or not 'Chrome' in user_agent:
