@@ -477,7 +477,7 @@ AppController.prototype.loadUrlParams_ = function() {
   // Suppressing jshint warns about using urlParams['KEY'] instead of
   // urlParams.KEY, since we'd like to use string literals to avoid the Closure
   // compiler renaming the properties.
-  var urlParams = queryStringToDictionary();
+  var urlParams = queryStringToDictionary(window.location.search)
 
   this.loadingParams_.audioSendBitrate = urlParams['asbr'];
   this.loadingParams_.audioSendCodec = urlParams['asc'];
