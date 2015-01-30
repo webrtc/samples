@@ -8,23 +8,26 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 import cgi
-import client
-import constants
-import gcmrecord
-import gcm_register
-import join_page
 import logging
 import os
 import json
 import jinja2
-import parameter_handling
-import room as room_module
 import threading
 import urllib
-import util
 import webapp2
+
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
+
+import client
+import constants
+import decline_page
+import gcm_register
+import gcmrecord
+import join_page
+import parameter_handling
+import room as room_module
+import util
 
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
@@ -119,11 +122,12 @@ class ParamsPage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/bind/(\w+)', gcm_register.BindPage),
+    ('/decline/(\w+)', decline_page.DeclinePage),
+    ('/join/(\w+)', join_page.JoinPage),
     ('/leave/(\w+)/(\w+)', LeavePage),
     ('/message/(\w+)/(\w+)', MessagePage),
-    ('/join/(\w+)', join_page.JoinPage),
-    ('/r/(\w+)', RoomPage),
     ('/params', ParamsPage),
+    ('/r/(\w+)', RoomPage),
     # TODO(jiayl): Remove support of the old APIs when all clients are updated.
     ('/room/(\w+)', RoomPage),
     ('/register/(\w+)', join_page.JoinPage),

@@ -7,17 +7,19 @@
 This module implements the call join page.
 """
 
+import json
+import logging
+import os
+import webapp2
+
+from google.appengine.api import memcache
+
 import client
 import constants
 import gcmrecord
-import logging
-import os
-import json
 import parameter_handling
 import room
 import util
-import webapp2
-from google.appengine.api import memcache
 
 class JoinPage(webapp2.RequestHandler):
   def write_response(self, result, params, messages):
@@ -60,8 +62,9 @@ class JoinPage(webapp2.RequestHandler):
     if len(callee_records) < 1:
       self.report_error(constants.RESPONSE_INVALID_CALLEE)
       return
-
-    if room.has_room(self.request.host_url, room_id):
+    
+    room_state = room.get_room_state(self.request.host_url, room_id)
+    if room_state is not None and room_state is not room.Room.STATE_EMPTY:
       logging.warning('Room ' + room_id + ' already existed when trying to ' +
           'initiate a new call. Caller gcm id: ' + caller_gcm_id + 
           ' callee id: ' + callee_id)
@@ -75,9 +78,10 @@ class JoinPage(webapp2.RequestHandler):
         self.request.host_url,
         room_id,
         caller_gcm_id,
-        False,
-        room.Room.TYPE_DIRECT,
-        allowed_gcm_ids)
+        is_loopback = False,
+        room_type = room.Room.TYPE_DIRECT,
+        allow_room_creation = True,
+        allowed_clients = allowed_gcm_ids)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])
@@ -122,8 +126,9 @@ class JoinPage(webapp2.RequestHandler):
         self.request.host_url,
         room_id,
         callee_gcm_id,
-        False,
-        room.Room.TYPE_DIRECT)
+        is_loopback = False,
+        room_type = room.Room.TYPE_DIRECT,
+        allow_room_creation = False)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])
@@ -162,8 +167,9 @@ class JoinPage(webapp2.RequestHandler):
         self.request.host_url,
         room_id,
         client_id,
-        is_loopback,
-        room.Room.TYPE_OPEN)
+        is_loopback = is_loopback,
+        room_type = room.Room.TYPE_OPEN,
+        allow_room_creation = True)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])

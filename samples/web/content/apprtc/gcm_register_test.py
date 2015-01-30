@@ -1,46 +1,20 @@
 # Copyright 2014 Google Inc. All Rights Reserved.
 
+import json
 import unittest
 import webtest
+
+from google.appengine.datastore import datastore_stub_util
+from google.appengine.ext import ndb
+from google.appengine.ext import testbed
 
 import apprtc
 import constants
 import gcm_register
 import gcmrecord
-import json
-from google.appengine.datastore import datastore_stub_util
-from google.appengine.ext import ndb
-from google.appengine.ext import testbed
+import test_utilities
 
-class BindPageHandlerTest(unittest.TestCase):
-  def setUp(self):
-    # First, create an instance of the Testbed class.
-    self.testbed = testbed.Testbed()
-    # Then activate the testbed, which prepares the service stubs for use.
-    self.testbed.activate()
-
-    # Create a consistency policy that will simulate the High Replication
-    # consistency model.
-    self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy()
-    # Initialize the datastore stub with this policy.
-    self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
-    self.testbed.init_memcache_stub()
-
-    self.test_app = webtest.TestApp(apprtc.app)
-
-  def tearDown(self):
-    self.testbed.deactivate()
-
-  def makePostRequest(self, path, body=''):
-    return self.test_app.post(path, body, headers={'User-Agent': 'Safari'})
-
-  def checkInvalidRequests(self, path, params):
-    body = {x: '' for x in params}
-    while len(body) > 0:
-      response = self.makePostRequest(path, json.dumps(body))
-      self.assertEqual(constants.RESPONSE_INVALID_ARGUMENT, response.body)
-      body.popitem()
-
+class BindPageHandlerTest(test_utilities.BasePageHandlerTest):
   def testBindNew(self):
     body = {
       gcm_register.PARAM_USER_ID: 'foo',

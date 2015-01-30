@@ -7,29 +7,38 @@
 This module implements the room data model.
 """
 
-import client
-import constants
 import json
 import logging
+
+from google.appengine.api import memcache
+
+import client
+import constants
 import parameter_handling
 import util
-from google.appengine.api import memcache
 
 class Room:
   # Room used for simple named rooms, can be joined by knowing the room name.
   TYPE_OPEN = 1
   # Room used for direct calling, can only be joined by allowed clients.
   TYPE_DIRECT = 2
+
+  STATE_EMPTY = 0
+  STATE_WAITING = 1
+  STATE_FULL = 2
   
   def __init__(self, room_type):
     self.clients = {}
     # The list of allowed clients will include the initiator and other
     # clients allowed to join the room. If no clients are added, no
     # list is enforced, and is_client_allowed will always return true.
-    self.allowed_clients = None;
+    self.allowed_clients = None
     if room_type != Room.TYPE_OPEN and room_type != Room.TYPE_DIRECT:
       room_type = Room.TYPE_OPEN
     self.room_type = room_type
+  def reset(self):
+    self.clients = {}
+    self.allowed_clients = None
   def add_client(self, client_id, client):
     self.clients[client_id] = client
   def add_allowed_client(self, client_id):
@@ -53,6 +62,13 @@ class Room:
       if key is not client_id:
         return client
     return None
+  def get_room_state(self):
+    occupancy = self.get_occupancy()
+    if occupancy == 0:
+      return Room.STATE_EMPTY
+    elif occupancy == 1:
+      return Room.STATE_WAITING
+    return Room.STATE_FULL
   def __str__(self):
     return str(self.clients.keys())
 
@@ -65,27 +81,91 @@ def has_room(host, room_id):
   room = memcache_client.get(key)
   return room is not None
 
+def get_room(host, room_id):
+  key = get_memcache_key_for_room(host, room_id)
+  memcache_client = memcache.Client()
+  return memcache_client.get(key)
+
+def get_room_state(host, room_id):
+  room = get_room(host, room_id)
+  if room is None:
+    return None
+  return room.get_room_state()
+
+def remove_room_for_declined_call(host, room_id, callee_gcm_id):
+  memcache_client = memcache.Client()
+  key = get_memcache_key_for_room(host, room_id)
+
+  for retries in xrange(constants.ROOM_MEMCACHE_RETRY_LIMIT):
+    room = memcache_client.gets(key)
+    
+    if room is None:
+      logging.warning('Can\'t remove room ' + room_id +
+          ' because it doesn\'t exist, client: ' + callee_gcm_id)
+      return constants.RESPONSE_INVALID_ROOM
+  
+    if not room.is_client_allowed(callee_gcm_id):
+      logging.warning('Can\'t remove room ' + room_id +
+          ' because room does not allow client ' + callee_gcm_id)
+      return constants.RESPONSE_INVALID_CALLEE
+
+    # The client already in the room is the caller.
+    # The caller should not be removing the room via decline.
+    if room.has_client(callee_gcm_id):
+      logging.warning('Can\'t remove room ' + room_id +
+          ' because client is caller: ' + callee_gcm_id)
+      return constants.RESPONSE_INVALID_CALLEE
+  
+    if room.room_type != Room.TYPE_DIRECT:
+      logging.warning('Can\'t remove room ' + room_id + 
+          ' because it has type: ' + str(room.room_type) + ' client: ' +
+          callee_gcm_id)
+      return constants.RESPONSE_INVALID_ROOM
+  
+    if room.get_room_state() == Room.STATE_FULL:
+      logging.warning('Can\'t remove room ' + room_id + 
+          'because it is full (' + str(room.get_occupancy()) +') client: ' +
+          callee_gcm_id)
+      return constants.RESPONSE_INVALID_ROOM
+  
+    # Reset the room to the initial state so it may be reused.
+    room.reset()
+    if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
+      logging.info('Reset room %s to base state in remove_room by client %s, retries = %d' \
+          %(room_id, callee_gcm_id, retries))
+      return constants.RESPONSE_SUCCESS
+    
+  logging.warning('Failed to remove room ' + room_id + ' after retry limit ' +
+       ' client: ' + callee_gcm_id)
+  return constants.RESPONSE_INTERNAL_ERROR
+
 def add_client_to_room(host, room_id, client_id,
-    is_loopback, room_type, allowed_clients = None):
+    is_loopback, room_type, allow_room_creation, 
+    allowed_clients = None):
   
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
   error = None
-  retries = 0
   room = None
   # Compare and set retry loop.
-  while True:
+  for retries in xrange(constants.ROOM_MEMCACHE_RETRY_LIMIT):
     is_initiator = None
     messages = []
     room_state = ''
     room = memcache_client.gets(key)
     if room is None:
-      # 'set' and another 'gets' are needed for CAS to work.
-      if not memcache_client.set(key, Room(room_type)):
-        logging.warning('memcache.Client.set failed for key ' + key)
-        error = constants.RESPONSE_INTERNAL_ERROR
+      if allow_room_creation:
+        # 'set' and another 'gets' are needed for CAS to work.
+        if not memcache_client.set(key, Room(room_type)):
+          logging.warning('memcache.Client.set failed for key ' + key)
+          error = constants.RESPONSE_INTERNAL_ERROR
+          break
+        room = memcache_client.gets(key)
+      else:
+        logging.warning('Room did not exist and room creation is not ' +
+            ' allowed. room_id: ' + room_id + ' client: ' + client_id)
+        error = constants.RESPONSE_INVALID_ROOM
         break
-      room = memcache_client.gets(key)
 
     occupancy = room.get_occupancy()
     if occupancy >= 2:
@@ -128,17 +208,14 @@ def add_client_to_room(host, room_id, client_id,
           %(client_id, room_id, retries))
       success = True
       break
-    else:
-      retries = retries + 1
   return {'error': error, 'is_initiator': is_initiator,
           'messages': messages, 'room_state': str(room)}
 
 def remove_client_from_room(host, room_id, client_id):
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
-  retries = 0
   # Compare and set retry loop.
-  while True:
+  for retries in xrange(constants.ROOM_MEMCACHE_RETRY_LIMIT):
     room = memcache_client.gets(key)
     if room is None:
       logging.warning('remove_client_from_room: Unknown room ' + room_id)
@@ -160,7 +237,7 @@ def remove_client_from_room(host, room_id, client_id):
       logging.info('Removed client %s from room %s, retries=%d' \
           %(client_id, room_id, retries))
       return {'error': None, 'room_state': str(room)}
-    retries = retries + 1
+  return {'error' : constants.RESPONSE_INTERNAL_ERROR, 'room_state': None}
 
 def save_message_from_client(host, room_id, client_id, message):
   text = None
@@ -171,9 +248,8 @@ def save_message_from_client(host, room_id, client_id, message):
 
   key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
-  retries = 0
   # Compare and set retry loop.
-  while True:
+  for retries in xrange(constants.ROOM_MEMCACHE_RETRY_LIMIT):
     room = memcache_client.gets(key)
     if room is None:
       logging.warning('Unknown room: ' + room_id)
@@ -190,4 +266,5 @@ def save_message_from_client(host, room_id, client_id, message):
       logging.info('Saved message for client %s:%s in room %s, retries=%d' \
           %(client_id, str(client), room_id, retries))
       return {'error': None, 'saved': True}
-    retries = retries + 1
+  return {'error' : constants.RESPONSE_INTERNAL_ERROR, 'saved': False}
+

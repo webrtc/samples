@@ -7,6 +7,7 @@
 This module contains the constants used in AppRTC Python modules.
 """
 ROOM_MEMCACHE_EXPIRATION_SEC = 60 * 60 * 24
+ROOM_MEMCACHE_RETRY_LIMIT = 100
 
 LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
 
