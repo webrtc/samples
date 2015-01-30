@@ -164,9 +164,9 @@ module.exports = function(grunt) {
   grunt.loadTasks('grunt-chrome-build');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
-                     'shell:runPythonTests', 'jstdPhantom',
-                     'closurecompiler:debug']);
+  grunt.registerTask('default', ['csslint', 'htmlhint',
+                     'jscs', 'jshint', 'shell:runPythonTests', 'jstests']);
+  grunt.registerTask('jstests', ['closurecompiler:debug', 'jstdPhantom']);
   grunt.registerTask('build', ['closurecompiler:debug', 'grunt-chrome-build']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
