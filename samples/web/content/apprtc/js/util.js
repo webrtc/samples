@@ -9,13 +9,34 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* exported setUpFullScreen, fullScreenElement, isFullScreen,
-   requestTurnServers, sendAsyncUrlRequest, randomString */
+   requestTurnServers, sendAsyncUrlRequest, randomString, $,
+   queryStringToDictionary */
 /* globals chrome */
 
 'use strict';
 
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+// Returns the URL query key-value pairs as a dictionary object.
+function queryStringToDictionary(queryString) {
+  var pairs = queryString.slice(1).split('&');
+
+  var result = {};
+  pairs.forEach(function(pair) {
+    if (pair) {
+      pair = pair.split('=');
+      if (pair[0]) {
+        result[pair[0]] = decodeURIComponent(pair[1] || '');
+      }
+    }
+  });
+  return result;
+}
+
 // Sends the URL request and returns a Promise as the result.
-function sendAsyncUrlRequest(method, url) {
+function sendAsyncUrlRequest(method, url, body) {
   return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -30,7 +51,7 @@ function sendAsyncUrlRequest(method, url) {
       resolve(xhr.responseText);
     };
     xhr.open(method, url, true);
-    xhr.send();
+    xhr.send(body);
   });
 }
 

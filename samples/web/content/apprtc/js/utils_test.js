@@ -8,7 +8,8 @@
 
 /* More information about these options at jshint.com/docs/options */
 
-/* globals TestCase, filterTurnUrls, assertEquals, randomString */
+/* globals TestCase, filterTurnUrls, assertEquals, randomString,
+   queryStringToDictionary */
 
 'use strict';
 
@@ -65,4 +66,51 @@ UtilsTest.prototype.testRandomReturnsCorrectCharacters = function() {
   assertEquals(
       'Anything other than digits regular expression should not match.',
       null, negativeResult);
+};
+
+UtilsTest.prototype.testQueryStringToDictionary = function() {
+  var dictionary = {
+    'foo': 'a',
+    'baz': '',
+    'bar': 'b',
+    'tee': '',
+  };
+
+  var buildQuery = function(data, includeEqualsOnEmpty) {
+    var queryString = '?';
+    for (var key in data) {
+      queryString += key;
+      if (data[key] || includeEqualsOnEmpty) {
+        queryString += '=';
+      }
+      queryString += data[key] + '&';
+    }
+    queryString = queryString.slice(0, -1);
+    return queryString;
+  };
+
+  // Build query where empty value is formatted as &tee=&.
+  var query = buildQuery(dictionary, true);
+  var result = queryStringToDictionary(query);
+  assertEquals(JSON.stringify(dictionary), JSON.stringify(result));
+
+  // Build query where empty value is formatted as &tee&.
+  query = buildQuery(dictionary, false);
+  result = queryStringToDictionary(query);
+  assertEquals(JSON.stringify(dictionary), JSON.stringify(result));
+
+  result = queryStringToDictionary('?');
+  assertEquals(0, Object.keys(result).length);
+
+  result = queryStringToDictionary('?=');
+  assertEquals(0, Object.keys(result).length);
+
+  result = queryStringToDictionary('?&=');
+  assertEquals(0, Object.keys(result).length);
+
+  result = queryStringToDictionary('');
+  assertEquals(0, Object.keys(result).length);
+
+  result = queryStringToDictionary('?=abc');
+  assertEquals(0, Object.keys(result).length);
 };

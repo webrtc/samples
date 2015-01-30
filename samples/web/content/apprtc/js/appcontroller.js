@@ -9,7 +9,7 @@
 /* More information about these options at jshint.com/docs/options */
 
 /* globals trace, InfoBox, setUpFullScreen, isFullScreen,
-   RoomSelection, isChromeApp */
+   RoomSelection, isChromeApp, $ */
 /* exported AppController, remoteVideo */
 
 'use strict';
@@ -20,18 +20,23 @@ var remoteVideo = $('#remote-video');
 
 // Keep this in sync with the HTML element id attributes. Keep it sorted.
 var UI_CONSTANTS = {
+  confirmJoinButton: '#confirm-join-button',
+  confirmJoinDiv: '#confirm-join-div',
+  confirmJoinRoomSpan: '#confirm-join-room-span',
   fullscreenSvg: '#fullscreen',
-
   hangupSvg: '#hangup',
   icons: '#icons',
   infoDiv: '#info-div',
   localVideo: '#local-video',
   miniVideo: '#mini-video',
-
   muteAudioSvg: '#mute-audio',
   muteVideoSvg: '#mute-video',
-
+  newRoomButton: '#new-room-button',
+  newRoomLink: '#new-room-link',
   remoteVideo: '#remote-video',
+  rejoinButton: '#rejoin-button',
+  rejoinDiv: '#rejoin-div',
+  rejoinLink: '#rejoin-link',
   roomLinkHref: '#room-link-href',
   roomSelectionDiv: '#room-selection',
   roomSelectionInput: '#room-id-input',
@@ -58,6 +63,16 @@ var AppController = function(loadingParams) {
   this.remoteVideo_ = $(UI_CONSTANTS.remoteVideo);
   this.videosDiv_ = $(UI_CONSTANTS.videosDiv);
   this.roomLinkHref_ = $(UI_CONSTANTS.roomLinkHref);
+  this.rejoinDiv_ = $(UI_CONSTANTS.rejoinDiv);
+  this.rejoinLink_ = $(UI_CONSTANTS.rejoinLink);
+  this.newRoomLink_ = $(UI_CONSTANTS.newRoomLink);
+  this.rejoinButton_ = $(UI_CONSTANTS.rejoinButton);
+  this.newRoomButton_ = $(UI_CONSTANTS.newRoomButton);
+
+  this.newRoomButton_.addEventListener('click',
+      this.onNewRoomClick_.bind(this), false);
+  this.rejoinButton_.addEventListener('click',
+      this.onRejoinClick_.bind(this), false);
 
   this.muteAudioIconSet_ =
       new AppController.IconSet_(UI_CONSTANTS.muteAudioSvg);
@@ -67,6 +82,8 @@ var AppController = function(loadingParams) {
       new AppController.IconSet_(UI_CONSTANTS.fullscreenSvg);
 
   this.loadingParams_ = loadingParams;
+  this.loadUrlParams_();
+
   var paramsPromise = Promise.resolve({});
   if (this.loadingParams_.paramsFunction) {
     // If we have a paramsFunction value, we need to call it
@@ -84,61 +101,91 @@ var AppController = function(loadingParams) {
       }.bind(this));
     }
 
-    // Proceed with call set up.
     this.roomLink_ = '';
-
-    this.call_ = new Call(this.loadingParams_);
-    this.infoBox_ =
-        new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
-
+    this.roomSelection_ = null;
+    this.localStream_ = null;
     this.remoteVideoResetTimer_ = null;
 
-    var roomErrors = this.loadingParams_.errorMessages;
-    if (roomErrors.length > 0) {
-      for (var i = 0; i < roomErrors.length; ++i) {
-        this.infoBox_.pushErrorMessage(roomErrors[i]);
-      }
-      return;
-    }
-
-    // TODO(jiayl): replace callbacks with events.
-    this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
-    this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
-    this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
-    this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
-
-    this.call_.onsignalingstatechange =
-        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-    this.call_.oniceconnectionstatechange =
-        this.infoBox_.updateInfoDiv.bind(this.infoBox_);
-    this.call_.onnewicecandidate =
-        this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
-
-    this.call_.onerror = this.displayError_.bind(this);
-    this.call_.onstatusmessage = this.displayStatus_.bind(this);
-    this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
-
-    this.roomSelection_ = null;
-    // If the params has a roomId specified, we should connect to that room immediately.
-    // If not, show the room selection UI.
+    // If the params has a roomId specified, we should connect to that room
+    // immediately. If not, show the room selection UI.
     if (this.loadingParams_.roomId) {
-      // Record this room in the recently used list.
-      var recentlyUsedList = new RoomSelection.RecentlyUsedList();
-      recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
-      this.finishCallSetup_(this.loadingParams_.roomId);
+      this.createCall_();
+
+      // Ask the user to confirm.
+      if (!RoomSelection.matchRandomRoomPattern(this.loadingParams_.roomId)) {
+        // Show the room name only if it does not match the random room pattern.
+        $(UI_CONSTANTS.confirmJoinRoomSpan).textContent = ' "' +
+            this.loadingParams_.roomId + '"';
+      }
+      var confirmJoinDiv = $(UI_CONSTANTS.confirmJoinDiv);
+      this.show_(confirmJoinDiv);
+
+      $(UI_CONSTANTS.confirmJoinButton).onclick = function() {
+        this.hide_(confirmJoinDiv);
+
+        // Record this room in the recently used list.
+        var recentlyUsedList = new RoomSelection.RecentlyUsedList();
+        recentlyUsedList.pushRecentRoom(this.loadingParams_.roomId);
+        this.finishCallSetup_(this.loadingParams_.roomId);
+      }.bind(this);
+
+      if (this.loadingParams_.bypassJoinConfirmation) {
+        $(UI_CONSTANTS.confirmJoinButton).onclick();
+      }
     } else {
       // Display the room selection UI.
-      var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
-      this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
-      this.show_(roomSelectionDiv);
-      this.roomSelection_.onRoomSelected = function(roomName) {
-        this.hide_(roomSelectionDiv);
-        this.finishCallSetup_(roomName);
-      }.bind(this);
+      this.showRoomSelection_();
     }
   }.bind(this)).catch(function(error) {
     trace('Error initializing: ' + error.message);
   }.bind(this));
+};
+
+AppController.prototype.createCall_ = function() {
+  this.call_ = new Call(this.loadingParams_);
+  this.infoBox_ =
+      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
+
+  var roomErrors = this.loadingParams_.errorMessages;
+  if (roomErrors && roomErrors.length > 0) {
+    for (var i = 0; i < roomErrors.length; ++i) {
+      this.infoBox_.pushErrorMessage(roomErrors[i]);
+    }
+    return;
+  }
+
+  // TODO(jiayl): replace callbacks with events.
+  this.call_.onremotehangup = this.onRemoteHangup_.bind(this);
+  this.call_.onremotesdpset = this.onRemoteSdpSet_.bind(this);
+  this.call_.onremotestreamadded = this.onRemoteStreamAdded_.bind(this);
+  this.call_.onlocalstreamadded = this.onLocalStreamAdded_.bind(this);
+
+  this.call_.onsignalingstatechange =
+      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+  this.call_.oniceconnectionstatechange =
+      this.infoBox_.updateInfoDiv.bind(this.infoBox_);
+  this.call_.onnewicecandidate =
+      this.infoBox_.recordIceCandidateTypes.bind(this.infoBox_);
+
+  this.call_.onerror = this.displayError_.bind(this);
+  this.call_.onstatusmessage = this.displayStatus_.bind(this);
+  this.call_.oncallerstarted = this.displaySharingInfo_.bind(this);
+};
+
+AppController.prototype.showRoomSelection_ = function() {
+  var roomSelectionDiv = $(UI_CONSTANTS.roomSelectionDiv);
+  this.roomSelection_ = new RoomSelection(roomSelectionDiv, UI_CONSTANTS);
+  this.show_(roomSelectionDiv);
+  this.roomSelection_.onRoomSelected = function(roomName) {
+    this.hide_(roomSelectionDiv);
+    this.createCall_();
+    this.finishCallSetup_(roomName);
+
+    this.roomSelection_ = null;
+    if (this.localStream_) {
+      this.attachLocalStream_();
+    }
+  }.bind(this);
 };
 
 AppController.prototype.finishCallSetup_ = function(roomId) {
@@ -224,8 +271,16 @@ AppController.prototype.onRemoteStreamAdded_ = function(stream) {
 
 AppController.prototype.onLocalStreamAdded_ = function(stream) {
   trace('User has granted access to local media.');
+  this.localStream_ = stream;
+
+  if (!this.roomSelection_) {
+    this.attachLocalStream_();
+  }
+};
+
+AppController.prototype.attachLocalStream_ = function() {
   // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(this.localVideo_, stream);
+  attachMediaStream(this.localVideo_, this.localStream_);
 
   this.displayStatus_('');
   this.activate_(this.localVideo_);
@@ -291,8 +346,21 @@ AppController.prototype.transitionToDone_ = function() {
   this.deactivate_(this.remoteVideo_);
   this.deactivate_(this.miniVideo_);
   this.hide_(this.hangupSvg_);
-  this.displayStatus_('You have left the call. <a href=\'' +
-      this.roomLink_ + '\'>Click here</a> to rejoin.');
+  this.activate_(this.rejoinDiv_);
+  this.show_(this.rejoinDiv_);
+  this.displayStatus_('');
+};
+
+AppController.prototype.onRejoinClick_ = function() {
+  this.deactivate_(this.rejoinDiv_);
+  this.hide_(this.rejoinDiv_);
+  this.call_.restart();
+};
+
+AppController.prototype.onNewRoomClick_ = function() {
+  this.deactivate_(this.rejoinDiv_);
+  this.hide_(this.rejoinDiv_);
+  this.showRoomSelection_();
 };
 
 // Spacebar, or m: toggle audio mute.
@@ -379,10 +447,6 @@ AppController.prototype.toggleFullScreen_ = function() {
   this.fullscreenIconSet_.toggle();
 };
 
-function $(selector) {
-  return document.querySelector(selector);
-}
-
 AppController.prototype.hide_ = function(element) {
   element.classList.add('hidden');
 };
@@ -406,6 +470,28 @@ AppController.prototype.showIcons_ = function() {
       this.deactivate_(this.icons_);
     }.bind(this), 5000);
   }
+};
+
+AppController.prototype.loadUrlParams_ = function() {
+  /* jshint ignore:start */
+  // Suppressing jshint warns about using urlParams['KEY'] instead of
+  // urlParams.KEY, since we'd like to use string literals to avoid the Closure
+  // compiler renaming the properties.
+  var urlParams = queryStringToDictionary(window.location.search)
+
+  this.loadingParams_.audioSendBitrate = urlParams['asbr'];
+  this.loadingParams_.audioSendCodec = urlParams['asc'];
+  this.loadingParams_.audioRecvBitrate = urlParams['arbr'];
+  this.loadingParams_.audioRecvCodec = urlParams['arc'];
+  this.loadingParams_.opusMaxPbr = urlParams['opusmaxpbr'];
+  this.loadingParams_.opusFec = urlParams['opusfec'];
+  this.loadingParams_.opusStereo = urlParams['stereo'];
+  this.loadingParams_.videoSendBitrate = urlParams['vsbr'];
+  this.loadingParams_.videoSendInitialBitrate = urlParams['vsibr'];
+  this.loadingParams_.videoSendCodec = urlParams['vsc'];
+  this.loadingParams_.videoRecvBitrate = urlParams['vrbr'];
+  this.loadingParams_.videoRecvCodec = urlParams['vrc'];
+  /* jshint ignore:end */
 };
 
 AppController.IconSet_ = function(iconSelector) {

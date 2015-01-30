@@ -200,32 +200,6 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     logging.error(message)
     error_messages.append(message)
 
-  # Allow preferred audio and video codecs to be overridden.
-  audio_send_codec = request.get('asc', default_value = '')
-  audio_receive_codec = request.get('arc', default_value = '')
-  video_send_codec = request.get('vsc', default_value = '')
-  video_receive_codec = request.get('vrc', default_value = '')
-
-  # Read url param controlling whether we send stereo.
-  stereo = request.get('stereo', default_value = '')
-
-  # Read url param controlling whether we send Opus FEC.
-  opusfec = request.get('opusfec', default_value = '')
-
-  # Read url param for Opus max sample rate.
-  opusmaxpbr = request.get('opusmaxpbr', default_value = '')
-
-  # Read url params audio send bitrate (asbr) & audio receive bitrate (arbr)
-  asbr = request.get('asbr', default_value = '')
-  arbr = request.get('arbr', default_value = '')
-
-  # Read url params video send bitrate (vsbr) & video receive bitrate (vrbr)
-  vsbr = request.get('vsbr', default_value = '')
-  vrbr = request.get('vrbr', default_value = '')
-
-  # Read url params for the initial video send bitrate (vsibr)
-  vsibr = request.get('vsibr', default_value = '')
-
   # Options for controlling various networking features.
   dtls = request.get('dtls')
   dscp = request.get('dscp')
@@ -244,7 +218,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   # a random id, but we should make this better.
   username = client_id if client_id is not None else generate_random(9)
   if len(turn_base_url) > 0:
-    turn_url = constants.TURN_URL_TEMPLATE % (turn_base_url, username, constants.CEOD_KEY)
+    turn_url = constants.TURN_URL_TEMPLATE % \
+        (turn_base_url, username, constants.CEOD_KEY)
 
   pc_config = make_pc_config(ice_transports)
   pc_constraints = make_pc_constraints(dtls, dscp, ipv6)
@@ -252,6 +227,10 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
   media_constraints = make_media_stream_constraints(audio, video,
                                                     firefox_fake_device)
   wss_url, wss_post_url = get_wss_parameters(request)
+
+  bypass_join_confirmation = 'BYPASS_JOIN_CONFIRMATION' in os.environ and \
+      os.environ['BYPASS_JOIN_CONFIRMATION'] == 'True'
+
   params = {
     'error_messages': error_messages,
     'is_loopback' : json.dumps(debug == 'loopback'),
@@ -261,21 +240,10 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'media_constraints': json.dumps(media_constraints),
     'turn_url': turn_url,
     'turn_transports': turn_transports,
-    'stereo': stereo,
-    'opusfec': opusfec,
-    'opusmaxpbr': opusmaxpbr,
-    'arbr': arbr,
-    'asbr': asbr,
-    'vrbr': vrbr,
-    'vsbr': vsbr,
-    'vsibr': vsibr,
-    'audio_send_codec': audio_send_codec,
-    'audio_receive_codec': audio_receive_codec,
-    'video_send_codec': video_send_codec,
-    'video_receive_codec': video_receive_codec,
     'include_loopback_js' : include_loopback_js,
     'wss_url': wss_url,
-    'wss_post_url': wss_post_url
+    'wss_post_url': wss_post_url,
+    'bypass_join_confirmation': json.dumps(bypass_join_confirmation)
   }
 
   if room_id is not None:

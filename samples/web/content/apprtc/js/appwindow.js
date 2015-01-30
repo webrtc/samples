@@ -43,17 +43,6 @@ var loadingParams = {
             parseJSON(serverParams.pc_constraints);
         newParams.turnRequestUrl = serverParams.turn_url;
         newParams.turnTransports = serverParams.turn_transports;
-        newParams.audioSendBitrate = serverParams.asbr;
-        newParams.audioSendCodec = serverParams.audio_send_codec;
-        newParams.audioRecvBitrate = serverParams.arbr;
-        newParams.audioRecvCodec = serverParams.audio_receive_codec;
-        newParams.opusMaxPbr = serverParams.opusmaxpbr;
-        newParams.opusFec = serverParams.opusfec;
-        newParams.videoSendBitrate = serverParams.vsbr;
-        newParams.videoSendInitialBitrate = serverParams.vsibr;
-        newParams.videoSendCodec = serverParams.video_send_codec;
-        newParams.videoRecvBitrate = serverParams.vrbr;
-        newParams.videoRecvCodec = serverParams.video_receive_codec;
         newParams.wssUrl = serverParams.wss_url;
         newParams.wssPostUrl = serverParams.wss_post_url;
         //jscs:enable requireCamelCaseOrUpperCaseIdentifiers

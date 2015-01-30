@@ -49,7 +49,6 @@ module.exports = function(grunt) {
       options: {
         preset: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
-        'samples/web/content/manual-test/**/*',
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
@@ -66,7 +65,6 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         ignores: [
-        'samples/web/content/manual-test/**/*',
         'samples/web/content/getusermedia/desktopcapture/**',
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
@@ -166,9 +164,9 @@ module.exports = function(grunt) {
   grunt.loadTasks('grunt-chrome-build');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
-                     'shell:runPythonTests', 'jstdPhantom',
-                     'closurecompiler:debug']);
+  grunt.registerTask('default', ['csslint', 'htmlhint',
+                     'jscs', 'jshint', 'shell:runPythonTests', 'jstests']);
+  grunt.registerTask('jstests', ['closurecompiler:debug', 'jstdPhantom']);
   grunt.registerTask('build', ['closurecompiler:debug', 'grunt-chrome-build']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()

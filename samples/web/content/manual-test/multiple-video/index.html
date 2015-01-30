@@ -12,27 +12,6 @@
 <head>
   <title>Multiple Local Preview (Video Only)</title>
   <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
-  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-  <script src="../../../js/adapter.js"></script>
-  <script type="text/javascript">
-  function requestVideo() {
-    // Call into getUserMedia via the polyfill (adapter.js).
-    getUserMedia({video: true, audio: false},
-                         getUserMediaOkCallback,
-                         getUserMediaFailedCallback);
-  }
-
-  function getUserMediaFailedCallback(error) {
-    alert("User media request denied with error code " + error.code);
-  }
-
-  function getUserMediaOkCallback(stream) {
-    // Call the polyfill wrapper to attach the media stream to this element.
-    for (var i = 1; i <= 10; i++) {
-      attachMediaStream(document.getElementById("view" + i), stream);
-    }
-  }
-  </script>
 </head>
 <body onload="requestVideo();">
   <table border="0">
@@ -68,5 +47,25 @@
           autoplay="autoplay"></video></td>
     </tr>
   </table>
+  <script src="../../../js/adapter.js"></script>
+  <script type="text/javascript">
+    function requestVideo() {
+      // Call into getUserMedia via the polyfill (adapter.js).
+      getUserMedia( {video: true, audio: false},
+                    getUserMediaOkCallback,
+                    getUserMediaFailedCallback);
+    }
+
+    function getUserMediaFailedCallback(error) {
+      alert('User media request denied with error code ' + error.code);
+    }
+
+    function getUserMediaOkCallback(stream) {
+      // Call the polyfill wrapper to attach the media stream to this element.
+      for (var i = 1; i <= 10; i++) {
+        attachMediaStream(document.getElementById('view' + i), stream);
+      }
+    }
+  </script>
 </body>
 </html>
