@@ -10,6 +10,7 @@ This module implements utility methods shared between other modules.
 import collections
 import json
 import logging
+import random
 
 from google.appengine.ext import ndb
 
@@ -52,3 +53,9 @@ def get_message_from_json(body):
     logging.warning('JSON load error from BindPage: error=' + str(e)
         + ', request=' + body)
     return None
+
+def generate_random(length):
+  word = ''
+  for _ in range(length):
+    word += random.choice('0123456789')
+  return word
