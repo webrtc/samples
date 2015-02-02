@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/samdutton/webrtc.git"
+    "url": "https://github.com/GoogleChrome/webrtc.git"
   },
   "keywords": [
     "webrtc"
   ],
-  "author": "samdutton",
-  "license": "ISC",
+  "author": "The WebRTC project authors",
+  "license": "BSD",
   "bugs": {
-    "url": "https://github.com/samdutton/webrtc/issues"
+    "url": "https://github.com/GoogleChrome/webrtc/issues"
   },
-  "homepage": "https://github.com/samdutton/webrtc",
+  "homepage": "https://github.com/GoogleChrome/webrtc",
   "devDependencies": {
     "grunt": ">=0.4.5",
     "grunt-cli": ">=0.1.9",

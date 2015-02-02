@@ -20,13 +20,17 @@ function $(selector) {
 }
 
 // Returns the URL query key-value pairs as a dictionary object.
-function queryStringToDictionary() {
-  var pairs = location.search.slice(1).split('&');
+function queryStringToDictionary(queryString) {
+  var pairs = queryString.slice(1).split('&');
 
   var result = {};
   pairs.forEach(function(pair) {
-    pair = pair.split('=');
-    result[pair[0]] = decodeURIComponent(pair[1] || '');
+    if (pair) {
+      pair = pair.split('=');
+      if (pair[0]) {
+        result[pair[0]] = decodeURIComponent(pair[1] || '');
+      }
+    }
   });
   return result;
 }
