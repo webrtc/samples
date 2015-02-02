@@ -76,5 +76,9 @@ class UtilTest(unittest.TestCase):
             testObject, 
             (("a", bool), ("h", basestring), ("e", list))))
 
+  def testGenerateRandomGeneratesStringOfRightLength(self):
+    self.assertEqual(17, len(util.generate_random(17)))
+    self.assertEqual(23, len(util.generate_random(23)))
+
 if __name__ == '__main__':
   unittest.main()
