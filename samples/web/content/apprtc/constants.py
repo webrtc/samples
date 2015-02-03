@@ -6,6 +6,9 @@
 
 This module contains the constants used in AppRTC Python modules.
 """
+import json
+import os
+
 ROOM_MEMCACHE_EXPIRATION_SEC = 60 * 60 * 24
 
 LOOPBACK_CLIENT_ID = 'LOOPBACK_CLIENT_ID'
@@ -42,8 +45,6 @@ class EventType:
 class LogField:
   pass
 
-import os
-import json
 with open(os.path.join(os.path.dirname(__file__),
                        'bigquery', 'analytics_schema.json')) as f:
   schema = json.load(f)

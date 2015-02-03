@@ -71,9 +71,10 @@ class AnalyticsTest(unittest.TestCase):
     self.testbed.activate()
 
     # Inject our own instance of bigquery.
-    self.buildBigQueryReplacement = ReplaceFunction(analytics.Analytics,
-                                             '_build_bigquery_object',
-                                             self.fake_build_bigquery_object)
+    self.buildBigQueryReplacement = ReplaceFunction(
+        analytics.Analytics,
+        '_build_bigquery_object',
+        self.fake_build_bigquery_object)
 
     # Inject our own time function
     self.now = time.time()

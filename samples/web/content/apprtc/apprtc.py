@@ -8,26 +8,27 @@ This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
 # Enables loading third_party modules
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-
 import cgi
-import constants
-import logging
-import random
 import json
-import jinja2
+import logging
+import os
+import random
+import sys
 import threading
 import urllib
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
+import jinja2
 import webapp2
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 
+import analytics
+import constants
+
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-import analytics
 
 def generate_random(length):
   word = ''
