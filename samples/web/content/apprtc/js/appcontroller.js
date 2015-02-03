@@ -143,8 +143,10 @@ var AppController = function(loadingParams) {
 
 AppController.prototype.createCall_ = function() {
   this.call_ = new Call(this.loadingParams_);
-  this.infoBox_ =
-      new InfoBox($(UI_CONSTANTS.infoDiv), this.remoteVideo_, this.call_);
+  this.infoBox_ = new InfoBox($(UI_CONSTANTS.infoDiv),
+                              this.remoteVideo_,
+                              this.call_,
+                              this.loadingParams_.versionInfo);
 
   var roomErrors = this.loadingParams_.errorMessages;
   if (roomErrors && roomErrors.length > 0) {
