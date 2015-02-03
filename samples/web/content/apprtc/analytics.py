@@ -1,20 +1,20 @@
 # Copyright 2015 Google Inc. All Rights Reserved.
 
-import constants
 import datetime
-import httplib2
 import json
 import logging
 import os
 import time
+
+import httplib2
 import webapp2
-
-from constants import LogField
-
 from apiclient import discovery
 from google.appengine.api import app_identity
 from oauth2client.appengine import AppAssertionCredentials
 from oauth2client.client import SignedJwtAssertionCredentials
+
+import constants
+from constants import LogField
 
 class Analytics(object):
   """Class used to encapsulate analytics logic. Used interally in the module.
@@ -38,7 +38,6 @@ class Analytics(object):
       # Local instances require a 'secrets.json' file.
       secrets_path = os.path.join(os.path.dirname(__file__), 'secrets.json')
       if (os.path.exists(secrets_path)):
-
         with open(secrets_path) as f:
           auth = json.load(f)
           credentials = SignedJwtAssertionCredentials(
@@ -48,7 +47,6 @@ class Analytics(object):
       else:
         logging.warning(
             'No credentials provided for BigQuery. Logging disabled.')
-
     else:
       # Use the GAE service credentials.
       credentials = AppAssertionCredentials(
