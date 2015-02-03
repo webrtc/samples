@@ -9,7 +9,7 @@ module.exports = function (grunt) {
     grunt.log.writeln('Chrome packaged app build.');
 
     var options = this.options();
-    
+
     // Steps:
     // 1. Delete existing build dir if it exists.
     var buildDir = options.buildDir;
@@ -77,7 +77,7 @@ module.exports = function (grunt) {
 
     grunt.task.run('compress:chrome-build');
   });
-  
+
   grunt.registerTask('grunt-chrome-build-package', 'Create crx package file in build directory.', function () {
     var options = grunt.option('grunt-chrome-build-options');
     // This section does not work yet.
@@ -87,6 +87,7 @@ module.exports = function (grunt) {
     var keyFile = options.keyFile;
     if (!chromeBinary || !keyFile) {
       grunt.log.writeln('Skipping creation of Chrome package.');
+      done(true);
     } else {
       grunt.log.writeln('Calling Chrome to create package.');
 
