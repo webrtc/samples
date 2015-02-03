@@ -1,0 +1,27 @@
+[
+  {
+    "name": "event_type",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "room_id",
+    "type": "string",
+    "mode": "nullable"
+  },
+  {
+    "name": "timestamp",
+    "type": "timestamp",
+    "mode": "nullable"
+  },
+  {
+    "name": "client_timestamp",
+    "type": "timestamp",
+    "mode": "nullable"
+  },
+  {
+    "name": "host",
+    "type": "string",
+    "mode": "nullable"
+  }
+]
