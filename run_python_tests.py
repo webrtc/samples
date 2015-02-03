@@ -20,7 +20,7 @@ def main(sdk_path, test_path, webtest_path):
     sys.path.append(webtest_path)
     suite = unittest.loader.TestLoader().discover(test_path,
                                                   pattern="*test.py")
-    return unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful()
+    unittest.TextTestRunner(verbosity=2).run(suite)
 
 
 if __name__ == '__main__':
@@ -33,4 +33,4 @@ if __name__ == '__main__':
     SDK_PATH = args[0]
     TEST_PATH = args[1]
     WEBTEST_PATH = args[2]
-    sys.exit(not main(SDK_PATH, TEST_PATH, WEBTEST_PATH))
+    main(SDK_PATH, TEST_PATH, WEBTEST_PATH)
