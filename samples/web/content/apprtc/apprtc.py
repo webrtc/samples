@@ -532,8 +532,4 @@ app = webapp2.WSGIApplication([
     ('/join/(\w+)', JoinPage),
     ('/r/(\w+)', RoomPage),
     ('/params', ParamsPage),
-    # TODO(jiayl): Remove support of the old APIs when all clients are updated.
-    ('/room/(\w+)', RoomPage),
-    ('/register/(\w+)', JoinPage),
-    ('/bye/(\w+)/(\w+)', LeavePage),
 ], debug=True)
