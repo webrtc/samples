@@ -4,14 +4,16 @@ import datetime
 import json
 import logging
 import os
+import sys
 import time
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
 import httplib2
+import oauth2client
+import oauth2client.appengine
 import webapp2
 from apiclient import discovery
 from google.appengine.api import app_identity
-from oauth2client.appengine import AppAssertionCredentials
-from oauth2client.client import SignedJwtAssertionCredentials
 
 import constants
 from constants import LogField
@@ -40,7 +42,7 @@ class Analytics(object):
       if (os.path.exists(secrets_path)):
         with open(secrets_path) as f:
           auth = json.load(f)
-          credentials = SignedJwtAssertionCredentials(
+          credentials = oauth2client.client.SignedJwtAssertionCredentials(
               auth['client_email'], auth['private_key'],
               constants.BIGQUERY_URL)
           self.bigquery = self._build_bigquery_object(credentials)
@@ -49,7 +51,7 @@ class Analytics(object):
             'No credentials provided for BigQuery. Logging disabled.')
     else:
       # Use the GAE service credentials.
-      credentials = AppAssertionCredentials(
+      credentials = oauth2client.appengine.AppAssertionCredentials(
           scope=constants.BIGQUERY_URL)
       self.bigquery = self._build_bigquery_object(credentials)
 
