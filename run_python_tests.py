@@ -13,7 +13,17 @@ TEST_PATH    Path to package containing test modules.
 WEBTEST_PATH Path to the webtest library."""
 
 
+def _CheckDependencyInPlace(path):
+  if not os.path.exists(path):
+    raise Exception('Missing %s; please run run_python_tests.sh '
+                    'instead to have the dependencies downloaded.' % path)
+
+
 def main(sdk_path, test_path, webtest_path):
+    _CheckDependencyInPlace(sdk_path)
+    _CheckDependencyInPlace(test_path)
+    _CheckDependencyInPlace(webtest_path)
+
     sys.path.insert(0, sdk_path)
     import dev_appserver
     dev_appserver.fix_sys_path()
