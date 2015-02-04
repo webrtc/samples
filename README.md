@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/GoogleChrome/webrtc.svg)](https://travis-ci.org/webrtc/samples)
+[![Build Status](https://travis-ci.org/webrtc/samples.svg)](https://travis-ci.org/webrtc/samples)
 
 # WebRTC code samples #
 
