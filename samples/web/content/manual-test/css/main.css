@@ -216,10 +216,11 @@ video {
 #log {
   float: left;
   position: fixed;
-  overflow: auto;
+  overflow: scroll;
   top: 0;
   left: 0;
   width: 20%;
+  height: 100%;
   padding: 16px;
   word-wrap: break-word;
   z-index: 1;
