@@ -7,28 +7,21 @@
 This module demonstrates the WebRTC API by implementing a simple video chat app.
 """
 
-# Enables loading third_party modules
 import cgi
-import json
+import constants
 import logging
 import os
 import random
-import sys
+import json
+import jinja2
 import threading
 import urllib
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-import jinja2
 import webapp2
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 
-import analytics
-import constants
-
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
-
 
 def generate_random(length):
   word = ''
@@ -319,8 +312,8 @@ class Room:
 def get_memcache_key_for_room(host, room_id):
   return '%s/%s' % (host, room_id)
 
-def add_client_to_room(request, room_id, client_id, is_loopback):
-  key = get_memcache_key_for_room(request.host_url, room_id)
+def add_client_to_room(host, room_id, client_id, is_loopback):
+  key = get_memcache_key_for_room(host, room_id)
   memcache_client = memcache.Client()
   error = None
   retries = 0
@@ -362,10 +355,6 @@ def add_client_to_room(request, room_id, client_id, is_loopback):
     if memcache_client.cas(key, room, constants.ROOM_MEMCACHE_EXPIRATION_SEC):
       logging.info('Added client %s in room %s, retries = %d' \
           %(client_id, room_id, retries))
-      if room.get_occupancy() == 2:
-        analytics.report_event(constants.EventType.ROOM_SIZE_2,
-                               room_id,
-                               host=request.host)
       success = True
       break
     else:
@@ -493,7 +482,8 @@ class JoinPage(webapp2.RequestHandler):
   def post(self, room_id):
     client_id = generate_random(8)
     is_loopback = self.request.get('debug') == 'loopback'
-    result = add_client_to_room(self.request, room_id, client_id, is_loopback)
+    result = add_client_to_room(
+        self.request.host_url, room_id, client_id, is_loopback)
     if result['error'] is not None:
       logging.info('Error adding client to room: ' + result['error'] + \
           ', room_state=' + result['room_state'])

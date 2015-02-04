@@ -4,7 +4,6 @@ import unittest
 import webtest
 
 import apprtc
-import analytics
 import json
 from google.appengine.api import memcache
 from google.appengine.ext import testbed
@@ -40,15 +39,8 @@ class AppRtcPageHandlerTest(unittest.TestCase):
 
     self.test_app = webtest.TestApp(apprtc.app)
 
-    # Fake out event reporting.
-    def fake_mock_event(*args, **kwargs):
-      pass
-    self.oldReportEvent = analytics.report_event
-    analytics.report_event = fake_mock_event
-
   def tearDown(self):
     self.testbed.deactivate()
-    analytics.report_event = self.oldReportEvent
 
   def makeGetRequest(self, path):
     # PhantomJS uses WebKit, so Safari is closest to the thruth.
