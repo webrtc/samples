@@ -6,9 +6,6 @@ module.exports = function(grunt) {
 
   // configure project
   grunt.initConfig({
-    // make node configurations available
-    pkg: grunt.file.readJSON('package.json'),
-
     csslint: {
       options: {
         csslintrc: 'src/.csslintrc'
@@ -34,10 +31,10 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-        'src/content/apprtc/index.html',
-        'src/content/datachannel/index.html',
-        'src/content/getusermedia/**/index.html',
-        'src/content/peerconnection/**/index.html'
+          'src/content/apprtc/index.html',
+          'src/content/datachannel/index.html',
+          'src/content/getusermedia/**/index.html',
+          'src/content/peerconnection/**/index.html'
         ]
       }
     },
@@ -47,10 +44,10 @@ module.exports = function(grunt) {
       options: {
         preset: 'google', // as per Google style guide – could use '.jscsrc' instead
         'excludeFiles': [
-        'src/content/getusermedia/desktopcapture/extension/content-script.js',
-        'src/content/getusermedia/**/*.js',
-        'src/content/peerconnection/**/*.js',
-        'src/content/datachannel/**/*.js'
+          'src/content/getusermedia/desktopcapture/extension/content-script.js',
+          'src/content/getusermedia/**/*.js',
+          'src/content/peerconnection/**/*.js',
+          'src/content/datachannel/**/*.js'
         ]
       }
     },
@@ -58,7 +55,7 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         ignores: [
-        'src/content/getusermedia/desktopcapture/**',
+          'src/content/getusermedia/desktopcapture/**',
         ],
         // use default .jshintrc files
         jshintrc: true
@@ -67,7 +64,8 @@ module.exports = function(grunt) {
       // can choose more than one name + array of paths
       // usage with this name: grunt jshint:files
       files: ['src/content/**/*.js']
-    },
+    }
+  });
 
   // enable plugins
   grunt.loadNpmTasks('grunt-contrib-csslint');
