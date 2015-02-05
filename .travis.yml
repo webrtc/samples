@@ -1,3 +1,10 @@
 language: node_js
 node_js:
   - 0.10
+
+install:
+  - npm install -g grunt grunt-cli
+  - npm install grunt-jscs grunt-contrib-jshint grunt-htmlhint grunt-contrib-csslint
+
+script:
+  - grunt
