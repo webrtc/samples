@@ -14,10 +14,11 @@
 
 'use strict';
 
-var InfoBox = function(infoDiv, remoteVideo, call) {
+var InfoBox = function(infoDiv, remoteVideo, call, versionInfo) {
   this.infoDiv_ = infoDiv;
   this.remoteVideo_ = remoteVideo;
   this.call_ = call;
+  this.versionInfo_ = versionInfo;
 
   this.errorMessages_ = [];
   // Time when the call was intiated and accepted.
@@ -81,7 +82,7 @@ InfoBox.prototype.refreshStats_ = function() {
 };
 
 InfoBox.prototype.updateInfoDiv = function() {
-  var contents = '<pre id=\"this.stats_\" style=\"line-height: initial\">';
+  var contents = '<pre id=\"info-box-stats\" style=\"line-height: initial\">';
 
   if (this.stats_) {
     var states = this.call_.getPeerConnectionStates();
@@ -131,6 +132,14 @@ InfoBox.prototype.updateInfoDiv = function() {
     }
   } else {
     this.infoDiv_.classList.remove('warning');
+  }
+
+  if (this.versionInfo_) {
+    contents += this.buildLine_();
+    contents += this.buildLine_('Version');
+    for (var key in this.versionInfo_) {
+      contents += this.buildLine_(key, this.versionInfo_[key]);
+    }
   }
 
   contents += '</pre>';

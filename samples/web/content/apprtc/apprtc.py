@@ -125,6 +125,18 @@ def get_wss_parameters(request):
     wss_post_url = 'https://' + ws_host_port_pair
   return (wss_url, wss_post_url)
 
+def get_version_info():
+  try:
+    f = open('version_info.json')
+    if f is not None:
+      try:
+        return json.load(f)
+      except ValueError as e:
+        logging.warning('version_info.json cannot be decoded: ' + str(e))
+  except IOError as e:
+    logging.warning('version_info.json cannot be opened: ' + str(e))
+  return None
+
 # Returns appropriate room parameters based on query parameters in the request.
 # TODO(tkchin): move query parameter parsing to JS code.
 def get_room_parameters(request, room_id, client_id, is_initiator):
@@ -243,7 +255,8 @@ def get_room_parameters(request, room_id, client_id, is_initiator):
     'include_loopback_js' : include_loopback_js,
     'wss_url': wss_url,
     'wss_post_url': wss_post_url,
-    'bypass_join_confirmation': json.dumps(bypass_join_confirmation)
+    'bypass_join_confirmation': json.dumps(bypass_join_confirmation),
+    'version_info': json.dumps(get_version_info())
   }
 
   if room_id is not None:
@@ -532,8 +545,4 @@ app = webapp2.WSGIApplication([
     ('/join/(\w+)', JoinPage),
     ('/r/(\w+)', RoomPage),
     ('/params', ParamsPage),
-    # TODO(jiayl): Remove support of the old APIs when all clients are updated.
-    ('/room/(\w+)', RoomPage),
-    ('/register/(\w+)', JoinPage),
-    ('/bye/(\w+)/(\w+)', LeavePage),
 ], debug=True)
