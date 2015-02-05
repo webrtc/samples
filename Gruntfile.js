@@ -18,8 +18,7 @@ module.exports = function(grunt) {
           import: 2
         },
         src: ['samples/web/content/**/*.css',
-              '!samples/web/content/**/*_nolint.css',
-              '!samples/web/content/testrtc/bower_components/**/*.css'
+              '!samples/web/content/**/*_nolint.css'
         ]
       },
       lax: {
@@ -27,8 +26,7 @@ module.exports = function(grunt) {
           import: false
         },
         src: ['samples/web/content/**/*.css',
-              '!samples/web/content/**/*_nolint.css',
-              '!samples/web/content/testrtc/bower_components/**/*.css'
+              '!samples/web/content/**/*_nolint.css'
         ]
       }
     },
@@ -52,8 +50,7 @@ module.exports = function(grunt) {
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
-        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
-        'samples/web/content/testrtc/bower_components/**'
+        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js'
         ]
       }
     },
@@ -65,8 +62,7 @@ module.exports = function(grunt) {
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/apprtc/js/ga.js',
-        'samples/web/content/apprtc/js/vr.js',
-        'samples/web/content/testrtc/bower_components/**'
+        'samples/web/content/apprtc/js/vr.js'
         ],
         // use default .jshintrc files
         jshintrc: true
