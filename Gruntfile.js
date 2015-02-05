@@ -6,6 +6,9 @@ module.exports = function(grunt) {
 
   // configure project
   grunt.initConfig({
+    // make node configurations available
+    pkg: grunt.file.readJSON('package.json'),
+
     csslint: {
       options: {
         csslintrc: 'src/.csslintrc'
@@ -31,7 +34,6 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-          'src/content/apprtc/index.html',
           'src/content/datachannel/index.html',
           'src/content/getusermedia/**/index.html',
           'src/content/peerconnection/**/index.html'
