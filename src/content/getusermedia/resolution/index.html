@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript">
+  <meta name="description" content="Client-side WebRTC code samples.">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>getUserMedia: select resolution</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css">
+
+  <style>
+    body, html {
+      height: 100%;
+    }
+
+    button {
+      margin: 0 10px 20px 0;
+      width: 90px;
+    }
+
+    div#buttons {
+      margin: 0 0 1em 0;
+    }
+
+    div#container {
+      max-width: 100%;
+    }
+
+    p#dimensions {
+      height: 1em;
+      margin: 0 0 1.5em 0;
+    }
+
+    video {
+      background: none;
+      height: auto;
+      width: auto;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia: select resolution</span></h1>
+    <p></p>
+
+    <p>This example uses <a href="http://tools.ietf.org/html/draft-alvestrand-constraints-resolution-00#page-4" title="IETF constraints draft proposal">constraints</a>.</p>
+
+    <p>Click a button to call <code>getUserMedia()</code> with appropriate resolution.</p>
+
+    <div id="buttons">
+      <button id="qvga">QVGA</button>
+      <button id="vga">VGA</button>
+      <button id="hd">HD</button>
+      <button id="full-hd">Full HD</button>
+    </div>
+
+    <p id="dimensions"></p>
+
+    <video id="gum-res-local" autoplay></video>
+
+    <p>For more information, see <a href="http://www.html5rocks.com/en/tutorials/getusermedia/intro/" title="Media capture article by Eric Bidelman on HTML5 Rocks">Capturing Audio &amp; Video in HTML5</a> on HTML5 Rocks.</p>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/resolution" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+  </div>
+
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+
+</body>
+</html>

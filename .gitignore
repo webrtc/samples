@@ -1,10 +1,4 @@
 node_modules
 .DS_Store
-*.pyc
 validation-report.json
 validation-status.json
-bower_components
-google_appengine*
-webtest-master*
-build
-samples/web/content/apprtc/js/compiled
