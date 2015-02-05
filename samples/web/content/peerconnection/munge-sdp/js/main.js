@@ -46,7 +46,6 @@ var sdpConstraints = {
   }
 };
 
-
 getSources();
 
 function getSources() {

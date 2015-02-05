@@ -1,0 +1,5 @@
+{
+  "disallowMultipleVarDecl": "exceptUndefined",
+  "maximumLineLength": 100,
+  "preset": "google"
+}

@@ -39,7 +39,6 @@ var sdpConstraints = {
   }
 };
 
-
 main();
 
 function main() {
@@ -135,7 +134,8 @@ function gotRemoteStream(e) {
     enableDtmfSender();
   } else {
     alert(
-      'This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.'
+      'This demo requires the RTCPeerConnection method createDTMFSender() ' +
+        'which is not support by this browser.'
     );
   }
 

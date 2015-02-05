@@ -45,7 +45,7 @@ function createOffer() {
       'OfferToReceiveAudio': audioInput.checked
     }, {
       'OfferToReceiveVideo': videoInput.checked
-    }, ]
+    }]
   };
   // These constraints confuse Firefox, even if declared as optional.
   if (webrtcDetectedBrowser !== 'Firefox') {

@@ -8,7 +8,6 @@
 
 'use strict';
 
-
 var getMediaButton = document.querySelector('button#getMedia');
 var connectButton = document.querySelector('button#connect');
 
@@ -213,7 +212,6 @@ AugumentedStatsResponse.prototype.get = function(key) {
   return this.response[key];
 };
 
-
 // Display statistics
 setInterval(function() {
   var display = function(string) {
@@ -350,7 +348,6 @@ function dumpStats(obj) {
   }
   return statsString;
 }
-
 
 // Utility to show the value of a range in a sibling span element
 function displayRangeValue(e) {

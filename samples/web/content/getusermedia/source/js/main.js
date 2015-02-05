@@ -38,7 +38,6 @@ if (typeof MediaStreamTrack === 'undefined') {
   MediaStreamTrack.getSources(gotSources);
 }
 
-
 function successCallback(stream) {
   window.stream = stream; // make stream available to console
   videoElement.src = window.URL.createObjectURL(stream);

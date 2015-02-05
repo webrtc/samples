@@ -47,17 +47,13 @@ module.exports = function(grunt) {
     jscs: {
       src: 'samples/web/content/**/*.js',
       options: {
-        preset: 'google', // as per Google style guide – could use '.jscsrc' instead
+        config: 'samples/web/.jscsrc', // uses Google preset with some exceptions
         'excludeFiles': [
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/vr.js',
         'samples/web/content/apprtc/js/stereoscopic.js',
         'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
-        'samples/web/content/testrtc/bower_components/**',
-        // TODO (chuckhays) : remove these exclusions after code passes.
-        'samples/web/content/getusermedia/**/*.js',
-        'samples/web/content/peerconnection/**/*.js',
-        'samples/web/content/datachannel/**/*.js'
+        'samples/web/content/testrtc/bower_components/**'
         ]
       }
     },

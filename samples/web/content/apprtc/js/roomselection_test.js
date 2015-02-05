@@ -121,7 +121,8 @@ RoomSelectionTest.prototype.testRecentListHasChildren = function(queue) {
     assertEquals('The first link should have 1 child.',
                  1,
                  children[0].children.length);
-    assertMatch('That child should be an href with a link containing room1.', /room1/, children[0].children[0].href);
+    assertMatch('That child should be an href with a link containing room1.',
+                /room1/, children[0].children[0].href);
   });
 };
 

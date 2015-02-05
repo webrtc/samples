@@ -23,13 +23,11 @@ renderLocallyCheckbox.onclick = toggleRenderLocally;
 
 document.addEventListener('keydown', handleKeyDown, false);
 
-
 var localStream;
 var pc1, pc2;
 
 var webAudio = new WebAudioExtended();
 webAudio.loadSound('audio/Shamisen-C4.wav');
-
 
 function trace(txt) {
   statusDiv.innerHTML += '<p>' + txt + '</p>';

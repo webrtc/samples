@@ -69,11 +69,10 @@ function start() {
     candidateTBody.removeChild(candidateTBody.firstChild);
   }
 
-
   // Read the values from the input boxes.
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
-     iceServers.push(JSON.parse(servers[i].value));
+    iceServers.push(JSON.parse(servers[i].value));
   }
   var transports = document.getElementsByName('transports');
   var iceTransports;
@@ -87,7 +86,7 @@ function start() {
   // Create a PeerConnection with no streams, but force a m=audio line.
   // This will gather candidates for either 1 or 2 ICE components, depending
   // on whether the unbundle RTCP checkbox is checked.
-  var config = {'iceServers': iceServers };
+  var config = {'iceServers': iceServers};
   var pcConstraints = {'mandatory': {'IceTransports': iceTransports}};
   var offerConstraints = {'mandatory': {'OfferToReceiveAudio': true}};
   // Whether we gather IPv6 candidates.
