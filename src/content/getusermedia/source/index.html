@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript">
+  <meta name="description" content="Client-side WebRTC code samples.">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>Select audio and video sources</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+
+  <style>
+    div.select {
+      display: inline-block;
+      margin: 0 0 1em 0;
+    }
+    select {
+      width: 110px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Select audio &amp; video sources</span></h1>
+
+    <p>Get available audio and video sources from <code>MediaStream.getSources()</code> then set the source for <code>getUserMedia()</code> using a <code>sourceId</code> constraint.</p>
+
+    <div class="select">
+      <label for="audioSource">Audio source: </label><select id="audioSource"></select>
+    </div>
+
+    <div class="select">
+      <label for="videoSource">Video source: </label><select id="videoSource"></select>
+    </div>
+
+    <video muted autoplay></video>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/source" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+  </div>
+
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+</body>
+</html>
