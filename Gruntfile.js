@@ -47,7 +47,7 @@ module.exports = function(grunt) {
     jscs: {
       src: 'samples/web/content/**/*.js',
       options: {
-        config: 'samples/web/.jscsrc', // uses Google preset with some exceptions
+        config: 'samples/web/.jscsrc',
         'excludeFiles': [
         'samples/web/content/apprtc/js/compiled/*.js',
         'samples/web/content/apprtc/js/vr.js',

@@ -26,7 +26,9 @@ var pc1IceStateDiv = document.querySelector('div#pc1IceState');
 var pc2StateDiv = document.querySelector('div#pc2State');
 var pc2IceStateDiv = document.querySelector('div#pc2IceState');
 
-var localstream, pc1, pc2;
+var localstream;
+var pc1;
+var pc2;
 
 var sdpConstraints = {
   mandatory: {

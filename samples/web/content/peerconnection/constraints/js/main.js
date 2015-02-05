@@ -39,7 +39,8 @@ var remoteVideo = document.querySelector('div#remoteVideo video');
 var localVideoStatsDiv = document.querySelector('div#localVideo div');
 var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 
-var localPeerConnection, remotePeerConnection;
+var localPeerConnection;
+var remotePeerConnection;
 var localStream;
 var bytesPrev = 0;
 var timestampPrev = 0;

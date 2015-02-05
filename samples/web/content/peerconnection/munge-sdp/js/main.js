@@ -9,7 +9,8 @@
 'use strict';
 
 var getMediaButton = document.querySelector('button#getMedia');
-var createPeerConnectionButton = document.querySelector('button#createPeerConnection');
+var createPeerConnectionButton =
+  document.querySelector('button#createPeerConnection');
 var createOfferButton = document.querySelector('button#createOffer');
 var setOfferButton = document.querySelector('button#setOffer');
 var createAnswerButton = document.querySelector('button#createAnswer');
@@ -37,7 +38,8 @@ var remoteVideo = document.querySelector('div#remote video');
 
 var selectSourceDiv = document.querySelector('div#selectSource');
 
-var localPeerConnection, remotePeerConnection;
+var localPeerConnection;
+var remotePeerConnection;
 var localStream;
 var sdpConstraints = {
   'mandatory': {

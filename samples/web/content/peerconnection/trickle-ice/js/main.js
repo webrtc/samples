@@ -23,7 +23,8 @@ addButton.onclick = addServer;
 gatherButton.onclick = start;
 removeButton.onclick = removeServer;
 
-var begin, pc;
+var begin;
+var pc;
 
 function selectServer(event) {
   var option = event.target;
@@ -42,7 +43,8 @@ function addServer() {
 
   // Store the ICE server as a stringified JSON object in option.value.
   var option = document.createElement('option');
-  var iceServer = createIceServer(urlInput.value, usernameInput.value, passwordInput.value);
+  var iceServer = createIceServer(urlInput.value, usernameInput.value,
+    passwordInput.value);
   option.value = JSON.stringify(iceServer);
   option.text = urlInput.value + ' ';
   var username = usernameInput.value;

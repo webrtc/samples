@@ -28,7 +28,8 @@ var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
 var audio = document.querySelector('audio');
 
-var pc1, pc2;
+var pc1;
+var pc2;
 var localStream;
 var dtmfSender;
 

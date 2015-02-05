@@ -21,7 +21,8 @@ function gotSources(sourceInfos) {
     var option = document.createElement('option');
     option.value = sourceInfo.id;
     if (sourceInfo.kind === 'audio') {
-      option.text = sourceInfo.label || 'microphone ' + (audioSelect.length + 1);
+      option.text = sourceInfo.label ||
+        'microphone ' + (audioSelect.length + 1);
       audioSelect.appendChild(option);
     } else if (sourceInfo.kind === 'video') {
       option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
@@ -33,7 +34,7 @@ function gotSources(sourceInfos) {
 }
 
 if (typeof MediaStreamTrack === 'undefined') {
-  alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
+  alert('This browser does not support MediaStreamTrack.\n\nTry Chrome.');
 } else {
   MediaStreamTrack.getSources(gotSources);
 }

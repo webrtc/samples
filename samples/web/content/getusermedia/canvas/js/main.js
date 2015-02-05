@@ -21,8 +21,8 @@ button.onclick = function() {
 
 var video = document.querySelector('video');
 
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
-  navigator.mozGetUserMedia;
+navigator.getUserMedia = navigator.getUserMedia ||
+  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 var constraints = {
   audio: false,

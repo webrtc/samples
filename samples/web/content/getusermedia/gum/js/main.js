@@ -15,8 +15,8 @@ var constraints = {
   video: true
 };
 
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
-  navigator.mozGetUserMedia;
+navigator.getUserMedia = navigator.getUserMedia ||
+  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function successCallback(stream) {
   window.stream = stream; // stream available to console

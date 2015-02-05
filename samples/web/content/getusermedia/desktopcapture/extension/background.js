@@ -21,7 +21,8 @@ function requestScreenSharing(port, msg) {
   //  - 'dataSources' Set of sources that should be shown to the user.
   //  - 'targetTab' Tab for which the stream is created.
   //  - 'streamId' String that can be passed to getUserMedia() API
-  desktopMediaRequestId = chrome.desktopCapture.chooseDesktopMedia(dataSources, port.sender.tab,
+  desktopMediaRequestId =
+    chrome.desktopCapture.chooseDesktopMedia(dataSources, port.sender.tab,
     function(streamId) {
       if (streamId) {
         msg.type = 'SS_DIALOG_SUCCESS';

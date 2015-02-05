@@ -45,7 +45,9 @@ remoteVideo.onresize = function() {
   }
 };
 
-var localStream, pc1, pc2;
+var localStream;
+var pc1;
+var pc2;
 var sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,

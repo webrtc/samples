@@ -16,7 +16,8 @@ hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-var pc1, pc2;
+var pc1;
+var pc2;
 var localstream;
 
 var sdpConstraints = {

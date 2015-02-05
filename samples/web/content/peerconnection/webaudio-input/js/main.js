@@ -24,7 +24,8 @@ renderLocallyCheckbox.onclick = toggleRenderLocally;
 document.addEventListener('keydown', handleKeyDown, false);
 
 var localStream;
-var pc1, pc2;
+var pc1;
+var pc2;
 
 var webAudio = new WebAudioExtended();
 webAudio.loadSound('audio/Shamisen-C4.wav');
