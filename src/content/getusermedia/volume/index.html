@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta name="keywords" content="WebRTC, HTML5, JavaScript" />
+  <meta name="description" content="Client-side WebRTC code samples." />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+  <base target="_blank">
+
+  <title>Audio stream volume</title>
+
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>Audio stream volume</span></h1>
+
+    <p>Measure the volume of a local media stream using WebAudio.</p>
+
+    <div id="meters">
+      <div id="instant">
+        <div class="label">Instant: </div>
+        <meter high="0.25" max="1" value="0"></meter>
+        <div class="value"></div>
+      </div>
+      <div id="slow">
+        <div class="label">Slow: </div>
+        <meter high="0.25" max="1" value="0"></meter>
+        <div class="value"></div>
+      </div>
+      <div id="clip">
+        <div class="label">Clip: </div>
+        <meter max="1" value="0"></meter>
+        <div class="value"></div>
+      </div>
+    </div>
+
+    <p>The 'instant' volume changes approximately every 50ms; the 'slow' volume approximates the average volume over about a second.</p>
+    <p>Note that you will not hear your own voice; use the <a href="../audio">local audio rendering demo</a> for that.</p>
+    <p>The <code>audioContext</code>, <code>stream</code> and <code>soundMeter</code> variables are in global scope, so you can inspect them from the console.</p>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/volume" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+
+  <script src="js/soundmeter.js"></script>
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+
+</body>
+</html>
