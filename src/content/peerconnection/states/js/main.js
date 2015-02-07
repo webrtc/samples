@@ -107,7 +107,7 @@ function gotDescription1(description) {
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description);
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-    sdpConstraints);
+      sdpConstraints);
 }
 
 function gotDescription2(description) {
@@ -174,7 +174,7 @@ function iceStateCallback2() {
 function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   } else {
     trace('End of candidates added to PC2');
@@ -184,7 +184,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   } else {
     trace('End of candidates added to PC1');

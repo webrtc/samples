@@ -101,7 +101,7 @@ function gotStreamFailed(error) {
 function forceOpus(sdp) {
   // Remove all other codecs (not the video codecs though).
   sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
-    'm=audio $1 RTP/SAVPF 111\r\n');
+      'm=audio $1 RTP/SAVPF 111\r\n');
   sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
   return sdp;
 }
@@ -131,7 +131,7 @@ function gotRemoteStream(e) {
 function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     console.log('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -139,7 +139,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     console.log('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }

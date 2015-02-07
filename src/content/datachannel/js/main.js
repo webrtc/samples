@@ -79,7 +79,7 @@ function createConnection() {
     // Data channel API supported from Chrome 25.
     // You might need to start Chrome with --enable-data-channels flag.
     sendChannel = localConnection.createDataChannel('sendDataChannel',
-      dataConstraint);
+        dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
@@ -137,7 +137,7 @@ function gotDescription1(desc) {
   trace('Offer from localConnection \n' + desc.sdp);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer(gotDescription2,
-    onCreateSessionDescriptionError);
+      onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {

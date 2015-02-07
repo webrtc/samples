@@ -169,7 +169,7 @@ function maybeAddLineBreakToEnd(sdp) {
 
 function createOffer() {
   localPeerConnection.createOffer(gotDescription1,
-    onCreateSessionDescriptionError);
+      onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -184,12 +184,12 @@ function setOffer() {
     sdp: sdp
   });
   localPeerConnection.setLocalDescription(offer,
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError);
+      onSetSessionDescriptionSuccess,
+      onSetSessionDescriptionError);
   trace('Modified Offer from localPeerConnection \n' + sdp);
   remotePeerConnection.setRemoteDescription(offer,
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError);
+      onSetSessionDescriptionSuccess,
+      onSetSessionDescriptionError);
 }
 
 function gotDescription1(description) {
@@ -202,8 +202,8 @@ function createAnswer() {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   remotePeerConnection.createAnswer(gotDescription2,
-    onCreateSessionDescriptionError,
-    sdpConstraints);
+      onCreateSessionDescriptionError,
+      sdpConstraints);
 }
 
 function setAnswer() {
@@ -214,12 +214,12 @@ function setAnswer() {
     sdp: sdp
   });
   remotePeerConnection.setLocalDescription(answer,
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError);
+      onSetSessionDescriptionSuccess,
+      onSetSessionDescriptionError);
   trace('Modified Answer from remotePeerConnection \n' + sdp);
   localPeerConnection.setRemoteDescription(answer,
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError);
+      onSetSessionDescriptionSuccess,
+      onSetSessionDescriptionError);
 }
 
 function gotDescription2(description) {
@@ -255,7 +255,7 @@ function gotRemoteStream(e) {
 function iceCallback1(event) {
   if (event.candidate) {
     remotePeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -263,7 +263,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   if (event.candidate) {
     localPeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }

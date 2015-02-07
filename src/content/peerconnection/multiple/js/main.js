@@ -103,7 +103,7 @@ function gotDescription1Local(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc1Remote.createAnswer(gotDescription1Remote,
-    onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function gotDescription1Remote(desc) {
@@ -120,7 +120,7 @@ function gotDescription2Local(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc2Remote.createAnswer(gotDescription2Remote,
-    onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function gotDescription2Remote(desc) {
@@ -172,7 +172,7 @@ function iceCallback2Remote(event) {
 function handleCandidate(candidate, dest, prefix, type) {
   if (candidate) {
     dest.addIceCandidate(new RTCIceCandidate(candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace(prefix + 'New ' + type + ' ICE candidate: ' + candidate.candidate);
   }
 }

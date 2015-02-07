@@ -62,12 +62,12 @@ function getMedia() {
     }
   }
   getUserMedia(getUserMediaConstraints(), gotStream,
-    function(e) {
-      var message = 'getUserMedia error: ' + e.name + '\n' +
-        'PermissionDeniedError may mean invalid constraints.';
-      alert(message);
-      console.log(message);
-    });
+      function(e) {
+        var message = 'getUserMedia error: ' + e.name + '\n' +
+            'PermissionDeniedError may mean invalid constraints.';
+        alert(message);
+        console.log(message);
+  });
 }
 
 function gotStream(stream) {
@@ -146,7 +146,7 @@ function createPeerConnection() {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
       remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+          onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
   remotePeerConnection.onicecandidate = function(e) {
@@ -154,7 +154,7 @@ function createPeerConnection() {
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
       localPeerConnection.addIceCandidate(newCandidate,
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+          onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
   remotePeerConnection.onaddstream = function(e) {

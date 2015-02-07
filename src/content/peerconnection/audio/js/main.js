@@ -81,7 +81,7 @@ function gotDescription1(desc) {
       // to pass in the right constraints in order for it to
       // accept the incoming offer of audio.
       pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-                       sdpConstraints);
+          sdpConstraints);
     });
   });
 }
@@ -114,7 +114,7 @@ function gotRemoteStream(e) {
 function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -122,7 +122,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
