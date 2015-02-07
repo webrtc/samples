@@ -67,7 +67,8 @@ function getMedia() {
             'PermissionDeniedError may mean invalid constraints.';
         alert(message);
         console.log(message);
-  });
+      }
+  );
 }
 
 function gotStream(stream) {

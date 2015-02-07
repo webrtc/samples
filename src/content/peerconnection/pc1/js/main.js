@@ -179,7 +179,8 @@ function onIceCandidate(pc, event) {
         },
         function(err) {
           onAddIceCandidateError(pc, err);
-    });
+        }
+    );
     trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
   }
 }
