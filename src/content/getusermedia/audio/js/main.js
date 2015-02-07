@@ -15,7 +15,7 @@ var constraints = window.constraints = {
   video: false
 };
 navigator.getUserMedia = navigator.getUserMedia ||
-  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function successCallback(stream) {
   var videoTracks = stream.getVideoTracks();

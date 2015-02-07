@@ -32,7 +32,7 @@ var constraints = window.constraints = {
 };
 
 navigator.getUserMedia = navigator.getUserMedia ||
-  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function successCallback(stream) {
   // Put variables in global scope to make them available to the browser console.

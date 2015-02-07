@@ -13,7 +13,7 @@ var audioSelect = document.querySelector('select#audioSource');
 var videoSelect = document.querySelector('select#videoSource');
 
 navigator.getUserMedia = navigator.getUserMedia ||
-  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function gotSources(sourceInfos) {
   for (var i = 0; i !== sourceInfos.length; ++i) {

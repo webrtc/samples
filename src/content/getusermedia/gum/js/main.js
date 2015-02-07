@@ -16,7 +16,7 @@ var constraints = {
 };
 
 navigator.getUserMedia = navigator.getUserMedia ||
-  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function successCallback(stream) {
   window.stream = stream; // stream available to console
