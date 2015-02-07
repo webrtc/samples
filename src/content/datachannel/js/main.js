@@ -72,7 +72,7 @@ function createConnection() {
   }
   // Add localConnection to global scope to make it visible from the browser console.
   window.localConnection = localConnection =
-    new RTCPeerConnection(servers, pcConstraint);
+      new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object localConnection');
 
   try {
@@ -92,7 +92,7 @@ function createConnection() {
 
   // Add remoteConnection to global scope to make it visible from the browser console.
   window.remoteConnection = remoteConnection =
-    new RTCPeerConnection(servers, pcConstraint);
+      new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = iceCallback2;

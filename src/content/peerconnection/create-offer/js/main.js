@@ -15,7 +15,7 @@ var videoInput = document.querySelector('input#video');
 
 var numAudioTracksInput = document.querySelector('div#numAudioTracks input');
 var numAudioTracksDisplay =
-  document.querySelector('span#numAudioTracksDisplay');
+    document.querySelector('span#numAudioTracksDisplay');
 var outputTextarea = document.querySelector('textarea#output');
 var createOfferButton = document.querySelector('button#createOffer');
 

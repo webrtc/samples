@@ -22,16 +22,16 @@ function requestScreenSharing(port, msg) {
   //  - 'targetTab' Tab for which the stream is created.
   //  - 'streamId' String that can be passed to getUserMedia() API
   desktopMediaRequestId =
-    chrome.desktopCapture.chooseDesktopMedia(dataSources, port.sender.tab,
-    function(streamId) {
-      if (streamId) {
-        msg.type = 'SS_DIALOG_SUCCESS';
-        msg.streamId = streamId;
-      } else {
-        msg.type = 'SS_DIALOG_CANCEL';
-      }
-      port.postMessage(msg);
-    });
+      chrome.desktopCapture.chooseDesktopMedia(dataSources, port.sender.tab,
+          function(streamId) {
+            if (streamId) {
+              msg.type = 'SS_DIALOG_SUCCESS';
+              msg.streamId = streamId;
+            } else {
+              msg.type = 'SS_DIALOG_CANCEL';
+            }
+            port.postMessage(msg);
+          });
 }
 
 function cancelScreenSharing() {

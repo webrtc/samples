@@ -22,14 +22,14 @@ var framerateInput = document.querySelector('div#framerate input');
 var maxBitrateInput = document.querySelector('div#maxBitrate input');
 
 minWidthInput.onchange = maxWidthInput.onchange =
-  minHeightInput.onchange = maxHeightInput.onchange =
-  framerateInput.onchange = maxBitrateInput.onchange =
-  displayRangeValue;
+    minHeightInput.onchange = maxHeightInput.onchange =
+    framerateInput.onchange = maxBitrateInput.onchange =
+    displayRangeValue;
 
 var getUserMediaConstraintsDiv =
-  document.querySelector('div#getUserMediaConstraints');
+    document.querySelector('div#getUserMediaConstraints');
 var addStreamConstraintsDiv =
-  document.querySelector('div#addStreamConstraints');
+    document.querySelector('div#addStreamConstraints');
 var bitrateDiv = document.querySelector('div#bitrate');
 var senderStatsDiv = document.querySelector('div#senderStats');
 var receiverStatsDiv = document.querySelector('div#receiverStats');
@@ -107,7 +107,7 @@ function displayGetUserMediaConstraints() {
   var constraints = getUserMediaConstraints();
   console.log('getUserMedia constraints', constraints);
   getUserMediaConstraintsDiv.textContent =
-    JSON.stringify(constraints, null, '    ');
+      JSON.stringify(constraints, null, '    ');
 }
 
 function addStreamConstraints() {
@@ -128,7 +128,7 @@ function displayAddStreamConstraints() {
   var constraints = addStreamConstraints();
   console.log('addStream() constraints', constraints);
   addStreamConstraintsDiv.textContent =
-    JSON.stringify(constraints, null, '    ');
+      JSON.stringify(constraints, null, '    ');
 }
 
 function createPeerConnection() {
@@ -254,8 +254,7 @@ setInterval(function() {
             }
           }
         }
-        receiverStatsDiv.innerHTML =
-          '<h2>Receiver stats</h2>' + statsString;
+        receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
         display(videoFlowInfo);
       });
       localPeerConnection.getStats(function(stats) {
@@ -270,8 +269,7 @@ setInterval(function() {
             statsString += dumpStats(res);
           }
         }
-        senderStatsDiv.innerHTML =
-          '<h2>Sender stats</h2>' + statsString;
+        senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
       });
     } else {
       display('No stats function. Use at least Chrome 24.0.1285');
