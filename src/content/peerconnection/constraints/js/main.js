@@ -20,12 +20,10 @@ var maxWidthInput = document.querySelector('div#maxWidth input');
 var minHeightInput = document.querySelector('div#minHeight input');
 var maxHeightInput = document.querySelector('div#maxHeight input');
 var framerateInput = document.querySelector('div#framerate input');
-var maxBitrateInput = document.querySelector('div#maxBitrate input');
 
 minWidthInput.onchange = maxWidthInput.onchange =
   minHeightInput.onchange = maxHeightInput.onchange =
-  framerateInput.onchange = maxBitrateInput.onchange =
-  displayRangeValue;
+  framerateInput.onchange = displayRangeValue;
 
 var getUserMediaConstraintsDiv =
   document.querySelector('div#getUserMediaConstraints');
