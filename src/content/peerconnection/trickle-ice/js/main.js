@@ -87,8 +87,8 @@ function start() {
   // Create a PeerConnection with no streams, but force a m=audio line.
   // This will gather candidates for either 1 or 2 ICE components, depending
   // on whether the unbundle RTCP checkbox is checked.
-  var config = {'iceServers': iceServers };
-  var pcConstraints = {'mandatory': {'IceTransports': iceTransports}};
+  var config = {'iceServers': iceServers, iceTransports: iceTransports };
+  var pcConstraints = {};
   var offerConstraints = {'mandatory': {'OfferToReceiveAudio': true}};
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
