@@ -23,8 +23,7 @@ addButton.onclick = addServer;
 gatherButton.onclick = start;
 removeButton.onclick = removeServer;
 
-var begin;
-var pc;
+var begin, pc;
 
 function selectServer(event) {
   var option = event.target;
@@ -43,8 +42,7 @@ function addServer() {
 
   // Store the ICE server as a stringified JSON object in option.value.
   var option = document.createElement('option');
-  var iceServer = createIceServer(urlInput.value, usernameInput.value,
-      passwordInput.value);
+  var iceServer = createIceServer(urlInput.value, usernameInput.value, passwordInput.value);
   option.value = JSON.stringify(iceServer);
   option.text = urlInput.value + ' ';
   var username = usernameInput.value;
@@ -71,10 +69,11 @@ function start() {
     candidateTBody.removeChild(candidateTBody.firstChild);
   }
 
+
   // Read the values from the input boxes.
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
-    iceServers.push(JSON.parse(servers[i].value));
+     iceServers.push(JSON.parse(servers[i].value));
   }
   var transports = document.getElementsByName('transports');
   var iceTransports;
@@ -88,8 +87,8 @@ function start() {
   // Create a PeerConnection with no streams, but force a m=audio line.
   // This will gather candidates for either 1 or 2 ICE components, depending
   // on whether the unbundle RTCP checkbox is checked.
-  var config = {'iceServers': iceServers};
-  var pcConstraints = {'mandatory': {'IceTransports': iceTransports}};
+  var config = {'iceServers': iceServers, iceTransports: iceTransports };
+  var pcConstraints = {};
   var offerConstraints = {'mandatory': {'OfferToReceiveAudio': true}};
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
