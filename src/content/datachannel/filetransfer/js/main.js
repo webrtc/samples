@@ -64,7 +64,7 @@ function sendData() {
     var slice = file.slice(offset, offset + chunkSize);
     reader.readAsArrayBuffer(slice);
     // could update send progress
-  }
+  };
   sliceFile(0);
 }
 
@@ -138,7 +138,7 @@ function onReceiveMessageCallback(event) {
   // we are assuming that our signaling protocol told
   // about the expected file size (and name, hash, etc).
   var file = fileInput.files[0];
-  if (receivedSize == file.size) {
+  if (receivedSize === file.size) {
     var received = new window.Blob(receiveBuffer);
     receiveBuffer = [];
 
@@ -148,14 +148,14 @@ function onReceiveMessageCallback(event) {
     var text = 'Click to download \'' + file.name + '\' (' + file.size + ' bytes)';
     href.appendChild(document.createTextNode(text));
     href.style.display = 'block';
-    //closeDataChannels();
+    closeDataChannels();
   }
 }
 
 function onSendChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
-  if (readyState == 'open') {
+  if (readyState === 'open') {
     sendData();
   }
 }
