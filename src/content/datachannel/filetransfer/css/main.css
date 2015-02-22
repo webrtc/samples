@@ -9,3 +9,8 @@ form {
   margin: 0 0 1em 0;
   white-space: nowrap;
 }
+
+progress {
+  display: block;
+  width: 100%;
+}

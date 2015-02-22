@@ -12,6 +12,8 @@ var localConnection, remoteConnection, sendChannel, receiveChannel,
   pcConstraint;
 var fileInput = document.querySelector('input#fileInput');
 fileInput.addEventListener('change', createConnection, false); 
+var sendProgress = document.querySelector('progress#sendProgress');
+var receiveProgress = document.querySelector('progress#receiveProgress');
 
 var receiveBuffer = [];
 var receivedSize = 0;
@@ -50,6 +52,8 @@ function onCreateSessionDescriptionError(error) {
 function sendData() {
   var file = fileInput.files[0];
   trace('file is ' + [file.name, file.size, file.type, file.lastModifiedDate].join(' '));
+  sendProgress.max = file.size;
+  receiveProgress.max = file.size;
   var chunkSize = 16384;
   var sliceFile = function (offset) {
     var reader = new window.FileReader();
@@ -59,11 +63,11 @@ function sendData() {
         if (file.size > offset + e.target.result.byteLength) {
           window.setTimeout(sliceFile, 0, offset + chunkSize);
         }
+        sendProgress.value = offset + e.target.result.byteLength;
       };
         })(file);
     var slice = file.slice(offset, offset + chunkSize);
     reader.readAsArrayBuffer(slice);
-    // could update send progress
   };
   sliceFile(0);
 }
@@ -133,7 +137,8 @@ function onReceiveMessageCallback(event) {
   trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
-  // could update receive progress
+
+  receiveProgress.value = receivedSize;
 
   // we are assuming that our signaling protocol told
   // about the expected file size (and name, hash, etc).
