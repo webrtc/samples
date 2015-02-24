@@ -16,7 +16,7 @@
 
   <base target="_blank">
 
-  <title>RTCDataChannel</title>
+  <title>Filetransfer</title>
 
   <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="../../../css/main.css">
@@ -28,15 +28,21 @@
 
   <div id="container">
 
-    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>RTCDataChannel Filetransfer</span></h1>
+    <h1><a href="https://webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Filetransfer</span></h1>
 
     <form id="fileInfo">
       <input type="file" id="fileInput" name="files"/>
     </form>
 
-    Send progress: <progress id="sendProgress" max="0" value="0"></progress>
+    <div class="progress">
+      <div class="label">Send progress: </div>
+      <progress id="sendProgress" max="0" value="0"></progress>
+    </div>
 
-    Receive progress: <progress id="receiveProgress" max="0" value="0"></progress>
+    <div class="progress">
+      <div class="label">Receive progress: </div>
+      <progress id="receiveProgress" max="0" value="0"></progress>
+    </div>
 
     <a id="received"></a>
 

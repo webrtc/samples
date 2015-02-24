@@ -8,8 +8,11 @@
 
 'use strict';
 
-var localConnection, remoteConnection, sendChannel, receiveChannel,
-  pcConstraint;
+var localConnection;
+var remoteConnection;
+var sendChannel;
+var receiveChannel;
+var pcConstraint;
 var fileInput = document.querySelector('input#fileInput');
 fileInput.addEventListener('change', createConnection, false); 
 var sendProgress = document.querySelector('progress#sendProgress');
