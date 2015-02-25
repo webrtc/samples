@@ -197,19 +197,21 @@ function onReceiveChannelStateChange() {
 function displayStats() {
   if (remoteConnection &&
       remoteConnection.iceConnectionState === 'connected') {
-    remoteConnection.getStats(function(stats) {
-      stats.result().forEach(function(res) {
-        if (res.type === 'googCandidatePair' &&
-            res.stat('googActiveConnection') === 'true') {
-          var bytesNow = res.stat('bytesReceived');
-          var bitrate = Math.round((bytesNow - bytesPrev) * 8 / (res.timestamp -
-              timestampPrev));
-          bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate +
-              ' kbits/sec';
-          timestampPrev = res.timestamp;
-          bytesPrev = bytesNow;
-        }
+    if (webrtcDetectedBrowser === 'chrome') {
+      remoteConnection.getStats(function(stats) {
+        stats.result().forEach(function(res) {
+          if (res.type === 'googCandidatePair' &&
+              res.stat('googActiveConnection') === 'true') {
+            var bytesNow = res.stat('bytesReceived');
+            var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+                (res.timestamp - timestampPrev));
+            bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate +
+                ' kbits/sec';
+            timestampPrev = res.timestamp;
+            bytesPrev = bytesNow;
+          }
+        });
       });
-    });
+    }
   }
 }
