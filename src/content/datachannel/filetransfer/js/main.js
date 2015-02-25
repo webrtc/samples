@@ -201,6 +201,7 @@ function displayStats() {
     if (webrtcDetectedBrowser === 'chrome') {
       remoteConnection.getStats(function(stats) {
         stats.result().forEach(function(res) {
+          if (timestampPrev == res.timestamp) return;
           if (res.type === 'googCandidatePair' &&
               res.stat('googActiveConnection') === 'true') {
             var bytesNow = res.stat('bytesReceived');
