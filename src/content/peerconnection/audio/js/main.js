@@ -16,7 +16,8 @@ hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-var pc1, pc2;
+var pc1;
+var pc2;
 var localstream;
 
 var sdpConstraints = {
@@ -80,14 +81,14 @@ function gotDescription1(desc) {
       // to pass in the right constraints in order for it to
       // accept the incoming offer of audio.
       pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-                       sdpConstraints);
+          sdpConstraints);
     });
   });
 }
 
 function gotDescription2(desc) {
   desc.sdp = forceChosenAudioCodec(desc.sdp);
-  pc2.setLocalDescription(desc, function () {
+  pc2.setLocalDescription(desc, function() {
     trace('Answer from pc2 \n' + desc.sdp);
     pc1.setRemoteDescription(desc);
   });
@@ -113,7 +114,7 @@ function gotRemoteStream(e) {
 function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -121,7 +122,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }

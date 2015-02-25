@@ -14,7 +14,8 @@ var vadInput = document.querySelector('input#vad');
 var videoInput = document.querySelector('input#video');
 
 var numAudioTracksInput = document.querySelector('div#numAudioTracks input');
-var numAudioTracksDisplay = document.querySelector('span#numAudioTracksDisplay');
+var numAudioTracksDisplay =
+    document.querySelector('span#numAudioTracksDisplay');
 var outputTextarea = document.querySelector('textarea#output');
 var createOfferButton = document.querySelector('button#createOffer');
 
@@ -45,7 +46,7 @@ function createOffer() {
       'OfferToReceiveAudio': audioInput.checked
     }, {
       'OfferToReceiveVideo': videoInput.checked
-    }, ]
+    }]
   };
   // These constraints confuse Firefox, even if declared as optional.
   if (webrtcDetectedBrowser !== 'Firefox') {
