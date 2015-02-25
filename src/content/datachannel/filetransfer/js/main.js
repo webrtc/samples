@@ -13,6 +13,7 @@ var remoteConnection;
 var sendChannel;
 var receiveChannel;
 var pcConstraint;
+var bitrateDiv = document.querySelector('div#bitrate');
 var fileInput = document.querySelector('input#fileInput');
 fileInput.addEventListener('change', createConnection, false);
 var sendProgress = document.querySelector('progress#sendProgress');
@@ -20,6 +21,10 @@ var receiveProgress = document.querySelector('progress#receiveProgress');
 
 var receiveBuffer = [];
 var receivedSize = 0;
+
+var bytesPrev = 0;
+var timestampPrev = 0;
+var statsInterval = null;
 
 function createConnection() {
   var servers = null;
@@ -48,6 +53,7 @@ function createConnection() {
   remoteConnection.ondatachannel = receiveChannelCallback;
 
   fileInput.disabled = true;
+  statsInterval = window.setInterval(displayStats, 1000);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -141,7 +147,7 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  trace('Received Message ' + event.data.byteLength);
+  //trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 
@@ -161,6 +167,13 @@ function onReceiveMessageCallback(event) {
         ' bytes)';
     href.appendChild(document.createTextNode(text));
     href.style.display = 'block';
+
+    bitrateDiv.innerHTML = '';
+    if (statsInterval) {
+      window.clearInterval(statsInterval);
+      statsInterval = null;
+    }
+
     closeDataChannels();
   }
 }
@@ -176,4 +189,27 @@ function onSendChannelStateChange() {
 function onReceiveChannelStateChange() {
   var readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
+}
+
+// display bitrate statistics.
+// TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
+// lands those stats should be preferrred over the connection stats.
+function displayStats() {
+  if (remoteConnection &&
+      remoteConnection.iceConnectionState === 'connected') {
+    remoteConnection.getStats(function(stats) {
+      stats.result().forEach(function(res) {
+        if (res.type === 'googCandidatePair' &&
+            res.stat('googActiveConnection') === 'true') {
+          var bytesNow = res.stat('bytesReceived');
+          var bitrate = Math.round((bytesNow - bytesPrev) * 8 / (res.timestamp -
+              timestampPrev));
+          bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate +
+              ' kbits/sec';
+          timestampPrev = res.timestamp;
+          bytesPrev = bytesNow;
+        }
+      });
+    });
+  }
 }
