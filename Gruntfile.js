@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-          'src/content/datachannel/index.html',
+          'src/content/datachannel/**/index.html',
           'src/content/getusermedia/**/index.html',
           'src/content/peerconnection/**/index.html'
         ]
