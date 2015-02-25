@@ -14,7 +14,7 @@ var sendChannel;
 var receiveChannel;
 var pcConstraint;
 var fileInput = document.querySelector('input#fileInput');
-fileInput.addEventListener('change', createConnection, false); 
+fileInput.addEventListener('change', createConnection, false);
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
 
@@ -26,7 +26,8 @@ function createConnection() {
   pcConstraint = null;
 
   // Add localConnection to global scope to make it visible from the browser console.
-  window.localConnection = localConnection = new RTCPeerConnection(servers, pcConstraint);
+  window.localConnection = localConnection = new RTCPeerConnection(servers,
+      pcConstraint);
   trace('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel');
@@ -39,7 +40,8 @@ function createConnection() {
 
   localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
   // Add remoteConnection to global scope to make it visible from the browser console.
-  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers, pcConstraint);
+  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
+      pcConstraint);
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = iceCallback2;
@@ -54,11 +56,12 @@ function onCreateSessionDescriptionError(error) {
 
 function sendData() {
   var file = fileInput.files[0];
-  trace('file is ' + [file.name, file.size, file.type, file.lastModifiedDate].join(' '));
+  trace('file is ' + [file.name, file.size, file.type,
+      file.lastModifiedDate].join(' '));
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
   var chunkSize = 16384;
-  var sliceFile = function (offset) {
+  var sliceFile = function(offset) {
     var reader = new window.FileReader();
     reader.onload = (function() {
       return function(e) {
@@ -68,7 +71,7 @@ function sendData() {
         }
         sendProgress.value = offset + e.target.result.byteLength;
       };
-        })(file);
+    })(file);
     var slice = file.slice(offset, offset + chunkSize);
     reader.readAsArrayBuffer(slice);
   };
@@ -92,7 +95,8 @@ function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
   trace('Offer from localConnection \n' + desc.sdp);
   remoteConnection.setRemoteDescription(desc);
-  remoteConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  remoteConnection.createAnswer(gotDescription2,
+      onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
@@ -153,7 +157,8 @@ function onReceiveMessageCallback(event) {
     var href = document.getElementById('received');
     href.href = URL.createObjectURL(received);
     href.download = file.name;
-    var text = 'Click to download \'' + file.name + '\' (' + file.size + ' bytes)';
+    var text = 'Click to download \'' + file.name + '\' (' + file.size +
+        ' bytes)';
     href.appendChild(document.createTextNode(text));
     href.style.display = 'block';
     closeDataChannels();
