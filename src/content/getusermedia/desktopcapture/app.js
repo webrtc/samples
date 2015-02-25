@@ -4,7 +4,7 @@ var extensionInstalled = false;
 
 document.getElementById('start').addEventListener('click', function() {
   // send screen-sharer request to content-script
-  if (!extensionInstalled){
+  if (!extensionInstalled) {
     var message = 'Please install the extension:\n' +
                   '1. Go to chrome://extensions\n' +
                   '2. Check: "Enable Developer mode"\n' +
@@ -13,13 +13,13 @@ document.getElementById('start').addEventListener('click', function() {
                   '5. Reload this page';
     alert(message);
   }
-  window.postMessage({ type: 'SS_UI_REQUEST', text: 'start' }, '*');
+  window.postMessage({type: 'SS_UI_REQUEST', text: 'start'}, '*');
 });
 
 // listen for messages from the content-script
-window.addEventListener('message', function (event) {
+window.addEventListener('message', function(event) {
   if (event.origin !== window.location.origin) {
-      return;
+    return;
   }
 
   // content-script will send a 'SS_PING' msg if extension is installed

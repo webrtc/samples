@@ -20,6 +20,7 @@
     "audioContext": true,
     "AudioContext": true,
     "Call": true,
+    "chrome": true,
     "createIceServers": true,
     "createIceServer": true,
     "createLineChart": true,

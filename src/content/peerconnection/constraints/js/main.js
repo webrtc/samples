@@ -8,7 +8,6 @@
 
 'use strict';
 
-
 var getMediaButton = document.querySelector('button#getMedia');
 var connectButton = document.querySelector('button#connect');
 
@@ -23,14 +22,14 @@ var framerateInput = document.querySelector('div#framerate input');
 var maxBitrateInput = document.querySelector('div#maxBitrate input');
 
 minWidthInput.onchange = maxWidthInput.onchange =
-  minHeightInput.onchange = maxHeightInput.onchange =
-  framerateInput.onchange = maxBitrateInput.onchange =
-  displayRangeValue;
+    minHeightInput.onchange = maxHeightInput.onchange =
+    framerateInput.onchange = maxBitrateInput.onchange =
+    displayRangeValue;
 
 var getUserMediaConstraintsDiv =
-  document.querySelector('div#getUserMediaConstraints');
+    document.querySelector('div#getUserMediaConstraints');
 var addStreamConstraintsDiv =
-  document.querySelector('div#addStreamConstraints');
+    document.querySelector('div#addStreamConstraints');
 var bitrateDiv = document.querySelector('div#bitrate');
 var senderStatsDiv = document.querySelector('div#senderStats');
 var receiverStatsDiv = document.querySelector('div#receiverStats');
@@ -40,7 +39,8 @@ var remoteVideo = document.querySelector('div#remoteVideo video');
 var localVideoStatsDiv = document.querySelector('div#localVideo div');
 var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 
-var localPeerConnection, remotePeerConnection;
+var localPeerConnection;
+var remotePeerConnection;
 var localStream;
 var bytesPrev = 0;
 var timestampPrev = 0;
@@ -62,12 +62,13 @@ function getMedia() {
     }
   }
   getUserMedia(getUserMediaConstraints(), gotStream,
-    function(e) {
-      var message = 'getUserMedia error: ' + e.name + '\n' +
-        'PermissionDeniedError may mean invalid constraints.';
-      alert(message);
-      console.log(message);
-    });
+      function(e) {
+        var message = 'getUserMedia error: ' + e.name + '\n' +
+            'PermissionDeniedError may mean invalid constraints.';
+        alert(message);
+        console.log(message);
+      }
+  );
 }
 
 function gotStream(stream) {
@@ -107,7 +108,7 @@ function displayGetUserMediaConstraints() {
   var constraints = getUserMediaConstraints();
   console.log('getUserMedia constraints', constraints);
   getUserMediaConstraintsDiv.textContent =
-    JSON.stringify(constraints, null, '    ');
+      JSON.stringify(constraints, null, '    ');
 }
 
 function addStreamConstraints() {
@@ -128,7 +129,7 @@ function displayAddStreamConstraints() {
   var constraints = addStreamConstraints();
   console.log('addStream() constraints', constraints);
   addStreamConstraintsDiv.textContent =
-    JSON.stringify(constraints, null, '    ');
+      JSON.stringify(constraints, null, '    ');
 }
 
 function createPeerConnection() {
@@ -146,7 +147,7 @@ function createPeerConnection() {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
       remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+          onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
   remotePeerConnection.onicecandidate = function(e) {
@@ -154,7 +155,7 @@ function createPeerConnection() {
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
       localPeerConnection.addIceCandidate(newCandidate,
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+          onAddIceCandidateSuccess, onAddIceCandidateError);
     }
   };
   remotePeerConnection.onaddstream = function(e) {
@@ -213,7 +214,6 @@ AugumentedStatsResponse.prototype.get = function(key) {
   return this.response[key];
 };
 
-
 // Display statistics
 setInterval(function() {
   var display = function(string) {
@@ -255,8 +255,7 @@ setInterval(function() {
             }
           }
         }
-        receiverStatsDiv.innerHTML =
-          '<h2>Receiver stats</h2>' + statsString;
+        receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
         display(videoFlowInfo);
       });
       localPeerConnection.getStats(function(stats) {
@@ -271,8 +270,7 @@ setInterval(function() {
             statsString += dumpStats(res);
           }
         }
-        senderStatsDiv.innerHTML =
-          '<h2>Sender stats</h2>' + statsString;
+        senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
       });
     } else {
       display('No stats function. Use at least Chrome 24.0.1285');
@@ -350,7 +348,6 @@ function dumpStats(obj) {
   }
   return statsString;
 }
-
 
 // Utility to show the value of a range in a sibling span element
 function displayRangeValue(e) {

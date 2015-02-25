@@ -21,8 +21,10 @@ var video1 = document.querySelector('video#video1');
 var video2 = document.querySelector('video#video2');
 var video3 = document.querySelector('video#video3');
 
-var pc1Local, pc1Remote;
-var pc2Local, pc2Remote;
+var pc1Local;
+var pc1Remote;
+var pc2Local;
+var pc2Remote;
 var sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,
@@ -101,7 +103,7 @@ function gotDescription1Local(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc1Remote.createAnswer(gotDescription1Remote,
-    onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function gotDescription1Remote(desc) {
@@ -118,7 +120,7 @@ function gotDescription2Local(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc2Remote.createAnswer(gotDescription2Remote,
-    onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function gotDescription2Remote(desc) {
@@ -170,7 +172,7 @@ function iceCallback2Remote(event) {
 function handleCandidate(candidate, dest, prefix, type) {
   if (candidate) {
     dest.addIceCandidate(new RTCIceCandidate(candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace(prefix + 'New ' + type + ' ICE candidate: ' + candidate.candidate);
   }
 }
