@@ -64,6 +64,7 @@ function sendData() {
   var file = fileInput.files[0];
   trace('file is ' + [file.name, file.size, file.type,
       file.lastModifiedDate].join(' '));
+  if (file.size === 0) return;
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
   var chunkSize = 16384;
