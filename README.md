@@ -64,7 +64,9 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 ### RTCDataChannel ###
 
-[Data channels](https://webrtc.github.io/samples/src/content/datachannel)
+[Transmit text](https://webrtc.github.io/samples/src/content/datachannel/basic)
+
+[Transfer a file](https://webrtc.github.io/samples/src/content/datachannel/filetransfer)
 
 ### Video chat ###
 

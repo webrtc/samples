@@ -12,8 +12,7 @@ div.progress {
 div.progress div.label {
   display: inline-block;
   font-weight: 400;
-  margin: 0 0.5em 0 0;
-  width: 8em;
+  width: 8.2em;
 }
 
 form {
@@ -22,5 +21,5 @@ form {
 }
 
 progress {
-  width: 50%;
+  width: calc(100% - 8.5em);
 }
