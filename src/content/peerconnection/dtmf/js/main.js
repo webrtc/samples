@@ -28,7 +28,8 @@ var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
 var audio = document.querySelector('audio');
 
-var pc1, pc2;
+var pc1;
+var pc2;
 var localStream;
 var dtmfSender;
 
@@ -38,7 +39,6 @@ var sdpConstraints = {
     'OfferToReceiveVideo': false
   }
 };
-
 
 main();
 
@@ -100,7 +100,7 @@ function gotDescription1(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio.
   pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-    sdpConstraints);
+      sdpConstraints);
 }
 
 function gotDescription2(desc) {
@@ -135,7 +135,8 @@ function gotRemoteStream(e) {
     enableDtmfSender();
   } else {
     alert(
-      'This demo requires the RTCPeerConnection method createDTMFSender() which is not support by this browser.'
+      'This demo requires the RTCPeerConnection method createDTMFSender() ' +
+        'which is not support by this browser.'
     );
   }
 
@@ -144,7 +145,7 @@ function gotRemoteStream(e) {
 function iceCallback1(event) {
   if (event.candidate) {
     pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -152,7 +153,7 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   if (event.candidate) {
     pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-      onAddIceCandidateSuccess, onAddIceCandidateError);
+        onAddIceCandidateSuccess, onAddIceCandidateError);
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }

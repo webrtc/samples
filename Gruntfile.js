@@ -34,7 +34,7 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-          'src/content/datachannel/index.html',
+          'src/content/datachannel/**/index.html',
           'src/content/getusermedia/**/index.html',
           'src/content/peerconnection/**/index.html'
         ]
@@ -44,12 +44,8 @@ module.exports = function(grunt) {
     jscs: {
       src: 'src/content/**/*.js',
       options: {
-        preset: 'google', // as per Google style guide – could use '.jscsrc' instead
+        config: 'src/.jscsrc',
         'excludeFiles': [
-          'src/content/getusermedia/desktopcapture/extension/content-script.js',
-          'src/content/getusermedia/**/*.js',
-          'src/content/peerconnection/**/*.js',
-          'src/content/datachannel/**/*.js'
         ]
       }
     },
@@ -57,7 +53,6 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         ignores: [
-          'src/content/getusermedia/desktopcapture/**',
         ],
         // use default .jshintrc files
         jshintrc: true

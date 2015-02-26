@@ -45,7 +45,9 @@ remoteVideo.onresize = function() {
   }
 };
 
-var localStream, pc1, pc2;
+var localStream;
+var pc1;
+var pc2;
 var sdpConstraints = {
   'mandatory': {
     'OfferToReceiveAudio': true,
@@ -140,7 +142,7 @@ function onCreateOfferSuccess(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError,
-    sdpConstraints);
+      sdpConstraints);
 }
 
 function onSetLocalSuccess(pc) {
@@ -169,16 +171,16 @@ function onCreateAnswerSuccess(desc) {
   });
 }
 
-
 function onIceCandidate(pc, event) {
   if (event.candidate) {
     getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
-      function() {
-        onAddIceCandidateSuccess(pc);
-      },
-      function(err) {
-        onAddIceCandidateError(pc, err);
-      });
+        function() {
+          onAddIceCandidateSuccess(pc);
+        },
+        function(err) {
+          onAddIceCandidateError(pc, err);
+        }
+    );
     trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
   }
 }

@@ -69,4 +69,3 @@ WebAudioExtended.prototype.loadSound = function(url) {
   this.request.onload = this.loadCompleted.bind(this);
   this.request.send();
 };
-

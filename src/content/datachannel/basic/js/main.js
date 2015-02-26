@@ -8,8 +8,12 @@
 
 'use strict';
 
-var localConnection, remoteConnection, sendChannel, receiveChannel,
-  pcConstraint, dataConstraint;
+var localConnection;
+var remoteConnection;
+var sendChannel;
+var receiveChannel;
+var pcConstraint;
+var dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 var sctpSelect = document.querySelector('input#useSctp');
@@ -67,13 +71,15 @@ function createConnection() {
     }
   }
   // Add localConnection to global scope to make it visible from the browser console.
-  window.localConnection = localConnection = new RTCPeerConnection(servers, pcConstraint);
+  window.localConnection = localConnection =
+      new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object localConnection');
 
   try {
     // Data channel API supported from Chrome 25.
     // You might need to start Chrome with --enable-data-channels flag.
-    sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
+    sendChannel = localConnection.createDataChannel('sendDataChannel',
+        dataConstraint);
     trace('Created send data channel');
   } catch (e) {
     alert('Failed to create data channel. ' +
@@ -85,7 +91,8 @@ function createConnection() {
   sendChannel.onclose = onSendChannelStateChange;
 
   // Add remoteConnection to global scope to make it visible from the browser console.
-  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers, pcConstraint);
+  window.remoteConnection = remoteConnection =
+      new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = iceCallback2;
@@ -129,7 +136,8 @@ function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
   trace('Offer from localConnection \n' + desc.sdp);
   remoteConnection.setRemoteDescription(desc);
-  remoteConnection.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  remoteConnection.createAnswer(gotDescription2,
+      onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {

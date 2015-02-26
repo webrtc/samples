@@ -16,10 +16,10 @@
 
   <base target="_blank">
 
-  <title>RTCDataChannel</title>
+  <title>Transfer a file</title>
 
   <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../../css/main.css">
   <link rel="stylesheet" href="css/main.css" />
 
 </head>
@@ -28,32 +28,23 @@
 
   <div id="container">
 
-    <h1><a href="https://googlechrome.github.io/webrtc/" title="WebRTC samples homepage">WebRTC samples</a> <span>RTCDataChannel</span></h1>
+    <h1><a href="https://webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Transfer a file</span></h1>
 
-    <div id="buttons">
-      <button id="startButton">Start</button>
-      <button id="sendButton" disabled>Send</button>
-      <button id="closeButton" disabled>Stop</button>
-    </div>
-
-    <form>
-      <span>Choose protocol for transmitting data:</span>
-      <input type="radio" id="useSctp" name="transportbtn" checked />
-      <label for="useSctp">SCTP</label>
-      <input type="radio" id="useRtp" name="transportbtn" />
-      <label for="useRtp">RTP</label>
+    <form id="fileInfo">
+      <input type="file" id="fileInput" name="files"/>
     </form>
 
-    <div id="sendReceive">
-      <div id="send">
-        <h2>Send</h2>
-        <textarea id="dataChannelSend" disabled placeholder="Press Start, enter some text, then press Send."></textarea>
-      </div>
-      <div id="receive">
-        <h2>Receive</h2>
-        <textarea id="dataChannelReceive" disabled></textarea>
-      </div>
+    <div class="progress">
+      <div class="label">Send progress: </div>
+      <progress id="sendProgress" max="0" value="0"></progress>
     </div>
+
+    <div class="progress">
+      <div class="label">Receive progress: </div>
+      <progress id="receiveProgress" max="0" value="0"></progress>
+    </div>
+
+    <a id="received"></a>
 
     <p>View the console to see logging.</p>
 
@@ -61,13 +52,13 @@
 
     <p>For more information about RTCDataChannel, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/#toc-rtcdatachannel" title="RTCDataChannel section of HTML5 Rocks article about WebRTC">Getting Started With WebRTC</a>.</p>
 
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/datachannel" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/datachannel/filetransfer" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
 
-  <script src="../../js/adapter.js"></script>
+  <script src="../../../js/adapter.js"></script>
   <script src="js/main.js"></script>
 
-  <script src="../../js/lib/ga.js"></script>
+  <script src="../../../js/lib/ga.js"></script>
 
 </body>
 </html>
