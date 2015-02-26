@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2014-2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -181,7 +181,42 @@ if (navigator.mozGetUserMedia) {
 
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
-    return new webkitRTCPeerConnection(pcConfig, pcConstraints);
+    var pc = new webkitRTCPeerConnection(pcConfig, pcConstraints);
+    var origGetStats = pc.getStats.bind(pc);
+    pc.getStats = function(arg1, arg2) {
+      // If arg1 is a function then we are in the old style stats so
+      // just pass through to original getStats.
+      if (typeof arg1 == 'function') {
+	return origGetStats(arg1, arg2);
+      }
+
+      var successCallback = arg2;
+      var selector = arg1;
+
+      var successCallbackWrapper = function(response) {
+	successCallback(RTCPeerConnection.fixChromeStats(response));
+      };
+      return origGetStats(successCallbackWrapper, selector);
+    };
+    return pc;
+  };
+
+  RTCPeerConnection.fixChromeStats = function(response) {
+    var standardReport = {};
+    var reports = response.result();
+    reports.forEach(function(report) {
+      var standardStats = {
+	id: report.id,
+	timestamp: report.timestamp,
+	type: report.type
+      };
+      report.names().forEach(function(name) {
+	standardStats[name] = report.stat(name);
+      });
+      standardReport[standardStats.id] = standardStats;
+    });
+
+    return standardReport;
   };
 
   // Get UserMedia (only difference is the prefix).

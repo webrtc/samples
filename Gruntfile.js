@@ -61,17 +61,27 @@ module.exports = function(grunt) {
       // can choose more than one name + array of paths
       // usage with this name: grunt jshint:files
       files: ['src/content/**/*.js']
-    }
+    },
+
+    jstdPhantom: {
+      options: {
+        useLatest : true,
+        port: 9876,
+      },
+      files: [
+        'src/js/test_driver_chrome.conf',
+      ]},
   });
 
   // enable plugins
   grunt.loadNpmTasks('grunt-contrib-csslint');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint', 'jstdPhantom']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
