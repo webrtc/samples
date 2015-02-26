@@ -24,6 +24,7 @@ var receivedSize = 0;
 
 var bytesPrev = 0;
 var timestampPrev = 0;
+var timestampStart;
 var statsInterval = null;
 
 function createConnection() {
@@ -53,7 +54,6 @@ function createConnection() {
   remoteConnection.ondatachannel = receiveChannelCallback;
 
   fileInput.disabled = true;
-  statsInterval = window.setInterval(displayStats, 1000);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -169,7 +169,11 @@ function onReceiveMessageCallback(event) {
     href.appendChild(document.createTextNode(text));
     href.style.display = 'block';
 
-    bitrateDiv.innerHTML = '';
+    var bitrate = Math.round(receivedSize * 8 /
+        ((new Date()).getTime()- timestampStart));
+    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> '
+        + bitrate + ' kbits/sec';
+
     if (statsInterval) {
       window.clearInterval(statsInterval);
       statsInterval = null;
@@ -190,6 +194,11 @@ function onSendChannelStateChange() {
 function onReceiveChannelStateChange() {
   var readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
+  if (readyState === 'open') {
+    timestampStart = (new Date()).getTime();
+    timestampPrev = timestampStart;
+    statsInterval = window.setInterval(displayStats, 1000);
+  }
 }
 
 // display bitrate statistics.
@@ -204,11 +213,12 @@ function displayStats() {
           if (timestampPrev == res.timestamp) return;
           if (res.type === 'googCandidatePair' &&
               res.stat('googActiveConnection') === 'true') {
+            // calculate current bitrate
             var bytesNow = res.stat('bytesReceived');
             var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
                 (res.timestamp - timestampPrev));
-            bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate +
-                ' kbits/sec';
+            bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> '
+                + bitrate + ' kbits/sec';
             timestampPrev = res.timestamp;
             bytesPrev = bytesNow;
           }
