@@ -64,7 +64,9 @@ function sendData() {
   var file = fileInput.files[0];
   trace('file is ' + [file.name, file.size, file.type,
       file.lastModifiedDate].join(' '));
-  if (file.size === 0) return;
+  if (file.size === 0) {
+    return;
+  }
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
   var chunkSize = 16384;
@@ -148,7 +150,7 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  //trace('Received Message ' + event.data.byteLength);
+  trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 
@@ -170,9 +172,9 @@ function onReceiveMessageCallback(event) {
     href.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
-        ((new Date()).getTime()- timestampStart));
-    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> '
-        + bitrate + ' kbits/sec';
+        ((new Date()).getTime() - timestampStart));
+    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
+        bitrate + ' kbits/sec';
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -210,15 +212,17 @@ function displayStats() {
     if (webrtcDetectedBrowser === 'chrome') {
       remoteConnection.getStats(function(stats) {
         stats.result().forEach(function(res) {
-          if (timestampPrev == res.timestamp) return;
+          if (timestampPrev === res.timestamp) {
+            return;
+          }
           if (res.type === 'googCandidatePair' &&
               res.stat('googActiveConnection') === 'true') {
             // calculate current bitrate
             var bytesNow = res.stat('bytesReceived');
             var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
                 (res.timestamp - timestampPrev));
-            bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> '
-                + bitrate + ' kbits/sec';
+            bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
+                bitrate + ' kbits/sec';
             timestampPrev = res.timestamp;
             bytesPrev = bytesNow;
           }
