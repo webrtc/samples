@@ -242,7 +242,7 @@ function displayStats() {
       var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
           (now - timestampPrev));
       display(bitrate);
-      timestampPrev = res.timestamp;
+      timestampPrev = now;
       bytesPrev = bytesNow;
     }
   }
