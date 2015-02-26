@@ -26,6 +26,7 @@ var bytesPrev = 0;
 var timestampPrev = 0;
 var timestampStart;
 var statsInterval = null;
+var bitrateMax = 0;
 
 function createConnection() {
   var servers = null;
@@ -174,7 +175,7 @@ function onReceiveMessageCallback(event) {
     var bitrate = Math.round(receivedSize * 8 /
         ((new Date()).getTime() - timestampStart));
     bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
-        bitrate + ' kbits/sec';
+        bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -229,6 +230,9 @@ function displayStats() {
             display(bitrate);
             timestampPrev = res.timestamp;
             bytesPrev = bytesNow;
+            if (bitrate > bitrateMax) {
+              bitrateMax = bitrate;
+            }
           }
         });
       });
@@ -244,6 +248,9 @@ function displayStats() {
       display(bitrate);
       timestampPrev = now;
       bytesPrev = bytesNow;
+      if (bitrate > bitrateMax) {
+        bitrateMax = bitrate;
+      }
     }
   }
 }
