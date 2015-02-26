@@ -200,7 +200,9 @@ function onReceiveChannelStateChange() {
   if (readyState === 'open') {
     timestampStart = (new Date()).getTime();
     timestampPrev = timestampStart;
-    statsInterval = window.setInterval(displayStats, 1000);
+    statsInterval = window.setInterval(displayStats, 500);
+    window.setTimeout(displayStats, 100);
+    window.setTimeout(displayStats, 300);
   }
 }
 
