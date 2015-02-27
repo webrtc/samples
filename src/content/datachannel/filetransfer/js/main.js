@@ -15,7 +15,7 @@ var receiveChannel;
 var pcConstraint;
 var bitrateDiv = document.querySelector('div#bitrate');
 var fileInput = document.querySelector('input#fileInput');
-fileInput.addEventListener('change', createConnection, false);
+var downloadDiv = document.querySelector('a#received');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
 
@@ -27,6 +27,8 @@ var timestampPrev = 0;
 var timestampStart;
 var statsInterval = null;
 var bitrateMax = 0;
+
+fileInput.addEventListener('change', createConnection, false);
 
 function createConnection() {
   var servers = null;
@@ -149,13 +151,18 @@ function receiveChannelCallback(event) {
   receiveChannel.onopen = onReceiveChannelStateChange;
   receiveChannel.onclose = onReceiveChannelStateChange;
 
-  document.getElementById('received').innerHTML = '';
   receivedSize = 0;
   bitrateMax = 0;
+  downloadDiv.innerHTML = '';
+  downloadDiv.removeAttribute('download');
+  if (downloadDiv.href) {
+    URL.revokeObjectURL(downloadDiv.href);
+    downloadDiv.removeAttribute('href');
+  }
 }
 
 function onReceiveMessageCallback(event) {
-  trace('Received Message ' + event.data.byteLength);
+  //trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 
@@ -168,13 +175,12 @@ function onReceiveMessageCallback(event) {
     var received = new window.Blob(receiveBuffer);
     receiveBuffer = [];
 
-    var href = document.getElementById('received');
-    href.href = URL.createObjectURL(received);
-    href.download = file.name;
+    downloadDiv.href = URL.createObjectURL(received);
+    downloadDiv.download = file.name;
     var text = 'Click to download \'' + file.name + '\' (' + file.size +
         ' bytes)';
-    href.appendChild(document.createTextNode(text));
-    href.style.display = 'block';
+    downloadDiv.appendChild(document.createTextNode(text));
+    downloadDiv.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
         ((new Date()).getTime() - timestampStart));
