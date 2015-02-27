@@ -148,6 +148,10 @@ function receiveChannelCallback(event) {
   receiveChannel.onmessage = onReceiveMessageCallback;
   receiveChannel.onopen = onReceiveChannelStateChange;
   receiveChannel.onclose = onReceiveChannelStateChange;
+
+  document.getElementById('received').innerHTML = '';
+  receivedSize = 0;
+  bitrateMax = 0;
 }
 
 function onReceiveMessageCallback(event) {
@@ -183,6 +187,9 @@ function onReceiveMessageCallback(event) {
     }
 
     closeDataChannels();
+
+    // re-enable the file select
+    fileInput.disabled = false;
   }
 }
 
