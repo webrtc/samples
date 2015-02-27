@@ -19,17 +19,13 @@ var maxWidthInput = document.querySelector('div#maxWidth input');
 var minHeightInput = document.querySelector('div#minHeight input');
 var maxHeightInput = document.querySelector('div#maxHeight input');
 var framerateInput = document.querySelector('div#framerate input');
-var maxBitrateInput = document.querySelector('div#maxBitrate input');
 
 minWidthInput.onchange = maxWidthInput.onchange =
     minHeightInput.onchange = maxHeightInput.onchange =
-    framerateInput.onchange = maxBitrateInput.onchange =
-    displayRangeValue;
+    framerateInput.onchange = displayRangeValue;
 
 var getUserMediaConstraintsDiv =
     document.querySelector('div#getUserMediaConstraints');
-var addStreamConstraintsDiv =
-    document.querySelector('div#addStreamConstraints');
 var bitrateDiv = document.querySelector('div#bitrate');
 var senderStatsDiv = document.querySelector('div#senderStats');
 var receiverStatsDiv = document.querySelector('div#receiverStats');
@@ -49,7 +45,6 @@ main();
 
 function main() {
   displayGetUserMediaConstraints();
-  displayAddStreamConstraints();
 }
 
 function getMedia() {
@@ -111,31 +106,10 @@ function displayGetUserMediaConstraints() {
       JSON.stringify(constraints, null, '    ');
 }
 
-function addStreamConstraints() {
-  var constraints = {
-    mandatory: {},
-    optional: []
-  };
-  var maxBitrate = maxBitrateInput.value;
-  if (maxBitrate !== '0') {
-    constraints.optional[0] = {
-      'bandwidth': maxBitrate
-    };
-  }
-  return constraints;
-}
-
-function displayAddStreamConstraints() {
-  var constraints = addStreamConstraints();
-  console.log('addStream() constraints', constraints);
-  addStreamConstraintsDiv.textContent =
-      JSON.stringify(constraints, null, '    ');
-}
-
 function createPeerConnection() {
   localPeerConnection = new RTCPeerConnection(null);
   remotePeerConnection = new RTCPeerConnection(null);
-  localPeerConnection.addStream(localStream, addStreamConstraints());
+  localPeerConnection.addStream(localStream);
   console.log('localPeerConnection creating offer');
   localPeerConnection.onnegotiationeeded = function() {
     console.log('Negotiation needed - localPeerConnection');
@@ -353,6 +327,5 @@ function dumpStats(obj) {
 function displayRangeValue(e) {
   var span = e.target.parentElement.querySelector('span');
   span.textContent = e.target.value;
-  displayAddStreamConstraints();
   displayGetUserMediaConstraints();
 }

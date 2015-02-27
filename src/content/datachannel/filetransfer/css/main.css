@@ -5,7 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-div.progress {
+div.progress, div#bitrate {
   margin: 0 0 1em 0;
 }
 
