@@ -29,28 +29,47 @@
   <div id="container">
 
     <h1><a href="https://webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Transfer a file</span></h1>
+    <section>
 
-    <form id="fileInfo">
-      <input type="file" id="fileInput" name="files"/>
-    </form>
+      <p>This page shows how to transfer a file via WebRTC datachannels.</p>
 
-    <div class="progress">
-      <div class="label">Send progress: </div>
-      <progress id="sendProgress" max="0" value="0"></progress>
-    </div>
+      <p>To accomplish this in an interoperable way, the file is split into chunks which are then transferred via the datachannel. The datachannel is reliable and ordered by default which is well-suited to filetransfers.</p>
 
-    <div class="progress">
-      <div class="label">Receive progress: </div>
-      <progress id="receiveProgress" max="0" value="0"></progress>
-    </div>
+      <p>Send and receive progress is monitored using HTML5 <i>progress</i> elements.</p>
+      
+      <p>At the receiver, the file is reassembled using the Blob API and made available for download.</p>
 
-    <a id="received"></a>
+      <p>Note: real-world applications require a file transfer protocol to send metadata about the file (such as the filename, type, size, last modification date, hash, ...).This information can be conveyed either via the signaling channel or in-band. The demo elides this by assuming knowledge of the file size at the receiver and closes both the datachannel and the peerconnection when the correct amount of bytes has been received.</p>
 
-    <p>View the console to see logging.</p>
+    </section>
 
-    <p>The <code>RTCPeerConnection</code> objects <code>localConnection</code> and <code>remoteConnection</code> are in global scope, so you can inspect them in the console as well.</p>
+    <section>
+      <form id="fileInfo">
+        <input type="file" id="fileInput" name="files"/>
+      </form>
 
-    <p>For more information about RTCDataChannel, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/#toc-rtcdatachannel" title="RTCDataChannel section of HTML5 Rocks article about WebRTC">Getting Started With WebRTC</a>.</p>
+      <div class="progress">
+        <div class="label">Send progress: </div>
+        <progress id="sendProgress" max="0" value="0"></progress>
+      </div>
+
+      <div class="progress">
+        <div class="label">Receive progress: </div>
+        <progress id="receiveProgress" max="0" value="0"></progress>
+      </div>
+
+      <div id="bitrate"></div>
+
+      <a id="received"></a>
+    </section>
+
+    <section>
+      <p>View the console to see logging.</p>
+
+      <p>The <code>RTCPeerConnection</code> objects <code>localConnection</code> and <code>remoteConnection</code> are in global scope, so you can inspect them in the console as well.</p>
+
+      <p>For more information about RTCDataChannel, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/#toc-rtcdatachannel" title="RTCDataChannel section of HTML5 Rocks article about WebRTC">Getting Started With WebRTC</a>.</p>
+    </section>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/datachannel/filetransfer" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
