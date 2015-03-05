@@ -164,7 +164,33 @@ function iceCallback(event) {
     appendCell(row, c.port);
     appendCell(row, formatPriority(c.priority));
   } else {
-    appendCell(row, 'Done', 7);
+    var result = 'Done';
+    if (servers.length === 1) {
+      var server = JSON.parse(servers[0].value);
+
+      // figure out the types of candidates (host, srflx, relay)
+      var types = pc.localDescription.sdp.split('\r\n').filter(
+        function(line) {
+          return line.indexOf('a=candidate:') === 0;
+        }
+      ).map(function(cand) {
+        return parseCandidate(cand).type;
+      });
+
+      // this trick only works for TURN/UDP
+      if (server.url.indexOf('turn:') === 0 &&
+          server.url.indexOf('?transport=tcp') === -1) {
+        if (types.indexOf('relay') === -1) {
+          if (types.indexOf('srflx') > -1) {
+            // binding response but no relay candidate suggests auth failure
+            result = 'Authentication failed?';
+          } else {
+            result = 'Not reachable?';
+          }
+        }
+      }
+    }
+    appendCell(row, result, 7);
     pc.close();
     pc = null;
   }
