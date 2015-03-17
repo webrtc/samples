@@ -16,8 +16,6 @@ var pcConstraint;
 var dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
-var sctpSelect = document.querySelector('input#useSctp');
-var rtpSelect = document.querySelector('input#useRtp');
 var startButton = document.querySelector('button#startButton');
 var sendButton = document.querySelector('button#sendButton');
 var closeButton = document.querySelector('button#closeButton');
@@ -25,8 +23,6 @@ var closeButton = document.querySelector('button#closeButton');
 startButton.onclick = createConnection;
 sendButton.onclick = sendData;
 closeButton.onclick = closeDataChannels;
-rtpSelect.onclick = enableStartButton;
-sctpSelect.onclick = enableStartButton;
 
 function enableStartButton() {
   startButton.disabled = false;
@@ -36,56 +32,24 @@ function disableSendButton() {
   sendButton.disabled = true;
 }
 
-rtpSelect.onclick = sctpSelect.onclick = function() {
-  dataChannelReceive.value = '';
-  dataChannelSend.value = '';
-  disableSendButton();
-  enableStartButton();
-};
-
 function createConnection() {
   dataChannelSend.placeholder = '';
   var servers = null;
   pcConstraint = null;
   dataConstraint = null;
-  if (sctpSelect.checked &&
-      (webrtcDetectedBrowser === 'chrome' && webrtcDetectedVersion >= 31) ||
-      webrtcDetectedBrowser === 'firefox') {
-    // SCTP is supported from Chrome 31 and is supported in FF.
-    // No need to pass DTLS constraint as it is on by default in Chrome 31.
-    // For SCTP, reliable and ordered is true by default.
-    trace('Using SCTP based data channels');
-  } else {
-    pcConstraint = {
-      optional: [{
-        RtpDataChannels: true
-      }]
-    };
-    if (!rtpSelect.checked) {
-      // Use RTP data channels for Chrome versions older than 31.
-      trace('Using RTP based data channels,' +
-        'as you are on an older version than 31.');
-      alert('Reverting to RTP based data channels,' +
-        'as you are on an older version than 31.');
-      rtpSelect.checked = true;
-    }
-  }
+  trace('Using SCTP based data channels');
+  // SCTP is supported from Chrome 31 and is supported in FF.
+  // No need to pass DTLS constraint as it is on by default in Chrome 31.
+  // For SCTP, reliable and ordered is true by default.
   // Add localConnection to global scope to make it visible from the browser console.
   window.localConnection = localConnection =
       new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object localConnection');
 
-  try {
-    // Data channel API supported from Chrome 25.
-    // You might need to start Chrome with --enable-data-channels flag.
-    sendChannel = localConnection.createDataChannel('sendDataChannel',
-        dataConstraint);
-    trace('Created send data channel');
-  } catch (e) {
-    alert('Failed to create data channel. ' +
-        'You need Chrome 25 or later with --enable-data-channels flag');
-    trace('Create data channel failed with exception: ' + e.message);
-  }
+  sendChannel = localConnection.createDataChannel('sendDataChannel',
+      dataConstraint);
+  trace('Created send data channel');
+
   localConnection.onicecandidate = iceCallback1;
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
@@ -130,6 +94,8 @@ function closeDataChannels() {
   dataChannelSend.value = '';
   dataChannelReceive.value = '';
   dataChannelSend.disabled = true;
+  disableSendButton();
+  enableStartButton();
 }
 
 function gotDescription1(desc) {
