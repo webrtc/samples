@@ -34,19 +34,19 @@ fullHdButton.onclick = function() {
 };
 
 var qvgaConstraints = {
-  video: { width: { exact: 320 }, height: { exact: 240 } }
+  video: {width: {exact: 320}, height: {exact: 240}}
 };
 
 var vgaConstraints = {
-  video: { width: { exact: 640 }, height: { exact: 480 } }
+  video: {width: {exact: 640}, height: {exact: 480}}
 };
 
 var hdConstraints = {
-  video: { width: 1280, height: 720 }
+  video: {width: 1280, height: 720}
 };
 
 var fullHdConstraints = {
-  video: { width: { exact: 1920 }, height: { exact: 1080 } }
+  video: {width: {exact: 1920}, height: {exact: 1080}}
 };
 
 function successCallback(stream) {
@@ -75,5 +75,5 @@ function getMedia(constraints) {
   }
   setTimeout(function() {
     navigator.getUserMedia(constraints, successCallback, errorCallback);
-  }, (stream? 200 : 0));
+  }, (stream ? 200 : 0));
 }
