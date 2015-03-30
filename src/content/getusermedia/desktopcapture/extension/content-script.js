@@ -17,7 +17,7 @@ port.onMessage.addListener(function(msg) {
 });
 
 window.addEventListener('message', function(event) {
-	// We only accept messages from ourselves
+  // We only accept messages from ourselves
   if (event.source !== window) {
     return;
   }
@@ -28,4 +28,7 @@ window.addEventListener('message', function(event) {
   }
 }, false);
 
-window.postMessage({type: 'SS_PING', text: 'start'}, '*');
+window.postMessage({
+  type: 'SS_PING',
+  text: 'start'
+}, '*');
