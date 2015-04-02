@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 // taken from chrome://webrtc-internals
+'use strict';
+/* exported TimelineDataSeries, TimelineGraphView */
 
 // The maximum number of data points bufferred for each stats. Old data points
 // will be shifted out when the buffer is full.
 var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 
 var TimelineDataSeries = (function() {
-  'use strict';
-
   /**
    * @constructor
    */
@@ -33,8 +33,9 @@ var TimelineDataSeries = (function() {
      * @override
      */
     toJSON: function() {
-      if (this.dataPoints_.length < 1)
+      if (this.dataPoints_.length < 1) {
         return {};
+      }
 
       var values = [];
       for (var i = 0; i < this.dataPoints_.length; ++i) {
@@ -55,8 +56,9 @@ var TimelineDataSeries = (function() {
       var time = new Date(timeTicks);
       this.dataPoints_.push(new DataPoint(time, value));
 
-      if (this.dataPoints_.length > MAX_STATS_DATA_POINT_BUFFER_SIZE)
+      if (this.dataPoints_.length > MAX_STATS_DATA_POINT_BUFFER_SIZE) {
         this.dataPoints_.shift();
+      }
     },
 
     isVisible: function() {
@@ -85,9 +87,9 @@ var TimelineDataSeries = (function() {
      */
     getValues: function(startTime, stepSize, count) {
       // Use cached values, if we can.
-      if (this.cacheStartTime_ == startTime &&
-          this.cacheStepSize_ == stepSize &&
-          this.cacheValues_.length == count) {
+      if (this.cacheStartTime_ === startTime &&
+          this.cacheStepSize_ === stepSize &&
+          this.cacheValues_.length === count) {
         return this.cacheValues_;
       }
 
@@ -134,8 +136,6 @@ var TimelineDataSeries = (function() {
 })();
 
 var TimelineGraphView = (function() {
-  'use strict';
-
   // Maximum number of labels placed vertically along the sides of the graph.
   var MAX_VERTICAL_LABELS = 6;
 
@@ -146,7 +146,7 @@ var TimelineGraphView = (function() {
   var LABEL_HORIZONTAL_SPACING = 3;
   // Horizintal spacing between two horitonally placed labels along the bottom
   // of the graph.
-  var LABEL_LABEL_HORIZONTAL_SPACING = 25;
+  //var LABEL_LABEL_HORIZONTAL_SPACING = 25;
 
   // Length of ticks, in pixels, next to y-axis labels.  The x-axis only has
   // one set of labels, so it can use lines instead.
@@ -200,7 +200,7 @@ var TimelineGraphView = (function() {
      * Returns true if the graph is scrolled all the way to the right.
      */
     graphScrolledToRightEdge_: function() {
-      return this.scrollbar_.position_ == this.scrollbar_.range_;
+      return this.scrollbar_.position_ === this.scrollbar_.range_;
     },
 
     /**
@@ -210,13 +210,15 @@ var TimelineGraphView = (function() {
      */
     updateScrollbarRange_: function(resetPosition) {
       var scrollbarRange = this.getLength_() - this.canvas_.width;
-      if (scrollbarRange < 0)
+      if (scrollbarRange < 0) {
         scrollbarRange = 0;
+      }
 
       // If we've decreased the range to less than the current scroll position,
       // we need to move the scroll position.
-      if (this.scrollbar_.position_ > scrollbarRange)
+      if (this.scrollbar_.position_ > scrollbarRange) {
         resetPosition = true;
+      }
 
       this.scrollbar_.range_ = scrollbarRange;
       if (resetPosition) {
@@ -234,8 +236,9 @@ var TimelineGraphView = (function() {
       this.endTime_ = endDate.getTime();
 
       // Safety check.
-      if (this.endTime_ <= this.startTime_)
+      if (this.endTime_ <= this.startTime_) {
         this.startTime_ = this.endTime_ - 1;
+      }
 
       this.updateScrollbarRange_(true);
     },
@@ -246,8 +249,8 @@ var TimelineGraphView = (function() {
      * all the way to the right, keeps it all the way to the right.  Otherwise,
      * leaves the view as-is and doesn't redraw anything.
      */
-    updateEndDate: function(opt_date) {
-      this.endTime_ = opt_date || (new Date()).getTime();
+    updateEndDate: function(optDate) {
+      this.endTime_ = optDate || (new Date()).getTime();
       this.updateScrollbarRange_(this.graphScrolledToRightEdge_());
     },
 
@@ -261,8 +264,9 @@ var TimelineGraphView = (function() {
     setDataSeries: function(dataSeries) {
       // Simply recreates the Graph.
       this.graph_ = new Graph();
-      for (var i = 0; i < dataSeries.length; ++i)
+      for (var i = 0; i < dataSeries.length; ++i) {
         this.graph_.addDataSeries(dataSeries[i]);
+      }
       this.repaint();
     },
 
@@ -270,8 +274,9 @@ var TimelineGraphView = (function() {
     * Adds |dataSeries| to the current graph.
     */
     addDataSeries: function(dataSeries) {
-      if (!this.graph_)
+      if (!this.graph_) {
         this.graph_ = new Graph();
+      }
       this.graph_.addDataSeries(dataSeries);
       this.repaint();
     },
@@ -295,7 +300,7 @@ var TimelineGraphView = (function() {
       var fontHeight = parseInt(fontHeightString);
 
       // Safety check, to avoid drawing anything too ugly.
-      if (fontHeightString.length == 0 || fontHeight <= 0 ||
+      if (fontHeightString.length === 0 || fontHeight <= 0 ||
           fontHeight * 4 > height || width < 50) {
         return;
       }
@@ -312,8 +317,9 @@ var TimelineGraphView = (function() {
       var position = this.scrollbar_.position_;
       // If the entire time range is being displayed, align the right edge of
       // the graph to the end of the time range.
-      if (this.scrollbar_.range_ == 0)
+      if (this.scrollbar_.range_ === 0) {
         position = this.getLength_() - this.canvas_.width;
+      }
       var visibleStartTime = this.startTime_ + position * this.scale_;
 
       // Make space at the bottom of the graph for the time labels, and then
@@ -362,8 +368,9 @@ var TimelineGraphView = (function() {
       // Draw labels and vertical grid lines.
       while (true) {
         var x = Math.round((time - startTime) / this.scale_);
-        if (x >= width)
+        if (x >= width) {
           break;
+        }
         var text = (new Date(time)).toLocaleTimeString();
         context.fillText(text, x, textHeight);
         context.beginPath();
@@ -375,14 +382,16 @@ var TimelineGraphView = (function() {
     },
 
     getDataSeriesCount: function() {
-      if (this.graph_)
+      if (this.graph_) {
         return this.graph_.dataSeries_.length;
+      }
       return 0;
     },
 
     hasDataSeries: function(dataSeries) {
-      if (this.graph_)
+      if (this.graph_) {
         return this.graph_.hasDataSeries(dataSeries);
+      }
       return false;
     },
 
@@ -421,10 +430,12 @@ var TimelineGraphView = (function() {
      * A Label is the label at a particular position along the y-axis.
      * @constructor
      */
+    /*
     function Label(height, text) {
       this.height = height;
       this.text = text;
     }
+    */
 
     Graph.prototype = {
       addDataSeries: function(dataSeries) {
@@ -433,8 +444,9 @@ var TimelineGraphView = (function() {
 
       hasDataSeries: function(dataSeries) {
         for (var i = 0; i < this.dataSeries_.length; ++i) {
-          if (this.dataSeries_[i] == dataSeries)
+          if (this.dataSeries_[i] === dataSeries) {
             return true;
+          }
         }
         return false;
       },
@@ -444,8 +456,9 @@ var TimelineGraphView = (function() {
        * data series, using the current graph layout.
        */
       getValues: function(dataSeries) {
-        if (!dataSeries.isVisible())
+        if (!dataSeries.isVisible()) {
           return null;
+        }
         return dataSeries.getValues(this.startTime_, this.scale_, this.width_);
       },
 
@@ -462,16 +475,19 @@ var TimelineGraphView = (function() {
         this.scale_ = scale;
 
         // Find largest value.
-        var max = 0, min = 0;
+        var max = 0;
+        var min = 0;
         for (var i = 0; i < this.dataSeries_.length; ++i) {
           var values = this.getValues(this.dataSeries_[i]);
-          if (!values)
+          if (!values) {
             continue;
+          }
           for (var j = 0; j < values.length; ++j) {
-            if (values[j] > max)
+            if (values[j] > max) {
               max = values[j];
-            else if (values[j] < min)
+            } else if (values[j] < min) {
               min = values[j];
+            }
           }
         }
 
@@ -507,8 +523,9 @@ var TimelineGraphView = (function() {
         this.layoutLabelsBasic_(minValue, maxValue, MAX_DECIMAL_PRECISION);
 
         // Append units to labels.
-        for (var i = 0; i < this.labels_.length; ++i)
+        for (var i = 0; i < this.labels_.length; ++i) {
           this.labels_[i] += ' ' + units[unit];
+        }
 
         // Convert |min_|/|max_| back to unit '1'.
         this.min_ *= Math.pow(1024, unit);
@@ -524,7 +541,7 @@ var TimelineGraphView = (function() {
         this.labels_ = [];
         var range = maxValue - minValue;
         // No labels if the range is 0.
-        if (range == 0) {
+        if (range === 0) {
           this.min_ = this.max_ = maxValue;
           return;
         }
@@ -558,8 +575,9 @@ var TimelineGraphView = (function() {
           // the top of the graph.
 
           // Check if we can use steps of size |stepSize|.
-          if (Math.ceil(range / stepSize) + 1 <= maxLabels)
+          if (Math.ceil(range / stepSize) + 1 <= maxLabels) {
             break;
+          }
           // Check |stepSize| * 2.
           if (Math.ceil(range / (stepSize * 2)) + 1 <= maxLabels) {
             stepSize *= 2;
@@ -571,8 +589,9 @@ var TimelineGraphView = (function() {
             break;
           }
           stepSize *= 10;
-          if (stepSizeDecimalDigits > 0)
+          if (stepSizeDecimalDigits > 0) {
             --stepSizeDecimalDigits;
+          }
         }
 
         // Set the min/max so it's an exact multiple of the chosen step size.
@@ -580,8 +599,9 @@ var TimelineGraphView = (function() {
         this.min_ = Math.floor(minValue / stepSize) * stepSize;
 
         // Create labels.
-        for (var label = this.max_; label >= this.min_; label -= stepSize)
+        for (var label = this.max_; label >= this.min_; label -= stepSize) {
           this.labels_.push(label.toFixed(stepSizeDecimalDigits));
+        }
       },
 
       /**
@@ -613,15 +633,17 @@ var TimelineGraphView = (function() {
         // 0 to height - 1.
         var scale = 0;
         var bottom = this.height_ - 1;
-        if (this.max_)
+        if (this.max_) {
           scale = bottom / (this.max_ - this.min_);
+        }
 
         // Draw in reverse order, so earlier data series are drawn on top of
         // subsequent ones.
         for (var i = this.dataSeries_.length - 1; i >= 0; --i) {
           var values = this.getValues(this.dataSeries_[i]);
-          if (!values)
+          if (!values) {
             continue;
+          }
           context.strokeStyle = this.dataSeries_[i].getColor();
           context.beginPath();
           for (var x = 0; x < values.length; ++x) {
@@ -638,8 +660,9 @@ var TimelineGraphView = (function() {
        * Draw labels in |labels_|.
        */
       drawLabels: function(context) {
-        if (this.labels_.length == 0)
+        if (this.labels_.length === 0) {
           return;
+        }
         var x = this.width_ - LABEL_HORIZONTAL_SPACING;
 
         // Set up the context.
@@ -654,8 +677,9 @@ var TimelineGraphView = (function() {
         // Draw all the other labels.
         context.textBaseline = 'bottom';
         var step = (this.height_ - 1) / (this.labels_.length - 1);
-        for (var i = 1; i < this.labels_.length; ++i)
+        for (var i = 1; i < this.labels_.length; ++i) {
           context.fillText(this.labels_[i], x, step * i);
+        }
       }
     };
 
@@ -664,4 +688,3 @@ var TimelineGraphView = (function() {
 
   return TimelineGraphView;
 })();
-

@@ -5,6 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+/* global TimelineDataSeries, TimelineGraphView */
 
 'use strict';
 
@@ -229,10 +230,12 @@ function setDefaultCodec(mLine, payload) {
 
 // query getStats every second
 if (webrtcDetectedBrowser === 'chrome') {
-  window.setInterval(function () {
-    if (!window.pc1) return;
-    window.pc1.getStats(function (res) {
-      res.result().forEach(function (report) {
+  window.setInterval(function() {
+    if (!window.pc1) {
+      return;
+    }
+    window.pc1.getStats(function(res) {
+      res.result().forEach(function(report) {
         var bytes;
         var now = report.timestamp;
         if (report.type === 'ssrc' && report.stat('bytesSent')) {
