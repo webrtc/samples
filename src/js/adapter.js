@@ -232,27 +232,41 @@ if (navigator.mozGetUserMedia) {
           return;
         }
         var r = (typeof c[key] == "object")? c[key] : { ideal: c[key] };
-        if (r.exact !== undefined) {
+        if (r.exact !== undefined && typeof r.exact == "number") {
           r.min = r.max = r.exact;
         }
         var oldname = function(prefix, name) {
-          return prefix + name.charAt(0).toUpperCase() + name.slice(1);
+          if (prefix) {
+            return prefix + name.charAt(0).toUpperCase() + name.slice(1);
+          }
+          return (name == "deviceId")? "sourceId" : name;
         }
         if (r.ideal !== undefined) {
           cc.optional = cc.optional || [];
-          var oc = {};
-          oc[oldname("min", key)] = r.ideal;
-          cc.optional.push(oc);
-          oc = {};
-          oc[oldname("max", key)] = r.ideal;
-          cc.optional.push(oc);
-        }
-        ["min", "max"].forEach(function(mix) {
-          if (r[mix] !== undefined) {
-            cc.mandatory = cc.mandatory || {};
-            cc.mandatory[oldname(mix, key)] = r[mix];
+          if (typeof r.ideal == "number") {
+            var oc = {};
+            oc[oldname("min", key)] = r.ideal;
+            cc.optional.push(oc);
+            oc = {};
+            oc[oldname("max", key)] = r.ideal;
+            cc.optional.push(oc);
+          } else {
+            var oc = {};
+            oc[oldname("", key)] = r.ideal;
+            cc.optional.push(oc);
           }
-        });
+        }
+        if (r.exact !== undefined && typeof r.exact != "number") {
+          cc.mandatory = cc.mandatory || {};
+          cc.mandatory[oldname("", key)] = r.exact;
+        } else {
+          ["min", "max"].forEach(function(mix) {
+            if (r[mix] !== undefined) {
+              cc.mandatory = cc.mandatory || {};
+              cc.mandatory[oldname(mix, key)] = r[mix];
+            }
+          });
+        }
       });
       if (c.advanced) {
         cc.optional = (cc.optional || []).concat(c.advanced);
