@@ -44,7 +44,8 @@ function gotStream(stream) {
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
+    { voiceActivityDetection: false });
 
   bitrateSeries = new TimelineDataSeries();
   graph = new TimelineGraphView('graph', 'graphCanvas');
