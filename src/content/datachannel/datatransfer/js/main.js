@@ -15,7 +15,6 @@ var receiveChannel;
 var pcConstraint;
 var megsToSend = document.querySelector('input#megsToSend');
 var sendButton = document.querySelector('button#sendTheData');
-var bitrateDiv = document.querySelector('div#bitrate');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
 
@@ -23,8 +22,6 @@ var receivedSize = 0;
 var bytesToSend = 0;
 
 var bytesPrev = 0;
-var timestampPrev = 0;
-var timestampStart;
 var statsInterval = null;
 var bitrateMax = 0;
 
@@ -146,8 +143,6 @@ function receiveChannelCallback(event) {
   receiveChannel = event.channel;
   receiveChannel.binaryType = 'arraybuffer';
   receiveChannel.onmessage = onReceiveMessageCallback;
-  receiveChannel.onopen = onReceiveChannelStateChange;
-  receiveChannel.onclose = onReceiveChannelStateChange;
 
   receivedSize = 0;
   bitrateMax = 0;
@@ -172,68 +167,5 @@ function onSendChannelStateChange() {
   trace('Send channel state is: ' + readyState);
   if (readyState === 'open') {
     sendGeneratedData();
-  }
-}
-
-function onReceiveChannelStateChange() {
-  var readyState = receiveChannel.readyState;
-  trace('Receive channel state is: ' + readyState);
-  if (readyState === 'open') {
-    timestampStart = (new Date()).getTime();
-    timestampPrev = timestampStart;
-    statsInterval = window.setInterval(displayStats, 500);
-    window.setTimeout(displayStats, 100);
-    window.setTimeout(displayStats, 300);
-  }
-}
-
-// display bitrate statistics.
-function displayStats() {
-  var display = function(bitrate) {
-    bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
-        bitrate + ' kbits/sec';
-  };
-
-  if (remoteConnection &&
-      remoteConnection.iceConnectionState === 'connected') {
-    if (webrtcDetectedBrowser === 'chrome') {
-      // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
-      // lands those stats should be preferrred over the connection stats.
-      remoteConnection.getStats(function(stats) {
-        stats.result().forEach(function(res) {
-          if (timestampPrev === res.timestamp) {
-            return;
-          }
-          if (res.type === 'googCandidatePair' &&
-              res.stat('googActiveConnection') === 'true') {
-            // calculate current bitrate
-            var bytesNow = res.stat('bytesReceived');
-            var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-                (res.timestamp - timestampPrev));
-            display(bitrate);
-            timestampPrev = res.timestamp;
-            bytesPrev = bytesNow;
-            if (bitrate > bitrateMax) {
-              bitrateMax = bitrate;
-            }
-          }
-        });
-      });
-    } else {
-      // Firefox currently does not have data channel stats. See
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=1136832
-      // Instead, the bitrate is calculated based on the number of
-      // bytes received.
-      var bytesNow = receivedSize;
-      var now = (new Date()).getTime();
-      var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-          (now - timestampPrev));
-      display(bitrate);
-      timestampPrev = now;
-      bytesPrev = bytesNow;
-      if (bitrate > bitrateMax) {
-        bitrateMax = bitrate;
-      }
-    }
   }
 }
