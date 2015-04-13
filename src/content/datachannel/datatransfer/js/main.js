@@ -21,7 +21,6 @@ var receiveProgress = document.querySelector('progress#receiveProgress');
 var receivedSize = 0;
 var bytesToSend = 0;
 
-var bytesPrev = 0;
 var statsInterval = null;
 var bitrateMax = 0;
 
