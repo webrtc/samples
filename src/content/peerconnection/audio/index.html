@@ -45,8 +45,9 @@
       </div>
     </div>
 
-    <div id="buttons">
-      <select id="codec">
+    <div id="params">
+       Codec:
+       <select id="codec">
         <!-- Codec values are matched with how they appear in the SDP.
         For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
         matches 16K iSAC (but not 32K iSAC). -->
@@ -55,6 +56,18 @@
         <option value="G722">G722</option>
         <option value="PCMU">PCMU</option>
       </select>
+
+      Bit rate:
+      <input id="bitrate" size="12"/>
+
+      Packet time:
+      <input id="ptime" size="12"/>
+
+      VAD:
+      <input id="vad" type="checkbox" checked>
+
+    </div>
+    <div id="buttons">
       <button id="callButton">Call</button>
       <button id="hangupButton">Hang Up</button>
     </div>
@@ -64,6 +77,7 @@
   </div>
 
   <script src="../../../js/adapter.js"></script>
+  <script src="../../../js/sdputils.js"></script>
   <script src="js/main.js"></script>
 
   <script src="../../../js/lib/ga.js"></script>
