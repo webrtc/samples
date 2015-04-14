@@ -38,8 +38,9 @@ function createConnection() {
   trace('Created local peer connection object localConnection');
 
   var dataChannelParams = {ordered: false};
-  if (orderedCheckbox.checked)
+  if (orderedCheckbox.checked) {
     dataChannelParams.ordered = true;
+  }
 
   sendChannel = localConnection.createDataChannel(
       'sendDataChannel', dataChannelParams);
@@ -81,7 +82,7 @@ function sendGeneratedData() {
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
   var generateData = function(offset) {
     sendChannel.send(stringToSendRepeatedly);
-    if (offset < sendProgress.max) {
+    if (offset + chunkSize < bytesToSend) {
       window.setTimeout(generateData, 0, offset + chunkSize);
     }
     sendProgress.value = offset + chunkSize;
