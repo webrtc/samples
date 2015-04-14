@@ -15,6 +15,7 @@ var receiveChannel;
 var pcConstraint;
 var megsToSend = document.querySelector('input#megsToSend');
 var sendButton = document.querySelector('button#sendTheData');
+var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
 
@@ -36,7 +37,12 @@ function createConnection() {
       pcConstraint);
   trace('Created local peer connection object localConnection');
 
-  sendChannel = localConnection.createDataChannel('sendDataChannel');
+  var dataChannelParams = {ordered: false};
+  if (orderedCheckbox.checked)
+    dataChannelParams.ordered = true;
+
+  sendChannel = localConnection.createDataChannel(
+      'sendDataChannel', dataChannelParams);
   sendChannel.binaryType = 'arraybuffer';
   trace('Created send data channel');
 
