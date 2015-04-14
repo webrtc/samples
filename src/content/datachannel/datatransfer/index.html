@@ -45,9 +45,16 @@
     </section>
 
     <section>
-      <div>
-        <input type="number" id="megsToSend" min="1" name="megs" value="1048"/>
+      <div id="button">
         <button id="sendTheData" type="button">Generate and send data</button>
+      </div>
+      <div class="input">
+        <input type="number" id="megsToSend" min="1" name="megs" value="128"/>
+        <label for="megsToSend">MB</label>
+      </div>
+      <div class="input">
+        <input type="checkbox" id="ordered" checked>
+        <label for="ordered">Ordered mode</label>
       </div>
       <div class="progress">
         <div class="label">Send progress: </div>
