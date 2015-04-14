@@ -72,13 +72,9 @@ function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc, function() {
     pc2.setRemoteDescription(desc, function() {
-      // Since the 'remote' side has no media stream we need
-      // to pass in the right constraints in order for it to
-      // accept the incoming offer of audio.
-      // Note that we can also configure VAD for the SDP here.
+      // We configure VAD for the answer SDP here.
       var sdpConstraints = {
         'mandatory': {
-          'OfferToReceiveAudio': true,
           'VoiceActivityDetection': vadCheck.checked
         }
       };
