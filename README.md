@@ -68,6 +68,8 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [Transfer a file](https://webrtc.github.io/samples/src/content/datachannel/filetransfer)
 
+[Transfer data](https://webrtc.github.io/samples/src/content/datachannel/datatransfer)
+
 ### Video chat ###
 
 [AppRTC video chat client](https://apprtc.appspot.com) powered by Google App Engine
