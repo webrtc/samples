@@ -21,9 +21,14 @@ var pc1;
 var pc2;
 var localstream;
 
-var graph;
+var bitrateGraph;
 var bitrateSeries;
+
+var packetGraph;
+var packetSeries;
+
 var lastBytes = 0;
+var lastPackets = 0;
 var lastTime;
 
 var sdpConstraints = {
@@ -48,8 +53,12 @@ function gotStream(stream) {
     {voiceActivityDetection: false});
 
   bitrateSeries = new TimelineDataSeries();
-  graph = new TimelineGraphView('graph', 'graphCanvas');
-  graph.updateEndDate();
+  bitrateGraph = new TimelineGraphView('graph', 'bitrateCanvas');
+  bitrateGraph.updateEndDate();
+
+  packetSeries = new TimelineDataSeries();
+  packetGraph = new TimelineGraphView('graph', 'packetCanvas');
+  packetGraph.updateEndDate();
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -238,19 +247,27 @@ if (webrtcDetectedBrowser === 'chrome') {
     window.pc1.getStats(function(res) {
       res.result().forEach(function(report) {
         var bytes;
+        var packets;
         var now = report.timestamp;
         if (report.type === 'ssrc' && report.stat('bytesSent')) {
           bytes = report.stat('bytesSent');
+          packets = report.stat('packetsSent');
           if (lastTime) {
             // calculate bitrate
             var bitrate = 8 * (bytes - lastBytes) / (now - lastTime);
 
             // append to chart
             bitrateSeries.addPoint(now, bitrate);
-            graph.setDataSeries([bitrateSeries]);
-            graph.updateEndDate();
+            bitrateGraph.setDataSeries([bitrateSeries]);
+            bitrateGraph.updateEndDate();
+
+            // calculate number of packets and append to chart
+            packetSeries.addPoint(now, packets - lastPackets);
+            packetGraph.setDataSeries([packetSeries]);
+            packetGraph.updateEndDate();
           }
           lastBytes = bytes;
+          lastPackets = packets;
           lastTime = now;
         }
       });

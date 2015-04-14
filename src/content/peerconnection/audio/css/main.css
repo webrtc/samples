@@ -30,3 +30,8 @@ div.label {
   font-weight: 400;
   width: 120px;
 }
+
+canvas {
+  width: 300px;
+  height: 150px;
+}
