@@ -143,15 +143,15 @@ function onAddIceCandidateError(error) {
 function applyParamsToSdp(sdp) {
   var newSdp = maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
   if (bitRateField.value > 0) {
-    newSdp = preferBitRate(newSdp, bitRateField.value / 1000, "audio");
+    newSdp = preferBitRate(newSdp, bitRateField.value / 1000, 'audio');
   }
   if (ptimeField.value > 0) {
-    newSdp += ("a=ptime:" + ptimeField.value + "\r\n");
+    newSdp += ('a=ptime:' + ptimeField.value + '\r\n');
   }
   // Since Chrome doesn't currently set Opus DTX based on the
   // VoiceActivityDetection value, we can clumsily set it here.
   if (vadCheck.checked) {
-    newSdp = setCodecParam(newSdp, "opus/48000", "usedtx", "1");
+    newSdp = setCodecParam(newSdp, 'opus/48000', 'usedtx', '1');
   }
   return newSdp;
 }
