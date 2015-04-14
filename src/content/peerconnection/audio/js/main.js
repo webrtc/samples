@@ -88,13 +88,8 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-<<<<<<< HEAD
-  desc.sdp = forceChosenAudioCodec(desc.sdp);
-  pc2.setLocalDescription(desc, function() {
-=======
   desc.sdp = applyParamsToSdp(desc.sdp);
-  pc2.setLocalDescription(desc, function () {
->>>>>>> adapterlink
+  pc2.setLocalDescription(desc, function() {
     trace('Answer from pc2 \n' + desc.sdp);
     pc1.setRemoteDescription(desc);
   });
