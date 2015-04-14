@@ -53,11 +53,11 @@ function gotStream(stream) {
     {voiceActivityDetection: false});
 
   bitrateSeries = new TimelineDataSeries();
-  bitrateGraph = new TimelineGraphView('graph', 'bitrateCanvas');
+  bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
   bitrateGraph.updateEndDate();
 
   packetSeries = new TimelineDataSeries();
-  packetGraph = new TimelineGraphView('graph', 'packetCanvas');
+  packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
   packetGraph.updateEndDate();
 }
 

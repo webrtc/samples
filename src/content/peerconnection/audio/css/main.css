@@ -31,7 +31,12 @@ div.label {
   width: 120px;
 }
 
-canvas {
-  width: 300px;
-  height: 150px;
+div.graph-container {
+  float: left;
+  margin: 0.5em;
+  width: calc(50% - 1em);
+}
+
+a#viewSource {
+  clear: both;
 }
