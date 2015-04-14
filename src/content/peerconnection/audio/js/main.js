@@ -6,7 +6,7 @@
  *  tree.
  */
 
-/* imported maybePreferCodec, preferBitRate, setCodecParam*/
+/* globals maybePreferCodec, preferBitRate, setCodecParam*/
 'use strict';
 
 var audio2 = document.querySelector('audio#audio2');
