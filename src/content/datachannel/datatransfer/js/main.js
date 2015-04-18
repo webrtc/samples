@@ -72,7 +72,7 @@ function randomAsciiString(length) {
 function sendGeneratedData() {
   sendProgress.max = bytesToSend;
   receiveProgress.max = sendProgress.max;
-  var chunkSize = 16384;
+  var chunkSize = 32000;
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
   var generateData = function(offset) {
     sendChannel.send(stringToSendRepeatedly);
