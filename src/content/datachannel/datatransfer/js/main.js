@@ -95,7 +95,7 @@ function sendGeneratedData() {
       }
       sendProgress.value += chunkSize;
       sendChannel.send(stringToSendRepeatedly);
-    };
+    }
   };
   setTimeout(sendAllData, 0);
 }
@@ -167,7 +167,7 @@ function onReceiveMessageCallback(event) {
   receivedSize += event.data.length;
   receiveProgress.value = receivedSize;
 
-  if (receivedSize == bytesToSend) {
+  if (receivedSize === bytesToSend) {
     closeDataChannels();
   }
 }
