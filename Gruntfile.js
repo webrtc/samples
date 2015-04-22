@@ -8,7 +8,6 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // make node configurations available
     pkg: grunt.file.readJSON('package.json'),
-
     csslint: {
       options: {
         csslintrc: 'src/.csslintrc'
@@ -30,13 +29,11 @@ module.exports = function(grunt) {
         ]
       }
     },
-
     githooks: {
       all: {
         'pre-commit': 'csslint htmlhint jscs jshint'
       }
     },
-
     htmlhint: {
       html1: {
         src: [
@@ -46,7 +43,6 @@ module.exports = function(grunt) {
         ]
       }
     },
-
     jscs: {
       src: 'src/content/**/*.js',
       options: {
@@ -54,7 +50,6 @@ module.exports = function(grunt) {
         'excludeFiles': []
       }
     },
-
     jshint: {
       options: {
         ignores: [],
