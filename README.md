@@ -74,7 +74,7 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [AppRTC video chat client](https://apprtc.appspot.com) powered by Google App Engine
 
-[AppRTC URL parameters](https://apprtc.appspot.com/html/params.html)
+[AppRTC URL parameters](https://apprtc.appspot.com/params.html)
 
 
 

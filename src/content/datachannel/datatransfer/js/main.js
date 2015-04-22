@@ -78,16 +78,26 @@ function randomAsciiString(length) {
 function sendGeneratedData() {
   sendProgress.max = bytesToSend;
   receiveProgress.max = sendProgress.max;
+  sendProgress.value = 0;
+  receiveProgress.value = 0;
+
   var chunkSize = 16384;
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
-  var generateData = function(offset) {
-    sendChannel.send(stringToSendRepeatedly);
-    if (offset + chunkSize < bytesToSend) {
-      window.setTimeout(generateData, 0, offset + chunkSize);
+  var sendAllData = function() {
+    // Try to queue up a bunch of data and back off when the channel starts to
+    // fill up. We don't setTimeout after each send since this lowers our
+    // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
+    // seconds to execute).
+    while (sendProgress.value < sendProgress.max) {
+      if (sendChannel.bufferedAmount > 5 * chunkSize) {
+        setTimeout(sendAllData, 250);
+        return;
+      }
+      sendProgress.value += chunkSize;
+      sendChannel.send(stringToSendRepeatedly);
     }
-    sendProgress.value = offset + chunkSize;
   };
-  generateData(0);
+  setTimeout(sendAllData, 0);
 }
 
 function closeDataChannels() {
@@ -157,7 +167,7 @@ function onReceiveMessageCallback(event) {
   receivedSize += event.data.length;
   receiveProgress.value = receivedSize;
 
-  if (receivedSize >= bytesToSend) {
+  if (receivedSize === bytesToSend) {
     closeDataChannels();
   }
 }
