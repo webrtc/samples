@@ -30,11 +30,13 @@ module.exports = function(grunt) {
         ]
       }
     },
+
     githooks: {
       all: {
         'pre-commit': 'csslint htmlhint jscs jshint'
       }
     },
+
     htmlhint: {
       html1: {
         src: [
