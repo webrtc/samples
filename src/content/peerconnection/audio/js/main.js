@@ -140,7 +140,6 @@ function onSetSessionDescriptionError(error) {
   trace('Failed to set session description: ' + error.toString());
 }
 
-
 function forceChosenAudioCodec(sdp) {
   return maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
 }
