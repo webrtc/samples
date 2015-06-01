@@ -7,8 +7,11 @@
  */
 
 /* More information about these options at jshint.com/docs/options */
-/* global mozRTCIceCandidate, mozRTCPeerConnection,
-mozRTCSessionDescription, webkitRTCPeerConnection */
+/* jshint browser: true, camelcase: true, curly: true, devel: true,
+   eqeqeq: true, forin: false, globalstrict: true, node: true,
+   quotmark: single, undef: true, unused: strict */
+/* global mozRTCIceCandidate, mozRTCPeerConnection, Promise,
+mozRTCSessionDescription, webkitRTCPeerConnection, MediaStreamTrack */
 /* exported trace,requestUserMedia */
 
 'use strict';
@@ -19,6 +22,7 @@ var attachMediaStream = null;
 var reattachMediaStream = null;
 var webrtcDetectedBrowser = null;
 var webrtcDetectedVersion = null;
+var webrtcMinimumVersion = null;
 
 function trace(text) {
   // This function is used for logging.
@@ -38,18 +42,38 @@ if (navigator.mozGetUserMedia) {
 
   webrtcDetectedBrowser = 'firefox';
 
+  // the detected firefox version.
   webrtcDetectedVersion =
     parseInt(navigator.userAgent.match(/Firefox\/([0-9]+)\./)[1], 10);
 
+  // the minimum firefox version still supported by adapter.
+  webrtcMinimumVersion = 31;
+
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
-    // .urls is not supported in FF yet.
-    if (pcConfig && pcConfig.iceServers) {
-      for (var i = 0; i < pcConfig.iceServers.length; i++) {
-        if (pcConfig.iceServers[i].hasOwnProperty('urls')) {
-          pcConfig.iceServers[i].url = pcConfig.iceServers[i].urls;
-          delete pcConfig.iceServers[i].urls;
+    if (webrtcDetectedVersion < 38) {
+      // .urls is not supported in FF < 38.
+      // create RTCIceServers with a single url.
+      if (pcConfig && pcConfig.iceServers) {
+        var newIceServers = [];
+        for (var i = 0; i < pcConfig.iceServers.length; i++) {
+          var server = pcConfig.iceServers[i];
+          if (server.hasOwnProperty('urls')) {
+            for (var j = 0; j < server.urls.length; j++) {
+              var newServer = {
+                url: server.urls[j]
+              };
+              if (server.urls[j].indexOf('turn') === 0) {
+                newServer.username = server.username;
+                newServer.credential = server.credential;
+              }
+              newIceServers.push(newServer);
+            }
+          } else {
+            newIceServers.push(pcConfig.iceServers[i]);
+          }
         }
+        pcConfig.iceServers = newIceServers;
       }
     }
     return new mozRTCPeerConnection(pcConfig, pcConstraints);
@@ -61,71 +85,76 @@ if (navigator.mozGetUserMedia) {
   // The RTCIceCandidate object.
   window.RTCIceCandidate = mozRTCIceCandidate;
 
-  // getUserMedia shim (only difference is the prefix).
-  // Code from Adam Barth.
-  getUserMedia = navigator.mozGetUserMedia.bind(navigator);
+  // getUserMedia constraints shim.
+  getUserMedia = (webrtcDetectedVersion < 38) ?
+      function(c, onSuccess, onError) {
+    var constraintsToFF37 = function(c) {
+      if (typeof c !== 'object' || c.require) {
+        return c;
+      }
+      var require = [];
+      Object.keys(c).forEach(function(key) {
+        var r = c[key] = (typeof c[key] === 'object') ?
+            c[key] : {ideal: c[key]};
+        if (r.exact !== undefined) {
+          r.min = r.max = r.exact;
+          delete r.exact;
+        }
+        if (r.min !== undefined || r.max !== undefined) {
+          require.push(key);
+        }
+        if (r.ideal !== undefined) {
+          c.advanced = c.advanced || [];
+          var oc = {};
+          oc[key] = {min: r.ideal, max: r.ideal};
+          c.advanced.push(oc);
+          delete r.ideal;
+          if (!Object.keys(r).length) {
+            delete c[key];
+          }
+        }
+      });
+      if (require.length) {
+        c.require = require;
+      }
+      return c;
+    };
+    console.log('spec: ' + JSON.stringify(c));
+    c.audio = constraintsToFF37(c.audio);
+    c.video = constraintsToFF37(c.video);
+    console.log('ff37: ' + JSON.stringify(c));
+    return navigator.mozGetUserMedia(c, onSuccess, onError);
+  } : navigator.mozGetUserMedia.bind(navigator);
+
   navigator.getUserMedia = getUserMedia;
 
-  // Shim for MediaStreamTrack.getSources.
-  MediaStreamTrack.getSources = function(successCb) {
-    setTimeout(function() {
+  // Shim for mediaDevices on older versions.
+  if (!navigator.mediaDevices) {
+    navigator.mediaDevices = {getUserMedia: requestUserMedia};
+  }
+  navigator.mediaDevices.enumerateDevices =
+      navigator.mediaDevices.enumerateDevices || function() {
+    return new Promise(function(resolve) {
       var infos = [
-        {kind: 'audio', id: 'default', label:'', facing:''},
-        {kind: 'video', id: 'default', label:'', facing:''}
+        {kind: 'audioinput', deviceId: 'default', label:'', groupId:''},
+        {kind: 'videoinput', deviceId: 'default', label:'', groupId:''}
       ];
-      successCb(infos);
-    }, 0);
+      resolve(infos);
+    });
   };
-
-  // Creates ICE server from the URL for FF.
-  window.createIceServer = function(url, username, password) {
-    var iceServer = null;
-    var urlParts = url.split(':');
-    if (urlParts[0].indexOf('stun') === 0) {
-      // Create ICE server with STUN URL.
-      iceServer = {
-        'url': url
-      };
-    } else if (urlParts[0].indexOf('turn') === 0) {
-      if (webrtcDetectedVersion < 27) {
-        // Create iceServer with turn url.
-        // Ignore the transport parameter from TURN url for FF version <=27.
-        var turnUrlParts = url.split('?');
-        // Return null for createIceServer if transport=tcp.
-        if (turnUrlParts.length === 1 ||
-          turnUrlParts[1].indexOf('transport=udp') === 0) {
-          iceServer = {
-            'url': turnUrlParts[0],
-            'credential': password,
-            'username': username
-          };
+  if (webrtcDetectedVersion < 41) {
+    // Work around http://bugzil.la/1169665
+    var orgEnumerateDevices =
+        navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
+    navigator.mediaDevices.enumerateDevices = function() {
+      return orgEnumerateDevices().catch(function(e) {
+        if (e.name === 'NotFoundError') {
+          return [];
         }
-      } else {
-        // FF 27 and above supports transport parameters in TURN url,
-        // So passing in the full url to create iceServer.
-        iceServer = {
-          'url': url,
-          'credential': password,
-          'username': username
-        };
-      }
-    }
-    return iceServer;
-  };
-
-  window.createIceServers = function(urls, username, password) {
-    var iceServers = [];
-    // Use .url for FireFox.
-    for (var i = 0; i < urls.length; i++) {
-      var iceServer =
-        window.createIceServer(urls[i], username, password);
-      if (iceServer !== null) {
-        iceServers.push(iceServer);
-      }
-    }
-    return iceServers;
-  };
-
+        throw e;
+      });
+    };
+  }
   // Attach a media stream to an element.
   attachMediaStream = function(element, stream) {
     console.log('Attaching media stream');
@@ -141,52 +170,77 @@ if (navigator.mozGetUserMedia) {
   console.log('This appears to be Chrome');
 
   webrtcDetectedBrowser = 'chrome';
-  // Temporary fix until crbug/374263 is fixed.
-  // Setting Chrome version to 999, if version is unavailable.
-  var result = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-  if (result !== null) {
-    webrtcDetectedVersion = parseInt(result[2], 10);
-  } else {
-    webrtcDetectedVersion = 999;
-  }
 
-  // Creates iceServer from the url for Chrome M33 and earlier.
-  window.createIceServer = function(url, username, password) {
-    var iceServer = null;
-    var urlParts = url.split(':');
-    if (urlParts[0].indexOf('stun') === 0) {
-      // Create iceServer with stun url.
-      iceServer = {
-        'url': url
-      };
-    } else if (urlParts[0].indexOf('turn') === 0) {
-      // Chrome M28 & above uses below TURN format.
-      iceServer = {
-        'url': url,
-        'credential': password,
-        'username': username
-      };
-    }
-    return iceServer;
-  };
+  // the detected chrome version.
+  webrtcDetectedVersion =
+    parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
 
-  // Creates an ICEServer object from multiple URLs.
-  window.createIceServers = function(urls, username, password) {
-    return {
-      'urls': urls,
-      'credential': password,
-      'username': username
-    };
-  };
+  // the minimum chrome version still supported by adapter.
+  webrtcMinimumVersion = 38;
 
   // The RTCPeerConnection object.
   RTCPeerConnection = function(pcConfig, pcConstraints) {
     return new webkitRTCPeerConnection(pcConfig, pcConstraints);
   };
 
-  // Get UserMedia (only difference is the prefix).
-  // Code from Adam Barth.
-  getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
+  // getUserMedia constraints shim.
+  getUserMedia = function(c, onSuccess, onError) {
+    var constraintsToChrome = function(c) {
+      if (typeof c !== 'object' || c.mandatory || c.optional) {
+        return c;
+      }
+      var cc = {};
+      Object.keys(c).forEach(function(key) {
+        if (key === 'require' || key === 'advanced') {
+          return;
+        }
+        var r = (typeof c[key] === 'object') ? c[key] : {ideal: c[key]};
+        if (r.exact !== undefined && typeof r.exact === 'number') {
+          r.min = r.max = r.exact;
+        }
+        var oldname = function(prefix, name) {
+          if (prefix) {
+            return prefix + name.charAt(0).toUpperCase() + name.slice(1);
+          }
+          return (name === 'deviceId') ? 'sourceId' : name;
+        };
+        if (r.ideal !== undefined) {
+          cc.optional = cc.optional || [];
+          var oc = {};
+          if (typeof r.ideal === 'number') {
+            oc[oldname('min', key)] = r.ideal;
+            cc.optional.push(oc);
+            oc = {};
+            oc[oldname('max', key)] = r.ideal;
+            cc.optional.push(oc);
+          } else {
+            oc[oldname('', key)] = r.ideal;
+            cc.optional.push(oc);
+          }
+        }
+        if (r.exact !== undefined && typeof r.exact !== 'number') {
+          cc.mandatory = cc.mandatory || {};
+          cc.mandatory[oldname('', key)] = r.exact;
+        } else {
+          ['min', 'max'].forEach(function(mix) {
+            if (r[mix] !== undefined) {
+              cc.mandatory = cc.mandatory || {};
+              cc.mandatory[oldname(mix, key)] = r[mix];
+            }
+          });
+        }
+      });
+      if (c.advanced) {
+        cc.optional = (cc.optional || []).concat(c.advanced);
+      }
+      return cc;
+    };
+    console.log('spec:   ' + JSON.stringify(c)); // whitespace for alignment
+    c.audio = constraintsToChrome(c.audio);
+    c.video = constraintsToChrome(c.video);
+    console.log('chrome: ' + JSON.stringify(c));
+    return navigator.webkitGetUserMedia(c, onSuccess, onError);
+  };
   navigator.getUserMedia = getUserMedia;
 
   // Attach a media stream to an element.
@@ -205,6 +259,23 @@ if (navigator.mozGetUserMedia) {
   reattachMediaStream = function(to, from) {
     to.src = from.src;
   };
+
+  if (!navigator.mediaDevices) {
+    navigator.mediaDevices = {getUserMedia: requestUserMedia,
+                              enumerateDevices: function() {
+      return new Promise(function(resolve) {
+        var kinds = {audio: 'audioinput', video: 'videoinput'};
+        return MediaStreamTrack.getSources(function(devices) {
+          resolve(devices.map(function(device) {
+            return {label: device.label,
+                    kind: kinds[device.kind],
+                    deviceId: device.id,
+                    groupId: ''};
+          }));
+        });
+      });
+    }};
+  }
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
 }
@@ -212,17 +283,20 @@ if (navigator.mozGetUserMedia) {
 // Returns the result of getUserMedia as a Promise.
 function requestUserMedia(constraints) {
   return new Promise(function(resolve, reject) {
-    var onSuccess = function(stream) {
-      resolve(stream);
-    };
-    var onError = function(error) {
-      reject(error);
-    };
-
-    try {
-      getUserMedia(constraints, onSuccess, onError);
-    } catch (e) {
-      reject(e);
-    }
+    getUserMedia(constraints, resolve, reject);
   });
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    RTCPeerConnection: RTCPeerConnection,
+    getUserMedia: getUserMedia,
+    attachMediaStream: attachMediaStream,
+    reattachMediaStream: reattachMediaStream,
+    webrtcDetectedBrowser: webrtcDetectedBrowser,
+    webrtcDetectedVersion: webrtcDetectedVersion,
+    webrtcMinimumVersion: webrtcMinimumVersion
+    //requestUserMedia: not exposed on purpose.
+    //trace: not exposed on purpose.
+  };
 }
