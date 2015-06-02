@@ -82,16 +82,17 @@ function gotDescription1(desc) {
       // accept the incoming offer of audio.
       pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
           sdpConstraints);
-    });
-  });
+    }, onSetSessionDescriptionError);
+  }, onSetSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
   desc.sdp = forceChosenAudioCodec(desc.sdp);
   pc2.setLocalDescription(desc, function() {
     trace('Answer from pc2 \n' + desc.sdp);
-    pc1.setRemoteDescription(desc);
-  });
+    pc1.setRemoteDescription(desc, function() {
+    }, onSetSessionDescriptionError);
+  }, onSetSessionDescriptionError);
 }
 
 function hangup() {
@@ -133,6 +134,10 @@ function onAddIceCandidateSuccess() {
 
 function onAddIceCandidateError(error) {
   trace('Failed to add ICE Candidate: ' + error.toString());
+}
+
+function onSetSessionDescriptionError(error) {
+  trace('Failed to set session description: ' + error.toString());
 }
 
 function forceChosenAudioCodec(sdp) {
