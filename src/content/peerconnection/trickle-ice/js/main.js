@@ -25,6 +25,7 @@ removeButton.onclick = removeServer;
 
 var begin;
 var pc;
+var candidates;
 
 function selectServer(event) {
   var option = event.target;
@@ -105,6 +106,7 @@ function start() {
 
 function gotDescription(desc) {
   begin = window.performance.now();
+  candidates = [];
   pc.setLocalDescription(desc);
 }
 
@@ -150,6 +152,46 @@ function appendCell(row, val, span) {
   row.appendChild(cell);
 }
 
+// Try to determine authentication failures and unreachable TURN
+// servers by using heuristics on the candidate types gathered.
+function getFinalResult() {
+  var result = 'Done';
+
+  // if more than one server is used, it can not be determined
+  // which server failed.
+  if (servers.length === 1) {
+    var server = JSON.parse(servers[0].value);
+
+    // get the candidates types (host, srflx, relay)
+    var types = candidates.map(function(cand) {
+      return cand.type;
+    });
+
+    // If the server is a TURN server we should have a relay candidate.
+    // If we did not get a relay candidate but a srflx candidate
+    // authentication might have failed.
+    // If we did not get  a relay candidate or a srflx candidate
+    // we could not reach the TURN server. Either it is not running at
+    // the target address or the clients access to the port is blocked.
+    //
+    // This only works for TURN/UDP since we do not get
+    // srflx candidates from TURN/TCP.
+    if (server.url.indexOf('turn:') === 0 &&
+        server.url.indexOf('?transport=tcp') === -1) {
+      if (types.indexOf('relay') === -1) {
+        if (types.indexOf('srflx') > -1) {
+          // a binding response but no relay candidate suggests auth failure.
+          result = 'Authentication failed?';
+        } else {
+          // either the TURN server is down or the clients access is blocked.
+          result = 'Not reachable?';
+        }
+      }
+    }
+  }
+  return result;
+}
+
 function iceCallback(event) {
   var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   var row = document.createElement('tr');
@@ -163,8 +205,9 @@ function iceCallback(event) {
     appendCell(row, c.address);
     appendCell(row, c.port);
     appendCell(row, formatPriority(c.priority));
+    candidates.push(c);
   } else {
-    appendCell(row, 'Done', 7);
+    appendCell(row, getFinalResult(), 7);
     pc.close();
     pc = null;
   }
