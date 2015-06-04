@@ -66,15 +66,19 @@ if (navigator.mozGetUserMedia) {
   getUserMedia = navigator.mozGetUserMedia.bind(navigator);
   navigator.getUserMedia = getUserMedia;
 
-  // Shim for MediaStreamTrack.getSources.
-  MediaStreamTrack.getSources = function(successCb) {
-    setTimeout(function() {
+  // Shim for mediaDevices on older versions.
+  if (!navigator.mediaDevices) {
+    navigator.mediaDevices = {getUserMedia: requestUserMedia};
+  }
+  navigator.mediaDevices.enumerateDevices =
+      navigator.mediaDevices.enumerateDevices || function() {
+    return new Promise(function(resolve) {
       var infos = [
-        {kind: 'audio', id: 'default', label:'', facing:''},
-        {kind: 'video', id: 'default', label:'', facing:''}
+        {kind: 'audioinput', id: 'default', label:'', groupId:''},
+        {kind: 'videoinput', id: 'default', label:'', groupId:''}
       ];
-      successCb(infos);
-    }, 0);
+      resolve(infos);
+    });
   };
 
   // Creates ICE server from the URL for FF.
@@ -205,6 +209,23 @@ if (navigator.mozGetUserMedia) {
   reattachMediaStream = function(to, from) {
     to.src = from.src;
   };
+
+  if (!navigator.mediaDevices) {
+    navigator.mediaDevices = {getUserMedia: requestUserMedia,
+                              enumerateDevices: function() {
+      return new Promise(function(resolve) {
+        var kinds = {audio: 'audioinput', video: 'videoinput'};
+        return MediaStreamTrack.getSources(function(devices) {
+          resolve(devices.map(function(device) {
+            return {label: device.label,
+                    kind: kinds[device.kind],
+                    deviceId: device.id,
+                    groupId: ''};
+          }));
+        });
+      });
+    }};
+  }
 } else {
   console.log('Browser does not appear to be WebRTC-capable');
 }
@@ -212,17 +233,6 @@ if (navigator.mozGetUserMedia) {
 // Returns the result of getUserMedia as a Promise.
 function requestUserMedia(constraints) {
   return new Promise(function(resolve, reject) {
-    var onSuccess = function(stream) {
-      resolve(stream);
-    };
-    var onError = function(error) {
-      reject(error);
-    };
-
-    try {
-      getUserMedia(constraints, onSuccess, onError);
-    } catch (e) {
-      reject(e);
-    }
+    getUserMedia(constraints, resolve, reject);
   });
 }
