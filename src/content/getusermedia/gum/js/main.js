@@ -11,8 +11,8 @@
 // Put variables in global scope to make them available to the browser console.
 var video = document.getElementById('gum-local');
 var constraints = window.constraints = {
-  audio: true,
-  video: false
+  audio: false,
+  video: true
 };
 
 function successCallback(stream) {
