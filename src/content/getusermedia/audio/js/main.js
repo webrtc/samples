@@ -9,13 +9,11 @@
 'use strict';
 
 // Put variables in global scope to make them available to the browser console.
-var audio = window.audio = document.querySelector('audio');
+var audio = document.getElementById('gum-local');
 var constraints = window.constraints = {
   audio: true,
   video: false
 };
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 function successCallback(stream) {
   var videoTracks = stream.getVideoTracks();
@@ -28,11 +26,7 @@ function successCallback(stream) {
     };
   }
   window.stream = stream; // make variable available to browser console
-  if (window.URL) {
-    audio.src = window.URL.createObjectURL(stream);
-  } else {
-    audio.src = stream;
-  }
+  attachMediaStream(audio, stream);
 }
 
 function errorCallback(error) {

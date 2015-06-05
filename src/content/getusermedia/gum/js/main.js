@@ -8,23 +8,25 @@
 
 'use strict';
 
-// variables in global scope so available to console
-var video = document.querySelector('video');
-var constraints = {
-  audio: false,
-  video: true
+// Put variables in global scope to make them available to the browser console.
+var video = document.getElementById('gum-local');
+var constraints = window.constraints = {
+  audio: true,
+  video: false
 };
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
 function successCallback(stream) {
-  window.stream = stream; // stream available to console
-  if (window.URL) {
-    video.src = window.URL.createObjectURL(stream);
-  } else {
-    video.src = stream;
+  var videoTracks = stream.getVideoTracks();
+  var audioTracks = stream.getAudioTracks();
+  if (videoTracks.length === 1 && audioTracks.length === 0) {
+    console.log('Got stream with constraints:', constraints);
+    console.log('Using video device: ' + videotracks[0].label);
+    stream.onended = function() {
+      console.log('Stream ended');
+    };
   }
+  window.stream = stream; // make variable available to browser console
+  attachMediaStream(video, stream);
 }
 
 function errorCallback(error) {
