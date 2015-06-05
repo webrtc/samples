@@ -20,7 +20,7 @@ function successCallback(stream) {
   var audioTracks = stream.getAudioTracks();
   if (videoTracks.length === 1 && audioTracks.length === 0) {
     console.log('Got stream with constraints:', constraints);
-    console.log('Using video device: ' + videotracks[0].label);
+    console.log('Using video device: ' + videoTracks[0].label);
     stream.onended = function() {
       console.log('Stream ended');
     };
