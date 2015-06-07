@@ -40,7 +40,7 @@ if (!navigator.mediaDevices) {
 
 function successCallback(stream) {
   window.stream = stream; // make stream available to console
-  videoElement.src = window.URL.createObjectURL(stream);
+  attachMediaStream(videoElement, stream);
 }
 
 function errorCallback(error) {
