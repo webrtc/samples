@@ -16,7 +16,6 @@ mozRTCSessionDescription, webkitRTCPeerConnection, MediaStreamTrack */
 
 'use strict';
 
-var RTCPeerConnection = null;
 var getUserMedia = null;
 var attachMediaStream = null;
 var reattachMediaStream = null;
@@ -50,7 +49,7 @@ if (navigator.mozGetUserMedia) {
   webrtcMinimumVersion = 31;
 
   // The RTCPeerConnection object.
-  RTCPeerConnection = function(pcConfig, pcConstraints) {
+  window.RTCPeerConnection = function(pcConfig, pcConstraints) {
     if (webrtcDetectedVersion < 38) {
       // .urls is not supported in FF < 38.
       // create RTCIceServers with a single url.
@@ -179,9 +178,50 @@ if (navigator.mozGetUserMedia) {
   webrtcMinimumVersion = 38;
 
   // The RTCPeerConnection object.
-  RTCPeerConnection = function(pcConfig, pcConstraints) {
+  window.RTCPeerConnection = function(pcConfig, pcConstraints) {
     return new webkitRTCPeerConnection(pcConfig, pcConstraints);
   };
+  // add promise support
+  ['createOffer', 'createAnswer'].forEach(function(method) {
+    var nativeMethod = webkitRTCPeerConnection.prototype[method];
+    webkitRTCPeerConnection.prototype[method] = function() {
+      var self = this;
+      if (arguments.length < 1 || (arguments.length === 1 &&
+          typeof(arguments[0]) === 'object')) {
+        var opts = arguments.length === 1 ? arguments[0] : undefined;
+        return new Promise(function(resolve, reject) {
+          nativeMethod.apply(self, [resolve, reject, opts]);
+        });
+      } else {
+        return nativeMethod.apply(this, arguments);
+      }
+    };
+  });
+
+  ['setLocalDescription', 'setRemoteDescription',
+      'addIceCandidate'].forEach(function(method) {
+    var nativeMethod = webkitRTCPeerConnection.prototype[method];
+    webkitRTCPeerConnection.prototype[method] = function() {
+      var args = arguments;
+      var self = this;
+      return new Promise(function(resolve, reject) {
+        nativeMethod.apply(self, [args[0],
+            function() {
+              resolve();
+              if (args.length >= 2) {
+                args[1].apply(null, []);
+              }
+            },
+            function(err) {
+              reject(err);
+              if (args.length >= 3) {
+                args[2].apply(null, [err]);
+              }
+            }]
+          );
+      });
+    };
+  });
 
   // getUserMedia constraints shim.
   getUserMedia = function(c, onSuccess, onError) {
