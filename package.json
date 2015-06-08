@@ -27,6 +27,10 @@
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.4.1",
-    "grunt-jscs": ">=0.8.1"
+    "grunt-jscs": ">=0.8.1",
+    "webrtc-adapter-test": "^0.1.1"
+  },
+  "scripts" : {
+    "postinstall": "cp node_modules/webrtc-adapter-test/adapter.js src/js"
   }
 }

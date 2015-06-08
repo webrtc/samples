@@ -10,6 +10,8 @@ If appropriate, write a unit test which demonstrates that your code functions as
 
 To request a change or addition, you must [submit a pull request](https://help.github.com/categories/collaborating/).
 
+If you need to update the adapter.js version, run "npm install" and submit a CL with the resulting change - this will update the version in src/js/adapter.js.
+
 WebRTC developers monitor outstanding pull requests. They may request changes to the pull request before accepting. They will also verify that a CLA has been signed.
 
 The [Developer's Guide](https://bit.ly/webrtcdevguide) for this repo has more detailed information about code style, structure and validation.
