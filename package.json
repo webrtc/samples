@@ -25,6 +25,7 @@
     "grunt-contrib-compress": "^0.13.0",
     "grunt-contrib-csslint": ">=0.3.1",
     "grunt-contrib-jshint": "^0.10.0",
+    "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.4.1",
     "grunt-jscs": ">=0.8.1"
   }

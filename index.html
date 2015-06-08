@@ -59,7 +59,7 @@
 
       <p>Most of the samples use <a href="//github.com/webrtc/adapter">adapter.js</a>, a shim to insulate apps from spec changes and prefix differences. (In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see <a href="//www.webrtc.org/web-apis/interop">webrtc.org/web-apis/interop</a>.)</p>
 
-      <p>Please note that all samples that use <code>getUserMedia()</code> must be run from a server. Calling <code>getUserMedia()</code> from a file:// URL will result in a PERMISSION_DENIED NavigatorUserMediaError.</p>
+      <p>In Chrome and Opera, all samples that use <code>getUserMedia()</code> must be run from a server. Calling <code>getUserMedia()</code> from a file:// URL will work in Firefox, but fail silently in Chrome and Opera.</p>
 
       <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">webrtc.org/testing</a> lists command line flags useful for development and testing with Chrome.</p>
 

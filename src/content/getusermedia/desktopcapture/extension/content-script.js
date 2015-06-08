@@ -28,4 +28,7 @@ window.addEventListener('message', function(event) {
   }
 }, false);
 
-window.postMessage({type: 'SS_PING', text: 'start'}, '*');
+window.postMessage({
+  type: 'SS_PING',
+  text: 'start'
+}, '*');
