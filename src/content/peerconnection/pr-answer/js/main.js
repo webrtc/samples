@@ -85,8 +85,13 @@ function onSetLocalDescriptionError(error) {
   stop();
 }
 
+function onSetLocalDescriptionSuccess() {
+  trace('localDescription success.');
+}
+
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc, null, onSetLocalDescriptionError);
+  pc1.setLocalDescription(desc, onSetLocalDescriptionSuccess,
+      onSetLocalDescriptionError);
   trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
@@ -100,7 +105,8 @@ function gotDescription2(desc) {
   // Provisional answer, set a=inactive & set sdp type to pranswer.
   desc.sdp = desc.sdp.replace(/a=recvonly/g, 'a=inactive');
   desc.type = 'pranswer';
-  pc2.setLocalDescription(desc, null, onSetLocalDescriptionError);
+  pc2.setLocalDescription(desc, onSetLocalDescriptionSuccess,
+      onSetLocalDescriptionError);
   trace('Pranswer from pc2 \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
 }
@@ -109,7 +115,8 @@ function gotDescription3(desc) {
   // Final answer, setting a=recvonly & sdp type to answer.
   desc.sdp = desc.sdp.replace(/a=inactive/g, 'a=recvonly');
   desc.type = 'answer';
-  pc2.setLocalDescription(desc, null, onSetLocalDescriptionError);
+  pc2.setLocalDescription(desc, onSetLocalDescriptionSuccess,
+      onSetLocalDescriptionError);
   trace('Answer from pc2 \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
 }
