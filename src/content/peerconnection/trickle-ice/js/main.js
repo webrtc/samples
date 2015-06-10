@@ -44,8 +44,11 @@ function addServer() {
 
   // Store the ICE server as a stringified JSON object in option.value.
   var option = document.createElement('option');
-  var iceServer = createIceServer(urlInput.value, usernameInput.value,
-      passwordInput.value);
+  var iceServer = {
+    urls: [urlInput.value],
+    username: usernameInput.value,
+    credential: passwordInput.value
+  };
   option.value = JSON.stringify(iceServer);
   option.text = urlInput.value + ' ';
   var username = usernameInput.value;
