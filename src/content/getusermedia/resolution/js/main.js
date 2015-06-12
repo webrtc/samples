@@ -103,8 +103,8 @@ video.onplay = function() {
 function getMedia(constraints) {
   if (stream) {
     video.src = null;
-    stream.getAudioTracks().forEach(function (track) { track.stop(); });
-    stream.getVideoTracks().forEach(function (track) { track.stop(); });
+    stream.getAudioTracks().forEach(function(track) { track.stop(); });
+    stream.getVideoTracks().forEach(function(track) { track.stop(); });
   }
   navigator.getUserMedia(constraints, successCallback, errorCallback);
 }
