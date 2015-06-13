@@ -1,8 +1,15 @@
+/*
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+// based on code from chrome://webrtc-internals which is
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// taken from chrome://webrtc-internals
 'use strict';
 /* exported TimelineDataSeries, TimelineGraphView */
 
