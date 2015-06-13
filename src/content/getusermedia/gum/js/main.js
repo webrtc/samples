@@ -17,14 +17,11 @@ var constraints = window.constraints = {
 
 function successCallback(stream) {
   var videoTracks = stream.getVideoTracks();
-  var audioTracks = stream.getAudioTracks();
-  if (videoTracks.length === 1 && audioTracks.length === 0) {
-    console.log('Got stream with constraints:', constraints);
-    console.log('Using video device: ' + videoTracks[0].label);
-    stream.onended = function() {
-      console.log('Stream ended');
-    };
-  }
+  console.log('Got stream with constraints:', constraints);
+  console.log('Using video device: ' + videoTracks[0].label);
+  stream.onended = function() {
+    console.log('Stream ended');
+  };
   window.stream = stream; // make variable available to browser console
   attachMediaStream(video, stream);
 }
