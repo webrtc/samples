@@ -183,7 +183,7 @@ function onReceiveMessageCallback(event) {
     downloadDiv.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
-        ((new Date()).getTime() - timestampStart));
+	  (window.performance.now() - timestampStart));
     bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
         bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
 
@@ -211,7 +211,7 @@ function onReceiveChannelStateChange() {
   var readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
   if (readyState === 'open') {
-    timestampStart = (new Date()).getTime();
+    timestampStart = window.performance.now();
     timestampPrev = timestampStart;
     statsInterval = window.setInterval(displayStats, 500);
     window.setTimeout(displayStats, 100);
@@ -257,7 +257,7 @@ function displayStats() {
       // Instead, the bitrate is calculated based on the number of
       // bytes received.
       var bytesNow = receivedSize;
-      var now = (new Date()).getTime();
+      var now = window.performance.now();
       var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
           (now - timestampPrev));
       display(bitrate);
