@@ -18,7 +18,8 @@ var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
-var bitrateDiv = document.querySelector('div#bitrate');
+var currentBitrate = document.querySelector('span#currentBitrate');
+var averagebitrate = document.querySelector('span#bitrate');
 
 var receivedSize = 0;
 var bytesToSend = 0;
@@ -89,10 +90,6 @@ function sendGeneratedData() {
   var chunkSize = 16384;
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
   var sendAllData = function() {
-    // Try to queue up a bunch of data and back off when the channel starts to
-    // fill up. We don't setTimeout after each send since this lowers our
-    // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
-    // seconds to execute).
     while (sendProgress.value < sendProgress.max) {
       if (sendChannel.bufferedAmount > 5 * chunkSize) {
         setTimeout(sendAllData, 250);
@@ -175,10 +172,8 @@ function onReceiveMessageCallback(event) {
   receiveProgress.value = receivedSize;
 
   if (receivedSize === bytesToSend) {
-    var bitrate = Math.round(receivedSize * 8 /
-        ((new Date()).getTime() - timestampStart));
-    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
-        bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
+    var bitrate = Math.round(receivedSize * 8 / (window.performance.now() - timestampStart));
+    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
     if (statsInterval) {
       window.clearInterval(statsInterval);
       statsInterval = null;
@@ -199,7 +194,7 @@ function onReceiveChannelStateChange() {
   var readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
   if (readyState === 'open') {
-    timestampStart = (new Date()).getTime();
+    timestampStart = window.performance.now();
     timestampPrev = timestampStart;
     statsInterval = window.setInterval(displayStats, 500);
     window.setTimeout(displayStats, 100);
@@ -210,8 +205,7 @@ function onReceiveChannelStateChange() {
 // display bitrate statistics.
 function displayStats() {
   var display = function(bitrate) {
-    bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
-        bitrate + ' kbits/sec';
+    currentBitrate.innerHTML = bitrate + ' kbits/sec';
   };
 
   if (remoteConnection &&
@@ -245,7 +239,7 @@ function displayStats() {
       // Instead, the bitrate is calculated based on the number of
       // bytes received.
       var bytesNow = receivedSize;
-      var now = (new Date()).getTime();
+      var now = window.performance.now();
       var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
           (now - timestampPrev));
       display(bitrate);
