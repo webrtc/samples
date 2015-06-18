@@ -184,8 +184,9 @@ function onReceiveMessageCallback(event) {
     downloadDiv.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
-	  (window.performance.now() - timestampStart));
-    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
+        (window.performance.now() - timestampStart));
+    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' +
+        bitrateMax + ' kbits/sec)';
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -222,7 +223,7 @@ function onReceiveChannelStateChange() {
 // display bitrate statistics.
 function displayStats() {
   var display = function(bitrate) {
-      currentBitrate.innerHTML = bitrate + ' kbits/sec';
+    currentBitrate.innerHTML = bitrate + ' kbits/sec';
   };
 
   if (remoteConnection &&

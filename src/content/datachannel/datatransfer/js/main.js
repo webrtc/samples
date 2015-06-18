@@ -172,8 +172,10 @@ function onReceiveMessageCallback(event) {
   receiveProgress.value = receivedSize;
 
   if (receivedSize === bytesToSend) {
-    var bitrate = Math.round(receivedSize * 8 / (window.performance.now() - timestampStart));
-    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
+    var bitrate = Math.round(receivedSize * 8 /
+        (window.performance.now() - timestampStart));
+    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' +
+        bitrateMax + ' kbits/sec)';
     if (statsInterval) {
       window.clearInterval(statsInterval);
       statsInterval = null;
