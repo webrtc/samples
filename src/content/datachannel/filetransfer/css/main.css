@@ -5,11 +5,11 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-div.progress, div#bitrate {
+div.progress, div.bitrate {
   margin: 0 0 1em 0;
 }
 
-div.progress div.label {
+div.progress div.label, div.bitrate div.label {
   display: inline-block;
   font-weight: 400;
   width: 8.2em;

@@ -13,7 +13,8 @@ var remoteConnection;
 var sendChannel;
 var receiveChannel;
 var pcConstraint;
-var bitrateDiv = document.querySelector('div#bitrate');
+var currentBitrate = document.querySelector('span#currentBitrate');
+var averagebitrate = document.querySelector('span#bitrate');
 var fileInput = document.querySelector('input#fileInput');
 var downloadDiv = document.querySelector('a#received');
 var sendProgress = document.querySelector('progress#sendProgress');
@@ -184,8 +185,7 @@ function onReceiveMessageCallback(event) {
 
     var bitrate = Math.round(receivedSize * 8 /
 	  (window.performance.now() - timestampStart));
-    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
-        bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
+    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -222,8 +222,7 @@ function onReceiveChannelStateChange() {
 // display bitrate statistics.
 function displayStats() {
   var display = function(bitrate) {
-    bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
-        bitrate + ' kbits/sec';
+      currentBitrate.innerHTML = bitrate + ' kbits/sec';
   };
 
   if (remoteConnection &&
