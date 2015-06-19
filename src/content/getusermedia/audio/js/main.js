@@ -9,7 +9,7 @@
 'use strict';
 
 // Put variables in global scope to make them available to the browser console.
-var audio = document.getElementById('gum-local');
+var audio = document.querySelector('audio');
 var constraints = window.constraints = {
   audio: true,
   video: false
