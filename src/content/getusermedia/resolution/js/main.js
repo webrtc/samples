@@ -34,52 +34,24 @@ fullHdButton.onclick = function() {
 };
 
 var qvgaConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 320,
-      minHeight: 180,
-      maxWidth: 320,
-      maxHeight: 180
-    }
-  }
+  video: {width: {exact: 320}, height: {exact: 240}}
 };
 
 var vgaConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 640,
-      minHeight: 360,
-      maxWidth: 640,
-      maxHeight: 360
-    }
-  }
+  video: {width: {exact: 640}, height: {exact: 480}}
 };
 
 var hdConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 1280,
-      minHeight: 720,
-      maxWidth: 1280,
-      maxHeight: 720
-    }
-  }
+  video: {width: 1280, height: 720}
 };
 
 var fullHdConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 1920,
-      minHeight: 1080,
-      maxWidth: 1920,
-      maxHeight: 1080
-    }
-  }
+  video: {width: {exact: 1920}, height: {exact: 1080}}
 };
 
 function successCallback(stream) {
   window.stream = stream; // stream available to console
-  video.src = window.URL.createObjectURL(stream);
+  attachMediaStream(video, stream);
 }
 
 function errorCallback(error) {
@@ -87,15 +59,14 @@ function errorCallback(error) {
 }
 
 function displayVideoDimensions() {
+  if (!video.videoWidth) {
+    setTimeout(displayVideoDimensions, 500);
+  }
   dimensions.innerHTML = 'Actual video dimensions: ' + video.videoWidth +
     'x' + video.videoHeight + 'px.';
 }
 
-video.onplay = function() {
-  setTimeout(function() {
-    displayVideoDimensions();
-  }, 500);
-};
+video.onloadedmetadata = displayVideoDimensions;
 
 function getMedia(constraints) {
   if (stream) {
@@ -103,5 +74,7 @@ function getMedia(constraints) {
     stream.getAudioTracks().forEach(function(track) { track.stop(); });
     stream.getVideoTracks().forEach(function(track) { track.stop(); });
   }
-  navigator.getUserMedia(constraints, successCallback, errorCallback);
+  setTimeout(function() {
+    navigator.getUserMedia(constraints, successCallback, errorCallback);
+  }, (stream ? 200 : 0));
 }

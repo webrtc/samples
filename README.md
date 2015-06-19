@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/webrtc/samples.svg)](https://travis-ci.org/webrtc/samples)
+[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=master)](https://travis-ci.org/webrtc/samples)
 
 # WebRTC code samples #
 
@@ -8,7 +8,7 @@ Some of the samples use new browser features. They may only work in Chrome Canar
 
 All of the samples use [adapter.js](https://github.com/webrtc/adapter), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/web-apis/interop](http://www.webrtc.org/web-apis/interop).
 
-NB: all samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will result in a PermissionDeniedError NavigatorUserMediaError.
+In Chrome and Opera, all samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will work in Firefox, but fail silently in Chrome and Opera.
 
 [webrtc.org/testing](http://www.webrtc.org/testing) lists command line flags useful for development and testing with Chrome.
 

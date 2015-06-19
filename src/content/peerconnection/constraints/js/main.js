@@ -76,25 +76,26 @@ function gotStream(stream) {
 function getUserMediaConstraints() {
   var constraints = {};
   constraints.audio = true;
-  constraints.video = {
-    mandatory: {},
-    optional: []
-  };
-  var mandatory = constraints.video.mandatory;
+  constraints.video = {};
   if (minWidthInput.value !== '0') {
-    mandatory.minWidth = minWidthInput.value;
+    constraints.video.width = {};
+    constraints.video.width.min = minWidthInput.value;
   }
   if (maxWidthInput.value !== '0') {
-    mandatory.maxWidth = maxWidthInput.value;
+    constraints.video.width = constraints.video.width || {};
+    constraints.video.width.max = maxWidthInput.value;
   }
   if (minHeightInput.value !== '0') {
-    mandatory.minHeight = minHeightInput.value;
+    constraints.video.height = {};
+    constraints.video.height.min = minHeightInput.value;
   }
   if (maxHeightInput.value !== '0') {
-    mandatory.maxHeight = maxHeightInput.value;
+    constraints.video.height = constraints.video.height || {};
+    constraints.video.height.max = maxHeightInput.value;
   }
   if (framerateInput.value !== '0') {
-    mandatory.minFrameRate = framerateInput.value;
+    constraints.video.frameRate = {};
+    constraints.video.frameRate.min = framerateInput.value;
   }
   return constraints;
 }
@@ -253,7 +254,7 @@ setInterval(function() {
     console.log('Not connected yet');
   }
   // Collect some stats from the video tags.
-  if (localVideo.src) {
+  if (localVideo.videoWidth) {
     localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
       localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
   }

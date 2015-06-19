@@ -30,7 +30,7 @@ var candidates;
 function selectServer(event) {
   var option = event.target;
   var value = JSON.parse(option.value);
-  urlInput.value = value.url;
+  urlInput.value = value.urls[0];
   usernameInput.value = value.username || '';
   passwordInput.value = value.credential || '';
 }
@@ -44,8 +44,11 @@ function addServer() {
 
   // Store the ICE server as a stringified JSON object in option.value.
   var option = document.createElement('option');
-  var iceServer = createIceServer(urlInput.value, usernameInput.value,
-      passwordInput.value);
+  var iceServer = {
+    urls: [urlInput.value],
+    username: usernameInput.value,
+    credential: passwordInput.value
+  };
   option.value = JSON.stringify(iceServer);
   option.text = urlInput.value + ' ';
   var username = usernameInput.value;
@@ -176,8 +179,8 @@ function getFinalResult() {
     //
     // This only works for TURN/UDP since we do not get
     // srflx candidates from TURN/TCP.
-    if (server.url.indexOf('turn:') === 0 &&
-        server.url.indexOf('?transport=tcp') === -1) {
+    if (server.urls[0].indexOf('turn:') === 0 &&
+        server.urls[0].indexOf('?transport=tcp') === -1) {
       if (types.indexOf('relay') === -1) {
         if (types.indexOf('srflx') > -1) {
           // a binding response but no relay candidate suggests auth failure.
