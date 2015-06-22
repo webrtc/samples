@@ -17,7 +17,7 @@ var canvas = window.canvas = document.querySelector('canvas');
 canvas.width = 480;
 canvas.height = 360;
 
-var filters = ['blur', 'grayscale', 'invert', 'sepia'];
+var filters = ['blur', 'grayscale', 'invert', 'sepia', 'none'];
 
 snapshotButton.onclick = function() {
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width,
