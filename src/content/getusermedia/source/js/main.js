@@ -49,7 +49,7 @@ function errorCallback(error) {
 
 function start() {
   if (window.stream) {
-    attachMediaStream(video, null);
+    attachMediaStream(videoElement, null);
     window.stream.getTracks().forEach(function(track) { track.stop(); });
   }
   var audioSource = audioSelect.value;
