@@ -22,9 +22,6 @@ button.onclick = function() {
     drawImage(video, 0, 0, canvas.width, canvas.height);
 };
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
 var constraints = {
   audio: false,
   video: true
@@ -32,11 +29,7 @@ var constraints = {
 
 function successCallback(stream) {
   window.stream = stream; // make stream available to browser console
-  if (window.URL) {
-    video.src = window.URL.createObjectURL(stream);
-  } else {
-    video.src = stream;
-  }
+  attachMediaStream(video, stream);
 }
 
 function errorCallback(error) {

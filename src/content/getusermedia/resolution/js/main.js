@@ -71,7 +71,8 @@ video.onloadedmetadata = displayVideoDimensions;
 function getMedia(constraints) {
   if (stream) {
     video.src = null;
-    stream.stop();
+    stream.getAudioTracks().forEach(function(track) { track.stop(); });
+    stream.getVideoTracks().forEach(function(track) { track.stop(); });
   }
   setTimeout(function() {
     navigator.getUserMedia(constraints, successCallback, errorCallback);
