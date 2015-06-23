@@ -49,9 +49,8 @@ function errorCallback(error) {
 
 function start() {
   if (window.stream) {
-    videoElement.src = null;
-    window.stream.getAudioTracks().forEach(function(track) { track.stop(); });
-    window.stream.getVideoTracks().forEach(function(track) { track.stop(); });
+    attachMediaStream(videoElement, null);
+    window.stream.getTracks().forEach(function(track) { track.stop(); });
   }
   var audioSource = audioSelect.value;
   var videoSource = videoSelect.value;
