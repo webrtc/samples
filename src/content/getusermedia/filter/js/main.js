@@ -17,7 +17,7 @@ var canvas = window.canvas = document.querySelector('canvas');
 canvas.width = 480;
 canvas.height = 360;
 
-var filters = ['blur', 'grayscale', 'invert', 'sepia'];
+var filters = ['blur', 'grayscale', 'invert', 'sepia', 'none'];
 
 snapshotButton.onclick = function() {
   canvas.getContext('2d').drawImage(video, 0, 0, canvas.width,
@@ -30,9 +30,6 @@ filterButton.onclick = function() {
   canvas.className = filters[newIndex];
 };
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
 var constraints = {
   audio: false,
   video: true
@@ -40,11 +37,7 @@ var constraints = {
 
 function successCallback(stream) {
   window.stream = stream; // make stream available to browser console
-  if (window.URL) {
-    video.src = window.URL.createObjectURL(stream);
-  } else {
-    video.src = stream;
-  }
+  attachMediaStream(video, stream);
 }
 
 function errorCallback(error) {

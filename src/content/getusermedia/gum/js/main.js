@@ -8,23 +8,22 @@
 
 'use strict';
 
-// variables in global scope so available to console
+// Put variables in global scope to make them available to the browser console.
 var video = document.querySelector('video');
-var constraints = {
+var constraints = window.constraints = {
   audio: false,
   video: true
 };
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
 function successCallback(stream) {
-  window.stream = stream; // stream available to console
-  if (window.URL) {
-    video.src = window.URL.createObjectURL(stream);
-  } else {
-    video.src = stream;
-  }
+  var videoTracks = stream.getVideoTracks();
+  console.log('Got stream with constraints:', constraints);
+  console.log('Using video device: ' + videoTracks[0].label);
+  stream.onended = function() {
+    console.log('Stream ended');
+  };
+  window.stream = stream; // make variable available to browser console
+  attachMediaStream(video, stream);
 }
 
 function errorCallback(error) {

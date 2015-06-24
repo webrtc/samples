@@ -55,30 +55,32 @@ function getSources() {
     alert(
       'This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
   } else {
-    MediaStreamTrack.getSources(gotSources);
-    selectSourceDiv.classList.remove('hidden');
+    navigator.mediaDevices.enumerateDevices().then(gotSources);
   }
 }
 
 function gotSources(sourceInfos) {
+  selectSourceDiv.classList.remove('hidden');
   var audioCount = 0;
   var videoCount = 0;
   for (var i = 0; i < sourceInfos.length; i++) {
     var option = document.createElement('option');
     option.value = sourceInfos[i].id;
     option.text = sourceInfos[i].label;
-    if (sourceInfos[i].kind === 'audio') {
+    if (sourceInfos[i].kind === 'audioinput') {
       audioCount++;
       if (option.text === '') {
         option.text = 'Audio ' + audioCount;
       }
       audioSelect.appendChild(option);
-    } else {
+    } else if (sourceInfos[i].kind === 'videoinput') {
       videoCount++;
       if (option.text === '') {
         option.text = 'Video ' + videoCount;
       }
       videoSelect.appendChild(option);
+    } else {
+      console.log('unknown', JSON.stringify(sourceInfos[i]));
     }
   }
 }
