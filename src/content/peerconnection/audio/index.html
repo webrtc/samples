@@ -58,6 +58,14 @@
       <button id="callButton">Call</button>
       <button id="hangupButton">Hang Up</button>
     </div>
+    <div class="graph-container" id="bitrateGraph">
+      <div>Bitrate</div>
+      <canvas id="bitrateCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="packetGraph">
+      <div>Packets sent per second</div>
+      <canvas id="packetCanvas"></canvas>
+    </div>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
@@ -65,6 +73,7 @@
 
   <script src="../../../js/adapter.js"></script>
   <script src="js/main.js"></script>
+  <script src="../../../js/third_party/graph.js"></script>
 
   <script src="../../../js/lib/ga.js"></script>
 </body>
