@@ -18,10 +18,16 @@ var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
+var currentBitrate = document.querySelector('span#currentBitrate');
+var averagebitrate = document.querySelector('span#bitrate');
 
 var receivedSize = 0;
 var bytesToSend = 0;
 
+var bytesPrev = 0;
+var timestampPrev = 0;
+var timestampStart;
+var statsInterval = null;
 var bitrateMax = 0;
 
 sendButton.onclick = createConnection;
@@ -84,10 +90,6 @@ function sendGeneratedData() {
   var chunkSize = 16384;
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
   var sendAllData = function() {
-    // Try to queue up a bunch of data and back off when the channel starts to
-    // fill up. We don't setTimeout after each send since this lowers our
-    // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
-    // seconds to execute).
     while (sendProgress.value < sendProgress.max) {
       if (sendChannel.bufferedAmount > 5 * chunkSize) {
         setTimeout(sendAllData, 250);
@@ -158,6 +160,8 @@ function receiveChannelCallback(event) {
   receiveChannel = event.channel;
   receiveChannel.binaryType = 'arraybuffer';
   receiveChannel.onmessage = onReceiveMessageCallback;
+  receiveChannel.onopen = onReceiveChannelStateChange;
+  receiveChannel.onclose = onReceiveChannelStateChange;
 
   receivedSize = 0;
   bitrateMax = 0;
@@ -168,6 +172,14 @@ function onReceiveMessageCallback(event) {
   receiveProgress.value = receivedSize;
 
   if (receivedSize === bytesToSend) {
+    var bitrate = Math.round(receivedSize * 8 /
+        (window.performance.now() - timestampStart));
+    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' +
+        bitrateMax + ' kbits/sec)';
+    if (statsInterval) {
+      window.clearInterval(statsInterval);
+      statsInterval = null;
+    }
     closeDataChannels();
   }
 }
@@ -177,5 +189,67 @@ function onSendChannelStateChange() {
   trace('Send channel state is: ' + readyState);
   if (readyState === 'open') {
     sendGeneratedData();
+  }
+}
+
+function onReceiveChannelStateChange() {
+  var readyState = receiveChannel.readyState;
+  trace('Receive channel state is: ' + readyState);
+  if (readyState === 'open') {
+    timestampStart = window.performance.now();
+    timestampPrev = timestampStart;
+    statsInterval = window.setInterval(displayStats, 500);
+    window.setTimeout(displayStats, 100);
+    window.setTimeout(displayStats, 300);
+  }
+}
+
+// display bitrate statistics.
+function displayStats() {
+  var display = function(bitrate) {
+    currentBitrate.innerHTML = bitrate + ' kbits/sec';
+  };
+
+  if (remoteConnection &&
+      remoteConnection.iceConnectionState === 'connected') {
+    if (webrtcDetectedBrowser === 'chrome') {
+      // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
+      // lands those stats should be preferrred over the connection stats.
+      remoteConnection.getStats(function(stats) {
+        stats.result().forEach(function(res) {
+          if (timestampPrev === res.timestamp) {
+            return;
+          }
+          if (res.type === 'googCandidatePair' &&
+              res.stat('googActiveConnection') === 'true') {
+            // calculate current bitrate
+            var bytesNow = res.stat('bytesReceived');
+            var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+                (res.timestamp - timestampPrev));
+            display(bitrate);
+            timestampPrev = res.timestamp;
+            bytesPrev = bytesNow;
+            if (bitrate > bitrateMax) {
+              bitrateMax = bitrate;
+            }
+          }
+        });
+      });
+    } else {
+      // Firefox currently does not have data channel stats. See
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1136832
+      // Instead, the bitrate is calculated based on the number of
+      // bytes received.
+      var bytesNow = receivedSize;
+      var now = window.performance.now();
+      var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+          (now - timestampPrev));
+      display(bitrate);
+      timestampPrev = now;
+      bytesPrev = bytesNow;
+      if (bitrate > bitrateMax) {
+        bitrateMax = bitrate;
+      }
+    }
   }
 }

@@ -13,7 +13,8 @@ var remoteConnection;
 var sendChannel;
 var receiveChannel;
 var pcConstraint;
-var bitrateDiv = document.querySelector('div#bitrate');
+var currentBitrate = document.querySelector('span#currentBitrate');
+var averagebitrate = document.querySelector('span#bitrate');
 var fileInput = document.querySelector('input#fileInput');
 var downloadDiv = document.querySelector('a#received');
 var sendProgress = document.querySelector('progress#sendProgress');
@@ -183,9 +184,9 @@ function onReceiveMessageCallback(event) {
     downloadDiv.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
-        ((new Date()).getTime() - timestampStart));
-    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
-        bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
+        (window.performance.now() - timestampStart));
+    averagebitrate.innerHTML = bitrate + ' kbits/sec (max: ' +
+        bitrateMax + ' kbits/sec)';
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -211,7 +212,7 @@ function onReceiveChannelStateChange() {
   var readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
   if (readyState === 'open') {
-    timestampStart = (new Date()).getTime();
+    timestampStart = window.performance.now();
     timestampPrev = timestampStart;
     statsInterval = window.setInterval(displayStats, 500);
     window.setTimeout(displayStats, 100);
@@ -222,8 +223,7 @@ function onReceiveChannelStateChange() {
 // display bitrate statistics.
 function displayStats() {
   var display = function(bitrate) {
-    bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
-        bitrate + ' kbits/sec';
+    currentBitrate.innerHTML = bitrate + ' kbits/sec';
   };
 
   if (remoteConnection &&
@@ -257,7 +257,7 @@ function displayStats() {
       // Instead, the bitrate is calculated based on the number of
       // bytes received.
       var bytesNow = receivedSize;
-      var now = (new Date()).getTime();
+      var now = window.performance.now();
       var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
           (now - timestampPrev));
       display(bitrate);
