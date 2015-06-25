@@ -5,6 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+/* global TimelineDataSeries, TimelineGraphView */
 
 'use strict';
 
@@ -19,6 +20,16 @@ hangupButton.onclick = hangup;
 var pc1;
 var pc2;
 var localstream;
+
+var bitrateGraph;
+var bitrateSeries;
+
+var packetGraph;
+var packetSeries;
+
+var lastBytes = 0;
+var lastPackets = 0;
+var lastTime;
 
 var sdpConstraints = {
   'mandatory': {
@@ -38,7 +49,16 @@ function gotStream(stream) {
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
+    {voiceActivityDetection: false});
+
+  bitrateSeries = new TimelineDataSeries();
+  bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
+  bitrateGraph.updateEndDate();
+
+  packetSeries = new TimelineDataSeries();
+  packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
+  packetGraph.updateEndDate();
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -221,4 +241,41 @@ function setDefaultCodec(mLine, payload) {
     }
   }
   return newLine.join(' ');
+}
+
+// query getStats every second
+if (webrtcDetectedBrowser === 'chrome') {
+  window.setInterval(function() {
+    if (!window.pc1) {
+      return;
+    }
+    window.pc1.getStats(function(res) {
+      res.result().forEach(function(report) {
+        var bytes;
+        var packets;
+        var now = report.timestamp;
+        if (report.type === 'ssrc' && report.stat('bytesSent')) {
+          bytes = report.stat('bytesSent');
+          packets = report.stat('packetsSent');
+          if (lastTime) {
+            // calculate bitrate
+            var bitrate = 8 * (bytes - lastBytes) / (now - lastTime);
+
+            // append to chart
+            bitrateSeries.addPoint(now, bitrate);
+            bitrateGraph.setDataSeries([bitrateSeries]);
+            bitrateGraph.updateEndDate();
+
+            // calculate number of packets and append to chart
+            packetSeries.addPoint(now, packets - lastPackets);
+            packetGraph.setDataSeries([packetSeries]);
+            packetGraph.updateEndDate();
+          }
+          lastBytes = bytes;
+          lastPackets = packets;
+          lastTime = now;
+        }
+      });
+    });
+  }, 1000);
 }
