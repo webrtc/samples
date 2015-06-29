@@ -58,6 +58,7 @@ function errorCallback(error) {
 
 function selectOutputDevice() {
   videoElement.setSinkId(audioSelect.value);
+  console.log('Set audio output to ' + audioSelect.value);
 }
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
