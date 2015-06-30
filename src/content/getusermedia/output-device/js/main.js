@@ -8,9 +8,11 @@
 
 'use strict';
 
-var videoElement = document.querySelector('video');
-var audioSelect = document.querySelector('#audio select');
+var gumVideo = document.querySelector('video#gumVideo');
+var localVideo = document.querySelector('video#localVideo');
+var localAudio = document.querySelector('audio#localAudio');
 
+var audioSelect = document.querySelector('select#output');
 audioSelect.onchange = selectOutputDevice;
 
 var constraints = window.constraints = {
@@ -40,7 +42,7 @@ function gotDevices(infos) {
 }
 
 function successCallback(stream) {
-  attachMediaStream(videoElement, stream);
+  attachMediaStream(gumVideo, stream);
   console.log('Got stream with constraints:', constraints);
   var audioTracks = stream.getAudioTracks();
   console.log('Using audio input: ' + audioTracks[0].label);
@@ -57,7 +59,9 @@ function errorCallback(error) {
 }
 
 function selectOutputDevice() {
-  videoElement.setSinkId(audioSelect.value);
+  gumVideo.setSinkId(audioSelect.value);
+  localVideo.setSinkId(audioSelect.value);
+  localAudio.setSinkId(audioSelect.value);
   console.log('Set audio output to ' + audioSelect.value);
 }
 

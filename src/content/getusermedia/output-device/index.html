@@ -27,17 +27,26 @@
   <link rel="stylesheet" href="../../../css/main.css">
 
   <style>
-  button {
-    width: 16.2em;
-   }
-  select {
-    width: 10em;
+  audio {
+    margin: 0 0 1em 0;
+    width: 100%;
   }
-  video {
-    background: #eee;
-    height: 480px;
-    width: 640px;
-  }
+    button {
+      width: 16.2em;
+    }
+    select {
+      width: 10em;
+    }
+    video {
+      background: black;
+      height: 171px;
+      margin: 0 1.6em 1em 0;
+      max-height: 171px;
+      width: calc(50% - 1em);
+    }
+    video:last-of-type {
+      margin: 0 0 1em 0;
+    }
   </style>
 
 </head>
@@ -48,14 +57,27 @@
 
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia: output device selection</span></h1>
 
-    <video autoplay></video>
+    <video id="gumVideo" title="From getUserMedia()" controls></video>
 
-    <div id="audio">
+    <video id="localVideo" title="From local video file" autoplay controls poster="images/poster.jpg" preload="metadata">
+      <source src="video/chrome.webm" type="video/webm" />
+      <source src="video/chrome.mp4" type="video/mp4" />
+      <p>This browser does not support the video element.</p>
+    </video>
+
+    <audio title="From local audio file" id="localAudio" controls>
+      <source src="audio/audio.mp3" type="audio/mp3" />
+      This browser does not support the audio element.
+    </audio>
+
+    <div>
       <label>Audio output: </label>
-      <select></select>
+      <select id="output"></select>
     </div>
 
     <button>Refresh output device list</button>
+
+    <p>This demo currently requires Chrome Canary with the following flag: <code>--enable-blink-features=EnumerateDevices,AudioOutputDevices</code>. How to run Chrome with flags: <a href="https://www.chromium.org/developers/how-tos/run-chromium-with-flags" title="The Chromium Projects: Run Chromium with flags">The Chromium Projects</a>.</p>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/output-device" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
