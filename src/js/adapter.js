@@ -354,6 +354,27 @@ if (navigator.mozGetUserMedia) {
     navigator.mediaDevices.addEventListener = function() { };
     navigator.mediaDevices.removeEventListener = function() { };
   }
+
+  // Attach audio output device to video element using source/sink ID.
+  var attachSinkId = function(element, sinkId) {
+    if (typeof element.sinkId !== 'undefined') {
+      element.setSinkId(sinkId)
+      .then(function(event) {
+        return console.log('Success, audio output device attached: ' + sinkId);
+      })
+      .catch(function(error) {
+        var errorMessage = error;
+        if (error.name === 'SecurityError') {
+          errorMessage = 'You need to use HTTPS for selecting audio output ' +
+              'device: ' + error;
+        }
+        return console.error(errorMessage);
+      })
+    } else {
+      console.warn('Browser does not support output device selection.')
+    }
+  }
+
 } else if (navigator.mediaDevices && navigator.userAgent.match(
     /Edge\/(\d+).(\d+)$/)) {
   console.log('This appears to be Edge');

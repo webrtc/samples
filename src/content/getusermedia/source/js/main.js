@@ -9,7 +9,8 @@
 'use strict';
 
 var videoElement = document.querySelector('video');
-var audioSelect = document.querySelector('select#audioSource');
+var audioInputSelect = document.querySelector('select#audioSource');
+var audioOutputSelect = document.querySelector('select#audioOutput');
 var videoSelect = document.querySelector('select#videoSource');
 
 function gotSources(sourceInfos) {
@@ -19,24 +20,24 @@ function gotSources(sourceInfos) {
     option.value = sourceInfo.deviceId;
     if (sourceInfo.kind === 'audioinput') {
       option.text = sourceInfo.label ||
-        'microphone ' + (audioSelect.length + 1);
-      audioSelect.appendChild(option);
+        'microphone ' + (audioInputSelect.length + 1);
+      audioInputSelect.appendChild(option);
+    } else if (sourceInfo.kind === 'audiooutput') {
+      option.text = sourceInfo.label || 'speaker ' +
+          (audioOutputSelect.length + 1);
+      audioOutputSelect.appendChild(option);
     } else if (sourceInfo.kind === 'videoinput') {
       option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
       videoSelect.appendChild(option);
     } else {
-      console.log('Some other kind of source: ', sourceInfo);
+      console.log('Some other kind of source/device: ', sourceInfo);
     }
   }
 }
 
-if (!navigator.mediaDevices) {
-  alert('This browser does not support navigator.mediaDevices.');
-} else {
-  navigator.mediaDevices.enumerateDevices()
-  .then(gotSources)
-  .catch(errorCallback);
-}
+navigator.mediaDevices.enumerateDevices()
+.then(gotSources)
+.catch(errorCallback);
 
 function successCallback(stream) {
   window.stream = stream; // make stream available to console
@@ -47,12 +48,16 @@ function errorCallback(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
+function changeAudioDestination() {
+  var audioDestination = audioOutputSelect.value;
+  attachSinkId(videoElement, audioDestination);
+}
+
 function start() {
   if (window.stream) {
-    attachMediaStream(videoElement, null);
     window.stream.getTracks().forEach(function(track) { track.stop(); });
   }
-  var audioSource = audioSelect.value;
+  var audioSource = audioInputSelect.value;
   var videoSource = videoSelect.value;
   var constraints = {
     audio: {
@@ -69,7 +74,8 @@ function start() {
   navigator.getUserMedia(constraints, successCallback, errorCallback);
 }
 
-audioSelect.onchange = start;
+audioInputSelect.onchange = start;
+audioOutputSelect.onchange = changeAudioDestination;
 videoSelect.onchange = start;
 
 start();
