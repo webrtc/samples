@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "WebRTC extension to disable multiple routes",
+  "name": "Extension to disable the option for multiple routes in WebRTC",
   "version": "0.1",
   "description": "Disables the multiple routes option for WebRTC.",
   "permissions": ["privacy"],
