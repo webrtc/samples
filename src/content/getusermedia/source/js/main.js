@@ -55,8 +55,8 @@ function start() {
   var audioSource = audioSelect.value;
   var videoSource = videoSelect.value;
   var constraints = {
-    audio: { deviceId: audioSource },
-    video: { deviceId: videoSource }
+    audio: {deviceId: audioSource},
+    video: {deviceId: videoSource}
   };
   navigator.getUserMedia(constraints, successCallback, errorCallback);
 }
