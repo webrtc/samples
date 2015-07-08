@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -41,11 +41,11 @@
 <body>
   <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Select audio &amp; video sources</span></h1>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a><span>Select sources &amp; outputs</span></h1>
 
-    <p>Get available audio, video sources and audio output devices* from <code>mediaDevices.enumerateDevices()</code> then set the source for <code>getUserMedia()</code> using a <code>sourceId</code> constraint.</p>
+    <p>Get available audio, video sources and audio output devices* from <code>mediaDevices.enumerateDevices()</code> then set the source for <code>getUserMedia()</code> using a <code>deviceId</code> constraint.</p>
 
-    <p>*Experimental support in Chrome 45.0.2441.x or later using command line flag "--enable-blink-features=EnumerateDevices,AudioOutputDevices". Use the <code>setSinkID()</code> method on the video element and provide a MediaStream and a sinkId (sourceId for where <code>sourceInfos.kind === 'audiooutput'</code>) as arguments.</p>
+    <p>*'Enable experimental support in Chrome 45.0.2441.x or later by selecting Enable experimental Web Platform features or by using command line flag "--enable-blink-features=EnumerateDevices,AudioOutputDevices". Use the <code>setSinkID()</code> method on the video element and provide a MediaStream and a sinkId (<code>deviceId</code> for where <code>sourceInfos.kind === 'audiooutput'</code>) as arguments.</p>
 
 
 
