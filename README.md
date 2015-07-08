@@ -36,6 +36,10 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face)
 
+### Devices ###
+
+[Select camera, microphone and speaker](https://webrtc.github.io./samples/src/content/devices/input-output)
+
 ### RTCPeerConnection ###
 
 [Basic peer connection](https://webrtc.github.io/samples/src/content/peerconnection/pc1)
