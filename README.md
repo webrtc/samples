@@ -28,13 +28,17 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [getUserMedia with resolution constraints](https://webrtc.github.io/samples/src/content/getusermedia/resolution)
 
-[getUserMedia with camera/mic selection](https://webrtc.github.io/samples/src/content/getusermedia/source)
+[getUserMedia with camera, mic and speaker selection](https://webrtc.github.io/samples/src/content/getusermedia/source)
 
 [Audio-only getUserMedia output to local audio element](https://webrtc.github.io/samples/src/content/getusermedia/audio)
 
 [Audio-only getUserMedia displaying volume](https://webrtc.github.io/samples/src/content/getusermedia/volume)
 
 [Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face)
+
+### Devices ###
+
+[Select camera, microphone and speaker](https://webrtc.github.io./samples/src/content/devices/input-output)
 
 ### RTCPeerConnection ###
 
