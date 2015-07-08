@@ -34,6 +34,9 @@
     select {
       width: 110px;
     }
+    p.small {
+      font-size: 0.7em;
+    }
   </style>
 
 </head>
@@ -43,11 +46,9 @@
 
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a><span>Select sources &amp; outputs</span></h1>
 
-    <p>Get available audio, video sources and audio output devices* from <code>mediaDevices.enumerateDevices()</code> then set the source for <code>getUserMedia()</code> using a <code>deviceId</code> constraint.</p>
+    <p>Get available audio, video sources and audio output devices<b>*</b> from <code>mediaDevices.enumerateDevices()</code> then set the source for <code>getUserMedia()</code> using a <code>deviceId</code> constraint.</p>
 
-    <p>*'Enable experimental support in Chrome 45.0.2441.x or later by selecting Enable experimental Web Platform features or by using command line flag "--enable-blink-features=EnumerateDevices,AudioOutputDevices". Use the <code>setSinkID()</code> method on the video element and provide a MediaStream and a sinkId (<code>deviceId</code> for where <code>sourceInfos.kind === 'audiooutput'</code>) as arguments.</p>
-
-
+    <p class="small"><b>*</b>Enable experimental support in <b>Chrome 45.0.2441.x</b> or later by selecting <b>Enable experimental Web Platform features</b> in <b>chrome://flags</b> or by using command line flag "<b>--enable-blink-features=EnumerateDevices,AudioOutputDevices</b>". Use the <code>setSinkID()</code> method on the video element and provide a audio or video element and a sinkId (<code>deviceId</code> for where <code>deviceInfo.kind === 'audiooutput'</code>) as arguments. Also the web page must be served over HTTPS</p>
 
     <div class="select">
       <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
@@ -61,7 +62,9 @@
       <label for="videoSource">Video source: </label><select id="videoSource"></select>
     </div>
 
-    <video muted autoplay></video>
+    <video autoplay></video>
+
+    <p class="small"><b>Note:</b> If you hear a reverb sound your microphone is picking up the output of your speakers/headset, lower the volume and/or move the microphone further away from your speakers/headset.</p>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/source" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>

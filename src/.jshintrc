@@ -16,8 +16,6 @@
     "arrayMax": true,
     "arrayMin": true,
     "attachMediaStream": true,
-    "attachMediaStream": true,
-    "attachSinkId": true,
     "audioContext": true,
     "AudioContext": true,
     "Call": true,

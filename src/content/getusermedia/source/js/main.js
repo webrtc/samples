@@ -13,30 +13,30 @@ var audioInputSelect = document.querySelector('select#audioSource');
 var audioOutputSelect = document.querySelector('select#audioOutput');
 var videoSelect = document.querySelector('select#videoSource');
 
-function gotSources(sourceInfos) {
-  for (var i = 0; i !== sourceInfos.length; ++i) {
-    var sourceInfo = sourceInfos[i];
+function gotDevices(deviceInfos) {
+  for (var i = 0; i !== deviceInfos.length; ++i) {
+    var deviceInfo = deviceInfos[i];
     var option = document.createElement('option');
-    option.value = sourceInfo.deviceId;
-    if (sourceInfo.kind === 'audioinput') {
-      option.text = sourceInfo.label ||
+    option.value = deviceInfo.deviceId;
+    if (deviceInfo.kind === 'audioinput') {
+      option.text = deviceInfo.label ||
         'microphone ' + (audioInputSelect.length + 1);
       audioInputSelect.appendChild(option);
-    } else if (sourceInfo.kind === 'audiooutput') {
-      option.text = sourceInfo.label || 'speaker ' +
+    } else if (deviceInfo.kind === 'audiooutput') {
+      option.text = deviceInfo.label || 'speaker ' +
           (audioOutputSelect.length + 1);
       audioOutputSelect.appendChild(option);
-    } else if (sourceInfo.kind === 'videoinput') {
-      option.text = sourceInfo.label || 'camera ' + (videoSelect.length + 1);
+    } else if (deviceInfo.kind === 'videoinput') {
+      option.text = deviceInfo.label || 'camera ' + (videoSelect.length + 1);
       videoSelect.appendChild(option);
     } else {
-      console.log('Some other kind of source/device: ', sourceInfo);
+      console.log('Some other kind of source/device: ', deviceInfo);
     }
   }
 }
 
 navigator.mediaDevices.enumerateDevices()
-.then(gotSources)
+.then(gotDevices)
 .catch(errorCallback);
 
 function successCallback(stream) {
@@ -46,6 +46,28 @@ function successCallback(stream) {
 
 function errorCallback(error) {
   console.log('navigator.getUserMedia error: ', error);
+}
+
+// Attach audio output device to video element using device/sink ID.
+function attachSinkId(element, sinkId) {
+  if (typeof element.sinkId !== 'undefined') {
+    element.setSinkId(sinkId)
+    .then(function() {
+      console.log('Success, audio output device attached: ' + sinkId);
+    })
+    .catch(function(error) {
+      var errorMessage = error;
+      if (error.name === 'SecurityError') {
+        errorMessage = 'You need to use HTTPS for selecting audio output ' +
+            'device: ' + error;
+      }
+      console.error(errorMessage);
+      // Jump back to first output device in the list as it's the default.
+      audioOutputSelect.selectedIndex = 0;
+    });
+  } else {
+    console.warn('Browser does not support output device selection.');
+  }
 }
 
 function changeAudioDestination() {
