@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -34,6 +34,13 @@
     select {
       width: 170px;
     }
+    p.small {
+      font-size: 0.7em;
+    }
+    label {
+      width: 12em;
+      display: inline-block;
+    }
   </style>
 
 </head>
@@ -41,19 +48,27 @@
 <body>
   <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Select audio &amp; video sources</span></h1>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a><span>Select sources &amp; outputs</span></h1>
 
-    <p>Get available audio and video sources from <code>MediaStream.getSources()</code> then set the source for <code>getUserMedia()</code> using a <code>sourceId</code> constraint.</p>
+    <p>Get available audio, video sources and audio output devices<b>*</b> from <code>mediaDevices.enumerateDevices()</code> then set the source for <code>getUserMedia()</code> using a <code>deviceId</code> constraint.</p>
+
+    <p class="small"><b>*</b>Enable experimental support in <b>Chrome 45.0.2441.x</b> or later by selecting <b>Enable experimental Web Platform features</b> in <b>chrome://flags</b> or by using command line flag "<b>--enable-blink-features=EnumerateDevices,AudioOutputDevices</b>". Use the <code>setSinkID()</code> method on the video element and provide a audio or video element and a sinkId (<code>deviceId</code> for where <code>deviceInfo.kind === 'audiooutput'</code>) as arguments. Also the web page must be served over HTTPS.</p>
 
     <div class="select">
-      <label for="audioSource">Audio source: </label><select id="audioSource"></select>
+      <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
+    </div>
+
+    <div class="select">
+      <label for="audioOutput">Audio output destination: </label><select id="audioOutput"></select>
     </div>
 
     <div class="select">
       <label for="videoSource">Video source: </label><select id="videoSource"></select>
     </div>
 
-    <video muted autoplay></video>
+    <video autoplay></video>
+
+    <p class="small"><b>Note:</b> If you hear a reverb sound your microphone is picking up the output of your speakers/headset, lower the volume and/or move the microphone further away from your speakers/headset.</p>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/source" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
