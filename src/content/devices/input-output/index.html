@@ -49,7 +49,7 @@
 
     <p>Get available audio, video sources and audio output devices<b>*</b> from <code>mediaDevices.enumerateDevices()</code> then set the source for <code>getUserMedia()</code> using a <code>deviceId</code> constraint.</p>
 
-    <p class="small"><b>*</b>Enable experimental support in <b>Chrome 45.0.2441.x</b> or later if <code>webrtcDetectedBrowser == 'chrome'</code> by selecting <b>Enable experimental Web Platform features</b> in <b>chrome://flags</b> or by using command line flag "<b>--enable-blink-features=EnumerateDevices,AudioOutputDevices</b>". Use the <code>setSinkID()</code> method on the video element and provide a audio or video element and a sinkId (<code>deviceId</code> for where <code>deviceInfo.kind === 'audiooutput'</code>) as arguments. Also the web page must be served over HTTPS.</p>
+    <p class="small"><b>*</b>Enable experimental support in <b>Chrome 45.0.2441.x</b> or later by selecting <b>Enable experimental Web Platform features</b> in <b>chrome://flags</b> or by using command line flag "<b>--enable-blink-features=EnumerateDevices,AudioOutputDevices</b>". Use the <code>setSinkID()</code> method on the video element and provide a audio or video element and a sinkId (<code>deviceId</code> for where <code>deviceInfo.kind === 'audiooutput'</code>) as arguments. Also the web page must be served over HTTPS.</p>
 
     <div class="select">
       <label for="audioSource">Audio input source: </label><select id="audioSource"></select>
