@@ -1,0 +1,10 @@
+{
+  "manifest_version": 2,
+  "name": "WebRTC Network Route Limiter",
+  "version": "0.1",
+  "description": "Disables the multiple routes option for WebRTC.",
+  "permissions": ["privacy"],
+  "background": {
+    "scripts": ["background.js"]
+  }
+}

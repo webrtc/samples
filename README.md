@@ -38,7 +38,7 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 ### Devices ###
 
-[Select camera, microphone and speaker](https://webrtc.github.io./samples/src/content/devices/input-output)
+[Select camera, microphone and speaker](https://webrtc.github.io/samples/src/content/devices/input-output)
 
 ### RTCPeerConnection ###
 
