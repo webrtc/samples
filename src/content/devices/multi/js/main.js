@@ -8,6 +8,7 @@
 
 'use strict';
 
+var gumAudio = document.querySelector('audio#gumAudio');
 var gumVideo = document.querySelector('video#gumVideo');
 var localVideo = document.querySelector('video#localVideo');
 var localAudio = document.querySelector('audio#localAudio');
@@ -42,6 +43,7 @@ function gotDevices(infos) {
 }
 
 function successCallback(stream) {
+  attachMediaStream(gumAudio, stream);
   attachMediaStream(gumVideo, stream);
   console.log('Got stream with constraints:', constraints);
   var audioTracks = stream.getAudioTracks();
@@ -59,6 +61,7 @@ function errorCallback(error) {
 }
 
 function selectOutputDevice() {
+  gumAudio.setSinkId(audioSelect.value);
   gumVideo.setSinkId(audioSelect.value);
   localVideo.setSinkId(audioSelect.value);
   localAudio.setSinkId(audioSelect.value);
