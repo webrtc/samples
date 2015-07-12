@@ -10,6 +10,11 @@
 
 var gumAudio = document.querySelector('audio#gumAudio');
 var gumVideo = document.querySelector('video#gumVideo');
+var localVideo = document.querySelector('video#localVideo');
+var localAudio = document.querySelector('audio#localAudio');
+
+var audioSelect = document.querySelector('select#output');
+audioSelect.onchange = selectOutputDevice;
 
 var constraints = window.constraints = {
   audio: true,
@@ -23,28 +28,16 @@ function getDevices() {
 }
 
 function gotDevices(infos) {
-  var audioOutputs = {};
-  var i = 0;
-  var numAudioOutputs = 0;
-  for (i; i !== infos.length; ++i) {
+  for (var i = 0; i !== infos.length; ++i) {
     var info = infos[i];
+    var option = document.createElement('option');
+    option.value = info.deviceId;
     if (info.kind === 'audiooutput') {
-      ++numAudioOutputs;
+      option.text = info.label || 'Audio output ' + (audioSelect.length + 1);
+      audioSelect.appendChild(option);
       console.log('Audio output device found: ', info);
-      audioOutputs[info.deviceId] = info.label ||
-        'Audio output ' + numAudioOutputs;
     } else {
       console.log('Device found, not audio output: ', info);
-    }
-  }
-  var selects = document.querySelectorAll('select');
-  for (i = 0; i !== selects.length; ++i) {
-    selects[i].onchange = selectOutputDevice;
-    for (var deviceId in audioOutputs) {
-      var option = document.createElement('option');
-      option.text = audioOutputs[deviceId];
-      option.value = deviceId;
-      selects[i].appendChild(option);
     }
   }
 }
@@ -67,14 +60,12 @@ function errorCallback(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
-function selectOutputDevice(event) {
-  // each select has a data-media attribute whose value is
-  // the ID of the associated media element
-  var select = event.target;
-  var mediaElement = document.getElementById(select.dataset.media);
-  mediaElement.setSinkId(select.value);
-  console.log('Set audio output for ' + mediaElement.id +
-    ' to ' + select.value);
+function selectOutputDevice() {
+  gumAudio.setSinkId(audioSelect.value);
+  gumVideo.setSinkId(audioSelect.value);
+  localVideo.setSinkId(audioSelect.value);
+  localAudio.setSinkId(audioSelect.value);
+  console.log('Set audio output to ' + audioSelect.value);
 }
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
