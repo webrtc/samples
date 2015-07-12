@@ -8,8 +8,8 @@
 
 'use strict';
 
-var gumAudio = document.querySelector('audio#gumAudio');
-var gumVideo = document.querySelector('video#gumVideo');
+var gumAudio = document.querySelector('audio.gum');
+var gumVideo = document.querySelector('video.gum');
 
 var audioOutputSelect = document.querySelector('select#output');
 audioOutputSelect.onchange = changeAudioDestination;
@@ -56,22 +56,12 @@ function successCallback(stream) {
 }
 
 function errorCallback(error) {
-  console.log('navigator.getUserMedia error: ', error);
+  console.log('Error: ', error);
 }
 
 function changeAudioDestination() {
-  // changing destination for one source affects all sources
+  // changing destination for one source changes destination for all sources
   attachSinkId(gumAudio, audioOutputSelect.value);
-  console.log('Set audio output to ' + audioOutputSelect.value);
-}
-
-navigator.getUserMedia(constraints, successCallback, errorCallback);
-
-if (!navigator.mediaDevices) {
-  alert('This browser does not support navigator.mediaDevices. ' +
-    'Cannot select output devices.');
-} else {
-  getDevices();
 }
 
 // Attach audio output device to video element using device/sink ID.
@@ -94,4 +84,13 @@ function attachSinkId(element, sinkId) {
   } else {
     console.warn('Browser does not support output device selection.');
   }
+}
+
+navigator.getUserMedia(constraints, successCallback, errorCallback);
+
+if (!navigator.mediaDevices) {
+  alert('This browser does not support navigator.mediaDevices. ' +
+    'Cannot select output devices.');
+} else {
+  getDevices();
 }
