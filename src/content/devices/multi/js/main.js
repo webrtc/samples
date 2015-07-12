@@ -60,10 +60,9 @@ function errorCallback(error) {
 }
 
 function changeAudioDestination() {
-  var audioDestination = audioOutputSelect.value;
-  // only need to do once for all sources
-  attachSinkId(gumAudio, audioDestination.value);
-  console.log('Set audio output to ' + audioDestination.value);
+  // changing destination for one source affects all sources
+  attachSinkId(gumAudio, audioOutputSelect.value);
+  console.log('Set audio output to ' + audioOutputSelect.value);
 }
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
