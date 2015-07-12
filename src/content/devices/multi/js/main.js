@@ -13,8 +13,8 @@ var gumVideo = document.querySelector('video#gumVideo');
 var localVideo = document.querySelector('video#localVideo');
 var localAudio = document.querySelector('audio#localAudio');
 
-var audioSelect = document.querySelector('select#output');
-audioSelect.onchange = selectOutputDevice;
+var outputSelect = document.querySelector('select#output');
+outputSelect.onchange = selectOutputDevice;
 
 var constraints = window.constraints = {
   audio: true,
@@ -33,8 +33,8 @@ function gotDevices(infos) {
     var option = document.createElement('option');
     option.value = info.deviceId;
     if (info.kind === 'audiooutput') {
-      option.text = info.label || 'Audio output ' + (audioSelect.length + 1);
-      audioSelect.appendChild(option);
+      option.text = info.label || 'Audio output ' + (outputSelect.length + 1);
+      outputSelect.appendChild(option);
       console.log('Audio output device found: ', info);
     } else {
       console.log('Device found, not audio output: ', info);
@@ -61,11 +61,11 @@ function errorCallback(error) {
 }
 
 function selectOutputDevice() {
-  gumAudio.setSinkId(audioSelect.value);
-  gumVideo.setSinkId(audioSelect.value);
-  localVideo.setSinkId(audioSelect.value);
-  localAudio.setSinkId(audioSelect.value);
-  console.log('Set audio output to ' + audioSelect.value);
+  attachSinkId(gumAudio, outputSelect.value);
+  attachSinkId(gumVideo, outputSelect.value);
+  attachSinkId(localVideo, outputSelect.value);
+  attachSinkId(localAudio, outputSelect.value);
+  console.log('Set audio output to ' + outputSelect.value);
 }
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
@@ -75,4 +75,26 @@ if (!navigator.mediaDevices) {
     'Cannot select output devices.');
 } else {
   getDevices();
+}
+
+// Attach audio output device to video element using device/sink ID.
+function attachSinkId(element, sinkId) {
+  if (typeof element.sinkId !== 'undefined') {
+    element.setSinkId(sinkId)
+    .then(function() {
+      console.log('Success, audio output device attached: ' + sinkId);
+    })
+    .catch(function(error) {
+      var errorMessage = error;
+      if (error.name === 'SecurityError') {
+        errorMessage = 'You need to use HTTPS for selecting audio output ' +
+            'device: ' + error;
+      }
+      console.error(errorMessage);
+      // Jump back to first output device in the list as it's the default.
+      outputSelect.selectedIndex = 0;
+    });
+  } else {
+    console.warn('Browser does not support output device selection.');
+  }
 }
