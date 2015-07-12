@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
+*  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
 -->
 <html>
 <head>
@@ -35,50 +35,62 @@
 
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia: output device selection</span></h1>
 
+    <p>Press play to select a source.</p>
+
     <div id="sources">
 
-     <div>
-       <h2>getUserMedia():</h2>
-       <video id="gumVideo" title="From getUserMedia()" controls></video>
-       <audio id="gumAudio" title="From getUserMedia()" controls></audio>
-     </div>
+      <div>
+        <h2>getUserMedia():</h2>
+        <video id="gumVideo" title="From getUserMedia()" controls></video>
+        <div>
+          <label>Select audio output: </label>
+          <select data-media="gumVideo"></select>
+        </div>
+        <audio id="gumAudio" title="From getUserMedia()" controls></audio>
+        <div>
+          <label>Select audio output: </label>
+          <select data-media="gumAudio"></select>
+        </div>
+      </div>
 
-     <div>
-       <h2>Local media files:</h2>
-       <video id="localVideo" title="From local video file" controls poster="images/poster.jpg" preload="metadata">
-         <source src="video/chrome.webm" type="video/webm" />
-         <source src="video/chrome.mp4" type="video/mp4" />
-         <p>This browser does not support the video element.</p>
-       </video>
-       <audio title="From local audio file" id="localAudio" controls>
-         <source src="audio/audio.mp3" type="audio/mp3" />
-         This browser does not support the audio element.
-       </audio>
-     </div>
+      <div>
+        <h2>Local media files:</h2>
+        <video id="localVideo" title="From local video file" controls loop poster="images/poster.jpg" preload="metadata">
+          <source src="video/chrome.webm" type="video/webm" />
+          <source src="video/chrome.mp4" type="video/mp4" />
+          <p>This browser does not support the video element.</p>
+        </video>
+        <div>
+          <label>Select audio output: </label>
+          <select data-media="localVideo"></select>
+        </div>
+        <audio title="From local audio file" id="localAudio" controls loop>
+          <source src="audio/audio.mp3" type="audio/mp3" />
+          This browser does not support the audio element.
+        </audio>
+        <div>
+          <label>Select audio output: </label>
+          <select data-media="localAudio"></select>
+        </div>
+      </div>
 
-   </div>
+    </div>
 
-   <p>Press play to select a source.</p>
 
-   <div>
-    <label>Select audio output: </label>
-    <select id="output"></select>
-  </div>
+    <button>Refresh output device list</button>
 
-  <button>Refresh output device list</button>
+    <p>This demo must be run over HTTPS on Chrome (or Chrome Canary) 45.0.2441.x or later.<p>
+      <p><strong>Enable experimental Web Platform features</strong> must be enabled from the chrome://flags page or run Chrome with the following flag:</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;<code>--enable-blink-features=EnumerateDevices,AudioOutputDevices</code></p>
+      <p>More information about running Chrome with flags is available from <a href="https://www.chromium.org/developers/how-tos/run-chromium-with-flags" title="The Chromium Projects: Run Chromium with flags">The Chromium Projects</a>.</p>
 
-  <p>This demo must be run over HTTPS on Chrome (or Chrome Canary) 45.0.2441.x or later.<p>
-  <p><strong>Enable experimental Web Platform features</strong> must be enabled from the chrome://flags page or run Chrome with the following flag:</p>
-  <p>&nbsp;&nbsp;&nbsp;&nbsp;<code>--enable-blink-features=EnumerateDevices,AudioOutputDevices</code></p>
-  <p>More information about running Chrome with flags is available from <a href="https://www.chromium.org/developers/how-tos/run-chromium-with-flags" title="The Chromium Projects: Run Chromium with flags">The Chromium Projects</a>.</p>
+      <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/devices/multi" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+    </div>
 
-  <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/devices/multi" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
-</div>
+    <script src="../../../js/adapter.js"></script>
+    <script src="js/main.js"></script>
 
-<script src="../../../js/adapter.js"></script>
-<script src="js/main.js"></script>
+    <script src="../../../js/lib/ga.js"></script>
 
-<script src="../../../js/lib/ga.js"></script>
-
-</body>
-</html>
+  </body>
+  </html>
