@@ -71,7 +71,7 @@ function selectOutputDevice(event) {
   // each select has a data-media attribute whose value is
   // the ID of the associated media element
   var select = event.target;
-  var mediaElement = document.getElementById(select.datalist.media);
+  var mediaElement = document.getElementById(select.dataset.media);
   mediaElement.setSinkId(select.value);
   console.log('Set audio output for ' + mediaElement.id +
     ' to ' + select.value);
