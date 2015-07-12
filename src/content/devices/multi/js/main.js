@@ -24,12 +24,15 @@ function getDevices() {
 
 function gotDevices(infos) {
   var audioOutputs = {};
-  var i;
-  for (i = 0; i !== infos.length; ++i) {
+  var i = 0;
+  var numAudioOutputs = 0;
+  for (i; i !== infos.length; ++i) {
     var info = infos[i];
     if (info.kind === 'audiooutput') {
+      ++numAudioOutputs;
       console.log('Audio output device found: ', info);
-      audioOutputs[info.deviceId] = info.label || 'Audio output ' + (i + 1);
+      audioOutputs[info.deviceId] = info.label ||
+        'Audio output ' + numAudioOutputs;
     } else {
       console.log('Device found, not audio output: ', info);
     }
