@@ -61,7 +61,7 @@ function errorCallback(error) {
 
 function changeAudioDestination() {
   // changing destination for one source changes destination for all sources
-  attachSinkId(gumAudio, audioOutputSelect.value);
+  attachSinkId(gumVideo, audioOutputSelect.value);
 }
 
 // Attach audio output device to video element using device/sink ID.
