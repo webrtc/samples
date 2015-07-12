@@ -10,11 +10,9 @@
 
 var gumAudio = document.querySelector('audio#gumAudio');
 var gumVideo = document.querySelector('video#gumVideo');
-var localVideo = document.querySelector('video#localVideo');
-var localAudio = document.querySelector('audio#localAudio');
 
-var outputSelect = document.querySelector('select#output');
-outputSelect.onchange = selectOutputDevice;
+var audioOutputSelect = document.querySelector('select#output');
+audioOutputSelect.onchange = changeAudioDestination;
 
 var constraints = window.constraints = {
   audio: true,
@@ -33,8 +31,9 @@ function gotDevices(infos) {
     var option = document.createElement('option');
     option.value = info.deviceId;
     if (info.kind === 'audiooutput') {
-      option.text = info.label || 'Audio output ' + (outputSelect.length + 1);
-      outputSelect.appendChild(option);
+      option.text = info.label || 'Audio output ' +
+        (audioOutputSelect.length + 1);
+      audioOutputSelect.appendChild(option);
       console.log('Audio output device found: ', info);
     } else {
       console.log('Device found, not audio output: ', info);
@@ -60,12 +59,11 @@ function errorCallback(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
-function selectOutputDevice() {
-  attachSinkId(gumAudio, outputSelect.value);
-  attachSinkId(gumVideo, outputSelect.value);
-  attachSinkId(localVideo, outputSelect.value);
-  attachSinkId(localAudio, outputSelect.value);
-  console.log('Set audio output to ' + outputSelect.value);
+function changeAudioDestination() {
+  var audioDestination = audioOutputSelect.value;
+  // only need to do once for all sources
+  attachSinkId(gumAudio, audioDestination.value);
+  console.log('Set audio output to ' + audioDestination.value);
 }
 
 navigator.getUserMedia(constraints, successCallback, errorCallback);
@@ -92,7 +90,7 @@ function attachSinkId(element, sinkId) {
       }
       console.error(errorMessage);
       // Jump back to first output device in the list as it's the default.
-      outputSelect.selectedIndex = 0;
+      audioOutputSelect.selectedIndex = 0;
     });
   } else {
     console.warn('Browser does not support output device selection.');
