@@ -8,7 +8,7 @@
 
 'use strict';
 
-// var gumAudio = document.querySelector('audio.gum');
+var gumAudio = document.querySelector('audio.gum');
 var gumVideo = document.querySelector('video.gum');
 var audioOutputSelect = document.querySelector('select#audioOutput');
 
@@ -33,7 +33,7 @@ navigator.mediaDevices.enumerateDevices()
 
 function successCallback(stream) {
   window.stream = stream; // make stream available to console
-  // attachMediaStream(gumAudio, stream);
+  attachMediaStream(gumAudio, stream);
   attachMediaStream(gumVideo, stream);
 }
 
