@@ -43,8 +43,7 @@ function gotStream(stream) {
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  // Call getUserMedia() via the polyfill.
-  getUserMedia({
+  navigator.getUserMedia({
       audio: true,
       video: true
     },

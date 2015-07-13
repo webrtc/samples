@@ -56,7 +56,7 @@ function getMedia() {
       videoTracks[i].stop();
     }
   }
-  getUserMedia(getUserMediaConstraints(), gotStream,
+  navigator.getUserMedia(getUserMediaConstraints(), gotStream,
       function(e) {
         var message = 'getUserMedia error: ' + e.name + '\n' +
             'PermissionDeniedError may mean invalid constraints.';

@@ -38,7 +38,7 @@ function gotStream(stream) {
   btn1.disabled = false;
 }
 
-getUserMedia({audio:true, video:true}, gotStream, function() {});
+navigator.getUserMedia({audio:true, video:true}, gotStream, function() {});
 
 function start() {
   btn1.disabled = true;

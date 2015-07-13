@@ -49,7 +49,7 @@ function gotremoteStream(stream) {
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  getUserMedia({
+  navigator.getUserMedia({
       audio: false,
       video: true
     },

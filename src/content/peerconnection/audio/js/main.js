@@ -82,8 +82,7 @@ function call() {
   pc2.onicecandidate = iceCallback2;
   pc2.onaddstream = gotRemoteStream;
   trace('Requesting local stream');
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({
+  navigator.getUserMedia({
       audio: true,
       video: false
     },
