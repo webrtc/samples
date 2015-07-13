@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -45,12 +45,12 @@
 
      <div>
        <h2>Local media files:</h2>
-       <video id="localVideo" title="From local video file" controls loop poster="images/poster.jpg" preload="metadata">
+       <video title="From local video file" controls loop poster="images/poster.jpg" preload="metadata">
          <source src="video/chrome.webm" type="video/webm" />
          <source src="video/chrome.mp4" type="video/mp4" />
          <p>This browser does not support the video element.</p>
        </video>
-       <audio title="From local audio file" id="localAudio" controls loop>
+       <audio title="From local audio file" controls loop>
          <source src="audio/audio.mp3" type="audio/mp3" />
          This browser does not support the audio element.
        </audio>
@@ -62,7 +62,7 @@
 
    <div>
     <label>Select audio output: </label>
-    <select id="audioOutput"></select>
+    <select id="audio-output"></select>
   </div>
 
   <p>This demo must be run over HTTPS on Chrome (or Chrome Canary) 45.0.2441.x or later.<p>
