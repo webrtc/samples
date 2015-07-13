@@ -40,6 +40,8 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [Select camera, microphone and speaker](https://webrtc.github.io/samples/src/content/devices/input-output)
 
+[Select media source and audio output](https://webrtc.github.io/samples/src/content/devices/multi)
+
 ### RTCPeerConnection ###
 
 [Basic peer connection](https://webrtc.github.io/samples/src/content/peerconnection/pc1)
