@@ -39,18 +39,18 @@
 
      <div>
        <h2>getUserMedia():</h2>
-       <video class="gum" title="From getUserMedia()" controls></video>
-       <audio class="gum" title="From getUserMedia()" controls></audio>
+       <video class="gum" title="From getUserMedia()" autoplay controls></video>
+       <audio class="gum" title="From getUserMedia()" autoplay controls></audio>
      </div>
 
      <div>
        <h2>Local media files:</h2>
-       <video id="localVideo" title="From local video file" controls loop poster="images/poster.jpg" preload="metadata">
+       <video id="localVideo" title="From local video file" cautoplay ontrols loop poster="images/poster.jpg" preload="metadata">
          <source src="video/chrome.webm" type="video/webm" />
          <source src="video/chrome.mp4" type="video/mp4" />
          <p>This browser does not support the video element.</p>
        </video>
-       <audio title="From local audio file" id="localAudio" controls loop>
+       <audio title="From local audio file" id="localAudio" autoplay controls loop>
          <source src="audio/audio.mp3" type="audio/mp3" />
          This browser does not support the audio element.
        </audio>
