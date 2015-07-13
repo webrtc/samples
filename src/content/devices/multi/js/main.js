@@ -45,6 +45,7 @@ function errorCallback(error) {
 // Attach audio output device to video element using device/sink ID.
 function attachSinkId(element, sinkId) {
   if (typeof element.sinkId !== 'undefined') {
+    // NB: media element must be playing to avoid DOMException.
     element.setSinkId(sinkId)
     .then(function() {
       console.log('Success, audio output device attached: ' + sinkId);
