@@ -18,6 +18,7 @@ function gotDevices(deviceInfos) {
     var option = document.createElement('option');
     option.value = deviceInfo.deviceId;
     if (deviceInfo.kind === 'audiooutput') {
+      console.log('Found audio output device: ', deviceInfo);
       option.text = deviceInfo.label || 'speaker ' +
         (audioOutputSelect.length + 1);
       audioOutputSelect.appendChild(option);
