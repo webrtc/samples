@@ -1,1 +1,1 @@
-chrome.privacy.network.webRTCMultipleRoutesEnabled.set({ 'value': false });
+chrome.privacy.network.webRTCMultipleRoutesEnabled.set({'value': false});
