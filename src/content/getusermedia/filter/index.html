@@ -47,11 +47,14 @@
       -webkit-filter: sepia(1);
       filter: sepia(1);
     }
-    button {
-      width: 110px;
-    }
+
     button#snapshot {
       margin: 0 10px 25px 0;
+      width: 110px;
+    }
+
+    video {
+      object-fit: cover;
     }
   </style>
 
@@ -63,15 +66,25 @@
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia + CSS filters</span></h1>
 
     <video autoplay></video>
+
+    <label for="select">Filter: </label>
+    <select id="filter">
+      <option value="none">None</option>
+      <option value="blur">Blur</option>
+      <option value="grayscale">Grayscale</option>
+      <option value="invert">Invert</option>
+      <option value="sepia">Sepia</option>
+    </select>
+
     <button id="snapshot">Take snapshot</button>
-    <button id="filter">Apply a filter</button>
+
     <canvas></canvas>
 
     <p>Draw a frame from the getUserMedia video stream onto the canvas element, then apply CSS filters.</p>
 
     <p>The variables <code>canvas</code>, <code>video</code> and <code>stream</code> are in global scope, so you can inspect them from the console.</p>
 
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/filter" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+    <a href="https://github.com/webrtc/samples/tree/master/src/content/getusermedia/filter" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
 
   <script src="../../../js/adapter.js"></script>
