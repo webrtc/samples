@@ -147,7 +147,7 @@ function createPeerConnection() {
       remotePeerConnection.setLocalDescription(desc2);
       localPeerConnection.setRemoteDescription(desc2);
     });
-  }, function (err) {
+  }, function(err) {
     console.log(err);
   });
 }
