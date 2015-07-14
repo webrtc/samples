@@ -244,38 +244,39 @@ function setDefaultCodec(mLine, payload) {
 }
 
 // query getStats every second
-if (webrtcDetectedBrowser === 'chrome') {
-  window.setInterval(function() {
-    if (!window.pc1) {
-      return;
-    }
-    window.pc1.getStats(function(res) {
-      res.result().forEach(function(report) {
-        var bytes;
-        var packets;
-        var now = report.timestamp;
-        if (report.type === 'ssrc' && report.stat('bytesSent')) {
-          bytes = report.stat('bytesSent');
-          packets = report.stat('packetsSent');
-          if (lastTime) {
-            // calculate bitrate
-            var bitrate = 8 * (bytes - lastBytes) / (now - lastTime);
+window.setInterval(function() {
+  if (!window.pc1) {
+    return;
+  }
+  window.pc1.getStats(null, function(res) {
+    Object.keys(res).forEach(function(key) {
+      var report = res[key];
+      var bytes;
+      var packets;
+      var now = report.timestamp;
+      if ((report.type === 'outboundrtp' || report.type === 'ssrc') && report['bytesSent']) {
+        bytes = report['bytesSent'];
+        packets = report['packetsSent'];
+        if (lastTime) {
+          // calculate bitrate
+          var bitrate = 8 * (bytes - lastBytes) / (now - lastTime);
 
-            // append to chart
-            bitrateSeries.addPoint(now, bitrate);
-            bitrateGraph.setDataSeries([bitrateSeries]);
-            bitrateGraph.updateEndDate();
+          // append to chart
+          bitrateSeries.addPoint(now, bitrate);
+          bitrateGraph.setDataSeries([bitrateSeries]);
+          bitrateGraph.updateEndDate();
 
-            // calculate number of packets and append to chart
-            packetSeries.addPoint(now, packets - lastPackets);
-            packetGraph.setDataSeries([packetSeries]);
-            packetGraph.updateEndDate();
-          }
-          lastBytes = bytes;
-          lastPackets = packets;
-          lastTime = now;
+          // calculate number of packets and append to chart
+          packetSeries.addPoint(now, packets - lastPackets);
+          packetGraph.setDataSeries([packetSeries]);
+          packetGraph.updateEndDate();
         }
-      });
+        lastBytes = bytes;
+        lastPackets = packets;
+        lastTime = now;
+      }
     });
-  }, 1000);
-}
+  }, function (err) {
+    console.log(err);
+  });
+}, 1000);
