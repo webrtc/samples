@@ -38,7 +38,13 @@ function gotStream(stream) {
   btn1.disabled = false;
 }
 
-navigator.getUserMedia({audio:true, video:true}, gotStream, function() {});
+navigator.mediaDevices.getUserMedia({
+  audio:true,
+  video:true
+}).then(gotStream)
+.catch(function(e) {
+  alert('getUserMedia() error: ' + e.name);
+});
 
 function start() {
   btn1.disabled = true;

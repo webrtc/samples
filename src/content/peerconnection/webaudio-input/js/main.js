@@ -40,7 +40,9 @@ function start() {
     audio: true,
     video: false
   };
-  navigator.getUserMedia(constraints, gotStream, gotStreamFailed);
+  navigator.mediaDevices.getUserMedia(constraints)
+  .then(gotStream)
+  .catch(gotStreamFailed);
   startButton.disabled = true;
   stopButton.disabled = false;
 }

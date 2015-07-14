@@ -78,13 +78,13 @@ function call() {
   pc2.onaddstream = gotRemoteStream;
 
   trace('Requesting local stream');
-  navigator.getUserMedia({
-      audio: true,
-      video: false
-    },
-    gotStream, function(e) {
-      alert('getUserMedia() error: ' + e.name);
-    });
+  navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: false
+  }).then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() error: ' + e.name);
+  });
 
   callButton.disabled = true;
   hangupButton.disabled = false;
