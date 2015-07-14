@@ -198,18 +198,18 @@ setInterval(function() {
 
       // figure out the peer's ip
       var activeCandidatePair = null;
+      var remoteCandidate = null;
 
       // search for the candidate pa
       Object.keys(results).forEach(function(result) {
         var report = results[result];
         if (report.type === 'candidatepair' && report.selected ||
-            report.type === 'googCandidatePair' 
-            && report.googActiveConnection === 'true') {
+            report.type === 'googCandidatePair' &&
+            report.googActiveConnection === 'true') {
           activeCandidatePair = report;
         }
       });
       if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-        var remoteCandidate = null;
         Object.keys(results).forEach(function(result) {
           var report = results[result];
           if (report.type === 'remotecandidate' &&
@@ -218,11 +218,11 @@ setInterval(function() {
           }
         });
       }
-      if (remoteCandidate && remoteCandidate.ipAddress && 
+      if (remoteCandidate && remoteCandidate.ipAddress &&
           remoteCandidate.portNumber) {
-        peerDiv.innerHTML = '<strong>Connected to:</strong> '
-            + remoteCandidate.ipAddress
-            + ':' + remoteCandidate.portNumber;
+        peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
+            remoteCandidate.ipAddress +
+            ':' + remoteCandidate.portNumber;
       }
     }, function(err) {
       console.log(err);
