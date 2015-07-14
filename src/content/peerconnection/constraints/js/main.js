@@ -136,7 +136,6 @@ function createPeerConnection() {
   remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
     attachMediaStream(remoteVideo, e.stream);
-    console.log('Remote video is ' + remoteVideo.src);
   };
   localPeerConnection.createOffer(function(desc) {
     console.log('localPeerConnection offering');
@@ -162,98 +161,48 @@ function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
 }
 
-// Augumentation of stats entries with utility functions.
-// The augumented entry does what the stats entry does, but adds
-// utility functions.
-function AugumentedStatsResponse(response) {
-  this.response = response;
-  this.addressPairMap = [];
-}
-
-AugumentedStatsResponse.prototype.collectAddressPairs = function(componentId) {
-  if (!this.addressPairMap[componentId]) {
-    this.addressPairMap[componentId] = [];
-    for (var i = 0; i < this.response.result().length; ++i) {
-      var res = this.response.result()[i];
-      if (res.type === 'googCandidatePair' &&
-        res.stat('googChannelId') === componentId) {
-        this.addressPairMap[componentId].push(res);
-      }
-    }
-  }
-  return this.addressPairMap[componentId];
-};
-
-AugumentedStatsResponse.prototype.result = function() {
-  return this.response.result();
-};
-
-// The indexed getter isn't easy to prototype.
-AugumentedStatsResponse.prototype.get = function(key) {
-  return this.response[key];
-};
-
 // Display statistics
 setInterval(function() {
-  var display = function(string) {
-    bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + string;
-  };
-
-  //  display('No stream');
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
-    if (remotePeerConnection.getStats) {
-      remotePeerConnection.getStats(function(rawStats) {
-        var stats = new AugumentedStatsResponse(rawStats);
-        var statsString = '';
-        var results = stats.result();
-        var videoFlowInfo = 'No bitrate stats';
-        for (var i = 0; i < results.length; ++i) {
-          var res = results[i];
-          statsString += '<h3>Report ';
-          statsString += i;
-          statsString += '</h3>';
-          if (!res.local || res.local === res) {
-            statsString += dumpStats(res);
-            // The bandwidth info for video is in a type ssrc stats record
-            // with googFrameHeightReceived defined.
-            // Should check for mediatype = video, but this is not
-            // implemented yet.
-            if (res.type === 'ssrc' && res.stat('googFrameHeightReceived')) {
-              // This is the video flow.
-              videoFlowInfo = extractVideoFlowInfo(res, stats);
-            }
-          } else {
-            // Pre-227.0.1445 (188719) browser
-            if (res.local) {
-              statsString += '<p>Local ';
-              statsString += dumpStats(res.local);
-            }
-            if (res.remote) {
-              statsString += '<p>Remote ';
-              statsString += dumpStats(res.remote);
-            }
+    remotePeerConnection.getStats(null, function(results) {
+      var statsString = dumpStats(results);
+      receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
+      Object.keys(results).forEach(function(result) {
+        var report = results[result];
+        var now = report.timestamp;
+
+        // calculate video bitrate
+        var bitrate;
+        if (report.type === 'inboundrtp' && report.mediaType === 'video') {
+          // firefox calculates the bitrate for us
+          // https://bugzilla.mozilla.org/show_bug.cgi?id=951496
+          bitrate = Math.floor(report.bitrateMean / 1024);
+        } else if (report.type === 'ssrc' && report.bytesReceived &&
+             report.googFrameHeightReceived) {
+          // chrome does not so we need to do it ourselves
+          var bytes = report.bytesReceived;
+          if (timestampPrev) {
+            bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
+            bitrate = Math.floor(bitrate);
+
           }
+          bytesPrev = bytes;
+          timestampPrev = now;
         }
-        receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
-        display(videoFlowInfo);
-      });
-      localPeerConnection.getStats(function(stats) {
-        var statsString = '';
-        var results = stats.result();
-        for (var i = 0; i < results.length; ++i) {
-          var res = results[i];
-          statsString += '<h3>Report ';
-          statsString += i;
-          statsString += '</h3>';
-          if (!res.local || res.local === res) {
-            statsString += dumpStats(res);
-          }
+        if (bitrate) {
+          bitrate += ' kbits/sec';
+          bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate;
         }
-        senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
       });
-    } else {
-      display('No stats function. Use at least Chrome 24.0.1285');
-    }
+    }, function(err) {
+      console.log(err);
+    });
+    localPeerConnection.getStats(null, function(results) {
+      var statsString = dumpStats(results);
+      senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
+    }, function(err) {
+      console.log(err);
+    });
   } else {
     console.log('Not connected yet');
   }
@@ -262,69 +211,29 @@ setInterval(function() {
     localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
       localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
   }
-  if (remoteVideo.src) {
+  if (remoteVideo.videoWidth) {
     remoteVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
       remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight + 'px';
   }
 }, 1000);
 
-function extractVideoFlowInfo(res, allStats) {
-  var description = '';
-  var bytesNow = res.stat('bytesReceived');
-  if (timestampPrev > 0) {
-    var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-      (res.timestamp - timestampPrev));
-    description = bitrate + ' kbits/sec';
-  }
-  timestampPrev = res.timestamp;
-  bytesPrev = bytesNow;
-  if (res.stat('transportId')) {
-    var component = allStats.get(res.stat('transportId'));
-    if (component) {
-      var addresses = allStats.collectAddressPairs(component.id);
-      if (addresses.length > 0) {
-        description += ' from IP ';
-        description += addresses[0].stat('googRemoteAddress');
-      } else {
-        description += ' no address';
-      }
-    } else {
-      description += ' No component stats';
-    }
-  } else {
-    description += ' No component ID';
-  }
-  return description;
-}
-
 // Dumping a stats variable as a string.
 // might be named toString?
-function dumpStats(obj) {
-  var statsString = 'Timestamp:';
-  statsString += obj.timestamp;
-  if (obj.id) {
-    statsString += '<br>id ';
-    statsString += obj.id;
-  }
-  if (obj.type) {
-    statsString += ' type ';
-    statsString += obj.type;
-  }
-  if (obj.names) {
-    var names = obj.names();
-    for (var i = 0; i < names.length; ++i) {
-      statsString += '<br>';
-      statsString += names[i];
-      statsString += ':';
-      statsString += obj.stat(names[i]);
-    }
-  } else {
-    if (obj.stat('audioOutputLevel')) {
-      statsString += 'audioOutputLevel: ';
-      statsString += obj.stat('audioOutputLevel');
-      statsString += '<br>';
-    }
-  }
+function dumpStats(results) {
+  var statsString = '';
+  Object.keys(results).forEach(function(key, index) {
+    var res = results[key];
+    statsString += '<h3>Report ';
+    statsString += index;
+    statsString += '</h3>\n';
+    statsString += 'time ' + res.timestamp + '<br>\n';
+    statsString += 'type ' + res.type + '<br>\n';
+    Object.keys(res).forEach(function(k) {
+      if (k !== 'timestamp' && k !== 'type') {
+        statsString += k + ': ' + res[k] + '<br>\n';
+      }
+    });
+  });
   return statsString;
 }
 
