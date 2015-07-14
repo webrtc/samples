@@ -10,9 +10,11 @@
 
 var getMediaButton = document.querySelector('button#getMedia');
 var connectButton = document.querySelector('button#connect');
+var hangupButton = document.querySelector('button#hangup');
 
 getMediaButton.onclick = getMedia;
 connectButton.onclick = createPeerConnection;
+hangupButton.onclick = hangup;
 
 var minWidthInput = document.querySelector('div#minWidth input');
 var maxWidthInput = document.querySelector('div#maxWidth input');
@@ -39,8 +41,8 @@ var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 var localPeerConnection;
 var remotePeerConnection;
 var localStream;
-var bytesPrev = 0;
-var timestampPrev = 0;
+var bytesPrev;
+var timestampPrev;
 
 main();
 
@@ -48,10 +50,24 @@ function main() {
   displayGetUserMediaConstraints();
 }
 
+function hangup() {
+  trace('Ending call');
+  localPeerConnection.close();
+  remotePeerConnection.close();
+  localPeerConnection = null;
+  remotePeerConnection = null;
+
+  localStream.getTracks().forEach(function(track) { track.stop(); });
+  localStream = null;
+
+  hangupButton.disabled = true;
+  getMediaButton.disabled = false;
+}
+
 function getMedia() {
-  connectButton.disabled = true;
+  getMediaButton.disabled = true;
   if (localStream) {
-    localStream.stop();
+    localStream.getTracks().forEach(function(track) { track.stop(); });
     var videoTracks = localStream.getVideoTracks();
     for (var i = 0; i !== videoTracks.length; ++i) {
       videoTracks[i].stop();
@@ -109,6 +125,11 @@ function displayGetUserMediaConstraints() {
 }
 
 function createPeerConnection() {
+  connectButton.disabled = true;
+  hangupButton.disabled = false;
+
+  bytesPrev = 0;
+  timestampPrev = 0;
   localPeerConnection = new RTCPeerConnection(null);
   remotePeerConnection = new RTCPeerConnection(null);
   localPeerConnection.addStream(localStream);
