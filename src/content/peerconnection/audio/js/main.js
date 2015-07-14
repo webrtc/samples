@@ -278,6 +278,6 @@ window.setInterval(function() {
       }
     });
   }, function(err) {
-    console.log(err);
+    console.error(err);
   });
 }, 1000);
