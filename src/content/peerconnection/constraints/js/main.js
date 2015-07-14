@@ -27,6 +27,7 @@ minWidthInput.onchange = maxWidthInput.onchange =
 var getUserMediaConstraintsDiv =
     document.querySelector('div#getUserMediaConstraints');
 var bitrateDiv = document.querySelector('div#bitrate');
+var peerDiv = document.querySelector('div#peer');
 var senderStatsDiv = document.querySelector('div#senderStats');
 var receiverStatsDiv = document.querySelector('div#receiverStats');
 
@@ -167,11 +168,11 @@ setInterval(function() {
     remotePeerConnection.getStats(null, function(results) {
       var statsString = dumpStats(results);
       receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
+      // calculate video bitrate
       Object.keys(results).forEach(function(result) {
         var report = results[result];
         var now = report.timestamp;
 
-        // calculate video bitrate
         var bitrate;
         if (report.type === 'inboundrtp' && report.mediaType === 'video') {
           // firefox calculates the bitrate for us
@@ -194,6 +195,35 @@ setInterval(function() {
           bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate;
         }
       });
+
+      // figure out the peer's ip
+      var activeCandidatePair = null;
+
+      // search for the candidate pa
+      Object.keys(results).forEach(function(result) {
+        var report = results[result];
+        if (report.type === 'candidatepair' && report.selected ||
+            report.type === 'googCandidatePair' 
+            && report.googActiveConnection === 'true') {
+          activeCandidatePair = report;
+        }
+      });
+      if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
+        var remoteCandidate = null;
+        Object.keys(results).forEach(function(result) {
+          var report = results[result];
+          if (report.type === 'remotecandidate' &&
+              report.id === activeCandidatePair.remoteCandidateId) {
+            remoteCandidate = report;
+          }
+        });
+      }
+      if (remoteCandidate && remoteCandidate.ipAddress && 
+          remoteCandidate.portNumber) {
+        peerDiv.innerHTML = '<strong>Connected to:</strong> '
+            + remoteCandidate.ipAddress
+            + ':' + remoteCandidate.portNumber;
+      }
     }, function(err) {
       console.log(err);
     });
