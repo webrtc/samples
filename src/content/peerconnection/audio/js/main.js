@@ -254,9 +254,10 @@ window.setInterval(function() {
       var bytes;
       var packets;
       var now = report.timestamp;
-      if ((report.type === 'outboundrtp' || report.type === 'ssrc') && report['bytesSent']) {
-        bytes = report['bytesSent'];
-        packets = report['packetsSent'];
+      if ((report.type === 'outboundrtp') ||
+          (report.type === 'ssrc' && report.bytesSent)) {
+        bytes = report.bytesSent;
+        packets = report.packetsSent;
         if (lastTime) {
           // calculate bitrate
           var bitrate = 8 * (bytes - lastBytes) / (now - lastTime);
@@ -276,7 +277,7 @@ window.setInterval(function() {
         lastTime = now;
       }
     });
-  }, function (err) {
+  }, function(err) {
     console.log(err);
   });
 }, 1000);
