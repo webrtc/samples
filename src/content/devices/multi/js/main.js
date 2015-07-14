@@ -10,7 +10,7 @@
 
 var gumAudio = document.querySelector('audio.gum');
 var gumVideo = document.querySelector('video.gum');
-var audioOutputSelect = document.querySelector('select#audioOutput');
+var audioOutputSelect = document.querySelector('select#audio-output');
 
 function gotDevices(deviceInfos) {
   for (var i = 0; i !== deviceInfos.length; ++i) {
