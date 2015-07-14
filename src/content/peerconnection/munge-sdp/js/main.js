@@ -111,7 +111,9 @@ function getMedia() {
     }
   };
   trace('Requested local stream');
-  getUserMedia(constraints, gotStream, function(e) {
+  navigator.mediaDevices.getUserMedia(constraints)
+  .then(gotStream)
+  .catch(function(e) {
     console.log('navigator.getUserMedia error: ', e);
   });
 }

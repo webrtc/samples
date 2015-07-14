@@ -49,15 +49,15 @@ function gotremoteStream(stream) {
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  getUserMedia({
-      audio: false,
-      video: true
-    },
-    gotStream,
-    function(e) {
-      alert('getUserMedia() failed');
-      trace('getUserMedia() error: ', e);
-    });
+  navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: true
+  })
+  .then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() failed');
+    trace('getUserMedia() error: ', e);
+  });
 }
 
 function call() {

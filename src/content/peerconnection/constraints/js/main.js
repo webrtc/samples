@@ -56,14 +56,14 @@ function getMedia() {
       videoTracks[i].stop();
     }
   }
-  getUserMedia(getUserMediaConstraints(), gotStream,
-      function(e) {
-        var message = 'getUserMedia error: ' + e.name + '\n' +
-            'PermissionDeniedError may mean invalid constraints.';
-        alert(message);
-        console.log(message);
-      }
-  );
+  navigator.mediaDevices.getUserMedia(getUserMediaConstraints())
+  .then(gotStream)
+  .catch(function(e) {
+    var message = 'getUserMedia error: ' + e.name + '\n' +
+        'PermissionDeniedError may mean invalid constraints.';
+    alert(message);
+    console.log(message);
+  });
 }
 
 function gotStream(stream) {
