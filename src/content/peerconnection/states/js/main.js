@@ -48,14 +48,14 @@ function gotStream(stream) {
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({
-      audio: true,
-      video: true
-    }, gotStream,
-    function(e) {
-      alert('getUserMedia() error: ', e.name);
-    });
+  navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: true
+  })
+  .then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() error: ', e.name);
+  });
 }
 
 function call() {
