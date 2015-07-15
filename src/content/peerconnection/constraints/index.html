@@ -42,8 +42,11 @@
       <p>The lefthand video shows the output of <code>getUserMedia()</code>; on the right is the video after being passed through the peer connection. The transmission bitrate is displayed below the righthand video.</p>
     </section>
 
-    <button id="getMedia">Get media</button>
-    <button id="connect" disabled>Connect</button>
+    <div>
+      <button id="getMedia">Get media</button>
+      <button id="connect" disabled>Connect</button>
+      <button id="hangup" disabled>Hang Up</button>
+    </div>
 
 
     <section id="constraints">
@@ -85,6 +88,7 @@
         <video autoplay muted></video>
         <div></div>
         <div id="bitrate"></div>
+        <div id="peer"></div>
       </div>
     </section>
 
