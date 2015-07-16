@@ -80,6 +80,7 @@ function getMedia() {
         'PermissionDeniedError may mean invalid constraints.';
     alert(message);
     console.log(message);
+    getMediaButton.disabled = false;
   });
 }
 
