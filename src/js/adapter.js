@@ -36,7 +36,10 @@ function trace(text) {
   }
 }
 
-if (navigator.mozGetUserMedia) {
+if (typeof window === 'undefined' || !window.navigator) {
+  console.log('This does not appear to be a browser');
+  webrtcDetectedBrowser = 'not a browser';
+} else if (navigator.mozGetUserMedia) {
   console.log('This appears to be Firefox');
 
   webrtcDetectedBrowser = 'firefox';
@@ -160,7 +163,6 @@ if (navigator.mozGetUserMedia) {
   }
   // Attach a media stream to an element.
   attachMediaStream = function(element, stream) {
-    console.log('Attaching media stream');
     element.mozSrcObject = stream;
   };
 
@@ -350,9 +352,27 @@ if (navigator.mozGetUserMedia) {
         });
       });
     }};
-    // in case someone wants to listen for the devicechange event.
-    navigator.mediaDevices.addEventListener = function() { };
-    navigator.mediaDevices.removeEventListener = function() { };
+  }
+
+  // A shim for getUserMedia method on the mediaDevices object.
+  // TODO(KaptenJansson) remove once in implented in Chrome stable.
+  if (!navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia = function(constraints) {
+      return requestUserMedia(constraints);
+    };
+  }
+
+  // Dummy devicechange event methods.
+  // TODO(KaptenJansson) remove once implemented in Chrome stable.
+  if (typeof navigator.mediaDevices.addEventListener === 'undefined') {
+    navigator.mediaDevices.addEventListener = function() {
+      console.log('Dummy mediaDevices.addEventListener called.');
+    };
+  }
+  if (typeof navigator.mediaDevices.removeEventListener === 'undefined') {
+    navigator.mediaDevices.removeEventListener = function() {
+      console.log('Dummy mediaDevices.removeEventListener called.');
+    };
   }
 } else if (navigator.mediaDevices && navigator.userAgent.match(
     /Edge\/(\d+).(\d+)$/)) {
@@ -364,6 +384,8 @@ if (navigator.mozGetUserMedia) {
 
   // the minimum version still supported by adapter.
   webrtcMinimumVersion = 12;
+
+  getUserMedia = navigator.getUserMedia;
 
   attachMediaStream = function(element, stream) {
     element.srcObject = stream;
@@ -383,6 +405,10 @@ function requestUserMedia(constraints) {
 }
 
 if (typeof module !== 'undefined') {
+  var RTCPeerConnection;
+  if (typeof window !== 'undefined') {
+    RTCPeerConnection = window.RTCPeerConnection;
+  }
   module.exports = {
     RTCPeerConnection: RTCPeerConnection,
     getUserMedia: getUserMedia,
@@ -398,7 +424,7 @@ if (typeof module !== 'undefined') {
   // Expose objects and functions when RequireJS is doing the loading.
   define([], function() {
     return {
-      RTCPeerConnection: RTCPeerConnection,
+      RTCPeerConnection: window.RTCPeerConnection,
       getUserMedia: getUserMedia,
       attachMediaStream: attachMediaStream,
       reattachMediaStream: reattachMediaStream,
