@@ -63,5 +63,10 @@ test('video width and video height are set on GUM sample', function(t) {
     t.pass('got video dimensions ' + dimensions.join('x'));
     driver.quit();
     t.end();
+  })
+  .then(null, function (err) {
+    t.fail(err);
+    driver.quit();
+    t.end();
   });
 });
