@@ -22,6 +22,7 @@ var ffoptions = new firefox.Options()
 // assume it's running chrome
 // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
 var croptions = new chrome.Options()
+    .addArguments('allow-file-access-from-files')
     .addArguments('use-fake-device-for-media-stream')
     .addArguments('use-fake-ui-for-media-stream');
 
@@ -33,9 +34,20 @@ test('video width and video height are set on GUM sample', function(t) {
       .setChromeOptions(croptions)
       .build();
 
-  driver.get('https://webrtc.github.io/samples/src/content/getusermedia/gum/')
+  driver.get('file://' + process.cwd() +
+      '/src/content/getusermedia/gum/index.html')
   .then(function() {
     t.pass('page loaded');
+  })
+  // Check that there is a stream with a video track.
+  .then(function() {
+    return driver.executeScript('return stream && stream.getTracks().length');
+  })
+  .then(function(numberOfStreams) {
+    t.ok(numberOfStreams === 1, 'stream exists and has one track');
+  })
+  // Check that there is a video element and it is displaying something.
+  .then(function() {
     return driver.findElement(webdriver.By.id('gum-local'));
   })
   .then(function(videoElement) {
