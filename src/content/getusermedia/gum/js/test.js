@@ -64,7 +64,7 @@ test('video width and video height are set on GUM sample', function(t) {
     driver.quit();
     t.end();
   })
-  .then(null, function (err) {
+  .then(null, function(err) {
     t.fail(err);
     driver.quit();
     t.end();
