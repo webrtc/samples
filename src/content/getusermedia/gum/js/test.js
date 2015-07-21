@@ -17,20 +17,20 @@ var webdriver = require('selenium-webdriver');
 var chrome = require('selenium-webdriver/chrome');
 var firefox = require('selenium-webdriver/firefox');
 
-var profile;
-var ffoptions;
-var croptions;
+var profile = null;
+var firefoxOptions = null;
+var chromeOptions = null;
 
 // firefox options
 var profile = new firefox.Profile();
 // from http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
 profile.setPreference('media.navigator.streams.fake', true);
-var ffoptions = new firefox.Options()
+var firefoxOptions = new firefox.Options()
     .setProfile(profile)
     .setBinary('node_modules/.bin/start-firefox');
 // assume it's running chrome
 // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
-var croptions = new chrome.Options()
+var chromeOptions = new chrome.Options()
     .setChromeBinaryPath('node_modules/.bin/start-chrome')
     .addArguments('allow-file-access-from-files')
     .addArguments('use-fake-device-for-media-stream')
@@ -40,8 +40,8 @@ test('Video width and video height are set on GUM sample', function(t) {
   // FIXME: use env[SELENIUM_BROWSER] instead?
   var driver = new webdriver.Builder()
       .forBrowser(process.env.BROWSER)
-      .setFirefoxOptions(ffoptions)
-      .setChromeOptions(croptions)
+      .setFirefoxOptions(firefoxOptions)
+      .setChromeOptions(chromeOptions)
       .build();
 
   driver.get('file://' + process.cwd() +
@@ -67,6 +67,8 @@ test('Video width and video height are set on GUM sample', function(t) {
     return new webdriver.promise.Promise(function(resolve) {
       videoElement.getAttribute('videoWidth').then(function(w) {
         width = w;
+        // TODO: Figure out why videoWidth is 0 most of the time on Chrome.
+        // TODO: After above TODO is fixed, add > zero validation.
         t.pass('got videoWidth ' + w);
         if (width && height) {
           resolve([width, height]);
@@ -83,12 +85,12 @@ test('Video width and video height are set on GUM sample', function(t) {
   })
   .then(function(dimensions) {
     t.pass('got video dimensions ' + dimensions.join('x'));
-    driver.quit();
+    driver.close();
     t.end();
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.quit();
+    driver.close();
     t.end();
   });
 });
