@@ -3,9 +3,29 @@ language: node_js
 node_js:
   - 0.10
 
-install:
+env:
+  matrix:
+    - BROWSER=chrome  BVER=stable
+    - BROWSER=chrome  BVER=beta
+    - BROWSER=chrome  BVER=unstable
+    - BROWSER=firefox BVER=stable
+    - BROWSER=firefox BVER=beta
+    - BROWSER=firefox BVER=unstable
+
+matrix:
+  fast_finish: true
+
+  allow_failures:
+    - env: BROWSER=chrome  BVER=unstable
+    - env: BROWSER=firefox BVER=unstable
+
+before_script:
   - npm install
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 
 script:
-  - grunt
   - npm test
+
+after_failure:
+  - for file in *.log; do echo $file; echo "======================"; cat $file; done
