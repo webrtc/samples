@@ -26,12 +26,12 @@ var profile = new firefox.Profile();
 // from http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
 profile.setPreference('media.navigator.streams.fake', true);
 var ffoptions = new firefox.Options()
-    .setBinary('node_modules/.bin/start-firefox')
-    .setProfile(profile);
+    .setProfile(profile)
+    .setBinary('node_modules/.bin/start-firefox');
 // assume it's running chrome
 // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
 var croptions = new chrome.Options()
-    .setBinary('node_modules/.bin/start-chrome')
+    .setChromeBinaryPath('node_modules/.bin/start-chrome')
     .addArguments('allow-file-access-from-files')
     .addArguments('use-fake-device-for-media-stream')
     .addArguments('use-fake-ui-for-media-stream');
