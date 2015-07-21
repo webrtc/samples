@@ -1,3 +1,11 @@
+/*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
@@ -26,7 +34,7 @@ var croptions = new chrome.Options()
     .addArguments('use-fake-device-for-media-stream')
     .addArguments('use-fake-ui-for-media-stream');
 
-test('video width and video height are set on GUM sample', function(t) {
+test('Video width and video height are set on GUM sample', function(t) {
   // FIXME: use env[SELENIUM_BROWSER] instead?
   var driver = new webdriver.Builder()
       .forBrowser(process.env.BROWSER)
