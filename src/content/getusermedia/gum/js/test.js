@@ -21,14 +21,15 @@ var profile = null;
 var firefoxOptions = null;
 var chromeOptions = null;
 
-// firefox options
+// Firefox options.
+// http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
 var profile = new firefox.Profile();
-// from http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
 profile.setPreference('media.navigator.streams.fake', true);
 var firefoxOptions = new firefox.Options()
     .setProfile(profile)
     .setBinary('node_modules/.bin/start-firefox');
-// assume it's running chrome
+
+// Chrome options.
 // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
 var chromeOptions = new chrome.Options()
     .setChromeBinaryPath('node_modules/.bin/start-chrome')
@@ -47,21 +48,21 @@ test('Video width and video height are set on GUM sample', function(t) {
   driver.get('file://' + process.cwd() +
       '/src/content/getusermedia/gum/index.html')
   .then(function() {
-    t.pass('page loaded');
+    t.pass('Page loaded');
   })
   // Check that there is a stream with a video track.
   .then(function() {
     return driver.executeScript('return stream && stream.getTracks().length');
   })
   .then(function(numberOfStreams) {
-    t.ok(numberOfStreams === 1, 'stream exists and has one track');
+    t.ok(numberOfStreams === 1, 'Stream exists and has one track');
   })
   // Check that there is a video element and it is displaying something.
   .then(function() {
     return driver.findElement(webdriver.By.id('gum-local'));
   })
   .then(function(videoElement) {
-    t.pass('found video element');
+    t.pass('Found video element');
     var width = 0;
     var height = 0;
     return new webdriver.promise.Promise(function(resolve) {
@@ -69,7 +70,7 @@ test('Video width and video height are set on GUM sample', function(t) {
         width = w;
         // TODO: Figure out why videoWidth is 0 most of the time on Chrome.
         // TODO: After above TODO is fixed, add > zero validation.
-        t.pass('got videoWidth ' + w);
+        t.pass('Got videoWidth ' + w);
         if (width && height) {
           resolve([width, height]);
         }
@@ -84,7 +85,7 @@ test('Video width and video height are set on GUM sample', function(t) {
     });
   })
   .then(function(dimensions) {
-    t.pass('got video dimensions ' + dimensions.join('x'));
+    t.pass('Got video dimensions ' + dimensions.join('x'));
     driver.close();
     t.end();
   })
