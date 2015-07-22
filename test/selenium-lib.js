@@ -1,3 +1,14 @@
+/*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+ /* jshint node: true */
+
+ 'use strict';
+
 // https://code.google.com/p/selenium/wiki/WebDriverJs
 var webdriver = require('selenium-webdriver');
 var chrome = require('selenium-webdriver/chrome');
@@ -31,5 +42,5 @@ function buildDriver() {
 }
 
 module.exports = {
-    buildDriver: buildDriver
+  buildDriver: buildDriver
 };

@@ -15,3 +15,5 @@ If you need to update the adapter.js version, run "npm install" and submit a CL 
 WebRTC developers monitor outstanding pull requests. They may request changes to the pull request before accepting. They will also verify that a CLA has been signed.
 
 The [Developer's Guide](https://bit.ly/webrtcdevguide) for this repo has more detailed information about code style, structure and validation.
+
+The [README](test/README.md) in the test folder has all the information needed for setting up the development enviroment and how create tests for the demo pages.

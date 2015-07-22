@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# Run testling with a default set of parameters
+# Installs Chrome or Firefox if missing and sets default browser to
+# chrome stable.
 #
 echo -e "\nPreparing Selenium webdriver tests."
 
