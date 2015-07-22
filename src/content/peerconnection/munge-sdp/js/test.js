@@ -36,6 +36,7 @@ test('Munge SDP sample', function(t) {
         .getAttribute('value');
   })
   .then(function(value) {
+    console.log(value);
     t.ok(value !== '', 'local SDP is shown in textarea');
     return driver.findElement(webdriver.By.id('setOffer')).click();
   })
