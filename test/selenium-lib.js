@@ -13,7 +13,7 @@ var profile = new firefox.Profile();
 profile.setPreference('media.navigator.streams.fake', true);
 var firefoxOptions = new firefox.Options()
     .setProfile(profile)
-    //.setBinary('node_modules/.bin/start-firefox');
+    .setBinary('node_modules/.bin/start-firefox');
 
 // Chrome options.
 // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
