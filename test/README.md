@@ -39,7 +39,7 @@ Once your test is ready, create a pull request and see how it runs on travis-mul
 #### Change browser and channel/version for testing
 Chrome stable is currently installed as the default browser for the tests.
 
-Currently Chrome and Firefox are supported[*](#-experimental), check [travis-multirunner](https://github.com/DamonOehlman/travis-multirunner/blob/master/) repo for updates around this.
+Currently Chrome and Firefox are supported[*](#-experimental-browser-support), check [travis-multirunner](https://github.com/DamonOehlman/travis-multirunner/blob/master/) repo for updates around this.
 Firefox channels supported are stable, beta and nightly.
 Chrome channels supported on Linux are stable, beta and unstable.
 
