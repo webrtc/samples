@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/webrtc/samples.svg)](https://travis-ci.org/webrtc/samples)
 
 # Intro #
-Selenium webdriver, node, testling and travis-multirunner is used as the testing framework. Selenium webdriver drives the browser, node and Testling manages the tests while travis-multirunner dowloads and installs the browsers to be tested on, e.g creates the testing matrix.
+Selenium WebDriver, Node, Testling and travis-multirunner are used as the testing framework. Selenium WebDriver drives the browser; Node and Testling manage the tests, while travis-multirunner downloads and installs the browsers to be tested on, i.e. creates the testing matrix.
 
 ## Development ##
-Detailed information on developing in the [webrtc](https://github.com/webrtc) github repo can be found in the [WebRTC GitHub repo developer's guide](https://docs.google.com/document/d/1tn1t6LW2ffzGuYTK3366w1fhTkkzsSvHsBnOHoDfRzY/edit?pli=1#heading=h.e3366rrgmkdk).
+Detailed information on developing in the [webrtc](https://github.com/webrtc) GitHub repo can be found in the [WebRTC GitHub repo developer's guide](https://docs.google.com/document/d/1tn1t6LW2ffzGuYTK3366w1fhTkkzsSvHsBnOHoDfRzY/edit?pli=1#heading=h.e3366rrgmkdk).
 
 This guide assumes you are running a Debian based Linux distribution (travis-multirunner currently fetches .deb browser packages).
 
@@ -25,8 +25,8 @@ npm test
 ```
 
 #### Add tests
-test/tests.js is used as an index for the tests, tests should be added here using `require`.
-The tests themselves should be placed in the `js` subfolder next to the main.js file of the demo, e.g. `src/content/getusermedia/gum/js/test.js`.
+test/tests.js is used as an index for the tests, tests should be added here using `require()`.
+The tests themselves should be placed in the same js folder as main.js: e.g.`src/content/getusermedia/gum/js/test.js`.
 
 The tests should be written using Testling for test validation (using Tape script language) and Selenium webdriver is used to control and drive the test in the browser. 
 
