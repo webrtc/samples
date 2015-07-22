@@ -32,11 +32,11 @@ test('Munge SDP sample', function(t) {
     });
   })
   .then(function() {
+    driver.sleep(100); // Micro₋sleep to work around timing issues.
     return driver.findElement(webdriver.By.css('#local>textarea'))
         .getAttribute('value');
   })
   .then(function(value) {
-    console.log('textarea value', JSON.stringify(value));
     t.ok(value !== '', 'local SDP is shown in textarea');
     return driver.findElement(webdriver.By.id('setOffer')).click();
   })
@@ -52,6 +52,7 @@ test('Munge SDP sample', function(t) {
     });
   })
   .then(function() {
+    driver.sleep(100); // Micro₋sleep to work around timing issues.
     return driver.findElement(webdriver.By.css('#remote>textarea'))
         .getAttribute('value');
   })

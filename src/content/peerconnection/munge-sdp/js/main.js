@@ -197,8 +197,8 @@ function setOffer() {
 }
 
 function gotDescription1(description) {
-  offerSdpTextarea.value = description.sdp;
   offerSdpTextarea.disabled = false;
+  offerSdpTextarea.value = description.sdp;
 }
 
 function createAnswer() {
@@ -227,8 +227,8 @@ function setAnswer() {
 }
 
 function gotDescription2(description) {
-  answerSdpTextarea.value = description.sdp;
   answerSdpTextarea.disabled = false;
+  answerSdpTextarea.value = description.sdp;
 }
 
 function hangup() {
