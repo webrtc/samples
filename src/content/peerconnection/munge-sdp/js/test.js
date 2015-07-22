@@ -32,7 +32,7 @@ test('Munge SDP sample', function(t) {
     });
   })
   .then(function() {
-    driver.sleep(100); // Micro₋sleep to work around timing issues.
+    driver.sleep(500); // Micro₋sleep to work around timing issues.
     return driver.findElement(webdriver.By.css('#local>textarea'))
         .getAttribute('value');
   })
@@ -52,7 +52,7 @@ test('Munge SDP sample', function(t) {
     });
   })
   .then(function() {
-    driver.sleep(100); // Micro₋sleep to work around timing issues.
+    driver.sleep(500); // Micro₋sleep to work around timing issues.
     return driver.findElement(webdriver.By.css('#remote>textarea'))
         .getAttribute('value');
   })
