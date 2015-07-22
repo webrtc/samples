@@ -25,8 +25,9 @@ test('Video width and video height are set on GUM sample', function(t) {
     t.pass('Page loaded');
   })
   .then(function() {
-    // sleep for one second
-    return driver.sleep(1000);
+    return driver.wait(function() {
+      return driver.executeScript('return window.stream !== undefined;');
+    }, 30 * 1000);
   })
   // Check that there is a stream with a video track.
   .then(function() {
