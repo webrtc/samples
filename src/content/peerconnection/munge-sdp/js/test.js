@@ -24,15 +24,14 @@ test('Munge SDP sample', function(t) {
     return driver.findElement(webdriver.By.id('createOffer')).click();
   })
   .then(function() {
-    // Need to wait for createOffer to succeed which will enable
-    // the local textarea.
+    // Need to wait for createOffer to succeed which takes some time
+    // on travis.
     return driver.wait(function() {
-      return driver.findElement(webdriver.By.css('#local>textarea'))
-          .isEnabled();
+      return driver.executeScript(
+          'return document.querySelector(\'#local>textarea\').value !== \'\'');
     });
   })
   .then(function() {
-    driver.sleep(500); // Micro₋sleep to work around timing issues.
     return driver.findElement(webdriver.By.css('#local>textarea'))
         .getAttribute('value');
   })
@@ -44,15 +43,14 @@ test('Munge SDP sample', function(t) {
     return driver.findElement(webdriver.By.id('createAnswer')).click();
   })
   .then(function() {
-    // Need to wait for createAnswer to succeed which will enable
-    // the remote textarea.
+    // Need to wait for createAnswer to succeed which takes some time
+    // on travis.
     return driver.wait(function() {
-      return driver.findElement(webdriver.By.css('#remote>textarea'))
-          .isEnabled();
+      return driver.executeScript(
+          'return document.querySelector(\'#remote>textarea\').value !== \'\'');
     });
   })
   .then(function() {
-    driver.sleep(500); // Micro₋sleep to work around timing issues.
     return driver.findElement(webdriver.By.css('#remote>textarea'))
         .getAttribute('value');
   })
