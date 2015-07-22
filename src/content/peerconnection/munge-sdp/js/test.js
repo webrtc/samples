@@ -67,31 +67,6 @@ test('Munge SDP sample', function(t) {
   })
   .then(function() {
     t.pass('remotePeerConnection ICE connected');
-    return driver.findElement(webdriver.By.css('#remote video'));
-  })
-  .then(function(videoElement) {
-    t.pass('found video element');
-    var width = 0;
-    var height = 0;
-    return new webdriver.promise.Promise(function(resolve) {
-      videoElement.getAttribute('videoWidth').then(function(w) {
-        width = w;
-        t.pass('got videoWidth ' + w);
-        if (width && height) {
-          resolve([width, height]);
-        }
-      });
-      videoElement.getAttribute('videoHeight').then(function(h) {
-        height = h;
-        t.pass('got videoHeight ' + h);
-        if (width && height) {
-          resolve([width, height]);
-        }
-      });
-    });
-  })
-  .then(function(dimensions) {
-    t.pass('got video dimensions ' + dimensions.join('x'));
     // Chrome does not shutdown unless close() is called due to starting it via
     // start-chrome shell script.
     driver.close();
