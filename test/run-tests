@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Run testling with a default set of parameters
+#
+echo -e "\nPreparing Selenium webdriver tests."
+
+BINDIR=./browsers/bin
+export BROWSER=${BROWSER-chrome}
+export BVER=${BVER-stable}
+BROWSERBIN=$BINDIR/$BROWSER-$BVER
+if [ ! -x $BROWSERBIN ]; then
+  echo "Installing browser."
+  ./node_modules/travis-multirunner/setup.sh
+fi
+echo "Starting browser."
+PATH=$PATH:./node_modules/.bin
+
+node test/tests.js
