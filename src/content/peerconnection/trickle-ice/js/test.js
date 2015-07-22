@@ -25,9 +25,8 @@ test('Candidate Gathering', function(t) {
   .then(function() {
     t.pass('got candidates');
     driver.close();
-    driver.quit().then(function() {
-      t.end();
-    });
+    driver.quit();
+    t.end();
   })
   .then(null, function(err) {
     t.fail(err);
