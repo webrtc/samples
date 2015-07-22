@@ -5,6 +5,7 @@
   "description": "Disables the multiple routes option for WebRTC.",
   "permissions": ["privacy"],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["eventPage.js"],
+    "persistent": false
   }
 }
