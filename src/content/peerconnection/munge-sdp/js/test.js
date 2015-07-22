@@ -24,6 +24,14 @@ test('Munge SDP sample', function(t) {
     return driver.findElement(webdriver.By.id('createOffer')).click();
   })
   .then(function() {
+    // Need to wait for createOffer to succeed which will enable
+    // the local textarea.
+    return driver.wait(function() {
+      return driver.findElement(webdriver.By.css('#local>textarea'))
+          .isEnabled();
+    });
+  })
+  .then(function() {
     return driver.findElement(webdriver.By.css('#local>textarea'))
         .getAttribute('value');
   })
@@ -35,6 +43,14 @@ test('Munge SDP sample', function(t) {
     return driver.findElement(webdriver.By.id('createAnswer')).click();
   })
   .then(function() {
+    // Need to wait for createAnswer to succeed which will enable
+    // the remote textarea.
+    return driver.wait(function() {
+      return driver.findElement(webdriver.By.css('#remote>textarea'))
+          .isEnabled();
+    });
+  })
+  .then(function() {
     return driver.findElement(webdriver.By.css('#remote>textarea'))
         .getAttribute('value');
   })
@@ -43,7 +59,15 @@ test('Munge SDP sample', function(t) {
     return driver.findElement(webdriver.By.id('setAnswer')).click();
   })
   .then(function() {
-    return driver.findElement(webdriver.By.css('#local video'));
+    return driver.wait(function() {
+      return driver.executeScript(
+          'return remotePeerConnection && ' +
+          'remotePeerConnection.iceConnectionState === \'connected\';');
+    }, 30 * 1000);
+  })
+  .then(function() {
+    t.pass('remotePeerConnection ICE connected');
+    return driver.findElement(webdriver.By.css('#remote video'));
   })
   .then(function(videoElement) {
     t.pass('found video element');
@@ -59,7 +83,7 @@ test('Munge SDP sample', function(t) {
       });
       videoElement.getAttribute('videoHeight').then(function(h) {
         height = h;
-        t.pass('got videoHeight' + h);
+        t.pass('got videoHeight ' + h);
         if (width && height) {
           resolve([width, height]);
         }
