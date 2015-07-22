@@ -119,11 +119,15 @@ test('Removing a server', function(t) {
     driver.close();
     driver.quit();
     t.end();
+    driver = null;
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.close();
-    driver.quit();
+    if (driver) {
+      driver.close();
+      driver.quit();
+      driver = null;
+    }
     t.end();
   });
 });
