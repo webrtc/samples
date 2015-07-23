@@ -1,3 +1,12 @@
-This extension, once installed, will disable the option for multiple network routes in WebRTC. This will prevent any website from accessing the local machine's private IP addresses or public ones which should have been hidden by the usage of VPN. The only address left for WebRTC will be the same one used for http traffic.
+## Chrome WebRTC Network Limiter
+Disables use of multiple network routes in Chrome’s WebRTC implementation.
 
-Note that the installation of this extension could have negative impact on WebRTC real time media as the route might not be the optimized one. Worst case, if no STUN/TURN server is specified, WebRTC will fail completely as there is no local address for remote peer to connect to.
+This configures WebRTC to not use certain IP addresses:
+- IP addresses not visible to the public internet (e.g. addresses like 192.168.1.2)
+- any public IP addresses associated with network interfaces that are not used for web traffic (e.g. an ISP-provided address, when browsing through a VPN)
+ 
+Once the extension is installed, WebRTC will only use public IP addresses associated with the interface used for web traffic, typically the same addresses that are already provided to sites in browser HTTP requests.
+
+This extension may affect the performance of applications that use WebRTC for audio/video or real-time data communication. Because it limits the potential network paths, WebRTC may pick a path that results in significantly longer delay or lower quality (e.g. through a VPN). We are attempting to determine how common this is.
+
+By installing this item, you agree to the Google Terms of Service and Privacy Policy at https://www.google.com/intl/en/policies/.
