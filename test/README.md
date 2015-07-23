@@ -15,7 +15,7 @@ git clone https://github.com/webrtc/samples.git
 
 #### Install npm dependencies
 ```bash
-sudo npm install
+npm install
 ```
 
 #### Run tests
@@ -24,13 +24,19 @@ Runs grunt and tests in test/tests.js.
 npm test
 ```
 
+#### Run individual tests
+Runs only the specified test with the browser specified.
+```bash
+BROWSER=chrome node src/content/getusermedia/gum/js/test.js
+```
+
 #### Add tests
 test/tests.js is used as an index for the tests, tests should be added here using `require()`.
 The tests themselves should be placed in the same js folder as main.js: e.g.`src/content/getusermedia/gum/js/test.js`.
 
-The tests should be written using Testling for test validation (using Tape script language) and Selenium WebDriver is used to control and drive the test in the browser. 
+The tests should be written using Testling for test validation (using Tape script language) and Selenium WebDriver is used to control and drive the test in the browser.
 
-Use existing tests as guide on how to write tests and also look at the [Testling guide](https://ci.testling.com/guide/tape) and [Selenium WebDriver](http://www.seleniumhq.org/docs/03_webdriver.jsp) (make sure to select javascript as language preference.) for more information.
+Use the existing tests as guide on how to write tests and also look at the [Testling guide](https://ci.testling.com/guide/tape) and [Selenium WebDriver](http://www.seleniumhq.org/docs/03_webdriver.jsp) (make sure to select javascript as language preference.) for more information.
 
 Global Selenium WebDriver settings can be found in `test/selenium-lib.js`, if your test require some specific settings not covered in selenium-lib.js, add your own to the test and do not import the selenium-lib.js file into the test, only do this if it's REALLY necessary.
 
@@ -55,9 +61,13 @@ BROWSER=firefox BVER=nightly npm test
 
 ###* Experimental browser support###
 You can run the tests in any currently installed browser locally that is supported by Selenium WebDriver but you have to bypass travis-multirunner. Also it only makes sense to use a WebRTC supported browser.
-* Remove the `.setBinary()` and `.setChromeBinaryPath()` methods in `test/selenium-lib.js` (these currently point to travis-multirunner scripts that only run on Debian based Linux distributions) or change them to point to a location of your choice. 
+* Remove the `.setBinary()` and `.setChromeBinaryPath()` methods in `test/selenium-lib.js` (these currently point to travis-multirunner scripts that only run on Debian based Linux distributions) or change them to point to a location of your choice.
 * Then add the Selenium driver of the browser you want to use to `test/selenium-lib.js`, check Selenium WebDriver [supported browsers](http://www.seleniumhq.org/about/platforms.jsp#browsers) page for more details.
-* Then just do (replace "opera" with your browser of choice) 
+* Then just do (replace "opera" with your browser of choice) to run all tests
 ```bash
 BROWSER=opera npm test
+```
+* Run specific tests only
+```bash
+BROWSER=opera node src/content/getusermedia/gum/js/test.js
 ```
