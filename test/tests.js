@@ -13,4 +13,10 @@
 // Add all test files here with a short comment.
 
 // Tests basic functionality of the the gum demo.
-var gumTest = require('../src/content/getusermedia/gum/js/test');
+require('../src/content/getusermedia/gum/js/test');
+
+// Tests basic functionality of the munge-sdp demo.
+require('../src/content/peerconnection/munge-sdp/js/test');
+
+// Tests basic functionality of the trickle-ice demo.
+require('../src/content/peerconnection/trickle-ice/js/test');
