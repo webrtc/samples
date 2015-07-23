@@ -25,7 +25,7 @@ npm test
 ```
 
 #### Run individual tests
-Runs only the specified test with the browser specified.
+Runs only the specified test using the specified browser.
 ```bash
 BROWSER=chrome node src/content/getusermedia/gum/js/test.js
 ```
@@ -63,11 +63,11 @@ BROWSER=firefox BVER=nightly npm test
 You can run the tests in any currently installed browser locally that is supported by Selenium WebDriver but you have to bypass travis-multirunner. Also it only makes sense to use a WebRTC supported browser.
 * Remove the `.setBinary()` and `.setChromeBinaryPath()` methods in `test/selenium-lib.js` (these currently point to travis-multirunner scripts that only run on Debian based Linux distributions) or change them to point to a location of your choice.
 * Then add the Selenium driver of the browser you want to use to `test/selenium-lib.js`, check Selenium WebDriver [supported browsers](http://www.seleniumhq.org/about/platforms.jsp#browsers) page for more details.
-* Then just do (replace "opera" with your browser of choice) to run all tests
+* Then just do the following (replace "opera" with your browser of choice) in order to run all tests
 ```bash
 BROWSER=opera npm test
 ```
-* Run specific tests only
+* If you want to run a specific test do the following
 ```bash
 BROWSER=opera node src/content/getusermedia/gum/js/test.js
 ```
