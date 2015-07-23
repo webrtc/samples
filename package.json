@@ -36,6 +36,6 @@
     "chromedriver": "^2.16.0",
     "selenium-webdriver": "^2.46.0",
     "tape": "^4.0.0",
-    "travis-multirunner": "^2.5.0"
+    "travis-multirunner": "^2.6.0"
   }
 }
