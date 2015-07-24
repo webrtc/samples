@@ -16,7 +16,9 @@ var selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 
 function gotDevices(deviceInfos) {
   // Handles being called several times to update labels. Preserve values.
-  var values = selectors.map(function(select) { return select.value; });
+  var values = selectors.map(function(select) {
+    return select.value;
+  });
   console.log(values);
   selectors.forEach(function(select) {
     while (select.firstChild) {
