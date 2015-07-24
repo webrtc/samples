@@ -15,8 +15,14 @@
 // Tests basic functionality of the the gum demo.
 require('../src/content/getusermedia/gum/js/test');
 
+// Tests basic functionality of the pc1 demo.
+require('../src/content/peerconnection/pc1/js/test');
+
 // Tests basic functionality of the munge-sdp demo.
 require('../src/content/peerconnection/munge-sdp/js/test');
 
 // Tests basic functionality of the trickle-ice demo.
 require('../src/content/peerconnection/trickle-ice/js/test');
+
+// Tests basic functionality of the datachannel textchat demo.
+require('../src/content/datachannel/basic/js/test');
