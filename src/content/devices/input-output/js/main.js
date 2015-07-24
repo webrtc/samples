@@ -44,7 +44,7 @@ function gotDevices(deviceInfos) {
   }
   selectors.forEach(function(select, i) {
     if (Array.prototype.slice.call(select.childNodes).some(function(n) {
-      return n.value == values[i];
+      return n.value === values[i];
     })) {
       select.value = values[i];
     }
