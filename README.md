@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=master)](https://travis-ci.org/webrtc/samples)
+[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=master)](https://travis-ci.org/webrtc/samples/)
 
 # WebRTC code samples #
 
@@ -20,65 +20,65 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 ### getUserMedia ###
 
-[Basic getUserMedia demo](https://webrtc.github.io/samples/src/content/getusermedia/gum)
+[Basic getUserMedia demo](https://webrtc.github.io/samples/src/content/getusermedia/gum/)
 
-[getUserMedia + canvas](https://webrtc.github.io/samples/src/content/getusermedia/canvas)
+[getUserMedia + canvas](https://webrtc.github.io/samples/src/content/getusermedia/canvas/)
 
-[getUserMedia + canvas + CSS Filters](https://webrtc.github.io/samples/src/content/getusermedia/filter)
+[getUserMedia + canvas + CSS Filters](https://webrtc.github.io/samples/src/content/getusermedia/filter/)
 
-[getUserMedia with resolution constraints](https://webrtc.github.io/samples/src/content/getusermedia/resolution)
+[getUserMedia with resolution constraints](https://webrtc.github.io/samples/src/content/getusermedia/resolution/)
 
-[getUserMedia with camera, mic and speaker selection](https://webrtc.github.io/samples/src/content/getusermedia/source)
+[getUserMedia with camera, mic and speaker selection](https://webrtc.github.io/samples/src/content/getusermedia/source/)
 
-[Audio-only getUserMedia output to local audio element](https://webrtc.github.io/samples/src/content/getusermedia/audio)
+[Audio-only getUserMedia output to local audio element](https://webrtc.github.io/samples/src/content/getusermedia/audio/)
 
-[Audio-only getUserMedia displaying volume](https://webrtc.github.io/samples/src/content/getusermedia/volume)
+[Audio-only getUserMedia displaying volume](https://webrtc.github.io/samples/src/content/getusermedia/volume/)
 
-[Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face)
+[Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face/)
 
 ### Devices ###
 
-[Select camera, microphone and speaker](https://webrtc.github.io/samples/src/content/devices/input-output)
+[Select camera, microphone and speaker](https://webrtc.github.io/samples/src/content/devices/input-output/)
 
-[Select media source and audio output](https://webrtc.github.io/samples/src/content/devices/multi)
+[Select media source and audio output](https://webrtc.github.io/samples/src/content/devices/multi/)
 
 ### RTCPeerConnection ###
 
-[Basic peer connection](https://webrtc.github.io/samples/src/content/peerconnection/pc1)
+[Basic peer connection](https://webrtc.github.io/samples/src/content/peerconnection/pc1/)
 
-[Audio-only peer connection](https://webrtc.github.io/samples/src/content/peerconnection/audio)
+[Audio-only peer connection](https://webrtc.github.io/samples/src/content/peerconnection/audio/)
 
-[Multiple peer connections at once](https://webrtc.github.io/samples/src/content/peerconnection/multiple)
+[Multiple peer connections at once](https://webrtc.github.io/samples/src/content/peerconnection/multiple/)
 
-[Forward output of one peer connection into another](https://webrtc.github.io/samples/src/content/peerconnection/multiple-relay)
+[Forward output of one peer connection into another](https://webrtc.github.io/samples/src/content/peerconnection/multiple-relay/)
 
-[Munge SDP parameters](https://webrtc.github.io/samples/src/content/peerconnection/munge-sdp)
+[Munge SDP parameters](https://webrtc.github.io/samples/src/content/peerconnection/munge-sdp/)
 
-[Use pranswer when setting up a peer connection](https://webrtc.github.io/samples/src/content/peerconnection/pr-answer)
+[Use pranswer when setting up a peer connection](https://webrtc.github.io/samples/src/content/peerconnection/pr-answer/)
 
-[Adjust constraints, view stats](https://webrtc.github.io/samples/src/content/peerconnection/constraints)
+[Adjust constraints, view stats](https://webrtc.github.io/samples/src/content/peerconnection/constraints/)
 
-[Display createOffer output](https://webrtc.github.io/samples/src/content/peerconnection/create-offer)
+[Display createOffer output](https://webrtc.github.io/samples/src/content/peerconnection/create-offer/)
 
-[Use RTCDTMFSender](https://webrtc.github.io/samples/src/content/peerconnection/dtmf)
+[Use RTCDTMFSender](https://webrtc.github.io/samples/src/content/peerconnection/dtmf/)
 
-[Display peer connection states](https://webrtc.github.io/samples/src/content/peerconnection/states)
+[Display peer connection states](https://webrtc.github.io/samples/src/content/peerconnection/states/)
 
-[ICE candidate gathering from STUN/TURN servers](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice)
+[ICE candidate gathering from STUN/TURN servers](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)
 
-[Web Audio output as input to peer connection](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-input)
+[Web Audio output as input to peer connection](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-input/)
 
 ### RTCDataChannel ###
 
-[Transmit text](https://webrtc.github.io/samples/src/content/datachannel/basic)
+[Transmit text](https://webrtc.github.io/samples/src/content/datachannel/basic/)
 
-[Transfer a file](https://webrtc.github.io/samples/src/content/datachannel/filetransfer)
+[Transfer a file](https://webrtc.github.io/samples/src/content/datachannel/filetransfer/)
 
-[Transfer data](https://webrtc.github.io/samples/src/content/datachannel/datatransfer)
+[Transfer data](https://webrtc.github.io/samples/src/content/datachannel/datatransfer/)
 
 ### Video chat ###
 
-[AppRTC video chat client](https://apprtc.appspot.com) powered by Google App Engine
+[AppRTC video chat client](https://apprtc.appspot.com/) powered by Google App Engine
 
 [AppRTC URL parameters](https://apprtc.appspot.com/params.html)
 
