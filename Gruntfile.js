@@ -44,7 +44,10 @@ module.exports = function(grunt) {
       }
     },
     jscs: {
-      src: 'src/content/**/*.js',
+      src: [
+        'src/content/**/*.js',
+        'test/*.js'
+      ],
       options: {
         config: 'src/.jscsrc',
         'excludeFiles': []
@@ -59,7 +62,10 @@ module.exports = function(grunt) {
       // files to validate
       // can choose more than one name + array of paths
       // usage with this name: grunt jshint:files
-      files: ['src/content/**/*.js']
+      files: [
+        'src/content/**/*.js',
+        'test/*.js'
+      ]
     }
   });
 
