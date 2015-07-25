@@ -16,13 +16,34 @@ var codecSelector = document.querySelector('select#codec');
 var bitRateField = document.querySelector('input#bitrate');
 var ptimeField = document.querySelector('input#ptime');
 var vadCheck = document.querySelector('input#vad');
+var codecDefaults = [
+  { name: 'OPUS',       bitrate: 32000, ptime: 20, vbr: true },
+  { name: 'ISAC/16000', bitrate: 32000, ptime: 30, vbr: true },
+  { name: 'G722',       bitrate: 64000, ptime: 20 },
+  { name: 'PCMU',       bitrate: 64000, ptime: 20 },
+];
+codecSelector.onchange = onCodecChange;
 hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
+onCodecChange();
 
 var pc1;
 var pc2;
 var localstream;
+
+// double-check this all works before submitting.
+function onCodecChange() {
+  var name = codecSelector.value;
+  for (var i = 0; i < codecDefaults.length; ++i) {
+    var entry = codecDefaults[i];
+    if (name === entry.name) {
+      bitRateField.placeholder = entry.bitrate;
+      //bitRateField.disabled = !entry.vbr;
+      ptimeField.placeholder = entry.ptime;
+    }
+  }
+}
 
 function gotStream(stream) {
   trace('Received local stream');

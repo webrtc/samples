@@ -46,25 +46,26 @@
     </div>
 
     <div id="params">
-       Codec:
-       <select id="codec">
+      <label for="codec">Codec:</label>
+
+      <select id="codec">
         <!-- Codec values are matched with how they appear in the SDP.
         For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
         matches 16K iSAC (but not 32K iSAC). -->
         <option value="OPUS">Opus</option>
-        <option value="ISAC/16000">iSAC 16K</option>
+        <option value="ISAC/16000">ISAC 16K</option>
         <option value="G722">G722</option>
         <option value="PCMU">PCMU</option>
       </select>
 
-      Bit rate:
-      <input id="bitrate" size="12"/>
+      <label for="bitrate">Bit rate:</label>
+      <input id="bitrate" type="number" step="1000" size="12"/>
 
-      Packet time:
-      <input id="ptime" size="12"/>
+      <label for="ptime">Packet time:</label>
+      <input id="ptime" type="number" step="10" size="12"/>
 
-      VAD:
-      <input id="vad" type="checkbox" checked>
+      <label for="vad">VAD:</label>
+      <input id="vad" type="checkbox">
 
     </div>
     <div id="buttons">
