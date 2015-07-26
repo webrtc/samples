@@ -57,7 +57,6 @@ test('Fake device selection and check video tag dimensions in ' +
     // Check enumerateDevices has returned an id.
     t.ok(deviceId !== '', 'Device/source id: ' + deviceId);
   })
-
   .then(function() {
     // Make sure the stream is ready.
     return driver.wait(function() {
