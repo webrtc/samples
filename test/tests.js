@@ -26,3 +26,6 @@ require('../src/content/peerconnection/trickle-ice/js/test');
 
 // Tests basic functionality of the datachannel textchat demo.
 require('../src/content/datachannel/basic/js/test');
+
+// Tests basic functionality of the input-output device demo.
+require('../src/content/devices/input-output/js/test.js');
