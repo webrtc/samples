@@ -68,11 +68,9 @@ test('Fake device selection and check video tag dimensions in ' +
     return driver.executeScript('return stream.getAudioTracks()[0].label');
   })
   .then(function(deviceLabel) {
-    var fakeAudioDeviceName = '';
     // TODO: Improve this once Firefox has added labels for fake devices.
-    if (webrtcDetectedBrowser === 'chrome') {
-      fakeAudioDeviceName = 'Fake Audio 1';
-    }
+    var fakeAudioDeviceName = (webrtcDetectedBrowser === 'chrome') ?
+        'Fake Audio 1' : '';
     t.ok(fakeAudioDeviceName === deviceLabel, 'Fake audio device found with ' +
         'label: ' + deviceLabel);
   })
@@ -81,11 +79,9 @@ test('Fake device selection and check video tag dimensions in ' +
     return driver.executeScript('return stream.getVideoTracks()[0].label');
   })
   .then(function(deviceLabel) {
-    var fakeVideoDeviceName = '';
     // TODO: Improve this once Firefox has added labels for fake devices.
-    if (webrtcDetectedBrowser === 'chrome') {
-      fakeVideoDeviceName = 'fake_device_0';
-    }
+    var fakeVideoDeviceName = (webrtcDetectedBrowser === 'chrome') ?
+        'fake_device_0' : '';
     t.ok(fakeVideoDeviceName === deviceLabel, 'Fake video device found with ' +
         'label: ' + deviceLabel);
   })
