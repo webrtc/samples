@@ -9,6 +9,7 @@
 /* globals require */
 
 'use strict';
+var test = require('tape');
 
 // Add all test files here with a short comment.
 
@@ -26,3 +27,15 @@ require('../src/content/peerconnection/trickle-ice/js/test');
 
 // Tests basic functionality of the datachannel textchat demo.
 require('../src/content/datachannel/basic/js/test');
+
+// This is run as a test so it is executed after all tests
+// have completed.
+test('Shutdown', function(t) {
+  var driver = require('./selenium-lib').buildDriver();
+  driver.close()
+  .then(function() {
+    driver.quit().then(function() {
+      t.end();
+    });
+  });
+});

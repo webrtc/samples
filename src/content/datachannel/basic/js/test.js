@@ -46,16 +46,10 @@ test('Basic datachannel sample', function(t) {
     t.ok(value === 'hello world', 'Text was received');
   })
   .then(function() {
-    // Chrome does not shutdown unless close() is called due to starting it via
-    // start-chrome shell script.
-    driver.close();
-    driver.quit();
     t.end();
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.close();
-    driver.quit();
     t.end();
   });
 });

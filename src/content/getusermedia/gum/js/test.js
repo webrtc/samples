@@ -65,16 +65,10 @@ test('Video width and video height are set on GUM sample', function(t) {
   })
   .then(function(dimensions) {
     t.pass('Got video dimensions ' + dimensions.join('x'));
-    // Chrome does not shutdown unless close() is called due to starting it via
-    // start-chrome shell script.
-    driver.close();
-    driver.quit();
     t.end();
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.close();
-    driver.quit();
     t.end();
   });
 });
