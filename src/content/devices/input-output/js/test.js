@@ -31,16 +31,21 @@ test('Fake device selection and check video tag dimensions in ' +
   .then(function(browser) {
     webrtcDetectedBrowser = browser;
     // Making sure we can select the 1st audio device.
-    // TODO: Select more devices if Firefox adds a 2nd fake A/V device and
+    // TODO: Select more devices if Firefox adds a 2nd fake A&V device and
     // Chrome adds another fake video device.
     t.pass('Selecting 1st audio device');
-    var option = driver.findElement(webdriver.By.xpath(
-        'id("audioSource")/option[1]'));
-    option.click();
-    return option.getAttribute('value');
+    return driver.findElement(webdriver.By.css('#audioSource>option'));
+  })
+  .then(function(element) {
+    return new webdriver.ActionSequence(driver).
+        doubleClick(element).perform();
+  })
+  // Check enumerateDevices has returned an id.
+  .then(function() {
+    return driver.findElement(webdriver.By.css(
+        '#audioSource>option')).getAttribute('value');
   })
   .then(function(deviceId) {
-    // Check enumerateDevices has returned an id.
     t.ok(deviceId !== '', 'Device/source id: ' + deviceId);
   })
   .then(function() {
@@ -48,13 +53,18 @@ test('Fake device selection and check video tag dimensions in ' +
     // TODO: Select more devices if Firefox adds a 2nd fake A/V device and
     // Chrome adds another fake video device.
     t.pass('Selecting 1st video device');
-    var option = driver.findElement(webdriver.By.xpath(
-        'id("videoSource")/option[1]'));
-    option.click();
-    return option.getAttribute('value');
+    return driver.findElement(webdriver.By.css('#videoSource>option'));
+  })
+  .then(function(element) {
+    return new webdriver.ActionSequence(driver).
+        doubleClick(element).perform();
+  })
+  // Check enumerateDevices has returned an id.
+  .then(function() {
+    return driver.findElement(webdriver.By.css(
+        '#videoSource>option')).getAttribute('value');
   })
   .then(function(deviceId) {
-    // Check enumerateDevices has returned an id.
     t.ok(deviceId !== '', 'Device/source id: ' + deviceId);
   })
   .then(function() {
