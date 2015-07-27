@@ -24,14 +24,10 @@ test('Candidate Gathering', function(t) {
   })
   .then(function() {
     t.pass('got candidates');
-    driver.close();
-    driver.quit();
     t.end();
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.close();
-    driver.quit();
     t.end();
   });
 });
@@ -54,14 +50,10 @@ test('Loading server data', function(t) {
   })
   .then(function(value) {
     t.ok(value !== '', 'doubleclick loads server data');
-    driver.close();
-    driver.quit();
     t.end();
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.close();
-    driver.quit();
     t.end();
   });
 });
@@ -86,14 +78,10 @@ test('Adding a server', function(t) {
   })
   .then(function(length) {
     t.ok(length === '2', 'server added');
-    driver.close();
-    driver.quit();
     t.end();
   })
   .then(null, function(err) {
     t.fail(err);
-    driver.close();
-    driver.quit();
     t.end();
   });
 });
@@ -116,18 +104,10 @@ test('Removing a server', function(t) {
   })
   .then(function(length) {
     t.ok(length === '0', 'server removed');
-    driver.close();
-    driver.quit();
     t.end();
-    driver = null;
   })
   .then(null, function(err) {
     t.fail(err);
-    if (driver) {
-      driver.close();
-      driver.quit();
-      driver = null;
-    }
     t.end();
   });
 });
