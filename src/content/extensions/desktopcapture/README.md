@@ -1,7 +1,7 @@
 ## WebRTC desktop capture
-This is a WebRTC desktop capture extension with a demo app.
+This is a WebRTC desktop capture extension with a demo app. It uses the [chrome.desktopCapture](https://developer.chrome.com/extensions/desktopCapture) and [getUserMedia()](http://dev.w3.org/2011/webrtc/editor/archives/20140619/getusermedia.html) API's.
 
-In order to try it out do following:
+###In order to try it out locally do following:###
 1. Download the extension to your machine.
 2. Browse to chrome://extensions
 3. Click load unpacked extensions and select the downloaded extension from step 1.
@@ -9,4 +9,4 @@ In order to try it out do following:
 
 You are now capturing a window or your desktop.
 
-You can use this example to integrate with your own web app as well. Just make sure to service your app over HTTPS and change the `content_scripts` and  `permissions` URLs to match your webapp URL.
+You can use this example to integrate with your own web app as well. Just make sure to serve your app over HTTPS and change the `content_scripts` and  `permissions` URLs to match your webapp URL.
