@@ -114,18 +114,10 @@ test('Fake device selection and check video tag dimensions in ' +
     t.pass('Got video dimensions ' + dimensions.join('x'));
   })
   .then(function() {
-    t.pass('shutting down success');
-    // Chrome does not shutdown unless close() is called due to starting it via
-    // start-chrome shell script.
-    driver.close();
-    driver.quit();
     t.end();
   })
   .then(null, function(err) {
-    t.pass('shutting down failure');
     t.fail(err);
-    driver.close();
-    driver.quit();
     t.end();
   });
 });
