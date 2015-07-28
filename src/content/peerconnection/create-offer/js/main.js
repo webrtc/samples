@@ -27,7 +27,7 @@ numAudioTracksInput.onchange = function() {
 
 var pc = new RTCPeerConnection(null);
 /* global webkitAudioContext */
-var wacx = new webkitAudioContext();
+var wacx = new webkitAudioContext(); // jscs:ignore requireCapitalizedConstructors
 
 function createOffer() {
   var numRequestedAudioTracks = numAudioTracksInput.value;

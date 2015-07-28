@@ -69,10 +69,10 @@ function gotStream(stream) {
 
     var servers = null;
 
-    pc1 = new webkitRTCPeerConnection(servers);
+    pc1 = new webkitRTCPeerConnection(servers); // jscs:ignore requireCapitalizedConstructors
     console.log('Created local peer connection object pc1');
     pc1.onicecandidate = iceCallback1;
-    pc2 = new webkitRTCPeerConnection(servers);
+    pc2 = new webkitRTCPeerConnection(servers); // jscs:ignore requireCapitalizedConstructors
     console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = iceCallback2;
     pc2.onaddstream = gotRemoteStream;
