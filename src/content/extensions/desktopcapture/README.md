@@ -10,3 +10,6 @@ This is a WebRTC desktop capture extension with a demo app. It uses the [chrome.
 You are now capturing a window or your desktop.
 
 You can use this example to integrate with your own web app as well. Just make sure to serve your app over HTTPS and change the `content_scripts` and  `permissions` URLs to match your webapp URL.
+
+## Development
+If you update this extension you should run the `grunt compress` command so that a zip file is created and placed in the release/ folder.
