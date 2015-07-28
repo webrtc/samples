@@ -22,14 +22,12 @@ var localVideo = document.getElementById('localVideo');
 var remoteVideo = document.getElementById('remoteVideo');
 
 localVideo.addEventListener('loadedmetadata', function() {
-  trace('Local video currentSrc: ' + this.currentSrc +
-    ', videoWidth: ' + this.videoWidth +
+  trace('Local video videoWidth: ' + this.videoWidth +
     'px,  videoHeight: ' + this.videoHeight + 'px');
 });
 
 remoteVideo.addEventListener('loadedmetadata', function() {
-  trace('Remote video currentSrc: ' + this.currentSrc +
-    ', videoWidth: ' + this.videoWidth +
+  trace('Remote video videoWidth: ' + this.videoWidth +
     'px,  videoHeight: ' + this.videoHeight + 'px');
 });
 
