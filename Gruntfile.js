@@ -66,6 +66,24 @@ module.exports = function(grunt) {
         'src/content/**/*.js',
         'test/*.js'
       ]
+    },
+    // Leaving this as a manual step as the extension is not updated regularly.
+    compress: {
+      main: {
+        options: {
+          mode: 'zip',
+          archive: 'release/desktopCaptureExtension.zip'
+        },
+        files: [
+          {
+            expand: true,
+            cwd: 'src/content/extensions/desktopcapture/extension',
+            src: '**',
+            dest: 'desktopCaptureExtension',
+            isfile: true
+          }
+        ]
+      }
     }
   });
 
@@ -74,6 +92,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-githooks');
 
   // set default tasks to run when grunt is called without parameters
