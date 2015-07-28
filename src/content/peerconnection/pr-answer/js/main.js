@@ -25,9 +25,9 @@ btn3.disabled = true;
 var pc1 = null;
 var pc2 = null;
 var localstream;
-var sdpConstraints = {'mandatory':{
-  'OfferToReceiveAudio':true,
-  'OfferToReceiveVideo':true}
+var sdpConstraints = {'mandatory': {
+  'OfferToReceiveAudio': true,
+  'OfferToReceiveVideo': true}
 };
 
 function gotStream(stream) {
@@ -39,8 +39,8 @@ function gotStream(stream) {
 }
 
 navigator.mediaDevices.getUserMedia({
-  audio:true,
-  video:true
+  audio: true,
+  video: true
 })
 .then(gotStream)
 .catch(function(e) {
