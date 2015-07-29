@@ -24,6 +24,8 @@ function buildDriver() {
   // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
   var profile = new firefox.Profile();
   profile.setPreference('media.navigator.streams.fake', true);
+  // This enables device labels for enumerateDevices when using fake devices.
+  profile.setPreference('media.navigator.permission.disabled', true);
   var firefoxOptions = new firefox.Options()
       .setProfile(profile)
       .setBinary('node_modules/.bin/start-firefox');

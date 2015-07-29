@@ -46,7 +46,7 @@ test('Fake device selection and check video tag dimensions in ' +
         '#audioSource>option')).getAttribute('value');
   })
   .then(function(deviceId) {
-    t.ok(deviceId !== '', 'Device/source id: ' + deviceId);
+    t.ok(deviceId, 'Device/source id: ' + deviceId);
   })
   .then(function() {
     // Making sure we can select the 1st video device.
