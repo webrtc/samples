@@ -35,7 +35,7 @@ test('Fake device selection and check video tag dimensions in ' +
     // Chrome adds another fake video device.
     t.pass('Selecting 1st audio device');
     return driver.wait(driver.findElement(
-        webdriver.By.css('#audioSource>option')), 30 * 1000)
+        webdriver.By.css('#audioSource>option')), 60 * 1000)
     .then(function(element) {
       return element;
     });
@@ -58,7 +58,7 @@ test('Fake device selection and check video tag dimensions in ' +
     // Chrome adds another fake video device.
     t.pass('Selecting 1st video device');
     return driver.wait(driver.findElement(
-        webdriver.By.css('#videoSource>option')), 30 * 1000)
+        webdriver.By.css('#videoSource>option')), 60 * 1000)
     .then(function(element) {
       return element;
     });
