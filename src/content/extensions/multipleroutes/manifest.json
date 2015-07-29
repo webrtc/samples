@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "WebRTC Network Limiter",
+  "name": "Chrome WebRTC Network Limiter",
   "version": "0.1",
-  "description": "Disables the multiple routes option for WebRTC.",
+  "description": "Disables use of multiple network routes in Chrome’s WebRTC implementation.",
   "permissions": ["privacy"],
   "background": {
     "scripts": ["eventPage.js"],
