@@ -7,7 +7,7 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('../../../../../test/selenium-lib');
 
-test('Filetransfer via Datachannels', function(t) {
+function sendFile(t, path) {
   var driver = seleniumHelpers.buildDriver();
 
   driver.get('file://' + process.cwd() +
@@ -16,7 +16,7 @@ test('Filetransfer via Datachannels', function(t) {
     t.pass('page loaded');
     // Based on https://saucelabs.com/resources/articles/selenium-file-upload
     return driver.findElement(webdriver.By.id('fileInput'))
-       .sendKeys(process.cwd() + '/index.html');
+       .sendKeys(path);
   })
   .then(function() {
     // Wait for the received element to be displayed.
@@ -31,4 +31,21 @@ test('Filetransfer via Datachannels', function(t) {
     t.fail(err);
     t.end();
   });
+}
+
+// Test various files with different sizes
+test('Filetransfer via Datachannels: small text file', function(t) {
+  sendFile(t, process.cwd() + '/index.html');
+});
+
+test('Filetransfer via Datachannels: image', function(t) {
+  sendFile(t, process.cwd() + '/src/content/devices/multi/images/poster.jpg');
+});
+
+test('Filetransfer via Datachannels: audio', function(t) {
+  sendFile(t, process.cwd() + '/src/content/devices/multi/audio/audio.mp3');
+});
+
+test('Filetransfer via Datachannels: video', function(t) {
+  sendFile(t, process.cwd() + '/src/content/devices/multi/video/chrome.webm');
 });
