@@ -19,7 +19,6 @@ function gotDevices(deviceInfos) {
   var values = selectors.map(function(select) {
     return select.value;
   });
-  console.log(values);
   selectors.forEach(function(select) {
     while (select.firstChild) {
       select.removeChild(select.firstChild);
