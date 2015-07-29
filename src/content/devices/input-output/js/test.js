@@ -34,9 +34,8 @@ test('Fake device selection and check video tag dimensions in ' +
     // TODO: Select more devices if Firefox adds a 2nd fake A&V device and
     // Chrome adds another fake video device.
     t.pass('Selecting 1st audio device');
-    return driver.wait(function() {
-      return driver.findElement(webdriver.By.css('#audioSource>option'));
-    }, 30 * 1000);
+    return driver.wait(webdriver.until.elementLocated(
+        webdriver.By.css('#audioSource>option')));
   })
   .then(function(element) {
     return new webdriver.ActionSequence(driver).
@@ -55,9 +54,8 @@ test('Fake device selection and check video tag dimensions in ' +
     // TODO: Select more devices if Firefox adds a 2nd fake A/V device and
     // Chrome adds another fake video device.
     t.pass('Selecting 1st video device');
-    return driver.wait(function() {
-      return driver.findElement(webdriver.By.css('#videoSource>option'));
-    }, 30 * 1000);
+    return driver.wait(webdriver.until.elementLocated(
+        webdriver.By.css('#videoSource>option')));
   })
   .then(function(element) {
     return new webdriver.ActionSequence(driver).
