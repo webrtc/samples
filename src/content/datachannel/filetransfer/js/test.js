@@ -20,8 +20,8 @@ function sendFile(t, path) {
   })
   .then(function() {
     // Wait for the received element to be displayed.
-    return driver.wait(webdriver.until.elementLocated(
-        webdriver.By.id('received')));
+    return driver.wait(webdriver.until.elementIsVisible(
+        driver.findElement(webdriver.By.id('received'))));
   })
   .then(function() {
     t.end();

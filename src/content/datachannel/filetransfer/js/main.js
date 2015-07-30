@@ -231,15 +231,16 @@ function displayStats() {
     if (webrtcDetectedBrowser === 'chrome') {
       // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
       // lands those stats should be preferrred over the connection stats.
-      remoteConnection.getStats(function(stats) {
-        stats.result().forEach(function(res) {
+      remoteConnection.getStats(null, function(stats) {
+        for (var key in stats) {
+          var res = stats[key];
           if (timestampPrev === res.timestamp) {
             return;
           }
           if (res.type === 'googCandidatePair' &&
-              res.stat('googActiveConnection') === 'true') {
+              res.googActiveConnection === 'true') {
             // calculate current bitrate
-            var bytesNow = res.stat('bytesReceived');
+            var bytesNow = res.bytesReceived;
             var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
                 (res.timestamp - timestampPrev));
             display(bitrate);
@@ -249,7 +250,7 @@ function displayStats() {
               bitrateMax = bitrate;
             }
           }
-        });
+        }
       });
     } else {
       // Firefox currently does not have data channel stats. See
