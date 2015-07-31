@@ -83,14 +83,36 @@ function sendGeneratedData() {
 
   var chunkSize = 16384;
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
+  var bufferFullThreshold = 5 * chunkSize;
+  var usePolling = true;
+  if (typeof sendChannel.bufferedAmountLowThreshold === 'number') {
+    trace('Using the bufferedamountlow event for flow control');
+    usePolling = false;
+
+    // Reduce the buffer fullness threshold, since we now have more efficient
+    // buffer management.
+    bufferFullThreshold = chunkSize / 2;
+
+    // This is "overcontrol": our high and low thresholds are the same.
+    sendChannel.bufferedAmountLowThreshold = bufferFullThreshold;
+  }
+  // Listen for one bufferedamountlow event.
+  var listener = function() {
+    sendChannel.removeEventListener('bufferedamountlow', listener);
+    sendAllData();
+  };
   var sendAllData = function() {
     // Try to queue up a bunch of data and back off when the channel starts to
     // fill up. We don't setTimeout after each send since this lowers our
     // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
     // seconds to execute).
     while (sendProgress.value < sendProgress.max) {
-      if (sendChannel.bufferedAmount > 5 * chunkSize) {
-        setTimeout(sendAllData, 250);
+      if (sendChannel.bufferedAmount > bufferFullThreshold) {
+        if (usePolling) {
+          setTimeout(sendAllData, 250);
+        } else {
+          sendChannel.addEventListener('bufferedamountlow', listener);
+        }
         return;
       }
       sendProgress.value += chunkSize;
