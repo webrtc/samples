@@ -46,6 +46,30 @@ function buildDriver() {
   return sharedDriver;
 }
 
+// getStats is async so we need to call it,
+// assign the result to a temporary variable
+// and wait for it to return.
+function getStats(driver, peerConnection) {
+  var tmp = '_getStats_' + Math.floor(Math.random() * 65536);
+  // Execute getStats on peerconnection named `peerConnection`
+  driver.executeScript(
+      'window.' + tmp + ' = null;' +
+      peerConnection + '.getStats(null, function(report) {' +
+      '  window.' + tmp + ' = report;' +
+      '});');
+  // Wait for result.
+  return driver.wait(function() {
+    return driver.executeScript(
+        'return window.' + tmp + ' !== null && ' +
+        '(function() {' +
+        '  var val = window.' + tmp + ';' +
+        '  delete window.' + tmp + ';' +
+        '  return val;' +
+        '})()');
+  }, 30 * 1000);
+}
+
 module.exports = {
-  buildDriver: buildDriver
+  buildDriver: buildDriver,
+  getStats: getStats
 };
