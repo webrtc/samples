@@ -54,7 +54,7 @@ function getStats(driver, peerConnection) {
   // Execute getStats on peerconnection named `peerConnection`
   driver.executeScript(
       'window.' + tmp + ' = null;' +
-      peerConnection + '.getStats(null, function(report) {' +
+      peerConnection + '.getStats(null).then(function(report) {' +
       '  window.' + tmp + ' = report;' +
       '});');
   // Wait for result.
