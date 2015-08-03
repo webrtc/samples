@@ -20,7 +20,7 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "postinstall": "grunt githooks && cp node_modules/webrtc-adapter-test/adapter.js src/js",
+    "postinstall": "cp node_modules/webrtc-adapter-test/adapter.js src/js",
     "test": "grunt && test/run-tests"
   },
   "devDependencies": {
@@ -36,6 +36,6 @@
     "selenium-webdriver": "^2.46.0",
     "tape": "^4.0.0",
     "travis-multirunner": "^2.6.0",
-    "webrtc-adapter-test": "^0.1.0"
+    "webrtc-adapter-test": "^0.2.1"
   }
 }
