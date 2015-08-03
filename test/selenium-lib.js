@@ -49,7 +49,6 @@ function buildDriver() {
 // A helper function to query stats from a PeerConnection.
 function getStats(driver, peerConnection) {
   // Execute getStats on peerconnection named `peerConnection`.
-  console.log(driver.manage().timeouts());
   driver.manage().timeouts().setScriptTimeout(1000);
   return driver.executeAsyncScript(
       'var callback = arguments[arguments.length - 1];' +
