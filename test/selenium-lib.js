@@ -46,27 +46,16 @@ function buildDriver() {
   return sharedDriver;
 }
 
-// getStats is async so we need to call it,
-// assign the result to a temporary variable
-// and wait for it to return.
+// A helper function to query stats from a PeerConnection.
 function getStats(driver, peerConnection) {
-  var tmp = '_getStats_' + Math.floor(Math.random() * 65536);
-  // Execute getStats on peerconnection named `peerConnection`
-  driver.executeScript(
-      'window.' + tmp + ' = null;' +
+  // Execute getStats on peerconnection named `peerConnection`.
+  console.log(driver.manage().timeouts());
+  driver.manage().timeouts().setScriptTimeout(1000);
+  return driver.executeAsyncScript(
+      'var callback = arguments[arguments.length - 1];' +
       peerConnection + '.getStats(null).then(function(report) {' +
-      '  window.' + tmp + ' = report;' +
+      '  callback(report);' +
       '});');
-  // Wait for result.
-  return driver.wait(function() {
-    return driver.executeScript(
-        'return window.' + tmp + ' !== null && ' +
-        '(function() {' +
-        '  var val = window.' + tmp + ';' +
-        '  delete window.' + tmp + ';' +
-        '  return val;' +
-        '})()');
-  }, 30 * 1000);
 }
 
 module.exports = {
