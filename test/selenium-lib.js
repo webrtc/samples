@@ -46,6 +46,18 @@ function buildDriver() {
   return sharedDriver;
 }
 
+// A helper function to query stats from a PeerConnection.
+function getStats(driver, peerConnection) {
+  // Execute getStats on peerconnection named `peerConnection`.
+  driver.manage().timeouts().setScriptTimeout(1000);
+  return driver.executeAsyncScript(
+      'var callback = arguments[arguments.length - 1];' +
+      peerConnection + '.getStats(null).then(function(report) {' +
+      '  callback(report);' +
+      '});');
+}
+
 module.exports = {
-  buildDriver: buildDriver
+  buildDriver: buildDriver,
+  getStats: getStats
 };
