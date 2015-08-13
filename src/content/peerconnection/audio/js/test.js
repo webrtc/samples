@@ -43,7 +43,6 @@ test('Audio-only sample codec preference', function(t) {
     })
     .then(function(stats) {
       // Find the sending audio track.
-      console.log('yay', stats);
       Object.keys(stats).forEach(function(name) {
         var report = stats[name];
         if (report.type === 'ssrc' && report.googTrackId === trackId) {
