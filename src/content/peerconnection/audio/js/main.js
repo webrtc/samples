@@ -187,6 +187,7 @@ function maybePreferCodec(sdp, type, dir, codec) {
 
   // If the codec is available, set it as the default in m line.
   var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
+  console.log('codecIndex', codecIndex);
   if (codecIndex) {
     var payload = getCodecPayloadType(sdpLines[codecIndex]);
     if (payload) {
