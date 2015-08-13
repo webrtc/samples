@@ -17,7 +17,6 @@ matrix:
 
   allow_failures:
     - env: BROWSER=chrome  BVER=unstable
-    - env: BROWSER=firefox BVER=beta
     - env: BROWSER=firefox BVER=unstable
 
 before_script:
