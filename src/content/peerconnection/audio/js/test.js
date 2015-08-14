@@ -19,10 +19,10 @@ test('Audio-only sample codec preference', function(t) {
   driver.get('file://' + process.cwd() +
       '/src/content/peerconnection/audio/index.html');
   var codecs = ['opus', 'ISAC', 'G722', 'PCMU'];
-  t.plan(codecs.length);
 
+  var last;
   codecs.forEach(function(codecName) {
-    driver.findElement(webdriver.By.css(
+    last = driver.findElement(webdriver.By.css(
         '#codec>option[value="' + codecName + '"]'))
     .click()
     .then(function() {
@@ -55,10 +55,13 @@ test('Audio-only sample codec preference', function(t) {
       return driver.wait(function() {
         return driver.executeScript('return pc1 === null');
       }, 30 * 1000);
-    })
-    .then(null, function(err) {
-      t.fail(err);
-      t.end();
     });
+  });
+  last.then(function() {
+    t.end();
+  })
+  .then(null, function(err) {
+    t.fail(err);
+    t.end();
   });
 });
