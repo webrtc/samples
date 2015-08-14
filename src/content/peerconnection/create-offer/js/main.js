@@ -26,8 +26,7 @@ numAudioTracksInput.onchange = function() {
 };
 
 var pc = new RTCPeerConnection(null);
-/* global webkitAudioContext */
-var wacx = new webkitAudioContext(); // jscs:ignore requireCapitalizedConstructors
+var wacx = new AudioContext();
 
 function createOffer() {
   var numRequestedAudioTracks = numAudioTracksInput.value;
@@ -49,7 +48,8 @@ function createOffer() {
     }]
   };
   // These constraints confuse Firefox, even if declared as optional.
-  if (webrtcDetectedBrowser !== 'Firefox') {
+  // See https://bugzilla.mozilla.org/show_bug.cgi?id=1184712
+  if (webrtcDetectedBrowser !== 'firefox') {
     offerConstraints.optional.push({
       'VoiceActivityDetection': vadInput.checked
     });
