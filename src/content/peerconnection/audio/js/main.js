@@ -27,9 +27,7 @@ var bitrateSeries;
 var packetGraph;
 var packetSeries;
 
-var lastBytes = 0;
-var lastPackets = 0;
-var lastTime;
+var lastResult;
 
 var sdpConstraints = {
   'mandatory': {
@@ -249,7 +247,7 @@ window.setInterval(function() {
   if (!window.pc1) {
     return;
   }
-  window.pc1.getStats(null, function(res) {
+  window.pc1.getStats(null).then(function(res) {
     Object.keys(res).forEach(function(key) {
       var report = res[key];
       var bytes;
@@ -259,9 +257,10 @@ window.setInterval(function() {
           (report.type === 'ssrc' && report.bytesSent)) {
         bytes = report.bytesSent;
         packets = report.packetsSent;
-        if (lastTime) {
+        if (lastResult && lastResult[report.id]) {
           // calculate bitrate
-          var bitrate = 8 * (bytes - lastBytes) / (now - lastTime);
+          var bitrate = 8 * (bytes - lastResult[report.id].bytesSent) /
+              (now - lastResult[report.id].timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -269,16 +268,13 @@ window.setInterval(function() {
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
-          packetSeries.addPoint(now, packets - lastPackets);
+          packetSeries.addPoint(now, packets -
+              lastResult[report.id].packetsSent);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }
-        lastBytes = bytes;
-        lastPackets = packets;
-        lastTime = now;
       }
     });
-  }, function(err) {
-    console.error(err);
+    lastResult = res;
   });
 }, 1000);
