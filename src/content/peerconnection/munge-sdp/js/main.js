@@ -185,6 +185,7 @@ function onCreateSessionDescriptionError(error) {
 function setOffer() {
   var sdp = offerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
+  sdp = sdp.replace(/\n/g, '\r\n');
   offer.ѕdp = sdp;
   localPeerConnection.setLocalDescription(offer,
       onSetSessionDescriptionSuccess,
@@ -213,6 +214,7 @@ function createAnswer() {
 function setAnswer() {
   var sdp = answerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
+  sdp = sdp.replace(/\n/g, '\r\n');
   answer.sdp = sdp;
   remotePeerConnection.setLocalDescription(answer,
       onSetSessionDescriptionSuccess,
