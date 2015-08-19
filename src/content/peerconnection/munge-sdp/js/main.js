@@ -25,7 +25,9 @@ createAnswerButton.onclick = createAnswer;
 setAnswerButton.onclick = setAnswer;
 hangupButton.onclick = hangup;
 
+var offer;
 var offerSdpTextarea = document.querySelector('div#local textarea');
+var answer;
 var answerSdpTextarea = document.querySelector('div#remote textarea');
 
 var audioSelect = document.querySelector('select#audioSrc');
@@ -183,10 +185,7 @@ function onCreateSessionDescriptionError(error) {
 function setOffer() {
   var sdp = offerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
-  var offer = new RTCSessionDescription({
-    type: 'offer',
-    sdp: sdp
-  });
+  offer.ѕdp = sdp;
   localPeerConnection.setLocalDescription(offer,
       onSetSessionDescriptionSuccess,
       onSetSessionDescriptionError);
@@ -197,6 +196,7 @@ function setOffer() {
 }
 
 function gotDescription1(description) {
+  offer = description;
   offerSdpTextarea.disabled = false;
   offerSdpTextarea.value = description.sdp;
 }
@@ -213,10 +213,7 @@ function createAnswer() {
 function setAnswer() {
   var sdp = answerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
-  var answer = new RTCSessionDescription({
-    type: 'answer',
-    sdp: sdp
-  });
+  answer.sdp = sdp;
   remotePeerConnection.setLocalDescription(answer,
       onSetSessionDescriptionSuccess,
       onSetSessionDescriptionError);
@@ -227,6 +224,7 @@ function setAnswer() {
 }
 
 function gotDescription2(description) {
+  answer = description;
   answerSdpTextarea.disabled = false;
   answerSdpTextarea.value = description.sdp;
 }
