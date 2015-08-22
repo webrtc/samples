@@ -25,10 +25,11 @@ var webrtcMinimumVersion = null;
 var webrtcUtils = {
   log: function() {
     // suppress console.log output when being included as a module.
-    if (!(typeof module !== 'undefined' ||
-        typeof require === 'function') && (typeof define === 'function')) {
-      console.log.apply(console, arguments);
+    if (typeof module !== 'undefined' ||
+        typeof require === 'function' && typeof define === 'function') {
+      return;
     }
+    console.log.apply(console, arguments);
   }
 };
 
@@ -48,7 +49,7 @@ function trace(text) {
 if (typeof window === 'undefined' || !window.navigator) {
   webrtcUtils.log('This does not appear to be a browser');
   webrtcDetectedBrowser = 'not a browser';
-} else if (navigator.mozGetUserMedia) {
+} else if (navigator.mozGetUserMedia && window.mozRTCPeerConnection) {
   webrtcUtils.log('This appears to be Firefox');
 
   webrtcDetectedBrowser = 'firefox';
@@ -87,7 +88,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         pcConfig.iceServers = newIceServers;
       }
     }
-    return new mozRTCPeerConnection(pcConfig, pcConstraints);
+    return new mozRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
   };
 
   // The RTCSessionDescription object.
@@ -97,27 +98,38 @@ if (typeof window === 'undefined' || !window.navigator) {
   window.RTCIceCandidate = mozRTCIceCandidate;
 
   // getUserMedia constraints shim.
-  getUserMedia = (webrtcDetectedVersion < 38) ?
-      function(c, onSuccess, onError) {
+  getUserMedia = function(constraints, onSuccess, onError) {
     var constraintsToFF37 = function(c) {
       if (typeof c !== 'object' || c.require) {
         return c;
       }
       var require = [];
       Object.keys(c).forEach(function(key) {
+        if (key === 'require' || key === 'advanced' || key === 'mediaSource') {
+          return;
+        }
         var r = c[key] = (typeof c[key] === 'object') ?
             c[key] : {ideal: c[key]};
-        if (r.exact !== undefined) {
-          r.min = r.max = r.exact;
-          delete r.exact;
-        }
-        if (r.min !== undefined || r.max !== undefined) {
+        if (r.min !== undefined ||
+            r.max !== undefined || r.exact !== undefined) {
           require.push(key);
+        }
+        if (r.exact !== undefined) {
+          if (typeof r.exact === 'number') {
+            r.min = r.max = r.exact;
+          } else {
+            c[key] = r.exact;
+          }
+          delete r.exact;
         }
         if (r.ideal !== undefined) {
           c.advanced = c.advanced || [];
           var oc = {};
-          oc[key] = {min: r.ideal, max: r.ideal};
+          if (typeof r.ideal === 'number') {
+            oc[key] = {min: r.ideal, max: r.ideal};
+          } else {
+            oc[key] = r.ideal;
+          }
           c.advanced.push(oc);
           delete r.ideal;
           if (!Object.keys(r).length) {
@@ -130,12 +142,18 @@ if (typeof window === 'undefined' || !window.navigator) {
       }
       return c;
     };
-    webrtcUtils.log('spec: ' + JSON.stringify(c));
-    c.audio = constraintsToFF37(c.audio);
-    c.video = constraintsToFF37(c.video);
-    webrtcUtils.log('ff37: ' + JSON.stringify(c));
-    return navigator.mozGetUserMedia(c, onSuccess, onError);
-  } : navigator.mozGetUserMedia.bind(navigator);
+    if (webrtcDetectedVersion < 38) {
+      webrtcUtils.log('spec: ' + JSON.stringify(constraints));
+      if (constraints.audio) {
+        constraints.audio = constraintsToFF37(constraints.audio);
+      }
+      if (constraints.video) {
+        constraints.video = constraintsToFF37(constraints.video);
+      }
+      webrtcUtils.log('ff37: ' + JSON.stringify(constraints));
+    }
+    return navigator.mozGetUserMedia(constraints, onSuccess, onError);
+  };
 
   navigator.getUserMedia = getUserMedia;
 
@@ -150,8 +168,8 @@ if (typeof window === 'undefined' || !window.navigator) {
       navigator.mediaDevices.enumerateDevices || function() {
     return new Promise(function(resolve) {
       var infos = [
-        {kind: 'audioinput', deviceId: 'default', label:'', groupId:''},
-        {kind: 'videoinput', deviceId: 'default', label:'', groupId:''}
+        {kind: 'audioinput', deviceId: 'default', label: '', groupId: ''},
+        {kind: 'videoinput', deviceId: 'default', label: '', groupId: ''}
       ];
       resolve(infos);
     });
@@ -170,13 +188,22 @@ if (typeof window === 'undefined' || !window.navigator) {
       });
     };
   }
+
+  Object.defineProperty(HTMLVideoElement.prototype, 'srcObject', {
+    get: function() {
+      return this.mozSrcObject;
+    },
+    set: function(stream) {
+      this.mozSrcObject = stream;
+    }
+  });
   // Attach a media stream to an element.
   attachMediaStream = function(element, stream) {
-    element.mozSrcObject = stream;
+    element.srcObject = stream;
   };
 
   reattachMediaStream = function(to, from) {
-    to.mozSrcObject = from.mozSrcObject;
+    to.srcObject = from.srcObject;
   };
 
 } else if (navigator.webkitGetUserMedia) {
@@ -193,12 +220,21 @@ if (typeof window === 'undefined' || !window.navigator) {
 
   // The RTCPeerConnection object.
   window.RTCPeerConnection = function(pcConfig, pcConstraints) {
-    var pc = new webkitRTCPeerConnection(pcConfig, pcConstraints);
+    // Translate iceTransportPolicy to iceTransports,
+    // see https://code.google.com/p/webrtc/issues/detail?id=4869
+    if (pcConfig && pcConfig.iceTransportPolicy) {
+      pcConfig.iceTransports = pcConfig.iceTransportPolicy;
+    }
+
+    var pc = new webkitRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
     var origGetStats = pc.getStats.bind(pc);
     pc.getStats = function(selector, successCallback, errorCallback) { // jshint ignore: line
+      var self = this;
+      var args = arguments;
+
       // If selector is a function then we are in the old style stats so just
       // pass back the original getStats format to avoid breaking old users.
-      if (typeof selector === 'function') {
+      if (arguments.length > 0 && typeof selector === 'function') {
         return origGetStats(selector, successCallback);
       }
 
@@ -219,10 +255,26 @@ if (typeof window === 'undefined' || !window.navigator) {
 
         return standardReport;
       };
-      var successCallbackWrapper = function(response) {
-        successCallback(fixChromeStats(response));
-      };
-      return origGetStats(successCallbackWrapper, selector);
+
+      if (arguments.length >= 2) {
+        var successCallbackWrapper = function(response) {
+          args[1](fixChromeStats(response));
+        };
+
+        return origGetStats.apply(this, [successCallbackWrapper, arguments[0]]);
+      }
+
+      // promise-support
+      return new Promise(function(resolve, reject) {
+        if (args.length === 1 && selector === null) {
+          origGetStats.apply(self, [
+              function(response) {
+                resolve.apply(null, [fixChromeStats(response)]);
+              }, reject]);
+        } else {
+          origGetStats.apply(self, [resolve, reject]);
+        }
+      });
     };
 
     return pc;
@@ -277,7 +329,7 @@ if (typeof window === 'undefined' || !window.navigator) {
     }
     var cc = {};
     Object.keys(c).forEach(function(key) {
-      if (key === 'require' || key === 'advanced') {
+      if (key === 'require' || key === 'advanced' || key === 'mediaSource') {
         return;
       }
       var r = (typeof c[key] === 'object') ? c[key] : {ideal: c[key]};
@@ -322,11 +374,15 @@ if (typeof window === 'undefined' || !window.navigator) {
     return cc;
   };
 
-  getUserMedia = function(c, onSuccess, onError) {
-    c.audio = constraintsToChrome(c.audio);
-    c.video = constraintsToChrome(c.video);
-    webrtcUtils.log('chrome: ' + JSON.stringify(c));
-    return navigator.webkitGetUserMedia(c, onSuccess, onError);
+  getUserMedia = function(constraints, onSuccess, onError) {
+    if (constraints.audio) {
+      constraints.audio = constraintsToChrome(constraints.audio);
+    }
+    if (constraints.video) {
+      constraints.video = constraintsToChrome(constraints.video);
+    }
+    webrtcUtils.log('chrome: ' + JSON.stringify(constraints));
+    return navigator.webkitGetUserMedia(constraints, onSuccess, onError);
   };
   navigator.getUserMedia = getUserMedia;
 
@@ -381,9 +437,19 @@ if (typeof window === 'undefined' || !window.navigator) {
     };
   }
 
+  Object.defineProperty(HTMLVideoElement.prototype, 'srcObject', {
+    get: function() {
+      return this._srcObject;
+    },
+    set: function(stream) {
+      this._srcObject = stream;
+      this.src = URL.createObjectURL(stream);
+    }
+  });
+
   // Attach a media stream to an element.
   attachMediaStream = function(element, stream) {
-    if (typeof element.srcObject !== 'undefined') {
+    if (webrtcDetectedVersion >= 43) {
       element.srcObject = stream;
     } else if (typeof element.src !== 'undefined') {
       element.src = URL.createObjectURL(stream);
@@ -391,9 +457,12 @@ if (typeof window === 'undefined' || !window.navigator) {
       webrtcUtils.log('Error attaching stream to element.');
     }
   };
-
   reattachMediaStream = function(to, from) {
-    to.src = from.src;
+    if (webrtcDetectedVersion >= 43) {
+      to.srcObject = from.srcObject;
+    } else {
+      to.src = from.src;
+    }
   };
 
 } else if (navigator.mediaDevices && navigator.userAgent.match(
@@ -426,6 +495,13 @@ function requestUserMedia(constraints) {
   });
 }
 
+var webrtcTesting = {};
+Object.defineProperty(webrtcTesting, 'version', {
+  set: function(version) {
+    webrtcDetectedVersion = version;
+  }
+});
+
 if (typeof module !== 'undefined') {
   var RTCPeerConnection;
   if (typeof window !== 'undefined') {
@@ -438,7 +514,8 @@ if (typeof module !== 'undefined') {
     reattachMediaStream: reattachMediaStream,
     webrtcDetectedBrowser: webrtcDetectedBrowser,
     webrtcDetectedVersion: webrtcDetectedVersion,
-    webrtcMinimumVersion: webrtcMinimumVersion
+    webrtcMinimumVersion: webrtcMinimumVersion,
+    webrtcTesting: webrtcTesting
     //requestUserMedia: not exposed on purpose.
     //trace: not exposed on purpose.
   };
@@ -452,7 +529,8 @@ if (typeof module !== 'undefined') {
       reattachMediaStream: reattachMediaStream,
       webrtcDetectedBrowser: webrtcDetectedBrowser,
       webrtcDetectedVersion: webrtcDetectedVersion,
-      webrtcMinimumVersion: webrtcMinimumVersion
+      webrtcMinimumVersion: webrtcMinimumVersion,
+      webrtcTesting: webrtcTesting
       //requestUserMedia: not exposed on purpose.
       //trace: not exposed on purpose.
     };

@@ -26,6 +26,13 @@ function buildDriver() {
   profile.setPreference('media.navigator.streams.fake', true);
   // This enables device labels for enumerateDevices when using fake devices.
   profile.setPreference('media.navigator.permission.disabled', true);
+  // Currently the FF webdriver extension is not signed and FF 41 no longer
+  // allows unsigned extensions by default.
+  // TODO: Remove this once FF no longer allow turning this off and the
+  // selenium team starts making a signed FF webdriver extension.
+  // https://github.com/SeleniumHQ/selenium/issues/901.
+  profile.setPreference('xpinstall.signatures.required', false);
+
   var firefoxOptions = new firefox.Options()
       .setProfile(profile)
       .setBinary('node_modules/.bin/start-firefox');
@@ -46,6 +53,18 @@ function buildDriver() {
   return sharedDriver;
 }
 
+// A helper function to query stats from a PeerConnection.
+function getStats(driver, peerConnection) {
+  // Execute getStats on peerconnection named `peerConnection`.
+  driver.manage().timeouts().setScriptTimeout(1000);
+  return driver.executeAsyncScript(
+      'var callback = arguments[arguments.length - 1];' +
+      peerConnection + '.getStats(null).then(function(report) {' +
+      '  callback(report);' +
+      '});');
+}
+
 module.exports = {
-  buildDriver: buildDriver
+  buildDriver: buildDriver,
+  getStats: getStats
 };
