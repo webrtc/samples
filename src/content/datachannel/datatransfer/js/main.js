@@ -27,6 +27,7 @@ var bitrateMax = 0;
 sendButton.onclick = createConnection;
 
 function createConnection() {
+  sendButton.disabled = true;
   var servers = null;
   pcConstraint = null;
 
@@ -191,6 +192,7 @@ function onReceiveMessageCallback(event) {
 
   if (receivedSize === bytesToSend) {
     closeDataChannels();
+    sendButton.disabled = false;
   }
 }
 
