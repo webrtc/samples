@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "WebRTC Network Limiter",
+  "version": "0.2.1.1",
+  "description": "Disables the WebRTC multiple-routes option in Chrome's privacy settings.",
+  "icons": {
+      "16": "img/icon_16.png",
+      "128": "img/icon_128.png"
+  },
+  "permissions": ["privacy"],
+  "background": {
+    "scripts": ["eventPage.js"],
+    "persistent": false
+  }
+}
