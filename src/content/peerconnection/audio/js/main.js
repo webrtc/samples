@@ -254,6 +254,7 @@ window.setInterval(function() {
       var packets;
       var now = report.timestamp;
       if ((report.type === 'outboundrtp') ||
+          (report.type === 'outbound-rtp') ||
           (report.type === 'ssrc' && report.bytesSent)) {
         bytes = report.bytesSent;
         packets = report.packetsSent;
