@@ -47,10 +47,8 @@ var localStream;
 var pc1;
 var pc2;
 var sdpConstraints = {
-  'mandatory': {
-    'OfferToReceiveAudio': true,
-    'OfferToReceiveVideo': true
-  }
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
 };
 
 function getName(pc) {
@@ -118,7 +116,8 @@ function call() {
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');
-  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError);
+  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
+      sdpConstraints);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -139,8 +138,7 @@ function onCreateOfferSuccess(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError,
-      sdpConstraints);
+  pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError);
 }
 
 function onSetLocalSuccess(pc) {

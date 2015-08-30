@@ -26,10 +26,8 @@ var pc1Remote;
 var pc2Local;
 var pc2Remote;
 var sdpConstraints = {
-  'mandatory': {
-    'OfferToReceiveAudio': true,
-    'OfferToReceiveVideo': true
-  }
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
 };
 
 function gotStream(stream) {
@@ -83,11 +81,13 @@ function call() {
 
   pc1Local.addStream(window.localstream);
   trace('Adding local stream to pc1Local');
-  pc1Local.createOffer(gotDescription1Local, onCreateSessionDescriptionError);
+  pc1Local.createOffer(gotDescription1Local, onCreateSessionDescriptionError,
+      sdpConstraints);
 
   pc2Local.addStream(window.localstream);
   trace('Adding local stream to pc2Local');
-  pc2Local.createOffer(gotDescription2Local, onCreateSessionDescriptionError);
+  pc2Local.createOffer(gotDescription2Local, onCreateSessionDescriptionError,
+      sdpConstraints);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -102,7 +102,7 @@ function gotDescription1Local(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc1Remote.createAnswer(gotDescription1Remote,
-      onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError);
 }
 
 function gotDescription1Remote(desc) {
@@ -119,7 +119,7 @@ function gotDescription2Local(desc) {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   pc2Remote.createAnswer(gotDescription2Remote,
-      onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError);
 }
 
 function gotDescription2Remote(desc) {

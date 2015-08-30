@@ -44,10 +44,8 @@ var localPeerConnection;
 var remotePeerConnection;
 var localStream;
 var sdpConstraints = {
-  'mandatory': {
-    'OfferToReceiveAudio': true,
-    'OfferToReceiveVideo': true
-  }
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
 };
 
 getSources();
@@ -175,7 +173,7 @@ function maybeAddLineBreakToEnd(sdp) {
 
 function createOffer() {
   localPeerConnection.createOffer(gotDescription1,
-      onCreateSessionDescriptionError);
+      onCreateSessionDescriptionError, sdpConstraints);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -207,8 +205,7 @@ function createAnswer() {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   remotePeerConnection.createAnswer(gotDescription2,
-      onCreateSessionDescriptionError,
-      sdpConstraints);
+      onCreateSessionDescriptionError);
 }
 
 function setAnswer() {
