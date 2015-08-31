@@ -31,6 +31,9 @@ require('../src/content/peerconnection/trickle-ice/js/test');
 // Tests basic functionality of the datachannel textchat demo.
 require('../src/content/datachannel/basic/js/test');
 
+// Tests basic functionality of the datachannel datatransfer demo.
+require('../src/content/datachannel/datatransfer/js/test');
+
 // Tests basic functionality of the datachannel filetransfer demo.
 require('../src/content/datachannel/filetransfer/js/test');
 
