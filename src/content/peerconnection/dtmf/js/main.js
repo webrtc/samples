@@ -33,7 +33,7 @@ var pc2;
 var localStream;
 var dtmfSender;
 
-var sdpConstraints = {
+var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0
 };
@@ -55,7 +55,7 @@ function gotStream(stream) {
   pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
   pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
-      sdpConstraints);
+      offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {

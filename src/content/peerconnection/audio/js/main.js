@@ -29,7 +29,7 @@ var packetSeries;
 
 var lastResult;
 
-var sdpConstraints = {
+var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0,
   voiceActivityDetection: false
@@ -47,7 +47,7 @@ function gotStream(stream) {
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
-      sdpConstraints);
+      offerOptions);
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');

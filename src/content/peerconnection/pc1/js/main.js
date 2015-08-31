@@ -46,7 +46,7 @@ remoteVideo.onresize = function() {
 var localStream;
 var pc1;
 var pc2;
-var sdpConstraints = {
+var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
@@ -117,7 +117,7 @@ function call() {
 
   trace('pc1 createOffer start');
   pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
-      sdpConstraints);
+      offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {

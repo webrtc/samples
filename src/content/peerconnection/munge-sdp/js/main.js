@@ -43,7 +43,7 @@ var selectSourceDiv = document.querySelector('div#selectSource');
 var localPeerConnection;
 var remotePeerConnection;
 var localStream;
-var sdpConstraints = {
+var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
@@ -173,7 +173,7 @@ function maybeAddLineBreakToEnd(sdp) {
 
 function createOffer() {
   localPeerConnection.createOffer(gotDescription1,
-      onCreateSessionDescriptionError, sdpConstraints);
+      onCreateSessionDescriptionError, offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {

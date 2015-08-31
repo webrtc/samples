@@ -25,7 +25,7 @@ var pc1Local;
 var pc1Remote;
 var pc2Local;
 var pc2Remote;
-var sdpConstraints = {
+var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
@@ -82,12 +82,12 @@ function call() {
   pc1Local.addStream(window.localstream);
   trace('Adding local stream to pc1Local');
   pc1Local.createOffer(gotDescription1Local, onCreateSessionDescriptionError,
-      sdpConstraints);
+      offerOptions);
 
   pc2Local.addStream(window.localstream);
   trace('Adding local stream to pc2Local');
   pc2Local.createOffer(gotDescription2Local, onCreateSessionDescriptionError,
-      sdpConstraints);
+      offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {
