@@ -32,7 +32,7 @@ var lastResult;
 var sdpConstraints = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0,
-  voiceActivityDecection: false
+  voiceActivityDetection: false
 };
 
 function gotStream(stream) {
