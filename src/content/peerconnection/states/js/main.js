@@ -30,11 +30,9 @@ var localstream;
 var pc1;
 var pc2;
 
-var sdpConstraints = {
-  mandatory: {
-    OfferToReceiveAudio: true,
-    OfferToReceiveVideo: true
-  }
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
 };
 
 function gotStream(stream) {
@@ -95,7 +93,8 @@ function call() {
   pc2.onaddstream = gotRemoteStream;
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
+      offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -106,8 +105,7 @@ function gotDescription1(description) {
   pc1.setLocalDescription(description);
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description);
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-      sdpConstraints);
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(description) {
