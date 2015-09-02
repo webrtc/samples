@@ -14,6 +14,7 @@ var constraints = window.constraints = {
   audio: false,
   video: true
 };
+var errorElement = document.querySelector('#errorMsg');
 
 navigator.mediaDevices.getUserMedia(constraints)
 .then(function(stream) {
@@ -27,5 +28,20 @@ navigator.mediaDevices.getUserMedia(constraints)
   video.srcObject = stream;
 })
 .catch(function(error) {
-  console.log('navigator.getUserMedia error: ', error);
+  if (error.name === 'ConstraintNotSatisfiedError') {
+    errorMsg('The resolution ' + constraints.video.width.exact + 'x' +
+        constraints.video.width.exact + ' px is not supported by your device.');
+  } else if (error.name === 'PermissionDeniedError') {
+    errorMsg('Permissions have not been granted to use your camera and ' +
+      'microphone, you need to allow the page access to your devices in ' +
+      'order for the demo to work.');
+  }
+  errorMsg('getUserMedia error: ' + error.name, error);
 });
+
+function errorMsg(msg, error) {
+  errorElement.innerHTML += '<p>' + msg + '</p>';
+  if (typeof error !== 'undefined') {
+    console.error(error);
+  }
+}
