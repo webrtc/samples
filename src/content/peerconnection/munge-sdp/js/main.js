@@ -16,6 +16,8 @@ var setOfferButton = document.querySelector('button#setOffer');
 var createAnswerButton = document.querySelector('button#createAnswer');
 var setAnswerButton = document.querySelector('button#setAnswer');
 var hangupButton = document.querySelector('button#hangup');
+var dataChannelSend = document.querySelector('textarea#dataChannelSend');
+var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 
 getMediaButton.onclick = getMedia;
 createPeerConnectionButton.onclick = createPeerConnection;
@@ -43,6 +45,13 @@ var selectSourceDiv = document.querySelector('div#selectSource');
 var localPeerConnection;
 var remotePeerConnection;
 var localStream;
+var sendChannel;
+var receiveChannel;
+var dataChannelOptions = {
+  ordered: true
+};
+var dataChannelCounter = 0;
+var sendDataLoop;
 var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
@@ -91,7 +100,7 @@ function getMedia() {
 
   if (localStream) {
     localVideo.src = null;
-    localStream.stop();
+    localStream.getTracks().forEach(function(track) { track.stop(); });
   }
   var audioSource = audioSelect.value;
   trace('Selected audio source: ' + audioSource);
@@ -142,13 +151,21 @@ function createPeerConnection() {
     trace('Using audio device: ' + audioTracks[0].label);
   }
   var servers = null;
+
   localPeerConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localPeerConnection');
+  sendChannel = localPeerConnection.createDataChannel('sendDataChannel',
+      dataChannelOptions);
   localPeerConnection.onicecandidate = iceCallback1;
+  sendChannel.onopen = onSendChannelStateChange;
+  sendChannel.onclose = onSendChannelStateChange;
+  sendChannel.onerror = onSendChannelStateChange;
+
   remotePeerConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remotePeerConnection');
   remotePeerConnection.onicecandidate = iceCallback2;
   remotePeerConnection.onaddstream = gotRemoteStream;
+  remotePeerConnection.ondatachannel = receiveChannelCallback;
 
   localPeerConnection.addStream(localStream);
   trace('Adding Local Stream to peer connection');
@@ -228,10 +245,19 @@ function gotDescription2(description) {
   answerSdpTextarea.value = description.sdp;
 }
 
+function sendData() {
+  var data = dataChannelSend.value + '\nCounter: ' + dataChannelCounter;
+  sendChannel.send(data);
+  dataChannelCounter++;
+  trace('Sent Data: ' + data);
+}
+
 function hangup() {
   remoteVideo.src = '';
   trace('Ending call');
-  //  localStream.stop();
+  localStream.getTracks().forEach(function(track) { track.stop(); });
+  sendChannel.close();
+  receiveChannel.close();
   localPeerConnection.close();
   remotePeerConnection.close();
   localPeerConnection = null;
@@ -275,4 +301,34 @@ function onAddIceCandidateSuccess() {
 
 function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
+}
+
+function receiveChannelCallback(event) {
+  trace('Receive Channel Callback');
+  receiveChannel = event.channel;
+  receiveChannel.onmessage = onReceiveMessageCallback;
+  receiveChannel.onopen = onReceiveChannelStateChange;
+  receiveChannel.onclose = onReceiveChannelStateChange;
+}
+
+function onReceiveMessageCallback(event) {
+  trace('Received Message');
+  dataChannelReceive.value = event.data;
+}
+
+function onSendChannelStateChange() {
+  var readyState = sendChannel.readyState;
+  trace('Send channel state is: ' + readyState);
+  if (readyState === 'open') {
+    dataChannelSend.disabled = false;
+    sendDataLoop = setInterval(sendData, 1000);
+  } else {
+    clearInterval(sendDataLoop);
+    dataChannelSend.disabled = true;
+  }
+}
+
+function onReceiveChannelStateChange() {
+  var readyState = receiveChannel.readyState;
+  trace('Receive channel state is: ' + readyState);
 }
