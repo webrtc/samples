@@ -72,3 +72,29 @@ test('Video width and video height are set on GUM sample', function(t) {
     t.end();
   });
 });
+
+test('Check that errorMsg can add msg to the page', function(t) {
+  // FIXME: use env[SELENIUM_BROWSER] instead?
+  var driver = seleniumHelpers.buildDriver();
+
+  driver.get('file://' + process.cwd() +
+      '/src/content/getusermedia/gum/index.html')
+  .then(function() {
+    t.pass('Page loaded');
+  })
+  .then(function() {
+    return driver.executeScript('return errorMsg("Testing error message.")');
+  })
+  .then(function() {
+    return driver.findElement(webdriver.By.id('errorMsg')).getText();
+  })
+  .then(function(elementText) {
+    t.ok(elementText === 'Testing error message.', '"Testing error message." ' +
+      ' found on the page');
+    t.end();
+  })
+  .then(null, function(err) {
+    t.fail(err);
+    t.end();
+  });
+});

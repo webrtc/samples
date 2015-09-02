@@ -46,6 +46,41 @@ function trace(text) {
   }
 }
 
+if (typeof window === 'object') {
+  if (window.HTMLMediaElement &&
+    !('srcObject' in window.HTMLMediaElement.prototype)) {
+    // Shim the srcObject property, once, when HTMLMediaElement is found.
+    Object.defineProperty(window.HTMLMediaElement.prototype, 'srcObject', {
+      get: function() {
+        // If prefixed srcObject property exists, return it.
+        // Otherwise use the shimmed property, _srcObject
+        return 'mozSrcObject' in this ? this.mozSrcObject : this._srcObject;
+      },
+      set: function(stream) {
+        if ('mozSrcObject' in this) {
+          this.mozSrcObject = stream;
+        } else {
+          // Use _srcObject as a private property for this shim
+          this._srcObject = stream;
+          // TODO: revokeObjectUrl(this.src) when !stream to release resources?
+          this.src = URL.createObjectURL(stream);
+        }
+      }
+    });
+  }
+  // Proxy existing globals
+  getUserMedia = window.navigator && window.navigator.getUserMedia;
+}
+
+// Attach a media stream to an element.
+attachMediaStream = function(element, stream) {
+  element.srcObject = stream;
+};
+
+reattachMediaStream = function(to, from) {
+  to.srcObject = from.srcObject;
+};
+
 if (typeof window === 'undefined' || !window.navigator) {
   webrtcUtils.log('This does not appear to be a browser');
   webrtcDetectedBrowser = 'not a browser';
@@ -188,25 +223,7 @@ if (typeof window === 'undefined' || !window.navigator) {
       });
     };
   }
-
-  Object.defineProperty(HTMLVideoElement.prototype, 'srcObject', {
-    get: function() {
-      return this.mozSrcObject;
-    },
-    set: function(stream) {
-      this.mozSrcObject = stream;
-    }
-  });
-  // Attach a media stream to an element.
-  attachMediaStream = function(element, stream) {
-    element.srcObject = stream;
-  };
-
-  reattachMediaStream = function(to, from) {
-    to.srcObject = from.srcObject;
-  };
-
-} else if (navigator.webkitGetUserMedia) {
+} else if (navigator.webkitGetUserMedia && !!window.chrome) {
   webrtcUtils.log('This appears to be Chrome');
 
   webrtcDetectedBrowser = 'chrome';
@@ -437,16 +454,6 @@ if (typeof window === 'undefined' || !window.navigator) {
     };
   }
 
-  Object.defineProperty(HTMLVideoElement.prototype, 'srcObject', {
-    get: function() {
-      return this._srcObject;
-    },
-    set: function(stream) {
-      this._srcObject = stream;
-      this.src = URL.createObjectURL(stream);
-    }
-  });
-
   // Attach a media stream to an element.
   attachMediaStream = function(element, stream) {
     if (webrtcDetectedVersion >= 43) {
@@ -475,15 +482,6 @@ if (typeof window === 'undefined' || !window.navigator) {
 
   // the minimum version still supported by adapter.
   webrtcMinimumVersion = 12;
-
-  getUserMedia = navigator.getUserMedia;
-
-  attachMediaStream = function(element, stream) {
-    element.srcObject = stream;
-  };
-  reattachMediaStream = function(to, from) {
-    to.srcObject = from.srcObject;
-  };
 } else {
   webrtcUtils.log('Browser does not appear to be WebRTC-capable');
 }

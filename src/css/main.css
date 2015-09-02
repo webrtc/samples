@@ -9,6 +9,10 @@
   display: none;
 }
 
+div#errorMsg p {
+  color: #F00;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
