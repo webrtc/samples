@@ -17,7 +17,7 @@ var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
 var ipv6Check = document.querySelector('input#ipv6');
-var unbundleCheck = document.querySelector('input#unbundle');
+//var unbundleCheck = document.querySelector('input#unbundle');
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -94,17 +94,17 @@ function start() {
   // on whether the unbundle RTCP checkbox is checked.
   var config = {'iceServers': iceServers, iceTransportPolicy: iceTransports};
   var pcConstraints = {};
-  var offerConstraints = {'mandatory': {'OfferToReceiveAudio': true}};
+  var offerOptions = {offerToReceiveAudio: 1};
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
-  offerConstraints.optional = [{'googUseRtpMUX': !unbundleCheck.checked}];
+  //offerOptions.optional = [{'googUseRtpMUX': !unbundleCheck.checked}];
 
   trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
         ', constraints=' + JSON.stringify(pcConstraints));
   pc = new RTCPeerConnection(config, pcConstraints);
   pc.onicecandidate = iceCallback;
-  pc.createOffer(gotDescription, noDescription, offerConstraints);
+  pc.createOffer(gotDescription, noDescription, offerOptions);
 }
 
 function gotDescription(desc) {

@@ -94,8 +94,10 @@ test('Fake device selection and check video tag dimensions in ' +
     // TODO: Improve this once Firefox has added labels for fake devices.
     var fakeVideoDeviceName = (webrtcDetectedBrowser === 'chrome') ?
         'fake_device_0' : '';
-    t.ok(fakeVideoDeviceName === deviceLabel, 'Fake video device found with ' +
-        'label: ' + deviceLabel);
+    // TODO: Remove match() method once http://crbug.com/526633 is fixed.
+    t.ok(fakeVideoDeviceName === deviceLabel.match(fakeVideoDeviceName)[0],
+        'Fake video device found with label: ' +
+        deviceLabel.match(fakeVideoDeviceName)[0]);
   })
   // Check that there is a video element and it is displaying something.
   .then(function() {
