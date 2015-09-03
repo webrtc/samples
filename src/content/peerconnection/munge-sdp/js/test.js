@@ -67,6 +67,23 @@ test('Munge SDP sample', function(t) {
   })
   .then(function() {
     t.pass('remotePeerConnection ICE connected');
+    // Need to wait for createAnswer to succeed which takes some time
+    // on travis.
+    return driver.wait(function() {
+      return driver.executeScript(
+        'return document.querySelector(\'#dataChannelReceive\').value ' +
+        '!== \'\'');
+    });
+  })
+  .then(function() {
+    return driver.findElement(webdriver.By.id('dataChannelReceive'))
+        .getAttribute('value');
+  })
+  .then(function(value) {
+    t.ok(value !== '', 'DataChannel receive data is shown in textarea');
+  })
+  .then(function() {
+    t.pass('remotePeerConnection ICE connected');
     t.end();
   })
   .then(null, function(err) {
