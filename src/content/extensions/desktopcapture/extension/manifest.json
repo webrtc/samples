@@ -1,0 +1,22 @@
+{
+  "name": "Screensharing Extension",
+  "description": "Screensharing Extension for my app",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "icons": {
+    "128": "icon.png"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://webrtc.github.io/samples/*"],
+      "js": ["content-script.js"]
+    }
+  ],
+  "permissions": [
+    "desktopCapture",
+    "https://webrtc.github.io/samples/*"
+  ]
+}

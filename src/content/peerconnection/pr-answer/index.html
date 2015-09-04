@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+  <title>PeerConnection PRANSWER Demo</title>
+  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+  <style>
+    video {
+      border:5px solid black;
+      width:320px;
+      height:240px;
+    }
+  </style>
+</head>
+<body>
+  <video id="vid1" autoplay="true" muted="true"></video>
+  <video id="vid2" autoplay></video>
+  <br>
+  <button id="btn1">Call</button>
+  <button id="btn2">Accept</button>
+  <button id="btn3">Hang Up</button>
+</body>
+<script src="../../../js/adapter.js"></script>
+<script src="js/main.js"></script>
+</html>
+

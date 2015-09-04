@@ -8,90 +8,83 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // make node configurations available
     pkg: grunt.file.readJSON('package.json'),
-
     csslint: {
       options: {
-        csslintrc: 'samples/web/.csslintrc'
+        csslintrc: 'src/.csslintrc'
       },
       strict: {
         options: {
           import: 2
         },
-        src: ['samples/web/content/**/*.css',
-              '!samples/web/content/**/*_nolint.css',
-              '!samples/web/content/testrtc/bower_components/**/*.css'
+        src: ['src/content/**/*.css',
+          '!src/content/**/*_nolint.css'
         ]
       },
       lax: {
         options: {
           import: false
         },
-        src: ['samples/web/content/**/*.css',
-              '!samples/web/content/**/*_nolint.css',
-              '!samples/web/content/testrtc/bower_components/**/*.css'
+        src: ['src/content/**/*.css',
+          '!src/content/**/*_nolint.css'
         ]
       }
     },
-
+    githooks: {
+      all: {
+        'pre-commit': 'csslint htmlhint jscs jshint'
+      }
+    },
     htmlhint: {
       html1: {
         src: [
-        'samples/web/content/apprtc/index.html',
-        'samples/web/content/datachannel/index.html',
-        'samples/web/content/getusermedia/**/index.html',
-        'samples/web/content/peerconnection/**/index.html'
+          'src/content/datachannel/**/index.html',
+          'src/content/getusermedia/**/index.html',
+          'src/content/peerconnection/**/index.html'
         ]
       }
     },
-
     jscs: {
-      src: 'samples/web/content/**/*.js',
+      src: [
+        'src/content/**/*.js',
+        'test/*.js'
+      ],
       options: {
-        config: 'google', // as per Google style guide – could use '.jscsrc' instead
-        'excludeFiles': [
-        'samples/web/content/manual-test/**/*',
-        'samples/web/content/apprtc/js/vr.js',
-        'samples/web/content/apprtc/js/stereoscopic.js',
-        'samples/web/content/getusermedia/desktopcapture/extension/content-script.js',
-        'samples/web/content/testrtc/bower_components/**'
-        ],
-        requireCurlyBraces: ['if']
+        config: 'src/.jscsrc',
+        'excludeFiles': []
       }
     },
-
     jshint: {
       options: {
-        ignores: [
-        'samples/web/content/manual-test/**/*',
-        'samples/web/content/getusermedia/desktopcapture/**',
-        'samples/web/content/apprtc/js/stereoscopic.js',
-        'samples/web/content/apprtc/js/ga.js',
-        'samples/web/content/apprtc/js/vr.js',
-        'samples/web/content/testrtc/bower_components/**'
-        ],
+        ignores: [],
         // use default .jshintrc files
         jshintrc: true
       },
       // files to validate
       // can choose more than one name + array of paths
       // usage with this name: grunt jshint:files
-      files: ['samples/web/content/**/*.js']
-    },
-
-    shell: {
-      runPythonTests: {
-        command: './run_python_tests.sh'
-      },
-    },
-
-    jstdPhantom: {
-      options: {
-        useLatest : true,
-        port: 9876,
-      },
       files: [
-        "samples/web/content/apprtc/js_test_driver.conf",
-      ]},
+        'src/content/**/*.js',
+        'test/*.js'
+      ]
+    },
+    // Leaving this as a manual step as the extension is not updated regularly.
+    compress: {
+      main: {
+        options: {
+          mode: 'zip',
+          archive: 'release/desktopCaptureExtension.zip'
+        },
+        files: [
+          {
+            expand: true,
+            cwd: 'src/content/extensions/desktopcapture/extension',
+            src: '**',
+            dest: 'desktopCaptureExtension',
+            isfile: true
+          }
+        ]
+      }
+    }
   });
 
   // enable plugins
@@ -99,12 +92,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-htmlhint');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-shell');
-  grunt.loadNpmTasks('grunt-jstestdriver-phantomjs');
+  grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-githooks');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint',
-                     'shell:runPythonTests', 'jstdPhantom']);
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };

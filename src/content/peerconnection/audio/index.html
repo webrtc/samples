@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC code samples">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="Client-side WebRTC code samples">
+  <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+  <meta itemprop="name" content="WebRTC code samples">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
+
+  <base target="_blank">
+
+  <title>Peer connection: audio only</title>
+
+  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: audio only</span></h1>
+
+    <div id="audio">
+      <div>
+        <div class="label">Local audio:</div><audio id="audio1" autoplay controls muted></audio>
+      </div>
+      <div>
+        <div class="label">Remote audio:</div><audio id="audio2" autoplay controls></audio>
+      </div>
+    </div>
+
+    <div id="buttons">
+      <select id="codec">
+        <!-- Codec values are matched with how they appear in the SDP.
+        For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
+        matches 16K iSAC (but not 32K iSAC). -->
+        <option value="opus">Opus</option>
+        <option value="ISAC">iSAC 16K</option>
+        <option value="G722">G722</option>
+        <option value="PCMU">PCMU</option>
+      </select>
+      <button id="callButton">Call</button>
+      <button id="hangupButton">Hang Up</button>
+    </div>
+    <div class="graph-container" id="bitrateGraph">
+      <div>Bitrate</div>
+      <canvas id="bitrateCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="packetGraph">
+      <div>Packets sent per second</div>
+      <canvas id="packetCanvas"></canvas>
+    </div>
+
+    <a href="https://github.com/webrtc/samples/tree/master/src/content/peerconnection/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+  <script src="../../../js/adapter.js"></script>
+  <script src="js/main.js"></script>
+  <script src="../../../js/third_party/graph.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+</body>
+</html>
