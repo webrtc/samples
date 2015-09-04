@@ -201,7 +201,7 @@ function setOffer() {
   var sdp = offerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
-  offer.ѕdp = sdp;
+  offer.sdp = sdp;
   localPeerConnection.setLocalDescription(offer,
       onSetSessionDescriptionSuccess,
       onSetSessionDescriptionError);
