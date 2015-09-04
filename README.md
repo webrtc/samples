@@ -78,6 +78,8 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 ### Video chat ###
 
+(source code is at https://github.com/webrtc/apprtc)
+
 [AppRTC video chat client](https://apprtc.appspot.com/) powered by Google App Engine
 
 [AppRTC URL parameters](https://apprtc.appspot.com/params.html)
