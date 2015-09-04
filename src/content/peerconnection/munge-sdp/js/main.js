@@ -16,8 +16,7 @@ var setOfferButton = document.querySelector('button#setOffer');
 var createAnswerButton = document.querySelector('button#createAnswer');
 var setAnswerButton = document.querySelector('button#setAnswer');
 var hangupButton = document.querySelector('button#hangup');
-var dataChannelSend = document.querySelector('textarea#dataChannelSend');
-var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
+var dataChannelDataReceived;
 
 getMediaButton.onclick = getMedia;
 createPeerConnectionButton.onclick = createPeerConnection;
@@ -246,10 +245,9 @@ function gotDescription2(description) {
 }
 
 function sendData() {
-  var data = dataChannelSend.value + '\nCounter: ' + dataChannelCounter;
-  sendChannel.send(data);
+  sendChannel.send(dataChannelCounter);
+  trace('DataChannel send counter: ' + dataChannelCounter);
   dataChannelCounter++;
-  trace('Sent Data: ' + data);
 }
 
 function hangup() {
@@ -312,19 +310,17 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  trace('Received Message');
-  dataChannelReceive.value = event.data;
+  dataChannelDataReceived = event.data;
+  trace('DataChannel receive counter: ' + dataChannelDataReceived);
 }
 
 function onSendChannelStateChange() {
   var readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
   if (readyState === 'open') {
-    dataChannelSend.disabled = false;
     sendDataLoop = setInterval(sendData, 1000);
   } else {
     clearInterval(sendDataLoop);
-    dataChannelSend.disabled = true;
   }
 }
 
