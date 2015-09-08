@@ -21,11 +21,11 @@ function restore_options() {
   chrome.privacy.network.webRTCNonProxiedUdpEnabled.get({}, function(details) {
       document.getElementById('nonproxiedudp').checked = details.value;
     });
-   }
-    catch(err){
-      document.getElementById('nonproxiedudp').checked = false;
-      document.getElementById('nonproxiedudp').disabled = true;
-    }
+  }
+  catch(err){
+    document.getElementById('nonproxiedudp').checked = false;
+    document.getElementById('nonproxiedudp').disabled = true;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', restore_options);
