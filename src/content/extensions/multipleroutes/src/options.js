@@ -1,17 +1,17 @@
 // Saves options.
 function save_options() {
-  var multiroutes = document.getElementById('multiroutes').checked;
-  var nonproxiedudp = document.getElementById('nonproxiedudp').checked;
+  var multiRoutes = document.getElementById('multiRoutes').checked;
+  var nonProxiedUdp = document.getElementById('nonProxiedUdp').checked;
   chrome.privacy.network.webRTCMultipleRoutesEnabled.set({
-    'value': multiroutes
+    'value': multiRoutes
   });
   try {
     chrome.privacy.network.webRTCNonProxiedUdpEnabled.set({
-      'value': nonproxiedudp
+      'value': nonProxiedUdp
     });
   } catch (err) {
-    document.getElementById('nonproxiedudp').checked = false;
-    document.getElementById('nonproxiedudp').disabled = true;
+    document.getElementById('nonProxiedUdp').checked = false;
+    document.getElementById('nonProxiedUdp').disabled = true;
   }
 }
 
@@ -19,25 +19,25 @@ function save_options() {
 function restore_options() {
   chrome.privacy.network.webRTCMultipleRoutesEnabled.get({},
     function(details) {
-      document.getElementById('multiroutes').checked =
+      document.getElementById('multiRoutes').checked =
         details.value;
     });
   try {
     chrome.privacy.network.webRTCNonProxiedUdpEnabled.get({},
       function(
         details) {
-        document.getElementById('nonproxiedudp').checked =
+        document.getElementById('nonProxiedUdp').checked =
           details.value;
       });
   } catch (err) {
-    document.getElementById('nonproxiedudp').checked = false;
-    document.getElementById('nonproxiedudp').disabled = true;
+    document.getElementById('nonProxiedUdp').checked = false;
+    document.getElementById('nonProxiedUdp').disabled = true;
   }
 }
 
 document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('multiroutes').addEventListener('click', save_options);
-document.getElementById('nonproxiedudp').addEventListener('click',
+document.getElementById('multiRoutes').addEventListener('click', save_options);
+document.getElementById('nonProxiedUdp').addEventListener('click',
   save_options);
 
 document.title = chrome.i18n.getMessage('netli_options');
