@@ -3,7 +3,7 @@
       "message": "Enables the WebRTC multiple-routes option in Chrome's privacy settings."
    },
    "NETLI_NONPROXIEDUDP_CHECKBOX": {
-      "message": "Enables UDP traffic. If unchecked, UDP traffic can be allowed only if a UDP supported proxy is configured."
+      "message": "Enables UDP traffic. If unchecked, UDP traffic can still be allowed if a UDP supported proxy is configured."
    },
    "NETLI_APPDESC": {
       "message": "Configures how WebRTC's network traffic is routed by changing Chrome's privacy settings."
@@ -12,6 +12,6 @@
       "message": "WebRTC Network Limiter"
    },
    "NETLI_OPTIONS": {
-      "message": "Options"
+      "message": "WebRTC Network Limiter Options"
    }
 }
