@@ -1,0 +1,23 @@
+{
+   "NETLI_MULTIROUTES_CHECKBOX": {
+      "message": "Enables the WebRTC multiple-routes option in Chrome's privacy settings."
+   },
+   "NETLI_MULTIROUTES_DESCRIPTION": {
+      "message": "If enabled, Chrome will explore all possible routing options when using WebRTC to find the most performant path, possibly exposing user's private IP address. Otherwise, WebRTC traffic will be routed the same way as regular HTTP."
+   },
+   "NETLI_NONPROXIEDUDP_CHECKBOX": {
+      "message": "Enables the WebRTC non-proxied UDP option in Chrome's privacy settings."
+   },
+   "NETLI_NONPROXIEDUDP_DESCRIPTION": {
+      "message": "If enabled, Chrome is allowed to use non-proxied UDP to connect to peers or TURN servers when using WebRTC. Since most proxy servers don't handle UDP, using UDP possibly exposes user's IP address. Turning this off effectively forces WebRTC to only use TCP for now, until UDP proxy support is available in Chrome and such proxies are widely deployed. As a result, it also might hurt media performance and increase the load for proxy servers."
+   },
+   "NETLI_APPDESC": {
+      "message": "Configures how WebRTC's network traffic is routed by changing Chrome's privacy settings."
+   },
+   "NETLI_APPNAME": {
+      "message": "WebRTC Network Limiter"
+   },
+   "NETLI_OPTIONS": {
+      "message": "WebRTC Network Limiter Options"
+   }
+}
