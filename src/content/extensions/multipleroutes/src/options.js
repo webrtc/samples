@@ -1,8 +1,4 @@
-/* Copyright (c) 2014 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-// Saves options to chrome.storage
+// Saves options.
 function save_options() {
   var multiroutes = document.getElementById('multiroutes').checked;
   var nonproxiedudp = document.getElementById('nonproxiedudp').checked;
@@ -16,8 +12,7 @@ function save_options() {
   }
 }
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
+// Restores checkbox states.
 function restore_options() {
   chrome.privacy.network.webRTCMultipleRoutesEnabled.get({}, function(details) {
     document.getElementById('multiroutes').checked = details.value;
