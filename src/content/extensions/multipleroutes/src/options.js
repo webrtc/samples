@@ -20,7 +20,6 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
   chrome.privacy.network.webRTCMultipleRoutesEnabled.get({}, function(details) {
-    console.log('multiple routes', details.value);
     document.getElementById('multiroutes').checked = details.value;
   });
   try { 
