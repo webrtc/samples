@@ -2,10 +2,10 @@
 Configures the WebRTC traffic routing options in Chrome's privacy settings.
 
 ★ What it does:
-This configures WebRTC to not use certain IP addresses or protocols:
+This configures WebRTC to not use certain IP addresses or protocol:
 - IP addresses not visible to the public internet (e.g. addresses like 192.168.1.2)
 - any public IP addresses associated with network interfaces that are not used for web traffic (e.g. an ISP-provided address, when browsing through a VPN)
-- Force WebRTC traffic to go through proxy servers as configured in Chrome. Since most of the proxy servers don't handle UDP, this effectively turns off UDP for now, until UDP proxy support is available in Chrome and such proxies are widely deployed.
+- Require WebRTC traffic to go through proxy servers as configured in Chrome. Since most of the proxy servers don't handle UDP, this effectively turns off UDP for now, until UDP proxy support is available in Chrome and such proxies are widely deployed.
  
 Once the extension is installed, WebRTC will only use public IP addresses associated with the interface used for web traffic, typically the same addresses that are already provided to sites in browser HTTP requests.
 
