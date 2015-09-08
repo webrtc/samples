@@ -11,9 +11,6 @@
    "NETLI_NONPROXIEDUDP_DESCRIPTION": {
       "message": "If enabled, Chrome is allowed to use non-proxied UDP to connect to peers or TURN servers when using WebRTC. Since most proxy servers don't handle UDP, using UDP possibly exposes user's IP address. Turning this off effectively forces WebRTC to only use TCP for now, until UDP proxy support is available in Chrome and such proxies are widely deployed. As a result, it also might hurt media performance and increase the load for proxy servers."
    },
-   "NETLI_DNSLEAK_DESCRIPTION": {
-      "message": "WebRTC might trigger Chrome to do DNS resolution which could leak users' IP addresses. Please look at <a href=\"https://www.chromium.org/developers/design-documents/network-stack/socks-proxy\">here</a> on how to configure Chrome to avoid that."
-   },
    "NETLI_APPDESC": {
       "message": "Configures how WebRTC's network traffic is routed by changing Chrome's privacy settings."
    },
