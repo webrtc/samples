@@ -1,5 +1,5 @@
 // Saves options.
-function save_options() {
+function saveOptions() {
   var multiRoutes = document.getElementById('multiRoutes').checked;
   var nonProxiedUdp = document.getElementById('nonProxiedUdp').checked;
   chrome.privacy.network.webRTCMultipleRoutesEnabled.set({
@@ -16,7 +16,7 @@ function save_options() {
 }
 
 // Restores checkbox states.
-function restore_options() {
+function restoreOptions() {
   chrome.privacy.network.webRTCMultipleRoutesEnabled.get({},
     function(details) {
       document.getElementById('multiRoutes').checked =
@@ -35,10 +35,10 @@ function restore_options() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('multiRoutes').addEventListener('click', save_options);
+document.addEventListener('DOMContentLoaded', restoreOptions);
+document.getElementById('multiRoutes').addEventListener('click', saveOptions);
 document.getElementById('nonProxiedUdp').addEventListener('click',
-  save_options);
+  saveOptions);
 
 document.title = chrome.i18n.getMessage('netli_options');
 var i18nElements = document.querySelectorAll('*[i18n-content]');
