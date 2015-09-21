@@ -1,3 +1,5 @@
+"use strict";
+
 // Saves options.
 function saveOptions() {
   var multiRoutes;
