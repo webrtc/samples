@@ -1,12 +1,12 @@
 {
    "NETLI_MULTIROUTEONUDPON_RADIO": {
-      "message": "<strong>Give me the best media experience:</strong> This option allows Chrome to explore all possible routing options when using WebRTC to find the most performant path which might be different from regular HTTP. Also, Chrome is allowed to use non-proxied UDP for WebRTC traffic. Users' private IP addresses may be exposed to a website when this option is select."
+      "message": "<strong>Give me the best media experience:</strong> This option allows Chrome to explore all possible network paths to find the best way to send media, which might be different from normal web traffic."
    },
    "NETLI_MULTIROUTEOFFUDPON_RADIO": {
-      "message": "<strong>Ok to use my public IP addresses:</strong> This option requires Chrome to use the same routing for WebRTC as regular HTTP traffic. However, since this also allows Chrome to use non-proxied UDP for WebRTC traffic, UDP will not go through proxy servers if configured in Chrome."
+      "message": "<strong>Use only my default  IP addresses:</strong> This option forces Chrome to use the same routing for media as regular web traffic, unless a proxy is present. To prevent performance degradation, media will not be sent through proxies."
    },
    "NETLI_MULTIROUTEOFFUDPOFF_RADIO": {
-      "message": "<strong>Give me the highest privacy level:</strong> This option disallows Chrome to use any route except the one used by HTTP. To ensure that, Chrome will disable UDP until UDP proxy support is available in Chrome and such proxies are widely deployed. As a result, it also might hurt media performance and increase the load for proxy servers."
+      "message": "<strong>Use my proxy server (if present):</strong> This option forces Chrome to use the same routing for media as regular web traffic, in all cases. If a proxy is present, media will be forced through the proxy, using the TCP protocol. This will typically hurt media performance and increase the load on the proxy."
    },
    "NETLI_MULTIROUTEOFFUDPOFF_NOT_SUPPORTED_RADIO": {
       "message": "<strong> This option is not available before Chrome version 47.</strong>"
