@@ -1,0 +1,23 @@
+{
+   "NETLI_MULTIROUTEONUDPON_RADIO": {
+      "message": "Best Media Performance:"
+   },
+   "NETLI_MULTIROUTEOFFUDPON_RADIO": {
+      "message": "Middle Media Performance:"
+   },
+   "NETLI_MULTIROUTEOFFUDPOFF_RADIO": {
+      "message": "Bad Media Performance:"
+   },
+   "NETLI_MULTIROUTEOFFUDPOFF_NOT_SUPPORTED_RADIO": {
+      "message": "Bad Media Performance (Not Supported):"
+   },
+   "NETLI_APPDESC": {
+      "message": "Configures how WebRTC's network traffic is routed by changing Chrome's privacy settings."
+   },
+   "NETLI_APPNAME": {
+      "message": "WebRTC Network Limiter"
+   },
+   "NETLI_OPTIONS": {
+      "message": "WebRTC Network Limiter Options"
+   }
+}
