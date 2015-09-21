@@ -1,0 +1,23 @@
+{
+   "NETLI_MULTIROUTEONUDPON_RADIO": {
+      "message": "<strong>Give me the best media experience:</strong> This option allows Chrome to explore all possible routing options when using WebRTC to find the most performant path which might be different from regular HTTP. Also, Chrome is allowed to use non-proxied UDP for WebRTC traffic. Users' private IP addresses may be exposed to a website when this option is select."
+   },
+   "NETLI_MULTIROUTEOFFUDPON_RADIO": {
+      "message": "<strong>Ok to use my public IP addresses:</strong> This option requires Chrome to use the same routing for WebRTC as regular HTTP traffic. However, since this also allows Chrome to use non-proxied UDP for WebRTC traffic, UDP might not go through proxy servers if configured in Chrome."
+   },
+   "NETLI_MULTIROUTEOFFUDPOFF_RADIO": {
+      "message": "<strong>Give me the highest privacy level:</strong> This option disallows Chrome to use any route except the one used by HTTP. To ensure that, Chrome will disable UDP until Chrome supports UDP-supporting proxy servers."
+   },
+   "NETLI_MULTIROUTEOFFUDPOFF_NOT_SUPPORTED_RADIO": {
+      "message": "<strong> This option is not available before Chrome version 47. </strong>"
+   },
+   "NETLI_APPDESC": {
+      "message": "Configures how WebRTC's network traffic is routed by changing Chrome's privacy settings."
+   },
+   "NETLI_APPNAME": {
+      "message": "WebRTC Network Limiter"
+   },
+   "NETLI_OPTIONS": {
+      "message": "WebRTC Network Limiter Options"
+   }
+}
