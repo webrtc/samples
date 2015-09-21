@@ -60,12 +60,12 @@ function restoreOptions() {
         restoreRadios(multiRoutes, nonProxiedUdp);
       });
     document.getElementById('for_multirouteOffUdpOff_notSupported').innerHTML =
-      "";
+      '';
   } catch (err) {
     document.getElementById('multirouteOffUdpOff').disabled = true;
     var chromeVersion = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1];
     document.getElementById('for_multirouteOffUdpOff_notSupported').innerHTML +=
-      " Current Chrome Version: " + chromeVersion;
+      ' Current version is: ' + chromeVersion;
   }
 }
 
