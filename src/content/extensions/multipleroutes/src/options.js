@@ -1,7 +1,16 @@
 // Saves options.
 function saveOptions() {
-  var multiRoutes = document.getElementById('multiRoutes').checked;
-  var nonProxiedUdp = document.getElementById('nonProxiedUdp').checked;
+  var multiRoutes;
+  var nonProxiedUdp;
+  var radios = document.getElementsByName('routeselection');
+  for (var i = 0, length = radios.length; i < length; i++) {
+    if (radios[i].checked) {
+        multiRoutes = i < 1;
+        nonProxiedUdp = i < 2;
+        break;
+    }
+  }
+
   chrome.privacy.network.webRTCMultipleRoutesEnabled.set({
     'value': multiRoutes
   });
@@ -10,35 +19,55 @@ function saveOptions() {
       'value': nonProxiedUdp
     });
   } catch (err) {
-    document.getElementById('nonProxiedUdp').checked = false;
-    document.getElementById('nonProxiedUdp').disabled = true;
+    // Shouldn't run into here.
+  }
+}
+
+function restoreRadios(multiRoutes, nonProxiedUdp) {
+  console.log(multiRoutes + ',' + nonProxiedUdp);
+  var radios = document.getElementsByName('routeselection');
+  if (multiRoutes) {
+      if (nonProxiedUdp) {
+          radios[0].checked = true;
+      } else {
+          radios[0].checked = false;
+          alert('{multiRoutes: true, nonProxiedUdp: false} is not a supported option.');
+      }
+  } else {
+      if (nonProxiedUdp) {
+          radios[1].checked = true;
+      } else {
+          radios[2].checked = true;
+      }
   }
 }
 
 // Restores checkbox states.
 function restoreOptions() {
+  var multiRoutes = true;
+  var nonProxiedUdp = true;
   chrome.privacy.network.webRTCMultipleRoutesEnabled.get({},
     function(details) {
-      document.getElementById('multiRoutes').checked =
-        details.value;
+      multiRoutes = details.value;
+      restoreRadios(multiRoutes, nonProxiedUdp);
     });
   try {
     chrome.privacy.network.webRTCNonProxiedUdpEnabled.get({},
-      function(
-        details) {
-        document.getElementById('nonProxiedUdp').checked =
-          details.value;
+      function(details) {
+        nonProxiedUdp = details.value;
+        restoreRadios(multiRoutes, nonProxiedUdp);
       });
+    document.getElementById('for_multirouteOffUdpOff_notSupported').innerHTML = "";
   } catch (err) {
-    document.getElementById('nonProxiedUdp').checked = false;
-    document.getElementById('nonProxiedUdp').disabled = true;
+    document.getElementById('multirouteOffUdpOff').disabled = true;
+    document.getElementById('for_multirouteOffUdpOff').innerHTML = "";
   }
 }
 
 document.addEventListener('DOMContentLoaded', restoreOptions);
-document.getElementById('multiRoutes').addEventListener('click', saveOptions);
-document.getElementById('nonProxiedUdp').addEventListener('click',
-  saveOptions);
+document.getElementById('multirouteOnUdpOn').addEventListener('click', saveOptions);
+document.getElementById('multirouteOffUdpOn').addEventListener('click', saveOptions);
+document.getElementById('multirouteOffUdpOff').addEventListener('click', saveOptions);
 
 document.title = chrome.i18n.getMessage('netli_options');
 var i18nElements = document.querySelectorAll('*[i18n-content]');
