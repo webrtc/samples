@@ -37,8 +37,7 @@ var offerOptions = {
 
 function gotStream(stream) {
   trace('Received local stream');
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(video1, stream);
+  video1.srcObject = stream;
   localstream = stream;
   callButton.disabled = false;
 }
@@ -129,7 +128,7 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  attachMediaStream(video2, e.stream);
+  video2.srcObject = e.stream;
   trace('Got remote stream');
 }
 

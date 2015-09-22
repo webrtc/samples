@@ -88,7 +88,7 @@ function gotStream(stream) {
   connectButton.disabled = false;
   console.log('GetUserMedia succeeded');
   localStream = stream;
-  attachMediaStream(localVideo, stream);
+  localVideo.srcObject = stream;
 }
 
 function getUserMediaConstraints() {
@@ -158,7 +158,7 @@ function createPeerConnection() {
   };
   remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
-    attachMediaStream(remoteVideo, e.stream);
+    remoteVideo = e.stream;
   };
   localPeerConnection.createOffer(function(desc) {
     console.log('localPeerConnection offering');

@@ -100,7 +100,7 @@ function start() {
   navigator.mediaDevices.getUserMedia(constraints)
   .then(function(stream) {
     window.stream = stream; // make stream available to console
-    attachMediaStream(videoElement, stream);
+    videoElement.srcObject = stream;
     // Refresh button list in case labels have become available
     return navigator.mediaDevices.enumerateDevices();
   })
