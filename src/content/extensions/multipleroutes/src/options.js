@@ -26,7 +26,6 @@ function saveOptions() {
 }
 
 function restoreRadios(multiRoutes, nonProxiedUdp) {
-  console.log(multiRoutes + ',' + nonProxiedUdp);
   var radios = document.getElementsByName('routeselection');
   if (multiRoutes) {
     if (nonProxiedUdp) {
