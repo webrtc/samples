@@ -158,7 +158,7 @@ function createPeerConnection() {
   };
   remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
-    remoteVideo = e.stream;
+    remoteVideo.srcObject = e.stream;
   };
   localPeerConnection.createOffer(function(desc) {
     console.log('localPeerConnection offering');
