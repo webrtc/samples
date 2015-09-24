@@ -12,7 +12,7 @@
    quotmark: single, undef: true, unused: strict */
 /* global mozRTCIceCandidate, mozRTCPeerConnection, Promise,
 mozRTCSessionDescription, webkitRTCPeerConnection, MediaStreamTrack */
-/* exported trace,requestUserMedia */
+/* exported requestUserMedia */
 
 'use strict';
 
@@ -502,7 +502,6 @@ if (typeof module !== 'undefined') {
     webrtcMinimumVersion: webrtcMinimumVersion,
     webrtcTesting: webrtcTesting
     //requestUserMedia: not exposed on purpose.
-    //trace: not exposed on purpose.
   };
 } else if ((typeof require === 'function') && (typeof define === 'function')) {
   // Expose objects and functions when RequireJS is doing the loading.
@@ -517,7 +516,6 @@ if (typeof module !== 'undefined') {
       webrtcMinimumVersion: webrtcMinimumVersion,
       webrtcTesting: webrtcTesting
       //requestUserMedia: not exposed on purpose.
-      //trace: not exposed on purpose.
     };
   });
 }
