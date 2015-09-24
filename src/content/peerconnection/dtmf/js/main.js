@@ -46,7 +46,6 @@ function main() {
 
 function gotStream(stream) {
   trace('Received local stream');
-  // Call the polyfill wrapper to attach the media stream to this element.
   localStream = stream;
   var audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
@@ -126,8 +125,7 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(audio, e.stream);
+  audio.srcObject = e.stream;
   trace('Received remote stream');
   if (pc1.createDTMFSender) {
     enableDtmfSender();
