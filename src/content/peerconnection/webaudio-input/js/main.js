@@ -127,7 +127,7 @@ function gotDescription2(desc) {
 }
 
 function gotRemoteStream(e) {
-  attachMediaStream(audioElement, e.stream);
+  audioElement.srcObject = e.stream;
 }
 
 function iceCallback1(event) {
