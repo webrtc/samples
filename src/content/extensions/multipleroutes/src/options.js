@@ -7,6 +7,9 @@ function saveOptions() {
   var radios = document.getElementsByName('routeselection');
   for (var i = 0, length = radios.length; i < length; i++) {
     if (radios[i].checked) {
+      // option 0: multiple routes enabled, non proxied udp enabled.
+      // option 1: multiple routes disabled, non proxied upd enabled.
+      // option 2: both are disabled.
       multiRoutes = i < 1;
       nonProxiedUdp = i < 2;
       break;
@@ -21,7 +24,7 @@ function saveOptions() {
       'value': nonProxiedUdp
     });
   } catch (err) {
-    // Shouldn't run into here.
+    console.log('setting webRTCNonProxiedUdpEnabled is not supported.');
   }
 }
 

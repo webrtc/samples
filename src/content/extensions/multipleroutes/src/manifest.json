@@ -10,6 +10,7 @@
       "128": "img/icon_128.png"
    },
    "manifest_version": 2,
+   "minimum_chrome_version": "42.0.2311.135",
    "name": "__MSG_NETLI_APPNAME__",
    "options_page": "options.html",
    "permissions": [ "privacy" ],
