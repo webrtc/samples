@@ -61,13 +61,14 @@ function restoreMultiRoutesOption() {
 
 function restoreNonProxiedUdpOption(multiRoutes) {
   try {
+    var nonProxiedUdp = true;
     chrome.privacy.network.webRTCNonProxiedUdpEnabled.get({},
       function(details) {
         nonProxiedUdp = details.value;
         restoreRadios(multiRoutes, nonProxiedUdp);
+        document.getElementById('for_multirouteOffUdpOff_notSupported').
+          innerHTML = '';
       });
-    document.getElementById('for_multirouteOffUdpOff_notSupported').innerHTML =
-      '';
   } catch (err) {
     console.log(err);
     document.getElementById('multirouteOffUdpOff').disabled = true;
