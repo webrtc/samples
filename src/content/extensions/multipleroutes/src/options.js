@@ -67,6 +67,7 @@ function restoreOptions() {
       '';
   } catch (err) {
     document.getElementById('multirouteOffUdpOff').disabled = true;
+    document.getElementById('multirouteOffUdpOff_Section').style.color = 'gray';
     var chromeVersion = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1];
     document.getElementById('for_multirouteOffUdpOff_notSupported').innerHTML +=
       ' Current version is: ' + chromeVersion;
