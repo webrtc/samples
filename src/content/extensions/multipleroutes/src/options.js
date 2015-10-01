@@ -8,7 +8,7 @@ function saveOptions() {
   for (var i = 0, length = radios.length; i < length; i++) {
     if (radios[i].checked) {
       // option 0: multiple routes enabled, non proxied udp enabled.
-      // option 1: multiple routes disabled, non proxied upd enabled.
+      // option 1: multiple routes disabled, non proxied udp enabled.
       // option 2: both are disabled.
       multiRoutes = i < 1;
       nonProxiedUdp = i < 2;
@@ -36,7 +36,8 @@ function restoreRadios(multiRoutes, nonProxiedUdp) {
     } else {
       radios[0].checked = false;
       alert(
-        '{multiRoutes: true, nonProxiedUdp: false} is not a supported option.'
+          'The extension does not support the configuration where multiple ' +
+              'routes is enabled but non-proxied udp is disabled.'
       );
     }
   } else {
