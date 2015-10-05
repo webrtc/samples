@@ -22,8 +22,6 @@ var receiveProgress = document.querySelector('progress#receiveProgress');
 var receivedSize = 0;
 var bytesToSend = 0;
 
-var bitrateMax = 0;
-
 sendButton.onclick = createConnection;
 
 function createConnection() {
@@ -183,7 +181,6 @@ function receiveChannelCallback(event) {
   receiveChannel.onmessage = onReceiveMessageCallback;
 
   receivedSize = 0;
-  bitrateMax = 0;
 }
 
 function onReceiveMessageCallback(event) {
