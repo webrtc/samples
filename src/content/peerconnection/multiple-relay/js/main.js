@@ -32,14 +32,14 @@ var remoteStream;
 
 function gotStream(stream) {
   trace('Received local stream');
-  attachMediaStream(video1, stream);
+  video1.srcObject = stream;
   localStream = stream;
   callButton.disabled = false;
 }
 
 function gotremoteStream(stream) {
   remoteStream = stream;
-  attachMediaStream(video2, stream);
+  video2.srcObject = stream;
   trace('Received remote stream');
   trace(pipes.length + ' elements in chain');
   statusDiv.textContent = pipes.length + ' elements in chain';

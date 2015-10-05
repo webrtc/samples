@@ -131,7 +131,7 @@ poll = function() {
 
 onGotStream = function(stream) {
   localVideo.style.opacity = 1;
-  attachMediaStream(localVideo, stream);
+  localVideo.srcObject = stream;
   localStream = stream;
 
   //trace("User has granted access to local media. url = " + url);

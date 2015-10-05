@@ -37,7 +37,6 @@ var offerOptions = {
 
 function gotStream(stream) {
   trace('Received local stream');
-  // Call the polyfill wrapper to attach the media stream to this element.
   localstream = stream;
   var audioTracks = localstream.getAudioTracks();
   if (audioTracks.length > 0) {
@@ -123,8 +122,7 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(audio2, e.stream);
+  audio2.srcObject = e.stream;
   trace('Received remote stream');
 }
 
