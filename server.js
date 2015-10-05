@@ -1,6 +1,13 @@
+/*
+ *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
 var express = require('express');
 var https = require('https');
-var http = require('http');
 var pem = require('pem');
 
 pem.createCertificate({ days:1, selfSigned:true }, function(err, keys) {
