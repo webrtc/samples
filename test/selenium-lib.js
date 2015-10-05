@@ -7,7 +7,7 @@
  */
  /* jshint node: true */
 
- 'use strict';
+'use strict';
 
 // https://code.google.com/p/selenium/wiki/WebDriverJs
 var webdriver = require('selenium-webdriver');
@@ -21,7 +21,8 @@ function buildDriver() {
     return sharedDriver;
   }
   // Firefox options.
-  // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_firefox.html
+  // http://selenium.googlecode.com/git/docs/api/javascript/
+  //  module_selenium-webdriver_firefox.html
   var profile = new firefox.Profile();
   profile.setPreference('media.navigator.streams.fake', true);
   // This enables device labels for enumerateDevices when using fake devices.
@@ -38,7 +39,8 @@ function buildDriver() {
       .setBinary('node_modules/.bin/start-firefox');
 
   // Chrome options.
-  // http://selenium.googlecode.com/git/docs/api/javascript/module_selenium-webdriver_chrome_class_Options.html#addArguments
+  // http://selenium.googlecode.com/git/docs/api/javascript/
+  //  module_selenium-webdriver_chrome_class_Options.html#addArguments
   var chromeOptions = new chrome.Options()
       .setChromeBinaryPath('node_modules/.bin/start-chrome')
       .addArguments('allow-file-access-from-files')

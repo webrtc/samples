@@ -31,7 +31,8 @@ function createConnection() {
 
   bytesToSend = megsToSend.value * 1024 * 1024;
 
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created local peer connection object localConnection');
@@ -52,7 +53,8 @@ function createConnection() {
 
   localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
 
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created remote peer connection object remoteConnection');

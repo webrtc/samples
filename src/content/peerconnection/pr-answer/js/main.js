@@ -73,7 +73,6 @@ function start() {
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
-
 }
 
 function onCreateSessionDescriptionError(error) {

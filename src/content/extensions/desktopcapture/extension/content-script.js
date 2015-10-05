@@ -1,8 +1,9 @@
 'use strict';
 
-// https://chromeextensionsdocs.appspot.com/apps/content_scripts#host-page-communication
-//   - 'content_script' and execution env are isolated from each other
-//   - In order to communicate we use the DOM (window.postMessage)
+// https://chromeextensionsdocs.appspot.com/
+//   apps/content_scripts#host-page-communication
+//     - 'content_script' and execution env are isolated from each other
+//     - In order to communicate we use the DOM (window.postMessage)
 //
 // app.js            |        |content-script.js |      |background.js
 // window.postMessage|------->|port.postMessage  |----->| port.onMessage

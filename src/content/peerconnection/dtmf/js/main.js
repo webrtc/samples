@@ -135,7 +135,6 @@ function gotRemoteStream(e) {
         'which is not support by this browser.'
     );
   }
-
 }
 
 function iceCallback1(event) {
