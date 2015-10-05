@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "chromedriver": "^2.16.0",
+    "express": "^4.13.3",
     "grunt": "^0.4.5",
     "grunt-cli": ">=0.1.9",
     "grunt-contrib-compress": "^0.13.0",
@@ -33,6 +34,7 @@
     "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.4.1",
     "grunt-jscs": ">=0.8.1",
+    "pem": "^1.8.1",
     "selenium-webdriver": "^2.46.0",
     "tape": "^4.0.0",
     "travis-multirunner": "^2.6.0",
