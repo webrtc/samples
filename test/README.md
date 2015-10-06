@@ -18,6 +18,9 @@ git clone https://github.com/webrtc/samples.git
 npm install
 ```
 
+### Start web server for development
+Run `node test/server.js` then navigate your browser to `https://localhost:8080`.
+
 #### Run tests
 Runs grunt and tests in test/tests.js.
 ```bash
