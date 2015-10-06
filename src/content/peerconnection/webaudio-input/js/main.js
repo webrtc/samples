@@ -68,11 +68,10 @@ function gotStream(stream) {
     var filteredStream = webAudio.applyFilter(stream);
 
     var servers = null;
-    /* eslint new-cap: 0 */
-    pc1 = new webkitRTCPeerConnection(servers);
+    pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
     pc1.onicecandidate = iceCallback1;
-    pc2 = new webkitRTCPeerConnection(servers);
+    pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = iceCallback2;
     pc2.onaddstream = gotRemoteStream;
