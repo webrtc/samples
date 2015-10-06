@@ -13,7 +13,7 @@
             2
         ],
         "key-spacing": [2, {"beforeColon": false, "afterColon": true}],
-        "max-len": [2, 80, 2],
+        "max-len": [2, 80, 2, {"ignoreUrls": true}],
         "new-cap": 2,
         "no-console": 0,
         "no-else-return": 2,
