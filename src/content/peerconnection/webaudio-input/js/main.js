@@ -68,7 +68,7 @@ function gotStream(stream) {
     var filteredStream = webAudio.applyFilter(stream);
 
     var servers = null;
-    /*eslint new-cap: 0*/
+    /* eslint new-cap: 0 */
     pc1 = new webkitRTCPeerConnection(servers);
     console.log('Created local peer connection object pc1');
     pc1.onicecandidate = iceCallback1;

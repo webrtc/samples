@@ -164,7 +164,7 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  //trace('Received Message ' + event.data.byteLength);
+  // trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 

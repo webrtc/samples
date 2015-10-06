@@ -15,17 +15,13 @@ module.exports = function(grunt) {
         options: {
           import: 2
         },
-        src: ['src/content/**/*.css',
-        '!src/content/**/*_nolint.css'
-        ]
+        src: ['src/content/**/*.css', '!src/content/**/*_nolint.css']
       },
       lax: {
         options: {
           import: false
         },
-        src: ['src/content/**/*.css',
-        '!src/content/**/*_nolint.css'
-        ]
+        src: ['src/content/**/*.css', '!src/content/**/*_nolint.css']
       }
     },
     eslint: {

@@ -9,13 +9,12 @@
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
-/* jshint node: true */
 var test = require('tape');
 
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('../../../../../test/selenium-lib');
 
-test('Fake device selection and check video element dimensions '+
+test('Fake device selection and check video element dimensions ' +
   'in input-output demo', function(t) {
     // FIXME: use env[SELENIUM_BROWSER] instead?
     var driver = seleniumHelpers.buildDriver();

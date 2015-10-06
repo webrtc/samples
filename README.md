@@ -9,6 +9,8 @@ Some of the samples use new browser features. They may only work in Chrome Canar
 All of the samples use [adapter.js](https://github.com/webrtc/adapter), a shim to insulate apps from spec changes and prefix differences. In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see [webrtc.org/web-apis/interop](http://www.webrtc.org/web-apis/interop).
 
 In Chrome and Opera, all samples that use `getUserMedia()` must be run from a server. Calling `getUserMedia()` from a file:// URL will work in Firefox, but fail silently in Chrome and Opera.
+To start a simple server for development, run `npm install && node server.js` then navigate
+your browser to `https://localhost:8080`.
 
 [webrtc.org/testing](http://www.webrtc.org/testing) lists command line flags useful for development and testing with Chrome.
 
@@ -81,6 +83,3 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 [AppRTC video chat client](https://apprtc.appspot.com/) powered by Google App Engine
 
 [AppRTC URL parameters](https://apprtc.appspot.com/params.html)
-
-
-

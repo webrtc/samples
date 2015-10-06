@@ -202,6 +202,5 @@ function addDialPadHandlers() {
 }
 
 function sendDtmfTone() {
-  /*jshint validthis:true */
   sendTones(this.textContent);
 }

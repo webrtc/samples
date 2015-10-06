@@ -56,7 +56,7 @@ function createConnection() {
   sendChannel.onclose = onSendChannelStateChange;
 
   // Add remoteConnection to global scope to make it visible
-  //from the browser console.
+  // from the browser console.
   window.remoteConnection = remoteConnection =
       new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object remoteConnection');
