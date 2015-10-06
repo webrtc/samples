@@ -135,7 +135,6 @@ function gotRemoteStream(e) {
         'which is not support by this browser.'
     );
   }
-
 }
 
 function iceCallback1(event) {
@@ -203,6 +202,5 @@ function addDialPadHandlers() {
 }
 
 function sendDtmfTone() {
-  /*jshint validthis:true */
   sendTones(this.textContent);
 }

@@ -7,7 +7,7 @@
  */
  /* jshint node: true */
 
- 'use strict';
+'use strict';
 
 // https://code.google.com/p/selenium/wiki/WebDriverJs
 var webdriver = require('selenium-webdriver');

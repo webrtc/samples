@@ -34,7 +34,8 @@ function createConnection() {
   var servers = null;
   pcConstraint = null;
 
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created local peer connection object localConnection');
@@ -48,7 +49,8 @@ function createConnection() {
   localConnection.onicecandidate = iceCallback1;
 
   localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created remote peer connection object remoteConnection');
@@ -162,7 +164,7 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  //trace('Received Message ' + event.data.byteLength);
+  // trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 

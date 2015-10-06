@@ -99,7 +99,9 @@ function getMedia() {
 
   if (localStream) {
     localVideo.src = null;
-    localStream.getTracks().forEach(function(track) { track.stop(); });
+    localStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
   var audioSource = audioSelect.value;
   trace('Selected audio source: ' + audioSource);
@@ -252,7 +254,9 @@ function sendData() {
 function hangup() {
   remoteVideo.src = '';
   trace('Ending call');
-  localStream.getTracks().forEach(function(track) { track.stop(); });
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
   sendChannel.close();
   receiveChannel.close();
   localPeerConnection.close();

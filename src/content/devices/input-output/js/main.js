@@ -43,11 +43,11 @@ function gotDevices(deviceInfos) {
       console.log('Some other kind of source/device: ', deviceInfo);
     }
   }
-  selectors.forEach(function(select, i) {
+  selectors.forEach(function(select, selectorIndex) {
     if (Array.prototype.slice.call(select.childNodes).some(function(n) {
-      return n.value === values[i];
+      return n.value === values[selectorIndex];
     })) {
-      select.value = values[i];
+      select.value = values[selectorIndex];
     }
   });
 }
@@ -89,7 +89,9 @@ function changeAudioDestination() {
 
 function start() {
   if (window.stream) {
-    window.stream.getTracks().forEach(function(track) { track.stop(); });
+    window.stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
   var audioSource = audioInputSelect.value;
   var videoSource = videoSelect.value;

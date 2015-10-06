@@ -57,7 +57,9 @@ function hangup() {
   localPeerConnection = null;
   remotePeerConnection = null;
 
-  localStream.getTracks().forEach(function(track) { track.stop(); });
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
   localStream = null;
 
   hangupButton.disabled = true;
@@ -67,7 +69,9 @@ function hangup() {
 function getMedia() {
   getMediaButton.disabled = true;
   if (localStream) {
-    localStream.getTracks().forEach(function(track) { track.stop(); });
+    localStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
     var videoTracks = localStream.getVideoTracks();
     for (var i = 0; i !== videoTracks.length; ++i) {
       videoTracks[i].stop();
@@ -207,7 +211,6 @@ setInterval(function() {
           if (timestampPrev) {
             bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
             bitrate = Math.floor(bitrate);
-
           }
           bytesPrev = bytes;
           timestampPrev = now;

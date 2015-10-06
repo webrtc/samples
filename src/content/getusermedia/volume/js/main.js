@@ -32,7 +32,8 @@ var constraints = window.constraints = {
 };
 
 function successCallback(stream) {
-  // Put variables in global scope to make them available to the browser console.
+  // Put variables in global scope to make them available to the
+  // browser console.
   window.stream = stream;
   var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
   soundMeter.connectToSource(stream);

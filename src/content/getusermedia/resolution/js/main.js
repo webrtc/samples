@@ -49,9 +49,9 @@ var fullHdConstraints = {
   video: {width: {exact: 1920}, height: {exact: 1080}}
 };
 
-function successCallback(stream) {
-  window.stream = stream; // stream available to console
-  video.srcObject = stream;
+function successCallback(mediaStream) {
+  window.stream = mediaStream; // stream available to console
+  video.srcObject = mediaStream;
 }
 
 function errorCallback(error) {
@@ -70,7 +70,9 @@ video.onloadedmetadata = displayVideoDimensions;
 
 function getMedia(constraints) {
   if (stream) {
-    stream.getTracks().forEach(function(track) { track.stop(); });
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
   setTimeout(function() {
     navigator.getUserMedia(constraints, successCallback, errorCallback);
