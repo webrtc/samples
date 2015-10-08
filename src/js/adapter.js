@@ -12,7 +12,7 @@
    quotmark: single, undef: true, unused: strict */
 /* global mozRTCIceCandidate, mozRTCPeerConnection, Promise,
 mozRTCSessionDescription, webkitRTCPeerConnection, MediaStreamTrack */
-/* exported requestUserMedia */
+/* exported trace,requestUserMedia */
 
 'use strict';
 
@@ -32,6 +32,19 @@ var webrtcUtils = {
     console.log.apply(console, arguments);
   }
 };
+
+function trace(text) {
+  // This function is used for logging.
+  if (text[text.length - 1] === '\n') {
+    text = text.substring(0, text.length - 1);
+  }
+  if (window.performance) {
+    var now = (window.performance.now() / 1000).toFixed(3);
+    webrtcUtils.log(now + ': ' + text);
+  } else {
+    webrtcUtils.log(text);
+  }
+}
 
 if (typeof window === 'object') {
   if (window.HTMLMediaElement &&
@@ -502,6 +515,7 @@ if (typeof module !== 'undefined') {
     webrtcMinimumVersion: webrtcMinimumVersion,
     webrtcTesting: webrtcTesting
     //requestUserMedia: not exposed on purpose.
+    //trace: not exposed on purpose.
   };
 } else if ((typeof require === 'function') && (typeof define === 'function')) {
   // Expose objects and functions when RequireJS is doing the loading.
@@ -516,6 +530,7 @@ if (typeof module !== 'undefined') {
       webrtcMinimumVersion: webrtcMinimumVersion,
       webrtcTesting: webrtcTesting
       //requestUserMedia: not exposed on purpose.
+      //trace: not exposed on purpose.
     };
   });
 }
