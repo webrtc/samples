@@ -22,6 +22,9 @@ require('../src/content/peerconnection/pc1/js/test');
 // Tests basic functionality of the peerconnection audio demo.
 require('../src/content/peerconnection/audio/js/test');
 
+// Tests basic functionality of the peerconnection multiple demo.
+require('../src/content/peerconnection/multiple/js/test');
+
 // Tests basic functionality of the munge-sdp demo.
 require('../src/content/peerconnection/munge-sdp/js/test');
 
