@@ -19,16 +19,12 @@ test('Fake device selection and check video element dimensions ' +
     // FIXME: use env[SELENIUM_BROWSER] instead?
     var driver = seleniumHelpers.buildDriver();
 
-    var webrtcDetectedBrowser = null;
+    var browser = process.env.BROWSER;
 
     driver.get('file://' + process.cwd() +
         '/src/content/devices/input-output/index.html')
     .then(function() {
       t.pass('Page loaded');
-      return driver.executeScript('return webrtcDetectedBrowser;');
-    })
-    .then(function(browser) {
-      webrtcDetectedBrowser = browser;
       // Making sure we can select the 1st audio device.
       // TODO: Select more devices if Firefox adds a 2nd fake A&V device and
       // Chrome adds another fake video device.
@@ -80,7 +76,7 @@ test('Fake device selection and check video element dimensions ' +
     })
     .then(function(deviceLabel) {
       // TODO: Improve this once Firefox has added labels for fake devices.
-      var fakeAudioDeviceName = (webrtcDetectedBrowser === 'chrome') ?
+      var fakeAudioDeviceName = (browser === 'chrome') ?
           'Fake Audio 1' : '';
       t.ok(fakeAudioDeviceName === deviceLabel,
         'Fake audio device found with label: ' + deviceLabel);
@@ -91,7 +87,7 @@ test('Fake device selection and check video element dimensions ' +
     })
     .then(function(deviceLabel) {
       // TODO: Improve this once Firefox has added labels for fake devices.
-      var fakeVideoDeviceName = (webrtcDetectedBrowser === 'chrome') ?
+      var fakeVideoDeviceName = (browser === 'chrome') ?
           'fake_device_0' : '';
       // TODO: Remove match() method once http://crbug.com/526633 is fixed.
       t.ok(fakeVideoDeviceName === deviceLabel.match(fakeVideoDeviceName)[0],
