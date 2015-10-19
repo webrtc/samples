@@ -26,7 +26,7 @@ numAudioTracksInput.onchange = function() {
 };
 
 var pc = new RTCPeerConnection(null);
-var wacx = new AudioContext();
+var acx = new AudioContext();
 
 function createOffer() {
   var numRequestedAudioTracks = numAudioTracksInput.value;
@@ -37,7 +37,7 @@ function createOffer() {
     // Create some dummy audio streams using Web Audio.
     // Note that this fails if you try to do more than one track in Chrome
     // right now.
-    var dst = wacx.createMediaStreamDestination();
+    var dst = acx.createMediaStreamDestination();
     pc.addStream(dst.stream);
   }
   var offerConstraints = {
@@ -49,7 +49,7 @@ function createOffer() {
   };
   // These constraints confuse Firefox, even if declared as optional.
   // See https://bugzilla.mozilla.org/show_bug.cgi?id=1184712
-  if (webrtcDetectedBrowser !== 'firefox') {
+  if (window.webkitRTCPeerConnection) {
     offerConstraints.optional.push({
       'VoiceActivityDetection': vadInput.checked
     });
