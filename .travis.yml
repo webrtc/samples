@@ -12,6 +12,7 @@ env:
     - BROWSER=chrome  BVER=stable
     - BROWSER=chrome  BVER=beta
     - BROWSER=chrome  BVER=unstable
+        # Add firefox one travis-multirunner can handle firefox again.
     - BROWSER=firefox BVER=stable
     - BROWSER=firefox BVER=beta
     - BROWSER=firefox BVER=nightly
@@ -21,10 +22,6 @@ matrix:
 
   allow_failures:
     - env: BROWSER=chrome  BVER=unstable
-    # Remove once travis-multirunner can handle firefox again.
-    - env: BROWSER:firefox BVER=stable
-    - env: BROWSER:firefox BVER=beta
-    - env: BROWSER=firefox BVER=nightly
 
 before_script:
   - npm install
