@@ -1,7 +1,11 @@
 sudo: false
 language: node_js
 node_js:
-  - 0.10
+  - 0.12
+  
+branches:
+  only:
+    - gh-pages
 
 env:
   matrix:
