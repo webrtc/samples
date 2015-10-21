@@ -13,9 +13,6 @@ env:
     - BROWSER=chrome  BVER=beta
     - BROWSER=chrome  BVER=unstable
         # Add firefox one travis-multirunner can handle firefox again.
-    - BROWSER=firefox BVER=stable
-    - BROWSER=firefox BVER=beta
-    - BROWSER=firefox BVER=nightly
 
 matrix:
   fast_finish: true
