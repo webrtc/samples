@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=master)](https://travis-ci.org/webrtc/samples/)
+[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=gh.pages)](https://travis-ci.org/webrtc/samples/)
 
 # WebRTC code samples #
 
