@@ -34,7 +34,7 @@
     "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.4.1",
     "pem": "^1.8.1",
-    "selenium-webdriver": "^2.46.0",
+    "selenium-webdriver": "^2.48.0",
     "tape": "^4.0.0",
     "travis-multirunner": "^2.6.0",
     "webrtc-adapter-test": "^0.2.1"
