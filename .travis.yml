@@ -2,7 +2,7 @@ sudo: false
 language: node_js
 node_js:
   - 4.1
-  
+
 branches:
   only:
     - gh-pages
@@ -12,13 +12,16 @@ env:
     - BROWSER=chrome  BVER=stable
     - BROWSER=chrome  BVER=beta
     - BROWSER=chrome  BVER=unstable
-        # Add firefox one travis-multirunner can handle firefox again.
+    - BROWSER=firefox BVER=stable
+    - BROWSER=firefox BVER=beta
+    - BROWSER=firefox BVER=nightly
 
 matrix:
   fast_finish: true
 
   allow_failures:
     - env: BROWSER=chrome  BVER=unstable
+    - env: BROWSER=firefox BVER=nightly
 
 before_script:
   - npm install
