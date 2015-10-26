@@ -58,5 +58,3 @@ test('Filetransfer via Datachannels: empty file', function(t) {
   // Remove the empty file
   fs.unlink(process.cwd() + emptyFilePath);
 });
-
-
