@@ -24,6 +24,13 @@ var bytesToSend = 0;
 
 sendButton.onclick = createConnection;
 
+// Prevent data sent to be set to 0.
+megsToSend.addEventListener('change', function(e) {
+  if (this.value === 0) {
+    megsToSend.value = 1;
+  }
+});
+
 function createConnection() {
   sendButton.disabled = true;
   var servers = null;
