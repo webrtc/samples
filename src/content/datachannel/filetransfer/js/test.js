@@ -47,3 +47,16 @@ test('Filetransfer via Datachannels: audio', function(t) {
 test('Filetransfer via Datachannels: video', function(t) {
   sendFile(t, process.cwd() + '/src/content/devices/multi/video/chrome.webm');
 });
+
+test('Filetransfer via Datachannels: empty file', function(t) {
+  var fs = require('fs');
+  var emptyFilePath = '/src/content/datachannel/filetransfer/emptyFile';
+  fs.writeFile(process.cwd() + emptyFilePath, '');
+
+  sendFile(t, process.cwd() + emptyFilePath);
+
+  // Remove the empty file
+  fs.unlink(process.cwd() + emptyFilePath);
+});
+
+

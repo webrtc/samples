@@ -18,6 +18,7 @@ var fileInput = document.querySelector('input#fileInput');
 var downloadDiv = document.querySelector('a#received');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
+var statusMessage = document.querySelector('span#status');
 
 var receiveBuffer = [];
 var receivedSize = 0;
@@ -69,7 +70,14 @@ function sendData() {
   var file = fileInput.files[0];
   trace('file is ' + [file.name, file.size, file.type,
       file.lastModifiedDate].join(' '));
+
+  // Handle 0 size files.
+  statusMessage.innerHTML = '';
   if (file.size === 0) {
+    bitrateDiv.innerHTML = '';
+    statusMessage.innerHTML =
+        'File is empty, please select a non-empty file';
+    closeDataChannels();
     return;
   }
   sendProgress.max = file.size;
@@ -77,7 +85,7 @@ function sendData() {
   var chunkSize = 16384;
   var sliceFile = function(offset) {
     var reader = new window.FileReader();
-    reader.onload = (function() {
+    reader.onloadend = (function() {
       return function(e) {
         sendChannel.send(e.target.result);
         if (file.size > offset + e.target.result.byteLength) {
@@ -96,13 +104,18 @@ function closeDataChannels() {
   trace('Closing data channels');
   sendChannel.close();
   trace('Closed data channel with label: ' + sendChannel.label);
-  receiveChannel.close();
-  trace('Closed data channel with label: ' + receiveChannel.label);
+  if (receiveChannel) {
+    receiveChannel.close();
+    trace('Closed data channel with label: ' + receiveChannel.label);
+  }
   localConnection.close();
   remoteConnection.close();
   localConnection = null;
   remoteConnection = null;
   trace('Closed peer connections');
+
+  // re-enable the file select
+  fileInput.disabled = false;
 }
 
 function gotDescription1(desc) {
@@ -195,9 +208,6 @@ function onReceiveMessageCallback(event) {
     }
 
     closeDataChannels();
-
-    // re-enable the file select
-    fileInput.disabled = false;
   }
 }
 
