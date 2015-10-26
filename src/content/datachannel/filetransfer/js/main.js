@@ -85,7 +85,7 @@ function sendData() {
   var chunkSize = 16384;
   var sliceFile = function(offset) {
     var reader = new window.FileReader();
-    reader.onloadend = (function() {
+    reader.onload = (function() {
       return function(e) {
         sendChannel.send(e.target.result);
         if (file.size > offset + e.target.result.byteLength) {
