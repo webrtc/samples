@@ -68,12 +68,16 @@ function onCreateSessionDescriptionError(error) {
 
 function sendData() {
   var file = fileInput.files[0];
+  console.log('Before File size is 0');
   trace('file is ' + [file.name, file.size, file.type,
       file.lastModifiedDate].join(' '));
 
   // Handle 0 size files.
   statusMessage.innerHTML = '';
+  console.log(file);
+  console.log('Before File size is 0');
   if (file.size === 0) {
+    console.log('File size is 0');
     bitrateDiv.innerHTML = '';
     statusMessage.innerHTML =
         'File is empty, please select a non-empty file';
