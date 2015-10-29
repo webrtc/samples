@@ -90,7 +90,9 @@ function gotStream(stream) {
     localStream = stream;
   } else {
     alert('The media stream contains an invalid amount of audio tracks.');
-    stream.stop();
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
 }
 
