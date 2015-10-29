@@ -56,7 +56,9 @@ function stop() {
   startButton.enabled = true;
   stopButton.enabled = false;
   renderLocallyCheckbox.disabled = true;
-  localStream.stop();
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
 }
 
 function gotStream(stream) {
