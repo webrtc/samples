@@ -1,6 +1,7 @@
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
+/* jshint node: true */
 var test = require('tape');
 
 var webdriver = require('selenium-webdriver');
@@ -34,7 +35,7 @@ test('Audio-only sample codec preference', function(t) {
       }, 30 * 1000);
     })
     .then(function() {
-      return driver.executeScript('return localstream.getAudioTracks()[0].id;');
+      return driver.executeScript('return localStream.getAudioTracks()[0].id;');
     })
     .then(function(id) {
       trackId = id;
