@@ -56,7 +56,9 @@ function stop() {
   startButton.enabled = true;
   stopButton.enabled = false;
   renderLocallyCheckbox.disabled = true;
-  localStream.stop();
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
 }
 
 function gotStream(stream) {
@@ -88,7 +90,9 @@ function gotStream(stream) {
     localStream = stream;
   } else {
     alert('The media stream contains an invalid amount of audio tracks.');
-    stream.stop();
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
 }
 
