@@ -34,7 +34,7 @@ test('Audio-only sample codec preference', function(t) {
       }, 30 * 1000);
     })
     .then(function() {
-      return driver.executeScript('return localstream.getAudioTracks()[0].id;');
+      return driver.executeScript('return localStream.getAudioTracks()[0].id;');
     })
     .then(function(id) {
       trackId = id;

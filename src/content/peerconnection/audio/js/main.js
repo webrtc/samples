@@ -19,7 +19,7 @@ hangupButton.onclick = hangup;
 
 var pc1;
 var pc2;
-var localstream;
+var localStream;
 
 var bitrateGraph;
 var bitrateSeries;
@@ -37,12 +37,12 @@ var offerOptions = {
 
 function gotStream(stream) {
   trace('Received local stream');
-  localstream = stream;
-  var audioTracks = localstream.getAudioTracks();
+  localStream = stream;
+  var audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
   }
-  pc1.addStream(localstream);
+  pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
@@ -112,6 +112,9 @@ function gotDescription2(desc) {
 
 function hangup() {
   trace('Ending call');
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
   pc1.close();
   pc2.close();
   pc1 = null;
