@@ -27,7 +27,7 @@ sendButton.onclick = createConnection;
 
 // Prevent data sent to be set to 0.
 megsToSend.addEventListener('change', function(e) {
-  if (this.value === '0') {
+  if (this.value <= 0) {
     sendButton.disabled = true;
     errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
   } else {
