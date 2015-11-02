@@ -18,7 +18,7 @@ var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
-var message = document.querySelector('div#errorMsg');
+var errorMessage = document.querySelector('div#errorMsg');
 
 var receivedSize = 0;
 var bytesToSend = 0;
@@ -29,9 +29,9 @@ sendButton.onclick = createConnection;
 megsToSend.addEventListener('change', function(e) {
   if (this.value === '0') {
     sendButton.disabled = true;
-    message.innerHTML = '<p>Please enter a non-zero number.</p>';
+    errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
   } else {
-    message.innerHTML = '';
+    errorMessage.innerHTML = '';
     sendButton.disabled = false;
   }
 });
