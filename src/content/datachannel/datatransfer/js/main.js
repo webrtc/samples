@@ -18,11 +18,23 @@ var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
+var errorMessage = document.querySelector('div#errorMsg');
 
 var receivedSize = 0;
 var bytesToSend = 0;
 
 sendButton.onclick = createConnection;
+
+// Prevent data sent to be set to 0.
+megsToSend.addEventListener('change', function(e) {
+  if (this.value <= 0) {
+    sendButton.disabled = true;
+    errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
+  } else {
+    errorMessage.innerHTML = '';
+    sendButton.disabled = false;
+  }
+});
 
 function createConnection() {
   sendButton.disabled = true;

@@ -20,9 +20,10 @@ function sendFile(t, path) {
   .then(function() {
     // Wait for the received element to be displayed.
     return driver.wait(webdriver.until.elementIsVisible(
-        driver.findElement(webdriver.By.id('received'))));
+        driver.findElement(webdriver.By.id('received'))), 90 * 1000);
   })
   .then(function() {
+    t.pass('received element found');
     t.end();
   })
   .then(null, function(err) {
@@ -46,4 +47,22 @@ test('Filetransfer via Datachannels: audio', function(t) {
 
 test('Filetransfer via Datachannels: video', function(t) {
   sendFile(t, process.cwd() + '/src/content/devices/multi/video/chrome.webm');
+});
+
+test('Filetransfer via Datachannels: empty file', function(t) {
+  // TODO: Remove when supported in Firefox.
+  if (process.env.BROWSER === 'firefox') {
+    t.skip('Empty file selection is not supported on firefox');
+    t.end();
+  } else {
+    var fs = require('fs');
+    var emptyFilePath = '/src/content/datachannel/filetransfer/emptyFile';
+    // Create empty file.
+    fs.writeFileSync(process.cwd() + emptyFilePath, '');
+
+    sendFile(t, process.cwd() + emptyFilePath);
+
+    // Remove the empty file.
+    fs.unlink(process.cwd() + emptyFilePath);
+  }
 });
