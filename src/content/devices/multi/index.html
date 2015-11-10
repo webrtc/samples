@@ -37,38 +37,33 @@
 
     <div id="sources">
 
-      <div>
-        <h2>getUserMedia():</h2>
-        <div class='box'>
-          <video class="gum" title="audio and video stream from getUserMedia()" autoplay controls></video>
-          <label>Select audio output: </label>
-        </div>
-        <div class='box'>
-          <audio class="gum" title="audio stream from getUserMedia()" controls></audio>
-          <label>Select audio output: </label>
-        </div>
-      </div>
+     <div>
+       <h2>getUserMedia():</h2>
+       <video class="gum" title="From getUserMedia()" autoplay controls></video>
+       <audio class="gum" title="From getUserMedia()" controls></audio>
+     </div>
 
-      <div>
-        <h2>Local media files:</h2>
-        <div class='box'>
-          <video title="local video file" controls loop poster="images/poster.jpg" preload="metadata">
-            <source src="video/chrome.webm" type="video/webm" />
-            <source src="video/chrome.mp4" type="video/mp4" />
-            <p>This browser does not support the video element.</p>
-          </video>
-          <label>Select audio output: </label>
-        </div>
-        <div class='box'>
-          <audio title="local audio file" controls loop>
-            <source src="audio/audio.mp3" type="audio/mp3" />
-            This browser does not support the audio element.
-          </audio>
-          <label>Select audio output: </label>
-        </div>
-      </div>
+     <div>
+       <h2>Local media files:</h2>
+       <video title="From local video file" controls loop poster="images/poster.jpg" preload="metadata">
+         <source src="video/chrome.webm" type="video/webm" />
+         <source src="video/chrome.mp4" type="video/mp4" />
+         <p>This browser does not support the video element.</p>
+       </video>
+       <audio title="From local audio file" controls loop>
+         <source src="audio/audio.mp3" type="audio/mp3" />
+         This browser does not support the audio element.
+       </audio>
+     </div>
 
    </div>
+
+   <p>Press play to select a source. Only one output can be selected for all sources.</p>
+
+   <div>
+    <label>Select audio output: </label>
+    <select id="audio-output"></select>
+  </div>
 
   <p>This demo must be run over HTTPS on Chrome (or Chrome Canary) 45.0.2441.x or later.<p>
   <p><strong>Enable experimental Web Platform features</strong> must be enabled from the chrome://flags page or run Chrome with the following flag:</p>
