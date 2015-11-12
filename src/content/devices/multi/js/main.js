@@ -65,7 +65,7 @@ function attachSinkId(element, sinkId, outputSelector) {
     element.setSinkId(sinkId)
     .then(function() {
       console.log('Success, audio output device attached: ' + sinkId + ' to ' +
-      'element with ' + element.title + ' as source.');
+          'element with ' + element.title + ' as source.');
     })
     .catch(function(error) {
       var errorMessage = error;
