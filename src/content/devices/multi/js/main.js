@@ -11,18 +11,16 @@
 var gumAudio = document.querySelector('audio.gum');
 gumAudio.addEventListener('play', function() {
   gumAudio.volume = 0.1;
-  console.log('Audio lowered in order to reduce feedback from local audio gUM '+
-      'stream');
+  console.log('Audio lowered to reduce feedback from local gUM stream');
 });
 var gumVideo = document.querySelector('video.gum');
 gumVideo.addEventListener('play', function() {
   gumVideo.volume = 0.1;
-  console.log('Audio lowered in order to reduce feedback from local audio '+
-    'and video UM stream');
+  console.log('Audio lowered to reduce feedback from local gUM stream');
 });
 
 function gotDevices(deviceInfos) {
-  var outputSelector = document.createElement('select');
+  var masterOutputSelector = document.createElement('select');
 
   for (var i = 0; i !== deviceInfos.length; ++i) {
     var deviceInfo = deviceInfos[i];
@@ -31,18 +29,19 @@ function gotDevices(deviceInfos) {
     if (deviceInfo.kind === 'audiooutput') {
       console.info('Found audio output device: ', deviceInfo.label);
       option.text = deviceInfo.label || 'speaker ' +
-        (outputSelector.length + 1);
-      outputSelector.appendChild(option);
+          (masterOutputSelector.length + 1);
+      masterOutputSelector.appendChild(option);
     } else {
       console.log('Found non audio output device: ', deviceInfo.label);
     }
   }
-  // Clone and attach the output drop down selector to the media elements.
-  var allMediaElements = document.querySelectorAll('audio, video');
-  allMediaElements.forEach(function(element) {
-    var newOutputSelector = outputSelector.cloneNode(true);
+
+  // Clone the master outputSelector and replace outputSelector placeholders.
+  var alloutputSelectors = document.querySelectorAll('select');
+  alloutputSelectors.forEach(function(selector) {
+    var newOutputSelector = masterOutputSelector.cloneNode(true);
     newOutputSelector.addEventListener('change', changeAudioDestination);
-    element.parentElement.appendChild(newOutputSelector);
+    selector.parentNode.replaceChild(newOutputSelector, selector);
   });
 }
 
@@ -60,8 +59,8 @@ function errorCallback(error) {
   console.log('Error: ', error);
 }
 
-// Attach audio output device to the provided media element using the device Id.
-function attachSinkId(element, sinkId, dropDown) {
+// Attach audio output device to the provided media element using the deviceId.
+function attachSinkId(element, sinkId, outputSelector) {
   if (typeof element.sinkId !== 'undefined') {
     element.setSinkId(sinkId)
     .then(function() {
@@ -76,7 +75,7 @@ function attachSinkId(element, sinkId, dropDown) {
       }
       console.error(errorMessage);
       // Jump back to first output device in the list as it's the default.
-      dropDown.selectedIndex = 0;
+      outputSelector.selectedIndex = 0;
     });
   } else {
     console.warn('Browser does not support output device selection.');
@@ -85,9 +84,9 @@ function attachSinkId(element, sinkId, dropDown) {
 
 function changeAudioDestination(event) {
   var deviceId = event.target.value;
-  var dropDown = event.target;
+  var outputSelector = event.target;
   var element = event.path[1].childNodes[1];
-  attachSinkId(element, deviceId, dropDown);
+  attachSinkId(element, deviceId, outputSelector);
 }
 
 function start() {
