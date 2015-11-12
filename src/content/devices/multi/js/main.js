@@ -85,7 +85,8 @@ function attachSinkId(element, sinkId, outputSelector) {
 function changeAudioDestination(event) {
   var deviceId = event.target.value;
   var outputSelector = event.target;
-  var element = event.path[1].childNodes[1];
+  // FIXME: Make the media element lookup dynamic.
+  var element = event.path[2].childNodes[1];
   attachSinkId(element, deviceId, outputSelector);
 }
 
