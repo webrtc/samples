@@ -42,6 +42,10 @@ line-height: 1.3em;
 margin: 0 0 1.5em 0;
 }
 
+div.outputSelector {
+margin: -1.3em 0 2em 0;
+}
+
 @media screen and (min-width: 1000px) {
 /* hack! to detect non-touch devices */
   div#links a {
