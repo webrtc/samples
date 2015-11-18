@@ -36,7 +36,7 @@
     "pem": "^1.8.1",
     "selenium-webdriver": "^2.48.0",
     "tape": "^4.0.0",
-    "travis-multirunner": "^2.7.2",
+    "travis-multirunner": "^3.0.0",
     "webrtc-adapter-test": "^0.2.1"
   }
 }
