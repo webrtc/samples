@@ -1,4 +1,4 @@
-/*global getPolicyFromBooleans*/
+/* global getPolicyFromBooleans */
 'use strict';
 
 var pn = chrome.privacy.network;
@@ -20,13 +20,15 @@ function convertToPolicy(allowMultiRoute, allowUdp, isInstall) {
       // If we're installing the extension, we'll default to a more private
       // mode.
       return pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
-    } 
+    }
     return pi.DEFAULT;
-  } else if (allowUdp) {
-    return pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
-  } else {
-    return pi.DISABLE_NON_PROXIED_UDP;
   }
+
+  if (allowUdp) {
+    return pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
+  }
+
+  return pi.DISABLE_NON_PROXIED_UDP;
 }
 
 // This function just returns the new policy value based on the 2 booleans
@@ -37,7 +39,7 @@ function getPolicyFromBooleans(isInstall, callback) {
       callback(convertToPolicy(allowMultiRoute.value, true, isInstall));
     } else {
       pn.webRTCNonProxiedUdpEnabled.get({}, function(allowUdp) {
-        callback(convertToPolicy(detail_multi_route.value,
+        callback(convertToPolicy(allowMultiRoute.value,
                                  allowUdp.value, isInstall));
       });
     }

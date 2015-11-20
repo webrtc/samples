@@ -1,4 +1,4 @@
-/*global getPolicyFromBooleans*/
+/* global getPolicyFromBooleans */
 'use strict';
 
 // If this is installed in a pre-48 version of Chrome, the only thing to do here
