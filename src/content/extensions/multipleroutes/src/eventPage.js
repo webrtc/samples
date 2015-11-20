@@ -3,7 +3,7 @@
 // If this is installed in a pre-48 version of Chrome, the only thing to do here
 // is to disable MultipleRoute.
 var pn = chrome.privacy.network;
-if (pn.webRTCIPHandlingPolicy == undefined) {
+if (pn.webRTCIPHandlingPolicy === undefined) {
   pn.webRTCMultipleRoutesEnabled.set({
     value: false
   });
@@ -20,7 +20,7 @@ function resetOldBooleans(callback) {
       value: true
     }, function() {
       if (callback) {
-        callback("Successfully reset the boolean");
+        callback('Successfully reset the boolean');
       }
     });
   });
@@ -31,22 +31,22 @@ function resetOldBooleans(callback) {
 // function again but they will either stop the conversion if
 // webRTCIPHandlingPolicy is not "default" or translate the booleans to the new
 // policy.
-function convertBooleansToPolicy(is_install, callback) {
-  if (pn.webRTCIPHandlingPolicy == undefined) {
+function convertBooleansToPolicy(isInstall, callback) {
+  if (pn.webRTCIPHandlingPolicy === undefined) {
     return;
   }
 
   pn.webRTCIPHandlingPolicy.get({}, function(details) {
-    if (details.value != chrome.privacy.IPHandlingPolicy.DEFAULT) {
+    if (details.value !== chrome.privacy.IPHandlingPolicy.DEFAULT) {
       if (callback) {
         callback(
-          "webRTCIPHandlingPolicy has a non-default value, stop now."
+          'webRTCIPHandlingPolicy has a non-default value, stop now.'
         );
       }
       return;
     }
 
-    getPolicyFromBooleans(is_install, function(policy) {
+    getPolicyFromBooleans(isInstall, function(policy) {
       pn.webRTCIPHandlingPolicy.set({
         value: policy
       }, resetOldBooleans(callback));
@@ -55,11 +55,11 @@ function convertBooleansToPolicy(is_install, callback) {
 }
 
 function onInstall(details) {
-  if (details.reason == "install" /* extension is installed*/ ||
-    details.reason == "update" /* extension is upgraded */ ||
-    details.reason == "chrome_update" /* chrome is upgraded*/ ) {
+  if (details.reason === 'install' /* extension is installed*/ ||
+    details.reason === 'update' /* extension is upgraded */ ||
+    details.reason === 'chrome_update' /* chrome is upgraded*/ ) {
     convertBooleansToPolicy(
-      details.reason == "install",
+      details.reason === 'install',
       function(status) {
         console.log(status);
       });

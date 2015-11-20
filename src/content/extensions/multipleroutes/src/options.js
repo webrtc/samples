@@ -3,24 +3,24 @@
 var pn = chrome.privacy.network;
 var pi = chrome.privacy.IPHandlingPolicy;
 
-var map_policy_to_radio_id = {};
-map_policy_to_radio_id[pi.DEFAULT] = 0;
-map_policy_to_radio_id[pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES] =  1;
-map_policy_to_radio_id[pi.DEFAULT_PUBLIC_INTERFACE_ONLY] =  2;
-map_policy_to_radio_id[pi.DISABLE_NON_PROXIED_UDP] =  3;
+var mapPolicyToRadioId = {};
+mapPolicyToRadioId[pi.DEFAULT] = 0;
+mapPolicyToRadioId[pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES] = 1;
+mapPolicyToRadioId[pi.DEFAULT_PUBLIC_INTERFACE_ONLY] = 2;
+mapPolicyToRadioId[pi.DISABLE_NON_PROXIED_UDP] = 3;
 
-var map_radio_id_to_policy = {};
-if (pn.webRTCIPHandlingPolicy == undefined) {
+var mapRadioIdToPolicy = {};
+if (pn.webRTCIPHandlingPolicy === undefined) {
   // radio id => [|webRTCMultipleRoutesEnabled|, |webRTCNonProxiedUdpEnabled|]
   // The [1] option doens't exist if pn.webRTCIPHandlingPolicy is undefined.
-  map_radio_id_to_policy[0] = [true, true];
-  map_radio_id_to_policy[2] = [false, true];
-  map_radio_id_to_policy[3] = [false, false];
+  mapRadioIdToPolicy[0] = [true, true];
+  mapRadioIdToPolicy[2] = [false, true];
+  mapRadioIdToPolicy[3] = [false, false];
 } else {
-  map_radio_id_to_policy[0] = pi.DEFAULT;
-  map_radio_id_to_policy[1] = pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
-  map_radio_id_to_policy[2] = pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
-  map_radio_id_to_policy[3] = pi.DISABLE_NON_PROXIED_UDP;
+  mapRadioIdToPolicy[0] = pi.DEFAULT;
+  mapRadioIdToPolicy[1] = pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
+  mapRadioIdToPolicy[2] = pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
+  mapRadioIdToPolicy[3] = pi.DISABLE_NON_PROXIED_UDP;
 }
 
 // Saves options.
@@ -33,16 +33,16 @@ function saveOptions() {
     }
   }
 
-  if (pn.webRTCIPHandlingPolicy != undefined) {
+  if (pn.webRTCIPHandlingPolicy !== undefined) {
     pn.webRTCIPHandlingPolicy.set({
-      value: map_radio_id_to_policy[i]
+      value: mapRadioIdToPolicy[i]
     });
   } else {
-    var mapping = map_radio_id_to_policy[i];
+    var mapping = mapRadioIdToPolicy[i];
     pn.webRTCMultipleRoutesEnabled.set({
       value: mapping[0]
     }, function() {
-      if (pn.webRTCNonProxiedUdpEnabled != undefined) {
+      if (pn.webRTCNonProxiedUdpEnabled !== undefined) {
         pn.webRTCNonProxiedUdpEnabled.set({
           value: mapping[1]
         });
@@ -53,11 +53,11 @@ function saveOptions() {
 
 function restoreRadios(policy) {
   var radios = document.getElementsByName('ip_policy_selection');
-  radios[map_policy_to_radio_id[policy]].checked = true;
+  radios[mapPolicyToRadioId[policy]].checked = true;
 }
 
 function restoreOption() {
-  if (pn.webRTCIPHandlingPolicy != undefined) {
+  if (pn.webRTCIPHandlingPolicy !== undefined) {
     pn.webRTCIPHandlingPolicy.get({}, function(details) {
       restoreRadios(details.value);
     });
@@ -70,10 +70,10 @@ function restoreOption() {
 
 // Returns the supported modes in the UI option.
 function getSupportedModes() {
-  if (pn.webRTCNonProxiedUdpEnabled == undefined) {
+  if (pn.webRTCNonProxiedUdpEnabled === undefined) {
     return [true, false, true, false];
   }
-  if (pn.webRTCIPHandlingPolicy == undefined) {
+  if (pn.webRTCIPHandlingPolicy === undefined) {
     return [true, false, true, true];
   }
   return [true, true, true, true];
@@ -90,24 +90,25 @@ document.getElementById('disable_non_proxied_udp').
   addEventListener('click', saveOptions);
 
 document.title = chrome.i18n.getMessage('netli_options');
+var i = 0;
 var i18nElements = document.querySelectorAll('*[i18n-content]');
-for (var i = 0; i < i18nElements.length; i++) {
+for (i = 0; i < i18nElements.length; i++) {
   var elem = i18nElements[i];
   var msg = elem.getAttribute('i18n-content');
   elem.innerHTML = chrome.i18n.getMessage(msg);
 }
 
 var modes = getSupportedModes();
-var hide_banner = true;
-for (var i = 0; i < modes.length; i++) {
+var hideBanner = true;
+for (i = 0; i < modes.length; i++) {
   if (!modes[i]) {
     var section = document.getElementById('Mode' + i);
     section.style.color = 'gray';
     section.querySelector('input').disabled = true;
-    hide_banner = false;
+    hideBanner = false;
   }
 }
 
-if (hide_banner) {
-  document.getElementById('not_supported').innerHTML = "";
+if (hideBanner) {
+  document.getElementById('not_supported').innerHTML = '';
 }
