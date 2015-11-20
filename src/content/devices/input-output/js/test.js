@@ -51,15 +51,15 @@ test('Fake device selection and check video element dimensions ' +
         // Chrome adds another fake video device.
         t.pass('Selecting 1st video device');
         return driver.wait(webdriver.until.elementLocated(
-          webdriver.By.css('#videoSource>option')));
-      })
-      .then(function(element) {
-        return new webdriver.ActionSequence(driver).click(element).perform();
+          webdriver.By.css('#videoSource:nth-of-type(1)')));
       })
       // Check enumerateDevices has returned an id.
-      .then(function() {
-        return driver.findElement(webdriver.By.css(
-          '#videoSource>option')).getAttribute('value');
+      .then(function(element) {
+        return driver.wait(webdriver.until.elementIsVisible(element))
+        .then(function() {
+          element.click();
+          return element.getAttribute('value');
+        });
       })
       .then(function(deviceId) {
         t.ok(deviceId !== '', 'Device/source id: ' + deviceId);
