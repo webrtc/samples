@@ -59,6 +59,7 @@
     "createLineChart": true,
     "expectEquals": true,
     "ga": true,
+    "getPolicyFromBooleans": true,
     "MediaStreamTrack": true,
     "report": true,
     "reportBug": true,

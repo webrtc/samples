@@ -1,4 +1,3 @@
-/* global getPolicyFromBooleans */
 'use strict';
 
 var pn = chrome.privacy.network;

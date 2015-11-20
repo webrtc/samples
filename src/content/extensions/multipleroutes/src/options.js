@@ -1,4 +1,3 @@
-/* global getPolicyFromBooleans */
 'use strict';
 
 var pn = chrome.privacy.network;
@@ -13,7 +12,7 @@ mapPolicyToRadioId[pi.DISABLE_NON_PROXIED_UDP] = 3;
 var mapRadioIdToPolicy = {};
 if (pn.webRTCIPHandlingPolicy === undefined) {
   // radio id => [|webRTCMultipleRoutesEnabled|, |webRTCNonProxiedUdpEnabled|]
-  // The [1] option doens't exist if pn.webRTCIPHandlingPolicy is undefined.
+  // The [1] option won't exist if pn.webRTCIPHandlingPolicy is undefined.
   mapRadioIdToPolicy[0] = [true, true];
   mapRadioIdToPolicy[2] = [false, true];
   mapRadioIdToPolicy[3] = [false, false];
