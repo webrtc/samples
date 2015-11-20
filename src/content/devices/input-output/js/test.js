@@ -34,9 +34,10 @@ test('Fake device selection and check video element dimensions ' +
         return driver.wait(webdriver.until.elementLocated(
             webdriver.By.css('#audioSource>option:nth-of-type(1)')));
       })
-      .then(function(element) {
-        return driver.wait(webdriver.until.elementIsVisible(element))
-        .then(function() {
+      .then(function() {
+        return driver.findElement(
+            webdriver.By.css('#audioSource>option:nth-of-type(1)'))
+        .then(function(element) {
           return new webdriver.ActionSequence(driver).click(element).perform();
         });
       })
