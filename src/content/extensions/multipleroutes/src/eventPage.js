@@ -4,8 +4,8 @@
 // chrome.runtime.onInstalled event to convert the booleans in pre-M48 version
 // to IPHandlingPolicy when chrome is upgraded to M48.
 
-// If this is installed in a pre-M48 version of Chrome, the only thing to do here
-// is to disable MultipleRoute.
+// If this is installed in a pre-M48 version of Chrome, the only thing to do
+// here is to disable MultipleRoute.
 var pn = chrome.privacy.network;
 if (pn.webRTCIPHandlingPolicy === undefined) {
   pn.webRTCMultipleRoutesEnabled.set({

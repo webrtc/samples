@@ -1,16 +1,18 @@
 'use strict';
 
 var pn = chrome.privacy.network;
-var pi = chrome.privacy.IPHandlingPolicy;
+var pi = null;
 
 // Handle the case when this is installed in pre-M48.
 if (pn.webRTCIPHandlingPolicy === undefined) {
-  pi = {};
-  pi.DEFAULT = 0;
-  pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES = 1;
-  pi.DEFAULT_PUBLIC_INTERFACE_ONLY = 2;
-  pi.DISABLE_NON_PROXIED_UDP = 3;
+  chrome.privacy.IPHandlingPolicy = {};
+  chrome.privacy.IPHandlingPolicy.DEFAULT = 0;
+  chrome.privacy.IPHandlingPolicy.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES = 1;
+  chrome.privacy.IPHandlingPolicy.DEFAULT_PUBLIC_INTERFACE_ONLY = 2;
+  chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP = 3;
 }
+
+pi = chrome.privacy.IPHandlingPolicy;
 
 // Helper function to convert the parameters to policy synchronously.
 function convertToPolicy(allowMultiRoute, allowUdp, isInstall) {
@@ -32,7 +34,7 @@ function convertToPolicy(allowMultiRoute, allowUdp, isInstall) {
 
 // This function just returns the new policy value based on the 2 booleans
 // without changing any preferences.
-function getPolicyFromBooleans(isInstall, callback) {
+getPolicyFromBooleans = function(isInstall, callback) {
   pn.webRTCMultipleRoutesEnabled.get({}, function(allowMultiRoute) {
     if (pn.webRTCNonProxiedUdpEnabled === undefined) {
       callback(convertToPolicy(allowMultiRoute.value, true, isInstall));
@@ -43,4 +45,4 @@ function getPolicyFromBooleans(isInstall, callback) {
       });
     }
   });
-}
+};
