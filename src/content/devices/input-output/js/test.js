@@ -32,7 +32,7 @@ test('Fake device selection and check video element dimensions ' +
         // Chrome adds another fake video device.
         t.pass('Selecting 1st audio device');
         return driver.wait(webdriver.until.elementLocated(
-            webdriver.By.css('#audioSource>option')));
+            webdriver.By.css('#audioSource>option:nth-of-type(1)')));
       })
       .then(function(element) {
         return driver.wait(webdriver.until.elementIsVisible(element))
