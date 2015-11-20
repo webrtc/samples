@@ -19,15 +19,12 @@ function convertToPolicy(allowMultiRoute, allowUdp, isInstall) {
       // If we're installing the extension, we'll default to a more private
       // mode.
       return pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
-    } else {
-      return pi.DEFAULT;
-    }
+    } 
+    return pi.DEFAULT;
+  } else if (allowUdp) {
+    return pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
   } else {
-    if (allowUdp) {
-      return pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
-    } else {
-      return pi.DISABLE_NON_PROXIED_UDP;
-    }
+    return pi.DISABLE_NON_PROXIED_UDP;
   }
 }
 

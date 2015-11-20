@@ -1,3 +1,4 @@
+/*global getPolicyFromBooleans*/
 'use strict';
 
 var pn = chrome.privacy.network;
@@ -85,7 +86,7 @@ document.getElementById('default').
 document.getElementById('default_public_and_private_interfaces').
   addEventListener('click', saveOptions);
 document.getElementById('default_public_interface_only').
-  addEventListener('click',  saveOptions);
+  addEventListener('click', saveOptions);
 document.getElementById('disable_non_proxied_udp').
   addEventListener('click', saveOptions);
 
