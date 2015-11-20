@@ -38,7 +38,7 @@ test('Fake device selection and check video element dimensions ' +
       .then(function(element) {
         return driver.wait(webdriver.until.elementIsVisible(element))
         .then(function() {
-          new webdriver.ActionSequence(driver).click(element).perform();
+          element.click();
           return element.getAttribute('value');
         });
       })
