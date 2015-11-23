@@ -23,7 +23,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
 navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
 var constraints = {
-  audio: false,
+  audio: true,
   video: true
 };
 
@@ -97,8 +97,7 @@ function toggleRecording() {
 function startRecording() {
   try {
     recordedBlobs = [];
-    mediaRecorder = new MediaRecorder(window.stream);
-    // mediaRecorder = new MediaRecorder(window.stream, 'video/vp8');
+    mediaRecorder = new MediaRecorder(window.stream /* , 'video/vp8' */);
   } catch (event) {
     alert('MediaRecorder is not supported by this browser.\n\n' +
       'Try Chrome 47 or later, with Enable experimental Web Platform features enabled from chrome://flags.');
@@ -131,12 +130,15 @@ function play() {
 
 function download() {
   var blob = new Blob(recordedBlobs, {type: 'video/webm'});
-  var url = URL.createObjectURL(blob);
+  var url = window.URL.createObjectURL(blob);
   var a = document.createElement('a');
-  document.body.appendChild(a);
   a.style = 'display: none';
   a.href = url;
   a.download = 'test.webm';
+  document.body.appendChild(a);
   a.click();
-  window.URL.revokeObjectURL(url);
+  setTimeout(function() {
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }, 100);
 }
