@@ -32,16 +32,15 @@ test('Fake device selection and check video element dimensions ' +
         // Chrome adds another fake video device.
         t.pass('Selecting 1st audio device');
         return driver.wait(webdriver.until.elementLocated(
-          webdriver.By.css('#audioSource>option')));
-      })
-      .then(function(element) {
-        return new webdriver.ActionSequence(driver).
-        doubleClick(element).perform();
+          webdriver.By.css('#audioSource:nth-of-type(1)')));
       })
       // Check enumerateDevices has returned an id.
-      .then(function() {
-        return driver.findElement(webdriver.By.css(
-          '#audioSource>option')).getAttribute('value');
+      .then(function(element) {
+        return driver.wait(webdriver.until.elementIsVisible(element))
+        .then(function() {
+          element.click();
+          return element.getAttribute('value');
+        });
       })
       .then(function(deviceId) {
         t.ok(deviceId, 'Device/source id: ' + deviceId);
@@ -52,16 +51,15 @@ test('Fake device selection and check video element dimensions ' +
         // Chrome adds another fake video device.
         t.pass('Selecting 1st video device');
         return driver.wait(webdriver.until.elementLocated(
-          webdriver.By.css('#videoSource>option')));
-      })
-      .then(function(element) {
-        return new webdriver.ActionSequence(driver).
-        doubleClick(element).perform();
+          webdriver.By.css('#videoSource:nth-of-type(1)')));
       })
       // Check enumerateDevices has returned an id.
-      .then(function() {
-        return driver.findElement(webdriver.By.css(
-          '#videoSource>option')).getAttribute('value');
+      .then(function(element) {
+        return driver.wait(webdriver.until.elementIsVisible(element))
+        .then(function() {
+          element.click();
+          return element.getAttribute('value');
+        });
       })
       .then(function(deviceId) {
         t.ok(deviceId !== '', 'Device/source id: ' + deviceId);
@@ -89,8 +87,7 @@ test('Fake device selection and check video element dimensions ' +
       })
       .then(function(deviceLabel) {
         // TODO: Improve this once Firefox has added labels for fake devices.
-        var fakeVideoDeviceName = (browser === 'chrome') ?
-          'fake_device_0' : '';
+        var fakeVideoDeviceName = (browser === 'chrome') ? 'fake_device_0' : '';
         // TODO: Remove match() method once http://crbug.com/526633 is fixed.
         t.ok(fakeVideoDeviceName === deviceLabel.match(fakeVideoDeviceName)[0],
           'Fake video device found with label: ' +
