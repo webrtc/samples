@@ -1,10 +1,10 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
+*  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
+*/
 
 'use strict';
 
@@ -43,18 +43,12 @@ var isSecureOrigin = location.protocol === 'https:' ||
 location.host === 'localhost';
 if (!isSecureOrigin) {
   alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.' +
-    '\n\nChanging protocol to HTTPS');
+      '\n\nChanging protocol to HTTPS');
   location.protocol = 'HTTPS';
 }
-navigator.getUserMedia(constraints, handleGumSuccess, handleGumError);
 
-function handleSourceOpen(event) {
-  console.log('MediaSource opened');
-  sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
-  console.log('Source buffer: ', sourceBuffer);
-}
-
-function handleGumSuccess(stream) {
+navigator.mediaDevices.getUserMedia(constraints)
+.then(function(stream) {
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream; // make available to browser console
   if (window.URL) {
@@ -62,10 +56,14 @@ function handleGumSuccess(stream) {
   } else {
     gumVideo.src = stream;
   }
-}
-
-function handleGumError(error) {
+}).catch(function(error) {
   console.log('navigator.getUserMedia error: ', error);
+});
+
+function handleSourceOpen(event) {
+  console.log('MediaSource opened');
+  sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
+  console.log('Source buffer: ', sourceBuffer);
 }
 
 function handleDataAvailable(event) {
@@ -100,7 +98,7 @@ function startRecording() {
     mediaRecorder = new MediaRecorder(window.stream /* , 'video/vp8' */);
   } catch (event) {
     alert('MediaRecorder is not supported by this browser.\n\n' +
-      'Try Chrome 47 or later, with Enable experimental Web Platform features enabled from chrome://flags.');
+      'Try Firefox 29 or later, or Chrome 47 or later, with Enable experimental Web Platform features enabled from chrome://flags.');
     console.error('Exception while creating MediaRecorder:', event);
     return;
   }
@@ -118,14 +116,12 @@ function startRecording() {
 function stopRecording() {
   mediaRecorder.stop();
   console.log('Recorded Blobs: ', recordedBlobs);
-  // window.stream.getVideoTracks()[0].stop();
+  recordedVideo.controls = true;
 }
 
 function play() {
-  // sourceBuffer.appendBuffer(recordedBlobs); // or...
   var superBuffer = new Blob(recordedBlobs);
   recordedVideo.src = window.URL.createObjectURL(superBuffer);
-  recordedVideo.controls = true;
 }
 
 function download() {
