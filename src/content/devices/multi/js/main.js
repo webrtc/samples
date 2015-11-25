@@ -37,12 +37,13 @@ function gotDevices(deviceInfos) {
   }
 
   // Clone the master outputSelector and replace outputSelector placeholders.
-  var alloutputSelectors = document.querySelectorAll('select');
-  alloutputSelectors.forEach(function(selector) {
+  var allOutputSelectors = document.querySelectorAll('select');
+  for (var selector = 0; selector < allOutputSelectors.length; selector++) {
     var newOutputSelector = masterOutputSelector.cloneNode(true);
     newOutputSelector.addEventListener('change', changeAudioDestination);
-    selector.parentNode.replaceChild(newOutputSelector, selector);
-  });
+    allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector,
+        allOutputSelectors[selector]);
+  }
 }
 
 navigator.mediaDevices.enumerateDevices()
