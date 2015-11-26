@@ -51,11 +51,7 @@ navigator.mediaDevices.getUserMedia(constraints)
 .then(function(stream) {
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream; // make available to browser console
-  if (window.URL) {
-    gumVideo.src = window.URL.createObjectURL(stream);
-  } else {
-    gumVideo.src = stream;
-  }
+  gumVideo.srcObject = stream;
 }).catch(function(error) {
   console.log('navigator.getUserMedia error: ', error);
 });
