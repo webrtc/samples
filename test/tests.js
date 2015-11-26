@@ -5,8 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* jshint node: true */
-/* globals require */
+ /* eslint-env node */
 
 'use strict';
 var test = require('tape');
