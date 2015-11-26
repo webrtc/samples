@@ -66,9 +66,9 @@ div#dtmfStatus {
   margin: 0 0 10px 0;
 }
 
-div#parameters input {
+div#parameters input[type = range] {
   font-size: 1em;
-  width: 62px;
+  width: 85px;
 }
 
 div#parameters input#tones {
@@ -84,4 +84,5 @@ div#parameters label {
   vertical-align: top;
   width: 68px;
 }
+
 

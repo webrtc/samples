@@ -23,6 +23,9 @@ var durationInput = document.querySelector('input#duration');
 var gapInput = document.querySelector('input#gap');
 var tonesInput = document.querySelector('input#tones');
 
+var durationValue = document.querySelector('span#durationValue');
+var gapValue = document.querySelector('span#gapValue');
+
 var sentTonesDiv = document.querySelector('div#sentTones');
 var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
@@ -36,6 +39,14 @@ var dtmfSender;
 var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0
+};
+
+durationInput.oninput = function() {
+  durationValue.textContent = durationInput.value;
+};
+
+gapInput.oninput = function() {
+  gapValue.textContent = gapInput.value;
 };
 
 main();
