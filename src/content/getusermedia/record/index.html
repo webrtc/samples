@@ -20,11 +20,12 @@
 
   <base target="_blank">
 
-  <title>getUserMedia to canvas</title>
+  <title>MediaStream Recording</title>
 
   <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
   <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="css/main.css">
 
 </head>
 
@@ -32,22 +33,25 @@
 
   <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia ⇒ canvas</span></h1>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>MediaRecorder</span></h1>
 
-    <video autoplay></video>
-    <button>Take snapshot</button>
-    <canvas></canvas>
+    <p>This demo requires Firefox 29 or later, or Chrome 47 or later with <strong>Enable experimental Web Platform features</strong> enabled from chrome://flags.</p>
 
-    <p>Draw a frame from the video onto the canvas element using the <code>drawImage()</code> method.</p>
+    <p>For more information see the MediaStream Recording API <a href="http://w3c.github.io/mediacapture-record/MediaRecorder.html" title="W3C MediaStream Recording API Editor's Draft">Editor's&nbsp;Draft</a>.</p>
 
-    <p>The variables <code>canvas</code>, <code>video</code> and <code>stream</code> are in global scope, so you can inspect them from the console.</p>
+    <video id="gum" autoplay muted></video>
+    <video id="recorded" autoplay loop></video>
 
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/canvas" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+    <div>
+      <button id="record">Start Recording</button>
+      <button id="play" disabled>Play</button>
+      <button id="download" disabled>Download</button>
+    </div>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
   </div>
 
-  <script src="../../../js/adapter.js"></script>
-  <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
   <script src="../../../js/lib/ga.js"></script>
 
