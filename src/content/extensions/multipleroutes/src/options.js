@@ -1,3 +1,11 @@
+/*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
 'use strict';
 
 var pn = chrome.privacy.network;
@@ -10,12 +18,12 @@ mapPolicyToRadioId[pi.DEFAULT_PUBLIC_INTERFACE_ONLY] = 2;
 mapPolicyToRadioId[pi.DISABLE_NON_PROXIED_UDP] = 3;
 
 var mapRadioIdToPolicy = {};
-if (pn.webRTCIPHandlingPolicy === undefined) {
+if (!browserSupportsIPHandlingPolicy()) {
   // radio id => [|webRTCMultipleRoutesEnabled|, |webRTCNonProxiedUdpEnabled|]
   // The [1] option won't exist if pn.webRTCIPHandlingPolicy is undefined.
-  mapRadioIdToPolicy[0] = [true, true];
-  mapRadioIdToPolicy[2] = [false, true];
-  mapRadioIdToPolicy[3] = [false, false];
+  mapRadioIdToPolicy[0] = {allowMultipleRoutes: true, allowUdp: true};
+  mapRadioIdToPolicy[2] = {allowMultipleRoutes: false, allowUdp: true};
+  mapRadioIdToPolicy[3] = {allowMultipleRoutes: false, allowUdp: false};
 } else {
   mapRadioIdToPolicy[0] = pi.DEFAULT;
   mapRadioIdToPolicy[1] = pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
@@ -26,25 +34,24 @@ if (pn.webRTCIPHandlingPolicy === undefined) {
 // Saves options.
 function saveOptions() {
   var radios = document.getElementsByName('ip_policy_selection');
-  var i = 0;
-  for (; i < radios.length; i++) {
+  for (var i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
       break;
     }
   }
 
-  if (pn.webRTCIPHandlingPolicy !== undefined) {
+  if (browserSupportsIPHandlingPolicy()) {
     pn.webRTCIPHandlingPolicy.set({
       value: mapRadioIdToPolicy[i]
     });
   } else {
-    var mapping = mapRadioIdToPolicy[i];
+    var oldBools = mapRadioIdToPolicy[i];
     pn.webRTCMultipleRoutesEnabled.set({
-      value: mapping[0]
+      value: oldBools.allowMultipleRoutes
     }, function() {
-      if (pn.webRTCNonProxiedUdpEnabled !== undefined) {
+      if (browserSupportsNonProxiedUdpBoolean()) {
         pn.webRTCNonProxiedUdpEnabled.set({
-          value: mapping[1]
+          value: oldBools.allowUdp
         });
       }
     });
@@ -57,27 +64,27 @@ function restoreRadios(policy) {
 }
 
 function restoreOption() {
-  if (pn.webRTCIPHandlingPolicy !== undefined) {
+  if (browserSupportsIPHandlingPolicy()) {
     pn.webRTCIPHandlingPolicy.get({}, function(details) {
       restoreRadios(details.value);
     });
   } else {
-    getPolicyFromBooleans(false, function(policy) {
+    getPolicyFromBooleans(function(policy) {
       restoreRadios(policy);
     });
   }
 }
 
-// Returns the supported modes in the UI option.
-function getSupportedModes() {
-  if (pn.webRTCNonProxiedUdpEnabled === undefined) {
-    return [true, false, true, false];
-  }
-  if (pn.webRTCIPHandlingPolicy === undefined) {
-    return [true, false, true, true];
-  }
-  return [true, true, true, true];
-}
+var supportedIPPolicyModes = {
+  // DEFAULT
+  Mode0: true,
+  // DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES
+  Mode1: browserSupportsIPHandlingPolicy(),
+  // DEFAULT_PUBLIC_INTERFACE_ONLY
+  Mode2: true,
+  // NON_PROXIED_UDP
+  Mode3: browserSupportsNonProxiedUdpBoolean()
+};
 
 document.addEventListener('DOMContentLoaded', restoreOption);
 document.getElementById('default').
@@ -90,19 +97,18 @@ document.getElementById('disable_non_proxied_udp').
   addEventListener('click', saveOptions);
 
 document.title = chrome.i18n.getMessage('netli_options');
-var i = 0;
 var i18nElements = document.querySelectorAll('*[i18n-content]');
-for (i = 0; i < i18nElements.length; i++) {
+for (var i = 0; i < i18nElements.length; i++) {
   var elem = i18nElements[i];
   var msg = elem.getAttribute('i18n-content');
   elem.innerHTML = chrome.i18n.getMessage(msg);
 }
 
-var modes = getSupportedModes();
 var hideBanner = true;
-for (i = 0; i < modes.length; i++) {
-  if (!modes[i]) {
-    var section = document.getElementById('Mode' + i);
+for (i = 0; i < Object.keys(supportedIPPolicyModes).length; i++) {
+  var key = 'Mode' + i;
+  if (!supportedIPPolicyModes[key]) {
+    var section = document.getElementById(key);
     section.style.color = 'gray';
     section.querySelector('input').disabled = true;
     hideBanner = false;
