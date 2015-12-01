@@ -1,25 +1,36 @@
 <!doctype html>
 <html>
 <body>
-  <h1 i18n-content="netli_options"></h1>
-  <p>
-    <input type="radio" name="routeselection" id="multirouteOnUdpOn" value="multirouteOnUdpOn">
-    <label for="multirouteOnUdpOn">
-      <span i18n-content="netli_multirouteOnUdpOn_radio"></span>
+  <p id="Mode0">
+    <input type="radio" name="ip_policy_selection" id="default" value="default">
+    <label for="default">
+      <span i18n-content="netli_default_radio"></span>
+    </label>
+  <p id="Mode1">
+    <input type="radio" name="ip_policy_selection"
+           id="default_public_and_private_interfaces"
+           value="default_public_and_private_interfaces">
+    <label for="default_public_and_private_interfaces">
+      <span i18n-content="netli_default_public_and_private_interfaces_radio"></span>
+    </label>
+  <p id="Mode2">
+    <input type="radio" name="ip_policy_selection"
+           id="default_public_interface_only"
+           value="default_public_interface_only">
+    <label for="default_public_interface_only">
+      <span i18n-content="netli_default_public_interface_only_radio"></span>
+    </label>
+  <p id="Mode3">
+    <input type="radio" name="ip_policy_selection"
+           id="disable_non_proxied_udp" value="disable_non_proxied_udp">
+    <label for="disable_non_proxied_udp" id="for_disable_non_proxied_udp">
+      <span i18n-content="netli_disable_non_proxied_udp_radio"></span>
     </label>
   <p>
-    <input type="radio" name="routeselection" id="multirouteOffUdpOn" value="multirouteOffUdpOn">
-    <label for="multirouteOffUdpOn">
-      <span i18n-content="netli_multirouteOffUdpOn_radio"></span>
+    <label id="not_supported">
+      <span i18n-content="netli_option_not_supported"></span>
     </label>
-  <p id="multirouteOffUdpOff_Section">
-    <input type="radio" name="routeselection" id="multirouteOffUdpOff" value="multirouteOffUdpOff">
-    <label for="multirouteOffUdpOff" id="for_multirouteOffUdpOff">
-      <span i18n-content="netli_multirouteOffUdpOff_radio"></span>
-    </label>
-    <label for="multirouteOffUdpOff" id="for_multirouteOffUdpOff_notSupported">
-      <span i18n-content="netli_multirouteOffUdpOff_not_Supported_radio"></span>
-    </label>
-    <script src="options.js"></script>
+  <script src="utils.js"></script>
+  <script src="options.js"></script>
 </body>
 </html>

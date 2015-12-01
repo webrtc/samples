@@ -1,92 +1,100 @@
+/*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
 'use strict';
+
+var pn = chrome.privacy.network;
+var pi = chrome.privacy.IPHandlingPolicy;
+
+var mapPolicyToRadioId = {};
+mapPolicyToRadioId[pi.DEFAULT] = 0;
+mapPolicyToRadioId[pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES] = 1;
+mapPolicyToRadioId[pi.DEFAULT_PUBLIC_INTERFACE_ONLY] = 2;
+mapPolicyToRadioId[pi.DISABLE_NON_PROXIED_UDP] = 3;
+
+var mapRadioIdToPolicy = {};
+if (!browserSupportsIPHandlingPolicy()) {
+  // radio id => [|webRTCMultipleRoutesEnabled|, |webRTCNonProxiedUdpEnabled|]
+  // The [1] option won't exist if pn.webRTCIPHandlingPolicy is undefined.
+  mapRadioIdToPolicy[0] = {allowMultipleRoutes: true, allowUdp: true};
+  mapRadioIdToPolicy[2] = {allowMultipleRoutes: false, allowUdp: true};
+  mapRadioIdToPolicy[3] = {allowMultipleRoutes: false, allowUdp: false};
+} else {
+  mapRadioIdToPolicy[0] = pi.DEFAULT;
+  mapRadioIdToPolicy[1] = pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
+  mapRadioIdToPolicy[2] = pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
+  mapRadioIdToPolicy[3] = pi.DISABLE_NON_PROXIED_UDP;
+}
 
 // Saves options.
 function saveOptions() {
-  var multiRoutes;
-  var nonProxiedUdp;
-  var radios = document.getElementsByName('routeselection');
-  for (var i = 0, length = radios.length; i < length; i++) {
+  var radios = document.getElementsByName('ip_policy_selection');
+  for (var i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
-      // option 0: multiple routes enabled, non proxied udp enabled.
-      // option 1: multiple routes disabled, non proxied udp enabled.
-      // option 2: both are disabled.
-      multiRoutes = i < 1;
-      nonProxiedUdp = i < 2;
       break;
     }
   }
 
-  chrome.privacy.network.webRTCMultipleRoutesEnabled.set({
-    'value': multiRoutes
-  });
-  try {
-    chrome.privacy.network.webRTCNonProxiedUdpEnabled.set({
-      'value': nonProxiedUdp
+  if (browserSupportsIPHandlingPolicy()) {
+    pn.webRTCIPHandlingPolicy.set({
+      value: mapRadioIdToPolicy[i]
     });
-  } catch (err) {
-    console.log('setting webRTCNonProxiedUdpEnabled is not supported.');
-  }
-}
-
-function restoreRadios(multiRoutes, nonProxiedUdp) {
-  var radios = document.getElementsByName('routeselection');
-  if (multiRoutes) {
-    if (nonProxiedUdp) {
-      radios[0].checked = true;
-    } else {
-      radios[0].checked = false;
-      alert(
-          'The extension does not support the configuration where multiple ' +
-              'routes is enabled but non-proxied udp is disabled.'
-      );
-    }
   } else {
-    if (nonProxiedUdp) {
-      radios[1].checked = true;
-    } else {
-      radios[2].checked = true;
-    }
-  }
-}
-
-// Restores checkbox states.
-function restoreMultiRoutesOption() {
-  var multiRoutes = true;
-  chrome.privacy.network.webRTCMultipleRoutesEnabled.get({},
-    function(details) {
-      multiRoutes = details.value;
-      restoreRadios(multiRoutes, true);
-      restoreNonProxiedUdpOption(multiRoutes);
+    var oldBools = mapRadioIdToPolicy[i];
+    pn.webRTCMultipleRoutesEnabled.set({
+      value: oldBools.allowMultipleRoutes
+    }, function() {
+      if (browserSupportsNonProxiedUdpBoolean()) {
+        pn.webRTCNonProxiedUdpEnabled.set({
+          value: oldBools.allowUdp
+        });
+      }
     });
-}
-
-function restoreNonProxiedUdpOption(multiRoutes) {
-  try {
-    var nonProxiedUdp = true;
-    chrome.privacy.network.webRTCNonProxiedUdpEnabled.get({},
-      function(details) {
-        nonProxiedUdp = details.value;
-        restoreRadios(multiRoutes, nonProxiedUdp);
-        document.getElementById('for_multirouteOffUdpOff_notSupported').
-          innerHTML = '';
-      });
-  } catch (err) {
-    console.log(err);
-    document.getElementById('multirouteOffUdpOff').disabled = true;
-    document.getElementById('multirouteOffUdpOff_Section').style.color = 'gray';
-    var chromeVersion = /Chrome\/([0-9.]+)/.exec(navigator.userAgent)[1];
-    document.getElementById('for_multirouteOffUdpOff_notSupported').innerHTML +=
-      ' Current version is: ' + chromeVersion;
   }
 }
 
-document.addEventListener('DOMContentLoaded', restoreMultiRoutesOption);
-document.getElementById('multirouteOnUdpOn').addEventListener('click',
-  saveOptions);
-document.getElementById('multirouteOffUdpOn').addEventListener('click',
-  saveOptions);
-document.getElementById('multirouteOffUdpOff').addEventListener('click',
-  saveOptions);
+function restoreRadios(policy) {
+  var radios = document.getElementsByName('ip_policy_selection');
+  radios[mapPolicyToRadioId[policy]].checked = true;
+}
+
+function restoreOption() {
+  if (browserSupportsIPHandlingPolicy()) {
+    pn.webRTCIPHandlingPolicy.get({}, function(details) {
+      restoreRadios(details.value);
+    });
+  } else {
+    getPolicyFromBooleans(function(policy) {
+      restoreRadios(policy);
+    });
+  }
+}
+
+var supportedIPPolicyModes = {
+  // DEFAULT
+  Mode0: true,
+  // DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES
+  Mode1: browserSupportsIPHandlingPolicy(),
+  // DEFAULT_PUBLIC_INTERFACE_ONLY
+  Mode2: true,
+  // NON_PROXIED_UDP
+  Mode3: browserSupportsNonProxiedUdpBoolean()
+};
+
+document.addEventListener('DOMContentLoaded', restoreOption);
+document.getElementById('default').
+  addEventListener('click', saveOptions);
+document.getElementById('default_public_and_private_interfaces').
+  addEventListener('click', saveOptions);
+document.getElementById('default_public_interface_only').
+  addEventListener('click', saveOptions);
+document.getElementById('disable_non_proxied_udp').
+  addEventListener('click', saveOptions);
 
 document.title = chrome.i18n.getMessage('netli_options');
 var i18nElements = document.querySelectorAll('*[i18n-content]');
@@ -94,4 +102,19 @@ for (var i = 0; i < i18nElements.length; i++) {
   var elem = i18nElements[i];
   var msg = elem.getAttribute('i18n-content');
   elem.innerHTML = chrome.i18n.getMessage(msg);
+}
+
+var hideBanner = true;
+for (i = 0; i < Object.keys(supportedIPPolicyModes).length; i++) {
+  var key = 'Mode' + i;
+  if (!supportedIPPolicyModes[key]) {
+    var section = document.getElementById(key);
+    section.style.color = 'gray';
+    section.querySelector('input').disabled = true;
+    hideBanner = false;
+  }
+}
+
+if (hideBanner) {
+  document.getElementById('not_supported').innerHTML = '';
 }
