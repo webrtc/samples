@@ -51,11 +51,7 @@ navigator.mediaDevices.getUserMedia(constraints)
 .then(function(stream) {
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream; // make available to browser console
-  if (window.URL) {
-    gumVideo.src = window.URL.createObjectURL(stream);
-  } else {
-    gumVideo.src = stream;
-  }
+  gumVideo.srcObject = stream; // srcObject is shimmed in adapter.js
 }).catch(function(error) {
   console.log('navigator.getUserMedia error: ', error);
 });
@@ -121,7 +117,7 @@ function stopRecording() {
 
 function play() {
   var superBuffer = new Blob(recordedBlobs);
-  recordedVideo.src = window.URL.createObjectURL(superBuffer);
+  recordedVideo.srcObject = superBuffer;
 }
 
 function download() {
