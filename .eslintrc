@@ -49,8 +49,11 @@
   "globals": {
     "audioContext": true,
     "AudioContext": true,
+    "browserSupportsIPHandlingPolicy": true,
+    "browserSupportsNonProxiedUdpBoolean": true,
     "chrome": true,
     "ga": true,
+    "getPolicyFromBooleans": true,
     "MediaStreamTrack": true,
     "RTCIceCandidate": true,
     "RTCPeerConnection": true,
