@@ -18,12 +18,12 @@ function sendFile(t, path) {
        .sendKeys(path);
   })
   .then(function() {
-    // Wait for the received element to be displayed.
+    // Wait for the download element to be displayed.
     return driver.wait(webdriver.until.elementIsVisible(
-        driver.findElement(webdriver.By.id('received'))), 90 * 1000);
+        driver.findElement(webdriver.By.id('download'))), 90 * 1000);
   })
   .then(function() {
-    t.pass('received element found');
+    t.pass('download element found');
     t.end();
   })
   .then(null, function(err) {
