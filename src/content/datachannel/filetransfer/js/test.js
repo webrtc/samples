@@ -26,6 +26,7 @@ function sendFile(t, path) {
   })
   .then(function() {
     t.pass('download element found');
+    t.end();
   })
   .then(null, function(err) {
     if (path === emptyFilePath) { // if empty file, download element is empty
