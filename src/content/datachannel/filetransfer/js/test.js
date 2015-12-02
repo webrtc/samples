@@ -6,7 +6,7 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('../../../../../test/selenium-lib');
 var emptyFilePath =
-  process.cwd() + '/src/content/datachannel/filetransfer/emptyFile';
+process.cwd() + '/src/content/datachannel/filetransfer/emptyFile';
 
 function sendFile(t, path) {
   var driver = seleniumHelpers.buildDriver();
@@ -26,16 +26,14 @@ function sendFile(t, path) {
   })
   .then(function() {
     t.pass('download element found');
-    t.end();
   })
   .then(null, function(err) {
     if (path === emptyFilePath) { // if empty file, download element is empty
       t.pass('Empty file, no download link displayed');
-      t.end();
     } else {
       t.fail(err);
-      t.end();
     }
+    t.end();
   });
 }
 
