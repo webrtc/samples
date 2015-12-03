@@ -14,29 +14,35 @@ var test = require('tape');
 
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('../../../../../test/selenium-lib');
+var emptyFilePath =
+process.cwd() + '/src/content/datachannel/filetransfer/emptyFile';
 
 function sendFile(t, path) {
   var driver = seleniumHelpers.buildDriver();
 
   driver.get('file://' + process.cwd() +
-      '/src/content/datachannel/filetransfer/index.html')
+    '/src/content/datachannel/filetransfer/index.html')
   .then(function() {
     t.pass('page loaded');
     // Based on https://saucelabs.com/resources/articles/selenium-file-upload
     return driver.findElement(webdriver.By.id('fileInput'))
-       .sendKeys(path);
+    .sendKeys(path);
   })
   .then(function() {
-    // Wait for the received element to be displayed.
+    // Wait for the download element to be displayed.
     return driver.wait(webdriver.until.elementIsVisible(
-        driver.findElement(webdriver.By.id('received'))), 90 * 1000);
+      driver.findElement(webdriver.By.id('download'))), 90 * 1000);
   })
   .then(function() {
-    t.pass('received element found');
+    t.pass('download element found');
     t.end();
   })
   .then(null, function(err) {
-    t.fail(err);
+    if (path === emptyFilePath) { // if empty file, download element is empty
+      t.pass('Empty file, no download link displayed');
+    } else {
+      t.fail(err);
+    }
     t.end();
   });
 }
@@ -65,13 +71,10 @@ test('Filetransfer via Datachannels: empty file', function(t) {
     t.end();
   } else {
     var fs = require('fs');
-    var emptyFilePath = '/src/content/datachannel/filetransfer/emptyFile';
     // Create empty file.
-    fs.writeFileSync(process.cwd() + emptyFilePath, '');
-
-    sendFile(t, process.cwd() + emptyFilePath);
-
+    fs.writeFileSync(emptyFilePath, '');
+    sendFile(t, emptyFilePath);
     // Remove the empty file.
-    fs.unlink(process.cwd() + emptyFilePath);
+    fs.unlink(emptyFilePath);
   }
 });

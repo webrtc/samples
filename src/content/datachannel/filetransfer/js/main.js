@@ -15,7 +15,7 @@ var receiveChannel;
 var pcConstraint;
 var bitrateDiv = document.querySelector('div#bitrate');
 var fileInput = document.querySelector('input#fileInput');
-var downloadDiv = document.querySelector('a#received');
+var downloadAnchor = document.querySelector('a#download');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
 var statusMessage = document.querySelector('span#status');
@@ -72,11 +72,11 @@ function sendData() {
       file.lastModifiedDate].join(' '));
 
   // Handle 0 size files.
-  statusMessage.innerHTML = '';
+  statusMessage.textContent = '';
+  downloadAnchor.textContent = '';
   if (file.size === 0) {
     bitrateDiv.innerHTML = '';
-    statusMessage.innerHTML =
-        'File is empty, please select a non-empty file';
+    statusMessage.textContent = 'File is empty, please select a non-empty file';
     closeDataChannels();
     return;
   }
@@ -168,11 +168,11 @@ function receiveChannelCallback(event) {
 
   receivedSize = 0;
   bitrateMax = 0;
-  downloadDiv.innerHTML = '';
-  downloadDiv.removeAttribute('download');
-  if (downloadDiv.href) {
-    URL.revokeObjectURL(downloadDiv.href);
-    downloadDiv.removeAttribute('href');
+  downloadAnchor.textContent = '';
+  downloadAnchor.removeAttribute('download');
+  if (downloadAnchor.href) {
+    URL.revokeObjectURL(downloadAnchor.href);
+    downloadAnchor.removeAttribute('href');
   }
 }
 
@@ -190,12 +190,11 @@ function onReceiveMessageCallback(event) {
     var received = new window.Blob(receiveBuffer);
     receiveBuffer = [];
 
-    downloadDiv.href = URL.createObjectURL(received);
-    downloadDiv.download = file.name;
-    var text = 'Click to download \'' + file.name + '\' (' + file.size +
-        ' bytes)';
-    downloadDiv.appendChild(document.createTextNode(text));
-    downloadDiv.style.display = 'block';
+    downloadAnchor.href = URL.createObjectURL(received);
+    downloadAnchor.download = file.name;
+    downloadAnchor.textContent =
+      'Click to download \'' + file.name + '\' (' + file.size + ' bytes)';
+    downloadAnchor.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
         ((new Date()).getTime() - timestampStart));
