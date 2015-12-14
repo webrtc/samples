@@ -6,8 +6,7 @@
  *  tree.
  */
 
-/* exported browserSupportsIPHandlingPolicy browserSupportsNonProxiedUdpBoolean
-   getPolicyFromBooleans */
+/* exported getPolicyFromBooleans */
 
 'use strict';
 

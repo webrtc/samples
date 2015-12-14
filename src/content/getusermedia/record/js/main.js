@@ -19,9 +19,6 @@ var mediaRecorder;
 var recordedBlobs;
 var sourceBuffer;
 
-navigator.getUserMedia = navigator.getUserMedia ||
-navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
 var constraints = {
   audio: true,
   video: true
