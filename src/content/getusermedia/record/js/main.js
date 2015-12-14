@@ -117,7 +117,8 @@ function stopRecording() {
 
 function play() {
   var superBuffer = new Blob(recordedBlobs);
-  recordedVideo.srcObject = superBuffer;
+  // Firefox can not yet deal with Buffer srcObjects.
+  recordedVideo.src = window.URL.createObjectURL(superBuffer);
 }
 
 function download() {
