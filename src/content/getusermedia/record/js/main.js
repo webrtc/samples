@@ -62,11 +62,6 @@ function handleSourceOpen(event) {
 function handleDataAvailable(event) {
   if (event.data && event.data.size > 0) {
     recordedBlobs.push(event.data);
-    console.assert(mediaRecorder.state === 'recording',
-      'State should be "recording"');
-  } else {
-    console.assert(mediaRecorder.state === 'inactive',
-      'State should be "inactive"');
   }
 }
 
@@ -86,24 +81,29 @@ function toggleRecording() {
 }
 
 function startRecording() {
+  var options = {mimeType: 'video/vp9'};
   try {
     recordedBlobs = [];
-    mediaRecorder = new MediaRecorder(window.stream /* , 'video/vp8' */);
-  } catch (event) {
-    alert('MediaRecorder is not supported by this browser.\n\n' +
-      'Try Firefox 29 or later, or Chrome 47 or later, with Enable experimental Web Platform features enabled from chrome://flags.');
-    console.error('Exception while creating MediaRecorder:', event);
-    return;
+    mediaRecorder = new MediaRecorder(window.stream, options);
+  } catch (e) {
+    try {
+      options = 'video/vp8'; // Chrome 47
+      mediaRecorder = new MediaRecorder(window.stream, options);
+    } catch (event) {
+      alert('MediaRecorder is not supported by this browser.\n\n' +
+        'Try Firefox 29 or later, or Chrome 47 or later, with Enable experimental Web Platform features enabled from chrome://flags.');
+      console.error('Exception while creating MediaRecorder:', event);
+      return;
+    }
   }
-  console.assert(mediaRecorder.state === 'inactive');
+  console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
   playButton.disabled = true;
   downloadButton.disabled = true;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
-  mediaRecorder.start();
+  mediaRecorder.start(10); // collect 10ms of data
   console.log('MediaRecorder started', mediaRecorder);
-  console.assert(mediaRecorder.state === 'recording');
 }
 
 function stopRecording() {
