@@ -36,6 +36,7 @@ var offerOptions = {
 };
 
 function gotStream(stream) {
+  hangupButton.disabled = false;
   trace('Received local stream');
   localStream = stream;
   var audioTracks = localStream.getAudioTracks();
@@ -63,7 +64,6 @@ function onCreateSessionDescriptionError(error) {
 
 function call() {
   callButton.disabled = true;
-  hangupButton.disabled = false;
   codecSelector.disabled = true;
   trace('Starting call');
   var servers = null;
