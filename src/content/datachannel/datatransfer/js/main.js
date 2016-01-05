@@ -38,10 +38,11 @@ megsToSend.addEventListener('change', function(e) {
 
 function createConnection() {
   sendButton.disabled = true;
+  megsToSend.disabled = true;
   var servers = null;
   pcConstraint = null;
 
-  bytesToSend = megsToSend.value * 1024 * 1024;
+  bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
   // Add localConnection to global scope to make it visible
   // from the browser console.
@@ -204,6 +205,7 @@ function onReceiveMessageCallback(event) {
   if (receivedSize === bytesToSend) {
     closeDataChannels();
     sendButton.disabled = false;
+    megsToSend.disabled = false;
   }
 }
 
