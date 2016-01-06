@@ -15,11 +15,41 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('../../../../../test/selenium-lib');
 
-test('PeerConnection pc1 sample', function(t) {
+/* Firefox TODO once ice restarts are implemented
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=906986
+ * 1) re-enable test
+ * 2) fix getStats, ideally using spec-stats
+ *
+ * TODO: once onselectedcandidatepairchange is supported this test gets simpler.
+ */
+
+function getTransportAddresses(stats) {
+  var localAddress;
+  var remoteAddress;
+  Object.keys(stats).forEach(function(id) {
+    var report = stats[id];
+    if (report.googActiveConnection === 'true') {
+      var localCandidate = stats[report.localCandidateId];
+      var remoteCandidate = stats[report.remoteCandidateId];
+      localAddress = localCandidate.ipAddress + ':' +
+          localCandidate.portNumber;
+      remoteAddress = remoteCandidate.ipAddress + ':' +
+          remoteCandidate.portNumber;
+    }
+  });
+  return localAddress + ' ' + remoteAddress;
+}
+test('PeerConnection restart ICE sample', function(t) {
+  if (process.env.BROWSER === 'firefox') {
+    t.pass('skipping. ICE restart is not yet implemented in Firefox');
+    t.end();
+    return;
+  }
   var driver = seleniumHelpers.buildDriver();
 
+  var firstStats = null;
   driver.get('file://' + process.cwd() +
-      '/src/content/peerconnection/pc1/index.html')
+      '/src/content/peerconnection/restart-ice/index.html')
   .then(function() {
     t.pass('page loaded');
     return driver.findElement(webdriver.By.id('startButton')).click();
@@ -36,15 +66,36 @@ test('PeerConnection pc1 sample', function(t) {
   })
   .then(function() {
     t.pass('pc2 ICE connected');
-    return driver.findElement(webdriver.By.id('hangupButton')).click();
+    // Query the transport address. It should change during the
+    // ICE restart.
+    return seleniumHelpers.getStats(driver, 'pc1');
+  })
+  .then(function(stats) {
+    firstStats = stats;
+    return driver.findElement(webdriver.By.id('restartButton')).click();
   })
   .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript('return pc1 === null');
-    }, 30 * 1000);
+    t.pass('ICE restart triggered');
+    // TODO: add event listener to pc1 and wait for connected / completed(?)
+    driver.manage().timeouts().setScriptTimeout(10000);
+    return driver.executeAsyncScript(
+        'var callback = arguments[arguments.length - 1];' +
+        'pc1.addEventListener(\'iceconnectionstatechange\', function() {' +
+        '  if (pc1.iceConnectionState === \'connected\' || ' +
+        '      pc1.iceConnectionState === \'completed\') {' +
+        '    callback();' +
+        '  }' +
+        '});');
   })
   .then(function() {
-    t.pass('hangup');
+    return seleniumHelpers.getStats(driver, 'pc1');
+  })
+  .then(function(newStats) {
+    var newAddress = getTransportAddresses(newStats);
+    var oldAddress = getTransportAddresses(firstStats);
+    t.ok(newAddress !== oldAddress, 'address changed during ICE restart');
+  })
+  .then(function() {
     t.end();
   })
   .then(null, function(err) {
