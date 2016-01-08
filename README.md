@@ -38,6 +38,8 @@ Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/te
 
 [Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face/)
 
+[Record stream](https://webrtc.github.io/samples/src/content/getusermedia/record/)
+
 ### Devices ###
 
 [Select camera, microphone and speaker](https://webrtc.github.io/samples/src/content/devices/input-output/)
