@@ -30,6 +30,9 @@ require('../src/content/peerconnection/munge-sdp/js/test');
 // Tests basic functionality of the trickle-ice demo.
 require('../src/content/peerconnection/trickle-ice/js/test');
 
+// Tests basic functionality of the ice restart demo.
+require('../src/content/peerconnection/restart-ice/js/test.js');
+
 // Tests basic functionality of the datachannel textchat demo.
 require('../src/content/datachannel/basic/js/test');
 

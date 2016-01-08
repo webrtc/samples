@@ -225,7 +225,7 @@ setInterval(function() {
       var activeCandidatePair = null;
       var remoteCandidate = null;
 
-      // search for the candidate pa
+      // search for the candidate pair
       Object.keys(results).forEach(function(result) {
         var report = results[result];
         if (report.type === 'candidatepair' && report.selected ||
