@@ -16,13 +16,20 @@ div#buttons {
 }
 
 div#status {
-  height: 1em;
-  margin: 0 0 20px 0;
+  height: 2em;
+  margin: 1em 0 0 0;
 }
 
 div#videos {
   height: 232px;
 }
+
+input#audio {
+  margin: 0 0.5em 0 0;
+  position: relative;
+  top: -1px;
+}
+
 video {
   display: block;
   float: left;
