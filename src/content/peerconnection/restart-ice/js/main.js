@@ -117,8 +117,7 @@ function call() {
   };
   pc1.oniceconnectionstatechange = function(e) {
     onIceStateChange(pc1, e);
-    if (pc1 && (pc1.iceConnectionState === 'connected' ||
-        pc1.iceConnectionState === 'completed')) {
+    if (pc1 && pc1.iceConnectionState === 'completed') {
       restartButton.disabled = false;
     }
   };
@@ -242,6 +241,10 @@ function onIceStateChange(pc, event) {
           console.log(pc === pc1 ? 'PC1' : 'PC2', 'remote address changed',
               remoteCandidate.ipAddress, remoteCandidate.portNumber);
           // TODO: update a div showing the remote ip/port?
+          document.getElementById(pc === pc1 ? 'localAddress' :
+              'remoteAddress')
+              .textContent = remoteCandidate.ipAddress + ':' +
+                  remoteCandidate.portNumber;
         }
       });
     }
@@ -255,5 +258,6 @@ function hangup() {
   pc1 = null;
   pc2 = null;
   hangupButton.disabled = true;
+  restartButton.disabled = true;
   callButton.disabled = false;
 }

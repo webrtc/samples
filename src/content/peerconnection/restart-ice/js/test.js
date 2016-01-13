@@ -61,7 +61,7 @@ test('PeerConnection restart ICE sample', function(t) {
   .then(function() {
     return driver.wait(function() {
       return driver.executeScript(
-          'return pc2 && pc2.iceConnectionState === \'connected\';');
+          'return pc1 && pc1.iceConnectionState === \'completed\';');
     }, 30 * 1000);
   })
   .then(function() {
@@ -76,13 +76,11 @@ test('PeerConnection restart ICE sample', function(t) {
   })
   .then(function() {
     t.pass('ICE restart triggered');
-    // TODO: add event listener to pc1 and wait for connected / completed(?)
     driver.manage().timeouts().setScriptTimeout(10000);
     return driver.executeAsyncScript(
         'var callback = arguments[arguments.length - 1];' +
         'pc1.addEventListener(\'iceconnectionstatechange\', function() {' +
-        '  if (pc1.iceConnectionState === \'connected\' || ' +
-        '      pc1.iceConnectionState === \'completed\') {' +
+        '  if (pc1.iceConnectionState === \'completed\') {' +
         '    callback();' +
         '  }' +
         '});');
