@@ -15,6 +15,8 @@ var video2 = document.querySelector('video#video2');
 
 var statusDiv = document.querySelector('div#status');
 
+var audioCheckbox = document.querySelector('input#audio');
+
 var startButton = document.querySelector('button#start');
 var callButton = document.querySelector('button#call');
 var insertRelayButton = document.querySelector('button#insertRelay');
@@ -41,18 +43,17 @@ function gotremoteStream(stream) {
   remoteStream = stream;
   video2.srcObject = stream;
   trace('Received remote stream');
-  trace(pipes.length + ' elements in chain');
-  statusDiv.textContent = pipes.length + ' elements in chain';
+  trace(pipes.length + ' element(s) in chain');
+  statusDiv.textContent = pipes.length + ' element(s) in chain';
   insertRelayButton.disabled = false;
 }
 
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: true
-  })
+  var options = audioCheckbox.checked ?
+    {audio: true, video: true} : {audio: false, video: true};
+  navigator.mediaDevices.getUserMedia(options)
   .then(gotStream)
   .catch(function(e) {
     alert('getUserMedia() failed');
