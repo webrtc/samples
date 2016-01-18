@@ -258,7 +258,9 @@ function hangup() {
     track.stop();
   });
   sendChannel.close();
-  receiveChannel.close();
+  if (receiveChannel) {
+    receiveChannel.close();
+  }
   localPeerConnection.close();
   remotePeerConnection.close();
   localPeerConnection = null;
