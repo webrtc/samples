@@ -39,9 +39,8 @@ video#gumVideo {
 
 @media screen and (max-width: 500px) {
   button {
-    font-size: 0.7em;
-    margin: 0 3px 10px 0;
-    width: 88px;
+    font-size: 0.8em;
+    width: calc(33% - 5px);
   }
 }
 

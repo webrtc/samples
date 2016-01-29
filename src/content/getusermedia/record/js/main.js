@@ -13,20 +13,18 @@
 // This code is adapted from
 // https://rawgit.com/Miguelao/demos/master/mediarecorder.html
 
+'use strict';
+
+/* globals MediaRecorder */
+
 var mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
 var mediaRecorder;
 var recordedBlobs;
 var sourceBuffer;
 
-var constraints = {
-  audio: true,
-  video: true
-};
-
 var gumVideo = document.querySelector('video#gum');
 var recordedVideo = document.querySelector('video#recorded');
-// recordedVideo.src = URL.createObjectURL(mediaSource);
 
 var recordButton = document.querySelector('button#record');
 var playButton = document.querySelector('button#play');
@@ -44,14 +42,45 @@ if (!isSecureOrigin) {
   location.protocol = 'HTTPS';
 }
 
-navigator.mediaDevices.getUserMedia(constraints)
-.then(function(stream) {
+// Use old-style gUM to avoid requirement to enable the
+// Enable experimental Web Platform features flag in Chrome 49
+
+navigator.getUserMedia = navigator.getUserMedia ||
+  navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+var constraints = {
+  audio: true,
+  video: true
+};
+
+navigator.getUserMedia(constraints, successCallback, errorCallback);
+
+function successCallback(stream) {
   console.log('getUserMedia() got stream: ', stream);
-  window.stream = stream; // make available to browser console
-  gumVideo.srcObject = stream; // srcObject is shimmed in adapter.js
-}).catch(function(error) {
+  window.stream = stream;
+  if (window.URL) {
+    gumVideo.src = window.URL.createObjectURL(stream);
+  } else {
+    gumVideo.src = stream;
+  }
+}
+
+function errorCallback(error) {
   console.log('navigator.getUserMedia error: ', error);
-});
+}
+
+// navigator.mediaDevices.getUserMedia(constraints)
+// .then(function(stream) {
+//   console.log('getUserMedia() got stream: ', stream);
+//   window.stream = stream; // make available to browser console
+//   if (window.URL) {
+//     gumVideo.src = window.URL.createObjectURL(stream);
+//   } else {
+//     gumVideo.src = stream;
+//   }
+// }).catch(function(error) {
+//   console.log('navigator.getUserMedia error: ', error);
+// });
 
 function handleSourceOpen(event) {
   console.log('MediaSource opened');
@@ -121,8 +150,7 @@ function stopRecording() {
 }
 
 function play() {
-  var superBuffer = new Blob(recordedBlobs);
-  // Firefox can not yet deal with Buffer srcObjects.
+  var superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
   recordedVideo.src = window.URL.createObjectURL(superBuffer);
 }
 
