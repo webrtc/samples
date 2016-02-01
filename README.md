@@ -74,6 +74,8 @@ Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/te
 
 [Web Audio output as input to peer connection](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-input/)
 
+[Peer connection as input to Web Audio](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-output/)
+
 ### RTCDataChannel ###
 
 [Transmit text](https://webrtc.github.io/samples/src/content/datachannel/basic/)
