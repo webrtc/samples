@@ -29,6 +29,7 @@ function StreamVisualizer(remoteStream, canvas) {
   console.log('Creating StreamVisualizer with remoteStream and canvas: ',
     remoteStream, canvas);
   this.canvas = canvas;
+  this.drawContext = this.canvas.getContext('2d');
 
   // cope with browser differences
   if (typeof AudioContext === 'function') {
@@ -68,9 +69,7 @@ StreamVisualizer.prototype.draw = function() {
   this.analyser.getByteFrequencyData(this.freqs);
   this.analyser.getByteTimeDomainData(this.times);
 
-  // var width = Math.floor(1/this.freqs.length, 10);
 
-  var drawContext = this.canvas.getContext('2d');
   this.canvas.width = WIDTH;
   this.canvas.height = HEIGHT;
   // Draw the frequency domain chart.
@@ -81,8 +80,8 @@ StreamVisualizer.prototype.draw = function() {
     var offset = HEIGHT - height - 1;
     var barWidth = WIDTH/this.analyser.frequencyBinCount;
     var hue = i/this.analyser.frequencyBinCount * 360;
-    drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-    drawContext.fillRect(i * barWidth, offset, barWidth, height);
+    this.drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+    this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
   }
 
   // Draw the time domain chart.
@@ -92,8 +91,8 @@ StreamVisualizer.prototype.draw = function() {
     height = HEIGHT * percent;
     offset = HEIGHT - height - 1;
     barWidth = WIDTH/this.analyser.frequencyBinCount;
-    drawContext.fillStyle = 'white';
-    drawContext.fillRect(i * barWidth, offset, 1, 2);
+    this.drawContext.fillStyle = 'white';
+    this.drawContext.fillRect(i * barWidth, offset, 1, 2);
   }
 
   requestAnimationFrame(this.draw.bind(this));

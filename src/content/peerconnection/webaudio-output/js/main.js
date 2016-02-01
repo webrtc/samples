@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -35,7 +35,7 @@ remoteVideo.addEventListener('loadedmetadata', function() {
     'px,  videoHeight: ' + this.videoHeight + 'px');
 });
 
-remoteVideo.onresize = function() {
+remoteVideo.addEventListener('resize', function() {
   trace('Remote video size changed to ' +
     remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight);
   // We'll use the first onsize callback as an indication that video has started
@@ -45,7 +45,7 @@ remoteVideo.onresize = function() {
     trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
     startTime = null;
   }
-};
+});
 
 var localStream;
 var pc1;
