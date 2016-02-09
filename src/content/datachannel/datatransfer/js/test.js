@@ -14,7 +14,7 @@
 var test = require('tape');
 
 var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('../../../../../test/selenium-lib');
+var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
 function sendData(t) {
   var driver = seleniumHelpers.buildDriver();

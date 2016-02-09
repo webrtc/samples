@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/webrtc/samples.svg)](https://travis-ci.org/webrtc/samples)
 
 # Intro #
-Selenium WebDriver, Node, Testling and travis-multirunner are used as the testing framework. Selenium WebDriver drives the browser; Node and Testling manage the tests, while travis-multirunner downloads and installs the browsers to be tested on, i.e. creates the testing matrix.
+Selenium WebDriver, Node, Tape and travis-multirunner are used as the testing framework. Selenium WebDriver drives the browser; Node and Tape manage the tests, while travis-multirunner downloads and installs the browsers to be tested on, i.e. creates the testing matrix.
 
 ## Development ##
 Detailed information on developing in the [webrtc](https://github.com/webrtc) GitHub repo can be found in the [WebRTC GitHub repo developer's guide](https://docs.google.com/document/d/1tn1t6LW2ffzGuYTK3366w1fhTkkzsSvHsBnOHoDfRzY/edit?pli=1#heading=h.e3366rrgmkdk).
@@ -37,9 +37,9 @@ BROWSER=chrome node src/content/getusermedia/gum/js/test.js
 test/tests.js is used as an index for the tests, tests should be added here using `require()`.
 The tests themselves should be placed in the same js folder as main.js: e.g.`src/content/getusermedia/gum/js/test.js`.
 
-The tests should be written using Testling for test validation (using Tape script language) and Selenium WebDriver is used to control and drive the test in the browser.
+The tests should be written using Tape and Selenium WebDriver is used to control and drive the test in the browser.
 
-Use the existing tests as guide on how to write tests and also look at the [Testling guide](https://ci.testling.com/guide/tape) and [Selenium WebDriver](http://www.seleniumhq.org/docs/03_webdriver.jsp) (make sure to select javascript as language preference.) for more information.
+Use the existing tests as guide on how to write tests and also look at the [Tape guide](https://ci.testling.com/guide/tape) and [Selenium WebDriver](http://www.seleniumhq.org/docs/03_webdriver.jsp) (make sure to select javascript as language preference.) for more information.
 
 Global Selenium WebDriver settings can be found in `test/selenium-lib.js`, if your test require some specific settings not covered in selenium-lib.js, add your own to the test and do not import the selenium-lib.js file into the test, only do this if it's REALLY necessary.
 

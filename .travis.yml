@@ -1,7 +1,7 @@
 sudo: false
 language: node_js
 node_js:
-  - 4.1
+  - 4.2
 
 branches:
   only:
@@ -23,8 +23,12 @@ matrix:
     - env: BROWSER=chrome  BVER=unstable
     - env: BROWSER=firefox BVER=nightly
 
+before_install:
+  - npm install -g npm@'>=3.0.0'
+
 before_script:
   - npm install
+  - ls node_modules
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 

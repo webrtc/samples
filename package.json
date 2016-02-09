@@ -21,10 +21,9 @@
   },
   "scripts": {
     "postinstall": "cp node_modules/webrtc-adapter-test/adapter.js src/js",
-    "test": "grunt && test/run-tests"
+    "test": "grunt && start-tests"
   },
   "devDependencies": {
-    "chromedriver": "^2.16.0",
     "express": "^4.13.3",
     "grunt": "^0.4.5",
     "grunt-cli": ">=0.1.9",
@@ -32,11 +31,9 @@
     "grunt-contrib-csslint": ">=0.3.1",
     "grunt-eslint": "^17.2.0",
     "grunt-githooks": "^0.3.1",
-    "grunt-htmlhint": ">=0.4.1",
+    "grunt-htmlhint": ">=0.9.12",
     "pem": "^1.8.1",
-    "selenium-webdriver": "^2.48.0",
-    "tape": "^4.0.0",
-    "travis-multirunner": "^3.0.0",
-    "webrtc-adapter-test": "^0.2.1"
+    "webrtc-adapter-test": "^0.2.1",
+    "webrtc-utilities": ">=0.0.1"
   }
 }
