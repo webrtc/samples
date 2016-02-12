@@ -70,7 +70,11 @@ Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/te
 
 [ICE candidate gathering from STUN/TURN servers](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)
 
+[Do an ICE restart](https://webrtc.github.io/samples/src/content/peerconnection/restart-ice/)
+
 [Web Audio output as input to peer connection](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-input/)
+
+[Peer connection as input to Web Audio](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-output/)
 
 ### RTCDataChannel ###
 
