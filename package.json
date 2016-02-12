@@ -21,11 +21,12 @@
   },
   "scripts": {
     "postinstall": "cp node_modules/webrtc-adapter-test/adapter.js src/js",
-    "test": "grunt && test/run-tests"
+    "test": "grunt && test/run-tests | faucet"
   },
   "devDependencies": {
     "chromedriver": "^2.16.0",
     "express": "^4.13.3",
+    "faucet": "0.0.1",
     "grunt": "^0.4.5",
     "grunt-cli": ">=0.1.9",
     "grunt-contrib-compress": "^0.13.0",
