@@ -43,7 +43,10 @@ function buildDriver() {
       .setChromeBinaryPath('node_modules/.bin/start-chrome')
       .addArguments('allow-file-access-from-files')
       .addArguments('use-fake-device-for-media-stream')
-      .addArguments('use-fake-ui-for-media-stream');
+      .addArguments('use-fake-ui-for-media-stream')
+      .addArguments('disable-translate')
+      .addArguments('no-process-singleton-dialog')
+      .addArguments('mute-audio');
 
   sharedDriver = new webdriver.Builder()
       .forBrowser(process.env.BROWSER)
