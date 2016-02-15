@@ -33,14 +33,13 @@ function sendFile(t, path) {
       return driver.wait(function() {
         return driver.findElement(webdriver.By.id('status'))
         .getText().then(function(text) {
-          return (text === 'File is empty, please select a non-empty file')
-        })
-      }, 2000)
-    } else {
-      // Wait for the download element to be displayed.
-      return driver.wait(webdriver.until.elementIsVisible(
-          driver.findElement(webdriver.By.id('download'))), 90 * 1000);
+          return (text === 'File is empty, please select a non-empty file');
+        });
+      }, 2000);
     }
+    // Wait for the download element to be displayed.
+    return driver.wait(webdriver.until.elementIsVisible(
+        driver.findElement(webdriver.By.id('download'))), 90 * 1000);
   })
   .then(function() {
     if (path === emptyFilePath) {
