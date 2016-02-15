@@ -28,12 +28,8 @@ before_install:
 
 before_script:
   - npm install
-  - ls node_modules
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 
 script:
   - npm test
-
-after_failure:
-  - for file in *.log; do echo $file; echo "======================"; cat $file; done
