@@ -15,7 +15,7 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('../../../../../test/selenium-lib');
 var emptyFilePath =
-process.cwd() + '/src/content/datachannel/filetransfer/emptyFile';
+  process.cwd() + '/src/content/datachannel/filetransfer/emptyFile';
 
 function sendFile(t, path) {
   var driver = seleniumHelpers.buildDriver();
@@ -29,20 +29,28 @@ function sendFile(t, path) {
     .sendKeys(path);
   })
   .then(function() {
+    if (path === emptyFilePath) {
+      return driver.wait(function() {
+        return driver.findElement(webdriver.By.id('status'))
+        .getText().then(function(text) {
+          return (text === 'File is empty, please select a non-empty file');
+        });
+      }, 2000);
+    }
     // Wait for the download element to be displayed.
     return driver.wait(webdriver.until.elementIsVisible(
-      driver.findElement(webdriver.By.id('download'))), 90 * 1000);
+        driver.findElement(webdriver.By.id('download'))), 90 * 1000);
   })
   .then(function() {
-    t.pass('download element found');
+    if (path === emptyFilePath) {
+      t.pass('Empty file error displayed');
+    } else {
+      t.pass('download element found');
+    }
     t.end();
   })
   .then(null, function(err) {
-    if (path === emptyFilePath) { // if empty file, download element is empty
-      t.pass('Empty file, no download link displayed');
-    } else {
-      t.fail(err);
-    }
+    t.fail(err);
     t.end();
   });
 }
