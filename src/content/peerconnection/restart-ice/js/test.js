@@ -13,7 +13,7 @@
 var test = require('tape');
 
 var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('../../../../../test/selenium-lib');
+var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
 /* Firefox TODO once ice restarts are implemented
  * https://bugzilla.mozilla.org/show_bug.cgi?id=906986

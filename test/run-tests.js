@@ -48,7 +48,7 @@ require('../src/content/devices/input-output/js/test.js');
 // This is run as a test so it is executed after all tests
 // have completed.
 test('Shutdown', function(t) {
-  var driver = require('./selenium-lib').buildDriver();
+  var driver = require('webrtc-utilities').seleniumLib.buildDriver();
   driver.close()
   .then(function() {
     driver.quit().then(function() {

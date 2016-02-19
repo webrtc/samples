@@ -132,6 +132,7 @@ if (typeof window === 'undefined' || !window.navigator) {
       }
       return new mozRTCPeerConnection(pcConfig, pcConstraints); // jscs:ignore requireCapitalizedConstructors
     };
+    window.RTCPeerConnection.prototype = mozRTCPeerConnection.prototype;
 
     // wrap static methods. Currently just generateCertificate.
     if (mozRTCPeerConnection.generateCertificate) {
@@ -315,6 +316,7 @@ if (typeof window === 'undefined' || !window.navigator) {
 
     return pc;
   };
+  window.RTCPeerConnection.prototype = webkitRTCPeerConnection.prototype;
 
   // wrap static methods. Currently just generateCertificate.
   if (webkitRTCPeerConnection.generateCertificate) {
@@ -1673,6 +1675,42 @@ if (typeof window === 'undefined' || !window.navigator) {
   }
 } else {
   webrtcUtils.log('Browser does not appear to be WebRTC-capable');
+}
+
+// Polyfill ontrack on browsers that don't yet have it
+if (typeof window === 'object' && window.RTCPeerConnection && !('ontrack' in
+    window.RTCPeerConnection.prototype)) {
+  Object.defineProperty(window.RTCPeerConnection.prototype, 'ontrack', {
+    get: function() { return this._ontrack; },
+    set: function(f) {
+      var self = this;
+      if (this._ontrack) {
+        this.removeEventListener('track', this._ontrack);
+        this.removeEventListener('addstream', this._ontrackpoly);
+      }
+      this.addEventListener('track', this._ontrack = f);
+      this.addEventListener('addstream', this._ontrackpoly = function(e) {
+        if (webrtcDetectedBrowser === 'chrome') {
+          // onaddstream does not fire when a track is added to an existing stream.
+          // but stream.onaddtrack is implemented so we use thたt
+          e.stream.addEventListener('addtrack', function(te) {
+            var event = new Event('track');
+            event.track = te.track;
+            event.receiver = {track: te.track};
+            event.streams = [e.stream];
+            self.dispatchEvent(event);
+          });
+        }
+        e.stream.getTracks().forEach(function(track) {
+          var event = new Event('track');
+          event.track = track;
+          event.receiver = {track: track};
+          event.streams = [e.stream];
+          this.dispatchEvent(event);
+        }.bind(this));
+      }.bind(this));
+    }
+  });
 }
 
 // Returns the result of getUserMedia as a Promise.
