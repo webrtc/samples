@@ -1,3 +1,6 @@
+**Browsers and versions affected**
+
+
 **Description**
 
 
@@ -8,6 +11,3 @@
 
 
 **Actual results**
-
-
-**Browsers and versions affected**
