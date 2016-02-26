@@ -20,6 +20,7 @@ hangupButton.onclick = hangup;
 var startTime;
 var localVideo = document.getElementById('localVideo');
 var remoteVideo = document.getElementById('remoteVideo');
+var webAudio = new WebAudioExtended();
 
 localVideo.addEventListener('loadedmetadata', function() {
   trace('Local video videoWidth: ' + this.videoWidth +
@@ -68,6 +69,7 @@ function gotStream(stream) {
 
 function start() {
   trace('Requesting local stream');
+  webAudio.start();
   startButton.disabled = true;
   navigator.mediaDevices.getUserMedia({
     audio: true,
@@ -111,9 +113,13 @@ function call() {
   };
   pc2.onaddstream = gotRemoteStream;
 
-  pc1.addStream(localStream);
+  // Created a filtered audio stream.
+  var filteredStream = webAudio.applyFilter(localStream);
+  pc1.addStream(filteredStream);
   trace('Added local stream to pc1');
-
+  // Connect the video stream directly, since the filteredStream contains
+  // only audio. (Is this the right thing to do?)
+  filteredStream.addTrack(localStream.getVideoTracks()[0]);
   trace('pc1 createOffer start');
   pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
       offerOptions);
@@ -200,6 +206,7 @@ function onIceStateChange(pc, event) {
 
 function hangup() {
   trace('Ending call');
+  webAudio.stop();
   pc1.close();
   pc2.close();
   pc1 = null;
