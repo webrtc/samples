@@ -28,7 +28,7 @@ try {
 // Put variables in global scope to make them available to the browser console.
 var constraints = window.constraints = {
   audio: true,
-  video: false
+  video: true
 };
 
 function successCallback(stream) {
@@ -36,16 +36,22 @@ function successCallback(stream) {
   // browser console.
   window.stream = stream;
   var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream);
+  soundMeter.connectToSource(stream, function (e) {
+      if (e) {
+          alert(e);
+          return;
+      }
+      setInterval(function () {
+          instantMeter.value = instantValueDisplay.innerText =
+              soundMeter.instant.toFixed(2);
+          slowMeter.value = slowValueDisplay.innerText =
+              soundMeter.slow.toFixed(2);
+          clipMeter.value = clipValueDisplay.innerText =
+              soundMeter.clip;
+      }, 200);
+    }
+  );
 
-  setInterval(function() {
-    instantMeter.value = instantValueDisplay.innerText =
-        soundMeter.instant.toFixed(2);
-    slowMeter.value = slowValueDisplay.innerText =
-        soundMeter.slow.toFixed(2);
-    clipMeter.value = clipValueDisplay.innerText =
-        soundMeter.clip;
-  }, 200);
 }
 
 function errorCallback(error) {
