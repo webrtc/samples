@@ -76,9 +76,21 @@ test('Fake device selection and check video element dimensions ' +
         return driver.executeScript('return stream.getAudioTracks()[0].label');
       })
       .then(function(deviceLabel) {
-        // TODO: Improve this once Firefox has added labels for fake devices.
-        var fakeAudioDeviceName = (browser === 'chrome') ?
-          'Fake Audio 1' : '';
+        var fakeAudioDeviceName = null;
+
+        switch (browser) {
+        case 'chrome':
+          fakeAudioDeviceName = 'Fake Audio 1';
+          break;
+        case 'firefox':
+          // TODO: Remove the "deviceLabel === ''" check once Firefox ESR
+          // reaches 46 (supports device labels for fake devices).
+          fakeAudioDeviceName = (deviceLabel === '') ? '' :
+              'Default Audio Device';
+          break;
+        default:
+          t.skip('unsupported browser');
+        }
         t.ok(fakeAudioDeviceName === deviceLabel,
           'Fake audio device found with label: ' + deviceLabel);
       })
@@ -87,12 +99,25 @@ test('Fake device selection and check video element dimensions ' +
         return driver.executeScript('return stream.getVideoTracks()[0].label');
       })
       .then(function(deviceLabel) {
-        // TODO: Improve this once Firefox has added labels for fake devices.
-        var fakeVideoDeviceName = (browser === 'chrome') ? 'fake_device_0' : '';
-        // TODO: Remove match() method once http://crbug.com/526633 is fixed.
-        t.ok(fakeVideoDeviceName === deviceLabel.match(fakeVideoDeviceName)[0],
-          'Fake video device found with label: ' +
-          deviceLabel.match(fakeVideoDeviceName)[0]);
+        var fakeVideoDeviceName = null;
+
+        switch (browser) {
+        case 'chrome':
+          fakeVideoDeviceName = 'fake_device_0';
+          break;
+        case 'firefox':
+          // TODO: Remove the "deviceLabel === ''" check once Firefox ESR
+          // reaches 46 (supports device labels for fake devices).
+          fakeVideoDeviceName = (deviceLabel === '') ? '' :
+              'Default Video Device';
+          break;
+        default:
+          t.pass('unsupported browser');
+          throw 'skip-test';
+        }
+
+        t.ok(fakeVideoDeviceName === deviceLabel,
+          'Fake video device found with label: ' + deviceLabel);
       })
       // Check that there is a video element and it is displaying something.
       .then(function() {
