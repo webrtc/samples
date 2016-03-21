@@ -79,7 +79,11 @@ function gotStream(stream) {
     pc2.onaddstream = gotRemoteStream;
 
     pc1.addStream(filteredStream);
-    pc1.createOffer(gotDescription1);
+    pc1.createOffer()
+    .then(gotDescription1)
+    .catch(function(error) {
+      console.log('createOffer failed: ' + error);
+    });
 
     stream.onended = function() {
       console.log('stream.onended');
@@ -99,8 +103,8 @@ function gotStream(stream) {
 function gotStreamFailed(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
-  alert('Failed to get access to local media. Error code: ' +
-    error.code);
+  alert('Failed to get access to local media. Error: ' +
+    error.name);
 }
 
 function forceOpus(sdp) {
@@ -117,10 +121,15 @@ function gotDescription1(desc) {
     type: 'offer',
     sdp: forceOpus(desc.sdp)
   });
+
   pc1.setLocalDescription(modifiedOffer);
   console.log('Offer from pc1 \n' + modifiedOffer.sdp);
   pc2.setRemoteDescription(modifiedOffer);
-  pc2.createAnswer(gotDescription2);
+  pc2.createAnswer()
+  .then(gotDescription2)
+  .catch(function(error) {
+    console.log('createAnswer failed: ' + error);
+  });
 }
 
 function gotDescription2(desc) {
