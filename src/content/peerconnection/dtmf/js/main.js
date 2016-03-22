@@ -113,9 +113,15 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   // Setting PCMU as the preferred codec.
-  desc.sdp = desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 RTP/SAVPF 0 126\r\n');
-  // Workaround for issue 1603.
-  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
+  console.log('SDP before: ' + desc.sdp);
+  desc.sdp =
+    desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 UDP/TLS/RTP/SAVPF 0 126\r\n');
+  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/gm, '');
+  desc.sdp = desc.sdp.replace(/.*rtcp-fb.*\r\n/gm, '');
+  // Make sure to leave the telephone-event payload.
+  desc.sdp = desc.sdp.replace(/.*rtpmap:(?!.*126).*$\r\n/gm, '');
+
+  console.log('SDP after: ' + desc.sdp);
   pc2.setLocalDescription(desc);
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
