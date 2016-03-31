@@ -73,7 +73,7 @@ function gotSources(sourceInfos) {
   var videoCount = 0;
   for (var i = 0; i < sourceInfos.length; i++) {
     var option = document.createElement('option');
-    option.value = sourceInfos[i].id;
+    option.value = sourceInfos[i].deviceId;
     option.text = sourceInfos[i].label;
     if (sourceInfos[i].kind === 'audioinput') {
       audioCount++;
