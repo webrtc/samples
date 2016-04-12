@@ -112,10 +112,6 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  // Setting PCMU as the preferred codec.
-  desc.sdp = desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 RTP/SAVPF 0 126\r\n');
-  // Workaround for issue 1603.
-  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
   pc2.setLocalDescription(desc);
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
