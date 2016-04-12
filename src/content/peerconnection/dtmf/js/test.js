@@ -48,7 +48,7 @@ test('DTMF tones', function(t) {
   .then(function() {
     return driver.wait(function() {
       return driver.executeScript(
-        // For some reason the demo sends and extra space. Assume its due to
+        // For some reason the demo sends and extra space. Assume it's due to
         // setting a gap.
           'return document.querySelector(' +
           '\'#sentTones\').innerHTML.length === 9');
