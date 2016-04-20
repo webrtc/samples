@@ -47,6 +47,7 @@
     },
     "extends": "eslint:recommended",
   "globals": {
+    "adapter": true,
     "audioContext": true,
     "AudioContext": true,
     "browserSupportsIPHandlingPolicy": true,
@@ -59,6 +60,4 @@
     "RTCPeerConnection": true,
     "RTCSessionDescription": true,
     "trace": true,
-    "webrtcDetectedBrowser": true,
-    "webrtcDetectedVersion": true
   }}

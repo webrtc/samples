@@ -20,7 +20,7 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "postinstall": "cp node_modules/webrtc-adapter-test/adapter.js src/js",
+    "postinstall": "cp node_modules/webrtc-adapter/out/adapter.js src/js",
     "test": "grunt && start-tests | faucet"
   },
   "devDependencies": {
@@ -34,7 +34,7 @@
     "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.9.12",
     "pem": "^1.8.1",
-    "webrtc-adapter-test": "^0.2.1",
+    "webrtc-adapter": "^1.1.0",
     "webrtc-utilities": ">=0.0.1"
   }
 }
