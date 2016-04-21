@@ -239,7 +239,7 @@ function displayStats() {
 
   if (remoteConnection &&
       remoteConnection.iceConnectionState === 'connected') {
-    if (webrtcDetectedBrowser === 'chrome') {
+    if (adapter.browserDetails.browser === 'chrome') {
       // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
       // lands those stats should be preferrred over the connection stats.
       remoteConnection.getStats(null, function(stats) {
