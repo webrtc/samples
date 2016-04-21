@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -9,10 +9,11 @@
 
 'use strict';
 
-var audio2 = document.querySelector('audio#audio2');
+var remoteVideo = document.querySelector('video#remoteVideo');
+var localVideo = document.querySelector('video#localVideo');
 var callButton = document.querySelector('button#callButton');
 var hangupButton = document.querySelector('button#hangupButton');
-var codecSelector = document.querySelector('select#codec');
+var bandwidthSelector = document.querySelector('select#bandwidth');
 hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
@@ -30,19 +31,15 @@ var packetSeries;
 var lastResult;
 
 var offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 0,
-  voiceActivityDetection: false
+  offerToReceiveAudio: 0,
+  offerToReceiveVideo: 1
 };
 
 function gotStream(stream) {
   hangupButton.disabled = false;
   trace('Received local stream');
   localStream = stream;
-  var audioTracks = localStream.getAudioTracks();
-  if (audioTracks.length > 0) {
-    trace('Using Audio device: ' + audioTracks[0].label);
-  }
+  localVideo.srcObject = stream;
   pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
 
@@ -64,7 +61,7 @@ function onCreateSessionDescriptionError(error) {
 
 function call() {
   callButton.disabled = true;
-  codecSelector.disabled = true;
+  bandwidthSelector.disabled = false;
   trace('Starting call');
   var servers = null;
   var pcConstraints = {
@@ -79,8 +76,7 @@ function call() {
   pc2.onaddstream = gotRemoteStream;
   trace('Requesting local stream');
   navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: false
+    video: true
   })
   .then(gotStream)
   .catch(function(e) {
@@ -89,7 +85,6 @@ function call() {
 }
 
 function gotDescription1(desc) {
-  desc.sdp = forceChosenAudioCodec(desc.sdp);
   trace('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc, function() {
     pc2.setRemoteDescription(desc, function() {
@@ -99,9 +94,11 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  desc.sdp = forceChosenAudioCodec(desc.sdp);
   pc2.setLocalDescription(desc, function() {
     trace('Answer from pc2 \n' + desc.sdp);
+    // insert b=AS after c= line.
+    desc.sdp = desc.sdp.replace(/c=IN IP4 (.*)\r\n/,
+        'c=IN IP4 $(1)\r\nb=AS:512\r\n');
     pc1.setRemoteDescription(desc, function() {
     }, onSetSessionDescriptionError);
   }, onSetSessionDescriptionError);
@@ -118,11 +115,11 @@ function hangup() {
   pc2 = null;
   hangupButton.disabled = true;
   callButton.disabled = false;
-  codecSelector.disabled = false;
+  bandwidthSelector.disabled = true;
 }
 
 function gotRemoteStream(e) {
-  audio2.srcObject = e.stream;
+  remoteVideo.srcObject = e.stream;
   trace('Received remote stream');
 }
 
@@ -154,89 +151,22 @@ function onSetSessionDescriptionError(error) {
   trace('Failed to set session description: ' + error.toString());
 }
 
-function forceChosenAudioCodec(sdp) {
-  return maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
-}
-
-// Copied from AppRTC's sdputils.js:
-
-// Sets |codec| as the default |type| codec if it's present.
-// The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
-function maybePreferCodec(sdp, type, dir, codec) {
-  var str = type + ' ' + dir + ' codec';
-  if (codec === '') {
-    trace('No preference on ' + str + '.');
-    return sdp;
-  }
-
-  trace('Prefer ' + str + ': ' + codec);
-
-  var sdpLines = sdp.split('\r\n');
-
-  // Search for m line.
-  var mLineIndex = findLine(sdpLines, 'm=', type);
-  if (mLineIndex === null) {
-    return sdp;
-  }
-
-  // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
-  console.log('codecIndex', codecIndex);
-  if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
-    if (payload) {
-      sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
-    }
-  }
-
-  sdp = sdpLines.join('\r\n');
-  return sdp;
-}
-
-// Find the line in sdpLines that starts with |prefix|, and, if specified,
-// contains |substr| (case-insensitive search).
-function findLine(sdpLines, prefix, substr) {
-  return findLineInRange(sdpLines, 0, -1, prefix, substr);
-}
-
-// Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
-// and, if specified, contains |substr| (case-insensitive search).
-function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
-  var realEndLine = endLine !== -1 ? endLine : sdpLines.length;
-  for (var i = startLine; i < realEndLine; ++i) {
-    if (sdpLines[i].indexOf(prefix) === 0) {
-      if (!substr ||
-          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
-        return i;
-      }
-    }
-  }
-  return null;
-}
-
-// Gets the codec payload type from an a=rtpmap:X line.
-function getCodecPayloadType(sdpLine) {
-  var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
-  var result = sdpLine.match(pattern);
-  return (result && result.length === 2) ? result[1] : null;
-}
-
-// Returns a new m= line with the specified codec as the first one.
-function setDefaultCodec(mLine, payload) {
-  var elements = mLine.split(' ');
-
-  // Just copy the first three parameters; codec order starts on fourth.
-  var newLine = elements.slice(0, 3);
-
-  // Put target payload first and copy in the rest.
-  newLine.push(payload);
-  for (var i = 3; i < elements.length; i++) {
-    if (elements[i] !== payload) {
-      newLine.push(elements[i]);
-    }
-  }
-  return newLine.join(' ');
-}
+// renegotiate bandwidth on the fly.
+bandwidthSelector.onchange = function() {
+  bandwidthSelector.disabled = true;
+  var bandwidth = bandwidthSelector.options[bandwidthSelector.selectedIndex]
+      .value;
+  pc1.setLocalDescription(pc1.localDescription)
+  .then(function() {
+    var desc = pc1.remoteDescription;
+    desc.sdp = desc.sdp.replace(/b=AS:(.*)\r\n/, 'b=AS:' + bandwidth + '\r\n');
+    return pc1.setRemoteDescription(desc);
+  })
+  .then(function() {
+    bandwidthSelector.disabled = false;
+  })
+  .catch(onSetSessionDescriptionError);
+};
 
 // query getStats every second
 window.setInterval(function() {
