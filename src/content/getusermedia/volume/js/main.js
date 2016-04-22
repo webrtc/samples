@@ -36,12 +36,12 @@ function successCallback(stream) {
   // browser console.
   window.stream = stream;
   var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream, function (e) {
+  soundMeter.connectToSource(stream, function(e) {
       if (e) {
           alert(e);
           return;
       }
-      setInterval(function () {
+      setInterval(function() {
           instantMeter.value = instantValueDisplay.innerText =
               soundMeter.instant.toFixed(2);
           slowMeter.value = slowValueDisplay.innerText =
