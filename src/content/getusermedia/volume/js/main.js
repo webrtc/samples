@@ -38,15 +38,15 @@ function successCallback(stream) {
   var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
   soundMeter.connectToSource(stream, function(e) {
     if (e) {
-        alert(e);
-        return;
+      alert(e);
+      return;
     }
     setInterval(function() {
-        instantMeter.value = instantValueDisplay.innerText =
+      instantMeter.value = instantValueDisplay.innerText =
             soundMeter.instant.toFixed(2);
-        slowMeter.value = slowValueDisplay.innerText =
+      slowMeter.value = slowValueDisplay.innerText =
             soundMeter.slow.toFixed(2);
-        clipMeter.value = clipValueDisplay.innerText =
+      clipMeter.value = clipValueDisplay.innerText =
             soundMeter.clip;
     }, 200);
   });
