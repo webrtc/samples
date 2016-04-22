@@ -45,12 +45,12 @@ SoundMeter.prototype.connectToSource = function(stream, callback) {
     // necessary to make sample run, but should not be.
     this.script.connect(this.context.destination);
     if (typeof callback !== 'undefined') {
-        callback(null);
+      callback(null);
     }
   } catch (e) {
     console.error(e);
     if (typeof callback !== 'undefined') {
-        callback(e);
+      callback(e);
     }
   }
 };
