@@ -24,6 +24,7 @@
     "test": "grunt && start-tests | faucet"
   },
   "devDependencies": {
+    "eslint-config-webrtc": "^1.0.0",
     "express": "^4.13.3",
     "faucet": "0.0.1",
     "grunt": "^0.4.5",
