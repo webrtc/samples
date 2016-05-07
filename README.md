@@ -36,6 +36,14 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face/)
 
+### Stream capture ###
+
+<!-- [Stream from a video element to a peer connection](https://webrtc.github.io/samples/src/content/capture/video-pc/)
+ -->
+[Stream from a canvas element to a peer connection](https://webrtc.github.io/samples/src/content/capture/canvas-pc/)
+
+[Record a stream from a canvas element](https://webrtc.github.io/samples/src/content/capture/canvas-record/)
+
 ### Devices ###
 
 [Select camera, microphone and speaker](https://webrtc.github.io/samples/src/content/devices/input-output/)
