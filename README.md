@@ -38,17 +38,17 @@ Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/te
 
 [Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face/)
 
-<<<<<<< HEAD
 ### Stream capture ###
 
-<!-- [Stream from a video element to a peer connection](https://webrtc.github.io/samples/src/content/capture/video-pc/)
- -->
+<!-- [Stream from a video element to a peer connection](https://webrtc.github.io/samples/src/content/capture/video-pc/) -->
+
+[Stream from a canvas element to a video element](https://webrtc.github.io/samples/src/content/capture/canvas-video/)
+
 [Stream from a canvas element to a peer connection](https://webrtc.github.io/samples/src/content/capture/canvas-pc/)
 
 [Record a stream from a canvas element](https://webrtc.github.io/samples/src/content/capture/canvas-record/)
-=======
+
 [Record stream](https://webrtc.github.io/samples/src/content/getusermedia/record/)
->>>>>>> b954008eeed8eeae6ec2cd090027cbe0e099c454
 
 ### Devices ###
 

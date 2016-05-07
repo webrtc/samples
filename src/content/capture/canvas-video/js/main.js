@@ -8,6 +8,9 @@
 
 'use strict';
 
+// Call main() in demo.js
+main();
+
 var canvas = document.querySelector('canvas');
 var video = document.querySelector('video');
 
