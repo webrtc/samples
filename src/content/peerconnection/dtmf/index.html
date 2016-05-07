@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -61,15 +61,18 @@
     <div id="parameters">
       <div>
         <label for="duration">Duration:</label>
-        <input id="duration" type="text" value="500" />
+        <input id="duration" type="range" value="500" min="70" max="6000">
+        <span id="durationValue">500</span>
       </div>
       <div>
         <label for="gap">Gap:</label>
-        <input id="gap" type="text" value="50" />
+        <input id="gap" type="range" value="50" min="50" max="1000">
+        <span id="gapValue">50</span>
       </div>
       <div>
        <label for="tones">Tones:</label>
-       <input id="tones" type="text" value="1199##9,6633221,9966332,9966332,1199##9,6633221" />
+       <input id="tones" type="text"
+         value="1199##9,6633221,9966332,9966332,1199##9,6633221" />
      </div>
    </div>
 

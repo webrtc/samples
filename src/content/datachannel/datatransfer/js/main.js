@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -18,22 +18,34 @@ var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
+var errorMessage = document.querySelector('div#errorMsg');
 
 var receivedSize = 0;
 var bytesToSend = 0;
 
-var bitrateMax = 0;
-
 sendButton.onclick = createConnection;
+
+// Prevent data sent to be set to 0.
+megsToSend.addEventListener('change', function(e) {
+  if (this.value <= 0) {
+    sendButton.disabled = true;
+    errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
+  } else {
+    errorMessage.innerHTML = '';
+    sendButton.disabled = false;
+  }
+});
 
 function createConnection() {
   sendButton.disabled = true;
+  megsToSend.disabled = true;
   var servers = null;
   pcConstraint = null;
 
-  bytesToSend = megsToSend.value * 1024 * 1024;
+  bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created local peer connection object localConnection');
@@ -54,7 +66,8 @@ function createConnection() {
 
   localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
 
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created remote peer connection object remoteConnection');
@@ -183,7 +196,6 @@ function receiveChannelCallback(event) {
   receiveChannel.onmessage = onReceiveMessageCallback;
 
   receivedSize = 0;
-  bitrateMax = 0;
 }
 
 function onReceiveMessageCallback(event) {
@@ -193,6 +205,7 @@ function onReceiveMessageCallback(event) {
   if (receivedSize === bytesToSend) {
     closeDataChannels();
     sendButton.disabled = false;
+    megsToSend.disabled = false;
   }
 }
 

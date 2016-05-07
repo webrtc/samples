@@ -25,9 +25,9 @@ btn3.disabled = true;
 var pc1 = null;
 var pc2 = null;
 var localstream;
-var sdpConstraints = {'mandatory': {
-  'OfferToReceiveAudio': true,
-  'OfferToReceiveVideo': true}
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
 };
 
 function gotStream(stream) {
@@ -43,7 +43,7 @@ navigator.mediaDevices.getUserMedia({
 })
 .then(gotStream)
 .catch(function(e) {
-  alert('getUserMedia() error: ' + e.name);
+  alert('getUserMedia() error: ' + e);
 });
 
 function start() {
@@ -72,8 +72,8 @@ function start() {
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
-
+  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
+      offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -103,8 +103,7 @@ function gotDescription1(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-                   sdpConstraints);
+  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
@@ -128,7 +127,7 @@ function gotDescription3(desc) {
 }
 
 function accept() {
-  pc2.createAnswer(gotDescription3, onCreateAnswerError, sdpConstraints);
+  pc2.createAnswer(gotDescription3, onCreateAnswerError);
   btn2.disabled = true;
   btn1.disabled = false;
 }

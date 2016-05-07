@@ -5,15 +5,15 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+ /* eslint-env node */
 
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
-/* jshint node: true */
 var test = require('tape');
 
 var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('../../../../../test/selenium-lib');
+var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
 test('Video width and video height are set on GUM sample', function(t) {
   // FIXME: use env[SELENIUM_BROWSER] instead?

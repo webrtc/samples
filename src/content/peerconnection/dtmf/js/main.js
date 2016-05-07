@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -23,6 +23,9 @@ var durationInput = document.querySelector('input#duration');
 var gapInput = document.querySelector('input#gap');
 var tonesInput = document.querySelector('input#tones');
 
+var durationValue = document.querySelector('span#durationValue');
+var gapValue = document.querySelector('span#gapValue');
+
 var sentTonesDiv = document.querySelector('div#sentTones');
 var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
@@ -36,6 +39,14 @@ var dtmfSender;
 var offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0
+};
+
+durationInput.oninput = function() {
+  durationValue.textContent = durationInput.value;
+};
+
+gapInput.oninput = function() {
+  gapValue.textContent = gapInput.value;
 };
 
 main();
@@ -101,10 +112,6 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  // Setting PCMU as the preferred codec.
-  desc.sdp = desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 RTP/SAVPF 0 126\r\n');
-  // Workaround for issue 1603.
-  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
   pc2.setLocalDescription(desc);
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
@@ -135,7 +142,6 @@ function gotRemoteStream(e) {
         'which is not support by this browser.'
     );
   }
-
 }
 
 function iceCallback1(event) {
@@ -203,6 +209,5 @@ function addDialPadHandlers() {
 }
 
 function sendDtmfTone() {
-  /*jshint validthis:true */
   sendTones(this.textContent);
 }

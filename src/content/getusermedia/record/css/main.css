@@ -1,0 +1,57 @@
+/*
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+ button {
+  margin: 0 3px 10px 0;
+  width: 99px;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+button:last-of-type {
+  margin: 0;
+}
+
+p.borderBelow {
+  margin: 0 0 20px 0;
+  padding: 0 0 20px 0;
+}
+
+video {
+  height: 232px;
+  margin: 0 12px 20px 0;
+  vertical-align: top;
+  width: calc(20em - 10px);
+}
+
+
+video:last-of-type {
+  margin: 0 0 20px 0;
+}
+
+video#gumVideo {
+  margin: 0 20px 20px 0;
+}
+
+@media screen and (max-width: 500px) {
+  button {
+    font-size: 0.8em;
+    width: calc(33% - 5px);
+  }
+}
+
+@media screen and (max-width: 720px) {
+  video {
+    height: calc((50vw - 48px) * 3 / 4);
+    margin: 0 10px 10px 0;
+    width: calc(50vw - 48px);
+  }
+
+  video#gumVideo {
+    margin: 0 10px 10px 0;
+  }
+}

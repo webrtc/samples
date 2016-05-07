@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -19,7 +19,7 @@ hangupButton.onclick = hangup;
 
 var pc1;
 var pc2;
-var localstream;
+var localStream;
 
 var bitrateGraph;
 var bitrateSeries;
@@ -36,13 +36,14 @@ var offerOptions = {
 };
 
 function gotStream(stream) {
+  hangupButton.disabled = false;
   trace('Received local stream');
-  localstream = stream;
-  var audioTracks = localstream.getAudioTracks();
+  localStream = stream;
+  var audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
   }
-  pc1.addStream(localstream);
+  pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
@@ -63,7 +64,6 @@ function onCreateSessionDescriptionError(error) {
 
 function call() {
   callButton.disabled = true;
-  hangupButton.disabled = false;
   codecSelector.disabled = true;
   trace('Starting call');
   var servers = null;
@@ -93,9 +93,6 @@ function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc, function() {
     pc2.setRemoteDescription(desc, function() {
-      // Since the 'remote' side has no media stream we need
-      // to pass in the right constraints in order for it to
-      // accept the incoming offer of audio.
       pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
     }, onSetSessionDescriptionError);
   }, onSetSessionDescriptionError);
@@ -112,6 +109,9 @@ function gotDescription2(desc) {
 
 function hangup() {
   trace('Ending call');
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
   pc1.close();
   pc2.close();
   pc1 = null;

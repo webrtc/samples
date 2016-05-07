@@ -5,8 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* jshint node: true */
-/* globals require */
+ /* eslint-env node */
 
 'use strict';
 var test = require('tape');
@@ -22,11 +21,21 @@ require('../src/content/peerconnection/pc1/js/test');
 // Tests basic functionality of the peerconnection audio demo.
 require('../src/content/peerconnection/audio/js/test');
 
+// Tests basic functionality of the peerconnection dtmf demo.
+// Disabled for Firefox due not supporting DTMF.
+require('../src/content/peerconnection/dtmf/js/test');
+
+// Tests basic functionality of the peerconnection multiple demo.
+require('../src/content/peerconnection/multiple/js/test');
+
 // Tests basic functionality of the munge-sdp demo.
 require('../src/content/peerconnection/munge-sdp/js/test');
 
 // Tests basic functionality of the trickle-ice demo.
 require('../src/content/peerconnection/trickle-ice/js/test');
+
+// Tests basic functionality of the ice restart demo.
+require('../src/content/peerconnection/restart-ice/js/test.js');
 
 // Tests basic functionality of the datachannel textchat demo.
 require('../src/content/datachannel/basic/js/test');
@@ -43,7 +52,7 @@ require('../src/content/devices/input-output/js/test.js');
 // This is run as a test so it is executed after all tests
 // have completed.
 test('Shutdown', function(t) {
-  var driver = require('./selenium-lib').buildDriver();
+  var driver = require('webrtc-utilities').seleniumLib.buildDriver();
   driver.close()
   .then(function() {
     driver.quit().then(function() {

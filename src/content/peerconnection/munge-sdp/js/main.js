@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -73,7 +73,7 @@ function gotSources(sourceInfos) {
   var videoCount = 0;
   for (var i = 0; i < sourceInfos.length; i++) {
     var option = document.createElement('option');
-    option.value = sourceInfos[i].id;
+    option.value = sourceInfos[i].deviceId;
     option.text = sourceInfos[i].label;
     if (sourceInfos[i].kind === 'audioinput') {
       audioCount++;
@@ -99,7 +99,9 @@ function getMedia() {
 
   if (localStream) {
     localVideo.src = null;
-    localStream.getTracks().forEach(function(track) { track.stop(); });
+    localStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
   var audioSource = audioSelect.value;
   trace('Selected audio source: ' + audioSource);
@@ -252,9 +254,13 @@ function sendData() {
 function hangup() {
   remoteVideo.src = '';
   trace('Ending call');
-  localStream.getTracks().forEach(function(track) { track.stop(); });
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
   sendChannel.close();
-  receiveChannel.close();
+  if (receiveChannel) {
+    receiveChannel.close();
+  }
   localPeerConnection.close();
   remotePeerConnection.close();
   localPeerConnection = null;

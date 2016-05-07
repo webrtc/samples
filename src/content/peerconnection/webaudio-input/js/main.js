@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -56,7 +56,9 @@ function stop() {
   startButton.enabled = true;
   stopButton.enabled = false;
   renderLocallyCheckbox.disabled = true;
-  localStream.stop();
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
 }
 
 function gotStream(stream) {
@@ -68,17 +70,20 @@ function gotStream(stream) {
     var filteredStream = webAudio.applyFilter(stream);
 
     var servers = null;
-
-    pc1 = new webkitRTCPeerConnection(servers); // jscs:ignore requireCapitalizedConstructors
+    pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
     pc1.onicecandidate = iceCallback1;
-    pc2 = new webkitRTCPeerConnection(servers); // jscs:ignore requireCapitalizedConstructors
+    pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = iceCallback2;
     pc2.onaddstream = gotRemoteStream;
 
     pc1.addStream(filteredStream);
-    pc1.createOffer(gotDescription1);
+    pc1.createOffer()
+    .then(gotDescription1)
+    .catch(function(error) {
+      console.log('createOffer failed: ' + error);
+    });
 
     stream.onended = function() {
       console.log('stream.onended');
@@ -89,15 +94,17 @@ function gotStream(stream) {
     localStream = stream;
   } else {
     alert('The media stream contains an invalid amount of audio tracks.');
-    stream.stop();
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
 }
 
 function gotStreamFailed(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
-  alert('Failed to get access to local media. Error code: ' +
-    error.code);
+  alert('Failed to get access to local media. Error: ' +
+    error.name);
 }
 
 function forceOpus(sdp) {
@@ -114,10 +121,15 @@ function gotDescription1(desc) {
     type: 'offer',
     sdp: forceOpus(desc.sdp)
   });
+
   pc1.setLocalDescription(modifiedOffer);
   console.log('Offer from pc1 \n' + modifiedOffer.sdp);
   pc2.setRemoteDescription(modifiedOffer);
-  pc2.createAnswer(gotDescription2);
+  pc2.createAnswer()
+  .then(gotDescription2)
+  .catch(function(error) {
+    console.log('createAnswer failed: ' + error);
+  });
 }
 
 function gotDescription2(desc) {

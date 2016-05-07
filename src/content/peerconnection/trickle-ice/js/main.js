@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -17,7 +17,7 @@ var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
 var ipv6Check = document.querySelector('input#ipv6');
-//var unbundleCheck = document.querySelector('input#unbundle');
+// var unbundleCheck = document.querySelector('input#unbundle');
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -98,7 +98,7 @@ function start() {
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
-  //offerOptions.optional = [{'googUseRtpMUX': !unbundleCheck.checked}];
+  // offerOptions.optional = [{'googUseRtpMUX': !unbundleCheck.checked}];
 
   trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
         ', constraints=' + JSON.stringify(pcConstraints));

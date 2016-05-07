@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -57,7 +57,9 @@ function hangup() {
   localPeerConnection = null;
   remotePeerConnection = null;
 
-  localStream.getTracks().forEach(function(track) { track.stop(); });
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
   localStream = null;
 
   hangupButton.disabled = true;
@@ -67,7 +69,9 @@ function hangup() {
 function getMedia() {
   getMediaButton.disabled = true;
   if (localStream) {
-    localStream.getTracks().forEach(function(track) { track.stop(); });
+    localStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
     var videoTracks = localStream.getVideoTracks();
     for (var i = 0; i !== videoTracks.length; ++i) {
       videoTracks[i].stop();
@@ -207,7 +211,6 @@ setInterval(function() {
           if (timestampPrev) {
             bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
             bitrate = Math.floor(bitrate);
-
           }
           bytesPrev = bytes;
           timestampPrev = now;
@@ -222,7 +225,7 @@ setInterval(function() {
       var activeCandidatePair = null;
       var remoteCandidate = null;
 
-      // search for the candidate pa
+      // search for the candidate pair
       Object.keys(results).forEach(function(result) {
         var report = results[result];
         if (report.type === 'candidatepair' && report.selected ||

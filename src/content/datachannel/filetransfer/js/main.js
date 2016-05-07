@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -15,9 +15,10 @@ var receiveChannel;
 var pcConstraint;
 var bitrateDiv = document.querySelector('div#bitrate');
 var fileInput = document.querySelector('input#fileInput');
-var downloadDiv = document.querySelector('a#received');
+var downloadAnchor = document.querySelector('a#download');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
+var statusMessage = document.querySelector('span#status');
 
 var receiveBuffer = [];
 var receivedSize = 0;
@@ -34,7 +35,8 @@ function createConnection() {
   var servers = null;
   pcConstraint = null;
 
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created local peer connection object localConnection');
@@ -48,7 +50,8 @@ function createConnection() {
   localConnection.onicecandidate = iceCallback1;
 
   localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created remote peer connection object remoteConnection');
@@ -67,7 +70,14 @@ function sendData() {
   var file = fileInput.files[0];
   trace('file is ' + [file.name, file.size, file.type,
       file.lastModifiedDate].join(' '));
+
+  // Handle 0 size files.
+  statusMessage.textContent = '';
+  downloadAnchor.textContent = '';
   if (file.size === 0) {
+    bitrateDiv.innerHTML = '';
+    statusMessage.textContent = 'File is empty, please select a non-empty file';
+    closeDataChannels();
     return;
   }
   sendProgress.max = file.size;
@@ -94,13 +104,18 @@ function closeDataChannels() {
   trace('Closing data channels');
   sendChannel.close();
   trace('Closed data channel with label: ' + sendChannel.label);
-  receiveChannel.close();
-  trace('Closed data channel with label: ' + receiveChannel.label);
+  if (receiveChannel) {
+    receiveChannel.close();
+    trace('Closed data channel with label: ' + receiveChannel.label);
+  }
   localConnection.close();
   remoteConnection.close();
   localConnection = null;
   remoteConnection = null;
   trace('Closed peer connections');
+
+  // re-enable the file select
+  fileInput.disabled = false;
 }
 
 function gotDescription1(desc) {
@@ -153,16 +168,16 @@ function receiveChannelCallback(event) {
 
   receivedSize = 0;
   bitrateMax = 0;
-  downloadDiv.innerHTML = '';
-  downloadDiv.removeAttribute('download');
-  if (downloadDiv.href) {
-    URL.revokeObjectURL(downloadDiv.href);
-    downloadDiv.removeAttribute('href');
+  downloadAnchor.textContent = '';
+  downloadAnchor.removeAttribute('download');
+  if (downloadAnchor.href) {
+    URL.revokeObjectURL(downloadAnchor.href);
+    downloadAnchor.removeAttribute('href');
   }
 }
 
 function onReceiveMessageCallback(event) {
-  //trace('Received Message ' + event.data.byteLength);
+  // trace('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 
@@ -175,12 +190,11 @@ function onReceiveMessageCallback(event) {
     var received = new window.Blob(receiveBuffer);
     receiveBuffer = [];
 
-    downloadDiv.href = URL.createObjectURL(received);
-    downloadDiv.download = file.name;
-    var text = 'Click to download \'' + file.name + '\' (' + file.size +
-        ' bytes)';
-    downloadDiv.appendChild(document.createTextNode(text));
-    downloadDiv.style.display = 'block';
+    downloadAnchor.href = URL.createObjectURL(received);
+    downloadAnchor.download = file.name;
+    downloadAnchor.textContent =
+      'Click to download \'' + file.name + '\' (' + file.size + ' bytes)';
+    downloadAnchor.style.display = 'block';
 
     var bitrate = Math.round(receivedSize * 8 /
         ((new Date()).getTime() - timestampStart));
@@ -193,9 +207,6 @@ function onReceiveMessageCallback(event) {
     }
 
     closeDataChannels();
-
-    // re-enable the file select
-    fileInput.disabled = false;
   }
 }
 
@@ -228,7 +239,7 @@ function displayStats() {
 
   if (remoteConnection &&
       remoteConnection.iceConnectionState === 'connected') {
-    if (webrtcDetectedBrowser === 'chrome') {
+    if (adapter.browserDetails.browser === 'chrome') {
       // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
       // lands those stats should be preferrred over the connection stats.
       remoteConnection.getStats(null, function(stats) {

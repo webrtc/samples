@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -41,7 +41,8 @@ function createConnection() {
   // SCTP is supported from Chrome 31 and is supported in FF.
   // No need to pass DTLS constraint as it is on by default in Chrome 31.
   // For SCTP, reliable and ordered is true by default.
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection =
       new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object localConnection');
@@ -54,7 +55,8 @@ function createConnection() {
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection =
       new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object remoteConnection');

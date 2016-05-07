@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=master)](https://travis-ci.org/webrtc/samples/)
+[![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=gh-pages)](https://travis-ci.org/webrtc/samples/)
 
 # WebRTC code samples #
 
@@ -14,7 +14,9 @@ In Chrome and Opera, all samples that use `getUserMedia()` must be run from a se
 
 For more information about WebRTC, we maintain a list of [WebRTC Resources](https://docs.google.com/document/d/1idl_NYQhllFEFqkGQOLv8KBK8M3EVzyvxnKkHl4SuM8/edit). If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O [WebRTC presentation](http://www.youtube.com/watch?v=p2HzZkd2A40).
 
-Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md) for instructions. All contributors must sign a contributor license agreement before code can be accepted. Please complete the agreement for an [individual](https://developers.google.com/open-source/cla/individual) or a [corporation](https://developers.google.com/open-source/cla/corporate) as appropriate. The [Developer's Guide](https://bit.ly/webrtcdevguide) for this repo has more information about code style, structure and validation.
+Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md) for instructions. All contributors must sign a contributor license agreement before code can be accepted. Please complete the agreement for an [individual](https://developers.google.com/open-source/cla/individual) or a [corporation](https://developers.google.com/open-source/cla/corporate) as appropriate.
+The [Developer's Guide](https://bit.ly/webrtcdevguide) for this repo has more information about code style, structure and validation.
+Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/test/README.md) and get started developing.
 
 ## The demos ##
 
@@ -36,6 +38,7 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face/)
 
+<<<<<<< HEAD
 ### Stream capture ###
 
 <!-- [Stream from a video element to a peer connection](https://webrtc.github.io/samples/src/content/capture/video-pc/)
@@ -43,6 +46,9 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 [Stream from a canvas element to a peer connection](https://webrtc.github.io/samples/src/content/capture/canvas-pc/)
 
 [Record a stream from a canvas element](https://webrtc.github.io/samples/src/content/capture/canvas-record/)
+=======
+[Record stream](https://webrtc.github.io/samples/src/content/getusermedia/record/)
+>>>>>>> b954008eeed8eeae6ec2cd090027cbe0e099c454
 
 ### Devices ###
 
@@ -74,7 +80,11 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 
 [ICE candidate gathering from STUN/TURN servers](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)
 
+[Do an ICE restart](https://webrtc.github.io/samples/src/content/peerconnection/restart-ice/)
+
 [Web Audio output as input to peer connection](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-input/)
+
+[Peer connection as input to Web Audio](https://webrtc.github.io/samples/src/content/peerconnection/webaudio-output/)
 
 ### RTCDataChannel ###
 
@@ -89,6 +99,3 @@ Patches and issues welcome! See [CONTRIBUTING](https://github.com/webrtc/samples
 [AppRTC video chat client](https://apprtc.appspot.com/) powered by Google App Engine
 
 [AppRTC URL parameters](https://apprtc.appspot.com/params.html)
-
-
-

@@ -9,43 +9,44 @@
 <html>
 <head>
 
-  <meta charset="utf-8">
-  <meta name="description" content="WebRTC Javascript code samples">
-  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-  <meta itemprop="description" content="Client-side WebRTC code samples">
-  <meta itemprop="image" content="src/images/webrtc-icon-192x192.png">
-  <meta itemprop="name" content="WebRTC code samples">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta id="theme-color" name="theme-color" content="#ffffff">
+<meta charset="utf-8">
+<meta name="description" content="WebRTC Javascript code samples">
+<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+<meta itemprop="description" content="Client-side WebRTC code samples">
+<meta itemprop="image" content="src/images/webrtc-icon-192x192.png">
+<meta itemprop="name" content="WebRTC code samples">
+<meta name="mobile-web-app-capable" content="yes">
+<meta id="theme-color" name="theme-color" content="#ffffff">
 
-  <base target="_blank">
+<base target="_blank">
 
-  <title>WebRTC samples</title>
+<title>WebRTC samples</title>
 
-  <link rel="icon" sizes="192x192" href="src/images/webrtc-icon-192x192.png">
-  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="src/css/main.css" />
+<link rel="icon" sizes="192x192" href="src/images/webrtc-icon-192x192.png">
+<link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="src/css/main.css" />
 
-  <style>
-    h2 {
-      font-size: 1.5em;
-      font-weight: 500;
-    }
-    h3 {
-      border-top: none;
-    }
-    section {
-      border-bottom: 1px solid #eee;
-      margin: 0 0 1.5em 0;
-      padding: 0 0 1.5em 0;
-    }
-    section:last-child {
-      border-bottom: none;
-      margin: 0;
-      padding: 0;
-    }
-  </style>
+<style>
+  h2 {
+    font-size: 1.5em;
+    font-weight: 500;
+  }
+  h3 {
+    border-top: none;
+  }
+  section {
+    border-bottom: 1px solid #eee;
+    margin: 0 0 1.5em 0;
+    padding: 0 0 1.5em 0;
+  }
+  section:last-child {
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+  }
+</style>
 </head>
+
 <body>
   <div id="container">
 
@@ -65,7 +66,7 @@
 
       <p>For more information about WebRTC, we maintain a list of resources at <a href="https://g.co/webrtc">g.co/webrtc</a>. If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O <a href="https://www.youtube.com/watch?v=p2HzZkd2A40">WebRTC presentation</a>.</p>
 
-      <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a> for instructions. The <a href="https://bit.ly/webrtcdevguide">Developer's Guide</a> for this repo has more information about code style, structure and validation.</p>
+      <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a> for instructions. The <a href="https://bit.ly/webrtcdevguide">Developer's Guide</a> for this repo has more information about code style, structure and validation. Head over to <a href="test/README.md">test/README.md</a> and get started developing.</p>
 
     </section>
 
@@ -75,19 +76,25 @@
 
       <h3 id="getusermedia">getUserMedia</h3>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/gum/">Basic getUserMedia demo</a></p>
+      <p><a href="src/content/getusermedia/gum/">Basic getUserMedia demo</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/canvas/">Use getUserMedia with canvas</a></p>
+      <p><a href="src/content/getusermedia/canvas/">Use getUserMedia with canvas</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/filter/">Use getUserMedia with canvas and CSS filters</a></p>
+      <p><a href="src/content/getusermedia/filter/">Use getUserMedia with canvas and CSS filters</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/resolution/">Choose camera resolution</a></p>
+      <p><a href="src/content/getusermedia/resolution/">Choose camera resolution</a></p>
 
+<<<<<<< HEAD
       <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/audio/">Audio-only getUserMedia() output to local audio element</a></p>
+=======
+      <p><a href="src/content/getusermedia/audio/">Audio-only getUserMedia() output to local audio element</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/volume/">Audio-only getUserMedia() displaying volume</a></p>
+      <p><a href="src/content/getusermedia/volume/">Audio-only getUserMedia() displaying volume</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/getusermedia/face/">Face tracking, using getUserMedia and canvas</a></p>
+      <p><a href="src/content/getusermedia/face/">Face tracking, using getUserMedia and canvas</a></p>
+>>>>>>> b954008eeed8eeae6ec2cd090027cbe0e099c454
+
+      <p><a href="src/content/getusermedia/record/">Record stream</a></p>
 
 
       <h3 id="capture">Stream capture</h3>
@@ -99,44 +106,50 @@
       <p><a href="https://webrtc.github.io/samples/src/content/capture/canvas-record/">Record a stream from a canvas element</a></p>
       <h3 id="devices">Devices</h3>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/devices/input-output/">Choose camera, microphone and speaker</a></p>
+      <p><a href="src/content/devices/input-output/">Choose camera, microphone and speaker</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/devices/multi/">Choose media source and audio output</a></p>
+      <p><a href="src/content/devices/multi/">Choose media source and audio output</a></p>
 
 
       <h3 id="peerconnection">RTCPeerConnection</h3>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/pc1/">Basic peer connection demo</a></p>
+      <p><a href="src/content/peerconnection/pc1/">Basic peer connection demo</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/audio/">Audio-only peer connection demo</a></p>
+      <p><a href="src/content/peerconnection/audio/">Audio-only peer connection demo</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/multiple/">Multiple peer connections at once</a></p>
+      <p><a href="src/content/peerconnection/bandwidth/">Change bandwidth on the fly</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/multiple-relay/">Forward the output of one PC into another</a></p>
+      <p><a href="src/content/peerconnection/multiple/">Multiple peer connections at once</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/munge-sdp/">Munge SDP parameters</a></p>
+      <p><a href="src/content/peerconnection/multiple-relay/">Forward the output of one PC into another</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/pr-answer/">Use pranswer when setting up a peer connection</a></p>
+      <p><a href="src/content/peerconnection/munge-sdp/">Munge SDP parameters</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/constraints/">Constraints and stats</a></p>
+      <p><a href="src/content/peerconnection/pr-answer/">Use pranswer when setting up a peer connection</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/create-offer/">Display createOffer output for various scenarios</a></p>
+      <p><a href="src/content/peerconnection/constraints/">Constraints and stats</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/dtmf/">Use RTCDTMFSender</a></p>
+      <p><a href="src/content/peerconnection/create-offer/">Display createOffer output for various scenarios</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/states/">Display peer connection states</a></p>
+      <p><a href="src/content/peerconnection/dtmf/">Use RTCDTMFSender</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/">ICE candidate gathering from STUN/TURN servers</a></p>
+      <p><a href="src/content/peerconnection/states/">Display peer connection states</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/peerconnection/webaudio-input/">Web Audio output as input to peer connection</a></p>
+      <p><a href="src/content/peerconnection/trickle-ice/">ICE candidate gathering from STUN/TURN servers</a></p>
+
+      <p><a href="src/content/peerconnection/restart-ice/">Do an ICE restart</a></p>
+
+      <p><a href="src/content/peerconnection/webaudio-input/">Web Audio output as input to peer connection</a></p>
+
+      <p><a href="src/content/peerconnection/webaudio-output/">Peer connection as input to Web Audio</a></p>
 
       <h3 id="datachannel">RTCDataChannel</h3>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/datachannel/basic/">Transmit text</a></p>
+      <p><a href="src/content/datachannel/basic/">Transmit text</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/datachannel/filetransfer/">Transfer a file</a></p>
+      <p><a href="src/content/datachannel/filetransfer/">Transfer a file</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/datachannel/datatransfer/">Transfer data</a></p>
+      <p><a href="src/content/datachannel/datatransfer/">Transfer data</a></p>
 
       <h3 id="videoChat">Video chat</h3>
 
@@ -151,6 +164,12 @@
   </div>
 
   <script src="src/js/lib/ga.js"></script>
+  <script type="application/javascript">
+    // Redirect to HTTPS for Github Pages
+    if (window.location.protocol !== "https:"){
+      window.location.protocol = "https";
+    }
+  </script>
 
 </body>
 </html>

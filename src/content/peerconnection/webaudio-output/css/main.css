@@ -1,0 +1,47 @@
+/*
+*  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
+*/
+
+button {
+  margin: 0 20px 0 0;
+  width: 83px;
+}
+
+button#hangupButton {
+  margin: 0;
+}
+
+canvas {
+  background-color: #666;
+  height: 231px;
+  vertical-align: top;
+  width: calc(50% - 12px);
+}
+
+video {
+  height: 231px;
+  margin: 0 20px 20px 0;
+  width: calc(50% - 12px);
+}
+
+video#remoteVideo {
+  display: none;
+}
+
+@media screen and (max-width: 400px) {
+  button {
+    margin: 0 11px 10px 0;
+    width: 83px;
+  }
+  canvas {
+    width: calc(50% - 7px);
+  }
+  video {
+    margin: 0 10px 20px 0;
+    width: calc(50% - 7px);
+  }
+}
