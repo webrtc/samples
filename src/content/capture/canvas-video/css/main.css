@@ -21,7 +21,7 @@ canvas {
 
 video {
   height: 231px;
-  margin: 0 20px 0 0;
+  margin: 0 0 20px 0;
   width: calc(50% - 12px);
 }
 
@@ -31,10 +31,11 @@ video {
     width: 83px;
   }
   canvas {
+    margin: 0 10px 0 0;
     width: calc(50% - 7px);
   }
   video {
-    margin: 0 10px 20px 0;
+    margin: 0 0 20px 0;
     width: calc(50% - 7px);
   }
 }
