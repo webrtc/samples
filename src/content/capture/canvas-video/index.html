@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -35,11 +35,13 @@
 
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Stream from a canvas to a video element</span></h1>
 
-<canvas id="c"></canvas>
+    <canvas></canvas>
 
     <video autoplay></video>
 
-    <p>Click and drag to move the teapot.</p>
+    <p>Click and drag on the canvas (on the left) to move the teapot.</p>
+
+    <p>This demo requires Chrome 51 or later, or Chrome 50 with <strong>Experimental Web Platform features</strong> enabled.</p>
 
     <p>The teapot is drawn on the canvas element using WebGL. A stream is captured from the canvas element using <code>captureStream()</code> method and set as the <code>src</code> of the video element using <code>URL.createObjectURL()</code>.</p>
 
