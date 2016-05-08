@@ -15,4 +15,4 @@ var canvas = document.querySelector('canvas');
 var video = document.querySelector('video');
 
 var stream = canvas.captureStream();
-video.src = URL.createObjectURL(stream);
+video.srcObject = stream;
