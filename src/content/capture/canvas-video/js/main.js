@@ -6,6 +6,8 @@
 *  tree.
 */
 
+/* global main */
+
 'use strict';
 
 // Call main() in demo.js
