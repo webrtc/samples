@@ -164,20 +164,23 @@ function createPeerConnection() {
     console.log('remotePeerConnection got stream');
     remoteVideo.srcObject = e.stream;
   };
-  localPeerConnection.createOffer(function(desc) {
-    console.log('localPeerConnection offering');
-    localPeerConnection.setLocalDescription(desc);
-    remotePeerConnection.setRemoteDescription(desc);
-    remotePeerConnection.createAnswer(function(desc2) {
-      console.log('remotePeerConnection answering');
-      remotePeerConnection.setLocalDescription(desc2);
-      localPeerConnection.setRemoteDescription(desc2);
-    }, function(err) {
+  localPeerConnection.createOffer().then(
+    function(desc) {
+      console.log('localPeerConnection offering');
+      localPeerConnection.setLocalDescription(desc);
+      remotePeerConnection.setRemoteDescription(desc);
+      remotePeerConnection.createAnswer(function(desc2) {
+        console.log('remotePeerConnection answering');
+        remotePeerConnection.setLocalDescription(desc2);
+        localPeerConnection.setRemoteDescription(desc2);
+      }, function(err) {
+        console.log(err);
+      });
+    },
+    function(err) {
       console.log(err);
-    });
-  }, function(err) {
-    console.log(err);
-  });
+    }
+  );
 }
 
 function onAddIceCandidateSuccess() {

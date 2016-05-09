@@ -64,7 +64,10 @@ function createConnection() {
   remoteConnection.onicecandidate = iceCallback2;
   remoteConnection.ondatachannel = receiveChannelCallback;
 
-  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localConnection.createOffer().then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
   startButton.disabled = true;
   closeButton.disabled = false;
 }

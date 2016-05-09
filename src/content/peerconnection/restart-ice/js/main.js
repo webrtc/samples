@@ -87,8 +87,12 @@ function restart() {
   restartButton.disabled = true;
   offerOptions.iceRestart = true;
   trace('pc1 createOffer restart');
-  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    onCreateOfferSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function call() {
@@ -130,8 +134,12 @@ function call() {
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');
-  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    onCreateOfferSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {

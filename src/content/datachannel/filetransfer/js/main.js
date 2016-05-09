@@ -49,7 +49,10 @@ function createConnection() {
   sendChannel.onclose = onSendChannelStateChange;
   localConnection.onicecandidate = iceCallback1;
 
-  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localConnection.createOffer().then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
   // Add remoteConnection to global scope to make it visible
   // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,

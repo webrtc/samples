@@ -189,8 +189,12 @@ function maybeAddLineBreakToEnd(sdp) {
 }
 
 function createOffer() {
-  localPeerConnection.createOffer(gotDescription1,
-      onCreateSessionDescriptionError, offerOptions);
+  localPeerConnection.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {

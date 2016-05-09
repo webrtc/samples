@@ -43,8 +43,12 @@ function gotStream(stream) {
   pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');

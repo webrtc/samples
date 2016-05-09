@@ -104,7 +104,12 @@ function start() {
         ', constraints=' + JSON.stringify(pcConstraints));
   pc = new RTCPeerConnection(config, pcConstraints);
   pc.onicecandidate = iceCallback;
-  pc.createOffer(gotDescription, noDescription, offerOptions);
+  pc.createOffer(
+    offerOptions
+  ).then(
+    gotDescription,
+    noDescription
+  );
 }
 
 function gotDescription(desc) {

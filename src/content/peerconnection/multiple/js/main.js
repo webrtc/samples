@@ -80,13 +80,21 @@ function call() {
 
   pc1Local.addStream(window.localstream);
   trace('Adding local stream to pc1Local');
-  pc1Local.createOffer(gotDescription1Local, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1Local.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1Local,
+    onCreateSessionDescriptionError
+  );
 
   pc2Local.addStream(window.localstream);
   trace('Adding local stream to pc2Local');
-  pc2Local.createOffer(gotDescription2Local, onCreateSessionDescriptionError,
-      offerOptions);
+  pc2Local.createOffer(
+    offerOptions
+  ).then(
+    gotDescription2Local,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
