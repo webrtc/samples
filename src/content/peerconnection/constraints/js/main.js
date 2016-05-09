@@ -148,16 +148,24 @@ function createPeerConnection() {
   localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
-      remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
-          onAddIceCandidateSuccess, onAddIceCandidateError);
+      remotePeerConnection.addIceCandidate(
+        new RTCIceCandidate(e.candidate)
+      ).then(
+        onAddIceCandidateSuccess,
+        onAddIceCandidateError
+      );
     }
   };
   remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
-      localPeerConnection.addIceCandidate(newCandidate,
-          onAddIceCandidateSuccess, onAddIceCandidateError);
+      localPeerConnection.addIceCandidate(
+        newCandidate
+      ).then(
+        onAddIceCandidateSuccess,
+        onAddIceCandidateError
+      );
     }
   };
   remotePeerConnection.onaddstream = function(e) {

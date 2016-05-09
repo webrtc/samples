@@ -179,8 +179,12 @@ function iceCallback2Remote(event) {
 
 function handleCandidate(candidate, dest, prefix, type) {
   if (candidate) {
-    dest.addIceCandidate(new RTCIceCandidate(candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    dest.addIceCandidate(
+      new RTCIceCandidate(candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace(prefix + 'New ' + type + ' ICE candidate: ' + candidate.candidate);
   }
 }
