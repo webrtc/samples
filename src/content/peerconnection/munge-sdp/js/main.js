@@ -225,8 +225,10 @@ function createAnswer() {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  remotePeerConnection.createAnswer(gotDescription2,
-      onCreateSessionDescriptionError);
+  remotePeerConnection.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function setAnswer() {

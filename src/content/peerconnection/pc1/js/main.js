@@ -141,7 +141,10 @@ function onCreateOfferSuccess(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    onCreateAnswerSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onSetLocalSuccess(pc) {

@@ -107,7 +107,10 @@ function gotDescription1(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
@@ -131,7 +134,10 @@ function gotDescription3(desc) {
 }
 
 function accept() {
-  pc2.createAnswer(gotDescription3, onCreateAnswerError);
+  pc2.createAnswer().then(
+    gotDescription3,
+    onCreateAnswerError
+  );
   btn2.disabled = true;
   btn1.disabled = false;
 }

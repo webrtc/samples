@@ -97,7 +97,10 @@ function gotDescription1(desc) {
   pc1.setLocalDescription(desc, function() {
     desc.sdp = forceChosenAudioCodec(desc.sdp);
     pc2.setRemoteDescription(desc, function() {
-      pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+      pc2.createAnswer().then(
+        gotDescription2,
+        onCreateSessionDescriptionError
+      );
     }, onSetSessionDescriptionError);
   }, onSetSessionDescriptionError);
 }

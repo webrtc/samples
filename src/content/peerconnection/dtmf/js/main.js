@@ -112,7 +112,10 @@ function gotDescription1(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {

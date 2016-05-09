@@ -108,7 +108,10 @@ function gotDescription1(description) {
   pc1.setLocalDescription(description);
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description);
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(description) {
