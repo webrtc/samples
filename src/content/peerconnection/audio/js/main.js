@@ -89,9 +89,9 @@ function call() {
 }
 
 function gotDescription1(desc) {
-  desc.sdp = forceChosenAudioCodec(desc.sdp);
   trace('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc, function() {
+    desc.sdp = forceChosenAudioCodec(desc.sdp);
     pc2.setRemoteDescription(desc, function() {
       pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
     }, onSetSessionDescriptionError);
@@ -99,9 +99,9 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  desc.sdp = forceChosenAudioCodec(desc.sdp);
+  trace('Answer from pc2 \n' + desc.sdp);
   pc2.setLocalDescription(desc, function() {
-    trace('Answer from pc2 \n' + desc.sdp);
+    desc.sdp = forceChosenAudioCodec(desc.sdp);
     pc1.setRemoteDescription(desc, function() {
     }, onSetSessionDescriptionError);
   }, onSetSessionDescriptionError);
