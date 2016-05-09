@@ -101,7 +101,12 @@ function start() {
     audio: true,
     video: true
   };
-  navigator.getUserMedia(constraints, successCallback, errorCallback);
+  navigator.mediaDevices.getUserMedia(
+    constraints
+  ).then(
+    successCallback,
+    errorCallback
+  );
 }
 
 start();
