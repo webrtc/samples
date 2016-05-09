@@ -97,12 +97,15 @@ function gotDescription1(desc) {
   pc1.setLocalDescription(desc).then(
     function() {
       desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc2.setRemoteDescription(desc, function() {
-        pc2.createAnswer().then(
-          gotDescription2,
-          onCreateSessionDescriptionError
-        );
-      }, onSetSessionDescriptionError);
+      pc2.setRemoteDescription(desc).then(
+        function() {
+          pc2.createAnswer().then(
+            gotDescription2,
+            onCreateSessionDescriptionError
+          );
+        },
+        onSetSessionDescriptionError
+      );
     },
     onSetSessionDescriptionError
   );
@@ -113,8 +116,11 @@ function gotDescription2(desc) {
   pc2.setLocalDescription(desc).then(
     function() {
       desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc1.setRemoteDescription(desc, function() {
-      }, onSetSessionDescriptionError);
+      pc1.setRemoteDescription(desc).then(
+        function() {
+        },
+        onSetSessionDescriptionError
+      );
     },
     onSetSessionDescriptionError
   );

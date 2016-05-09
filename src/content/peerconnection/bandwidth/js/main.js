@@ -92,12 +92,15 @@ function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc).then(
     function() {
-      pc2.setRemoteDescription(desc, function() {
-        pc2.createAnswer().then(
-          gotDescription2,
-          onCreateSessionDescriptionError
-        );
-      }, onSetSessionDescriptionError);
+      pc2.setRemoteDescription(desc).then(
+        function() {
+          pc2.createAnswer().then(
+            gotDescription2,
+            onCreateSessionDescriptionError
+          );
+        },
+        onSetSessionDescriptionError
+      );
     },
     onSetSessionDescriptionError
   );
@@ -110,8 +113,11 @@ function gotDescription2(desc) {
       // insert b=AS after c= line.
       desc.sdp = desc.sdp.replace(/c=IN IP4 (.*)\r\n/,
           'c=IN IP4 $(1)\r\nb=AS:512\r\n');
-      pc1.setRemoteDescription(desc, function() {
-      }, onSetSessionDescriptionError);
+      pc1.setRemoteDescription(desc).then(
+        function() {
+        },
+        onSetSessionDescriptionError
+      );
     },
     onSetSessionDescriptionError
   );

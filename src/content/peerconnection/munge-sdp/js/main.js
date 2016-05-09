@@ -211,9 +211,10 @@ function setOffer() {
     onSetSessionDescriptionError
   );
   trace('Modified Offer from localPeerConnection \n' + sdp);
-  remotePeerConnection.setRemoteDescription(offer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  remotePeerConnection.setRemoteDescription(offer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
 }
 
 function gotDescription1(description) {
@@ -242,9 +243,10 @@ function setAnswer() {
     onSetSessionDescriptionError
   );
   trace('Modified Answer from remotePeerConnection \n' + sdp);
-  localPeerConnection.setRemoteDescription(answer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  localPeerConnection.setRemoteDescription(answer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
 }
 
 function gotDescription2(description) {

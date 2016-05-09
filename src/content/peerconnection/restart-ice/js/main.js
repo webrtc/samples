@@ -156,9 +156,12 @@ function onCreateOfferSuccess(desc) {
     onSetSessionDescriptionError
   );
   trace('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc, function() {
-    onSetRemoteSuccess(pc2);
-  }, onSetSessionDescriptionError);
+  pc2.setRemoteDescription(desc).then(
+    function() {
+      onSetRemoteSuccess(pc2);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -196,9 +199,12 @@ function onCreateAnswerSuccess(desc) {
     onSetSessionDescriptionError
   );
   trace('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc, function() {
-    onSetRemoteSuccess(pc1);
-  }, onSetSessionDescriptionError);
+  pc1.setRemoteDescription(desc).then(
+    function() {
+      onSetRemoteSuccess(pc1);
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function onIceCandidate(pc, event) {
