@@ -94,24 +94,30 @@ function call() {
 
 function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
-  pc1.setLocalDescription(desc, function() {
-    desc.sdp = forceChosenAudioCodec(desc.sdp);
-    pc2.setRemoteDescription(desc, function() {
-      pc2.createAnswer().then(
-        gotDescription2,
-        onCreateSessionDescriptionError
-      );
-    }, onSetSessionDescriptionError);
-  }, onSetSessionDescriptionError);
+  pc1.setLocalDescription(desc).then(
+    function() {
+      desc.sdp = forceChosenAudioCodec(desc.sdp);
+      pc2.setRemoteDescription(desc, function() {
+        pc2.createAnswer().then(
+          gotDescription2,
+          onCreateSessionDescriptionError
+        );
+      }, onSetSessionDescriptionError);
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
   trace('Answer from pc2 \n' + desc.sdp);
-  pc2.setLocalDescription(desc, function() {
-    desc.sdp = forceChosenAudioCodec(desc.sdp);
-    pc1.setRemoteDescription(desc, function() {
-    }, onSetSessionDescriptionError);
-  }, onSetSessionDescriptionError);
+  pc2.setLocalDescription(desc).then(
+    function() {
+      desc.sdp = forceChosenAudioCodec(desc.sdp);
+      pc1.setRemoteDescription(desc, function() {
+      }, onSetSessionDescriptionError);
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function hangup() {

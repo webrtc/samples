@@ -134,9 +134,12 @@ function onCreateSessionDescriptionError(error) {
 function onCreateOfferSuccess(desc) {
   trace('Offer from pc1\n' + desc.sdp);
   trace('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc, function() {
-    onSetLocalSuccess(pc1);
-  }, onSetSessionDescriptionError);
+  pc1.setLocalDescription(desc).then(
+    function() {
+      onSetLocalSuccess(pc1);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc2 setRemoteDescription start');
   pc2.setRemoteDescription(desc, function() {
     onSetRemoteSuccess(pc2);
@@ -174,9 +177,12 @@ function gotRemoteStream(e) {
 function onCreateAnswerSuccess(desc) {
   trace('Answer from pc2:\n' + desc.sdp);
   trace('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc, function() {
-    onSetLocalSuccess(pc2);
-  }, onSetSessionDescriptionError);
+  pc2.setLocalDescription(desc).then(
+    function() {
+      onSetLocalSuccess(pc2);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc1 setRemoteDescription start');
   pc1.setRemoteDescription(desc, function() {
     onSetRemoteSuccess(pc1);

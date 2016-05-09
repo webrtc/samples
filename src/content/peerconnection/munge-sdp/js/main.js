@@ -206,9 +206,10 @@ function setOffer() {
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
   offer.sdp = sdp;
-  localPeerConnection.setLocalDescription(offer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  localPeerConnection.setLocalDescription(offer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
   trace('Modified Offer from localPeerConnection \n' + sdp);
   remotePeerConnection.setRemoteDescription(offer,
       onSetSessionDescriptionSuccess,
@@ -236,9 +237,10 @@ function setAnswer() {
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
   answer.sdp = sdp;
-  remotePeerConnection.setLocalDescription(answer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  remotePeerConnection.setLocalDescription(answer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
   trace('Modified Answer from remotePeerConnection \n' + sdp);
   localPeerConnection.setRemoteDescription(answer,
       onSetSessionDescriptionSuccess,
