@@ -13,15 +13,18 @@ button {
 
 canvas {
   background-color: #666;
+  border: 1px solid #666;
   height: 231px;
   margin: 0 20px 0 0;
+  object-fit: cover;
+  width: calc(50% - 14px);
   vertical-align: top;
-  width: calc(50% - 12px);
 }
 
 video {
   height: 231px;
   margin: 0 0 20px 0;
+  object-fit: cover;
   width: calc(50% - 12px);
 }
 
