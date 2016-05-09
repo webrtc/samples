@@ -44,19 +44,14 @@
         "browser": true,
         "node": false
     },
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "webrtc"],
   "globals": {
     "adapter": true,
     "audioContext": true,
-    "AudioContext": true,
     "browserSupportsIPHandlingPolicy": true,
     "browserSupportsNonProxiedUdpBoolean": true,
     "chrome": true,
     "ga": true,
     "getPolicyFromBooleans": true,
-    "MediaStreamTrack": true,
-    "RTCIceCandidate": true,
-    "RTCPeerConnection": true,
-    "RTCSessionDescription": true,
     "trace": true,
   }}
