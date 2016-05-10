@@ -46,7 +46,7 @@ Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/te
 
 [Stream from a canvas element to a video element](https://webrtc.github.io/samples/src/content/capture/canvas-video/)
 
-<!-- [Stream from a canvas element to a peer connection](https://webrtc.github.io/samples/src/content/capture/canvas-pc/) -->
+[Stream from a canvas element to a peer connection](https://webrtc.github.io/samples/src/content/capture/canvas-pc/)
 
 <!-- [Record a stream from a canvas element](https://webrtc.github.io/samples/src/content/capture/canvas-record/) -->
 
