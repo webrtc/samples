@@ -80,13 +80,21 @@ function call() {
 
   pc1Local.addStream(window.localstream);
   trace('Adding local stream to pc1Local');
-  pc1Local.createOffer(gotDescription1Local, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1Local.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1Local,
+    onCreateSessionDescriptionError
+  );
 
   pc2Local.addStream(window.localstream);
   trace('Adding local stream to pc2Local');
-  pc2Local.createOffer(gotDescription2Local, onCreateSessionDescriptionError,
-      offerOptions);
+  pc2Local.createOffer(
+    offerOptions
+  ).then(
+    gotDescription2Local,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -100,8 +108,10 @@ function gotDescription1Local(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc1Remote.createAnswer(gotDescription1Remote,
-      onCreateSessionDescriptionError);
+  pc1Remote.createAnswer().then(
+    gotDescription1Remote,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription1Remote(desc) {
@@ -117,8 +127,10 @@ function gotDescription2Local(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2Remote.createAnswer(gotDescription2Remote,
-      onCreateSessionDescriptionError);
+  pc2Remote.createAnswer().then(
+    gotDescription2Remote,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2Remote(desc) {
@@ -167,8 +179,12 @@ function iceCallback2Remote(event) {
 
 function handleCandidate(candidate, dest, prefix, type) {
   if (candidate) {
-    dest.addIceCandidate(new RTCIceCandidate(candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    dest.addIceCandidate(
+      new RTCIceCandidate(candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace(prefix + 'New ' + type + ' ICE candidate: ' + candidate.candidate);
   }
 }
