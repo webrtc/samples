@@ -148,36 +148,50 @@ function createPeerConnection() {
   localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
-      remotePeerConnection.addIceCandidate(new RTCIceCandidate(e.candidate),
-          onAddIceCandidateSuccess, onAddIceCandidateError);
+      remotePeerConnection.addIceCandidate(
+        new RTCIceCandidate(e.candidate)
+      ).then(
+        onAddIceCandidateSuccess,
+        onAddIceCandidateError
+      );
     }
   };
   remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
       var newCandidate = new RTCIceCandidate(e.candidate);
-      localPeerConnection.addIceCandidate(newCandidate,
-          onAddIceCandidateSuccess, onAddIceCandidateError);
+      localPeerConnection.addIceCandidate(
+        newCandidate
+      ).then(
+        onAddIceCandidateSuccess,
+        onAddIceCandidateError
+      );
     }
   };
   remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
     remoteVideo.srcObject = e.stream;
   };
-  localPeerConnection.createOffer(function(desc) {
-    console.log('localPeerConnection offering');
-    localPeerConnection.setLocalDescription(desc);
-    remotePeerConnection.setRemoteDescription(desc);
-    remotePeerConnection.createAnswer(function(desc2) {
-      console.log('remotePeerConnection answering');
-      remotePeerConnection.setLocalDescription(desc2);
-      localPeerConnection.setRemoteDescription(desc2);
-    }, function(err) {
+  localPeerConnection.createOffer().then(
+    function(desc) {
+      console.log('localPeerConnection offering');
+      localPeerConnection.setLocalDescription(desc);
+      remotePeerConnection.setRemoteDescription(desc);
+      remotePeerConnection.createAnswer().then(
+        function(desc2) {
+          console.log('remotePeerConnection answering');
+          remotePeerConnection.setLocalDescription(desc2);
+          localPeerConnection.setRemoteDescription(desc2);
+        },
+        function(err) {
+          console.log(err);
+        }
+      );
+    },
+    function(err) {
       console.log(err);
-    });
-  }, function(err) {
-    console.log(err);
-  });
+    }
+  );
 }
 
 function onAddIceCandidateSuccess() {

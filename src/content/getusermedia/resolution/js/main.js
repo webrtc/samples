@@ -75,6 +75,11 @@ function getMedia(constraints) {
     });
   }
   setTimeout(function() {
-    navigator.getUserMedia(constraints, successCallback, errorCallback);
+    navigator.mediaDevices.getUserMedia(
+      constraints
+    ).then(
+      successCallback,
+      errorCallback
+    );
   }, (stream ? 200 : 0));
 }

@@ -53,7 +53,12 @@ var constraints = {
   video: true
 };
 
-navigator.getUserMedia(constraints, successCallback, errorCallback);
+navigator.mediaDevices.getUserMedia(
+  constraints
+).then(
+  successCallback,
+  errorCallback
+);
 
 function successCallback(stream) {
   console.log('getUserMedia() got stream: ', stream);

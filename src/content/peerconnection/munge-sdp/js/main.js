@@ -189,8 +189,12 @@ function maybeAddLineBreakToEnd(sdp) {
 }
 
 function createOffer() {
-  localPeerConnection.createOffer(gotDescription1,
-      onCreateSessionDescriptionError, offerOptions);
+  localPeerConnection.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -202,13 +206,15 @@ function setOffer() {
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
   offer.sdp = sdp;
-  localPeerConnection.setLocalDescription(offer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  localPeerConnection.setLocalDescription(offer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
   trace('Modified Offer from localPeerConnection \n' + sdp);
-  remotePeerConnection.setRemoteDescription(offer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  remotePeerConnection.setRemoteDescription(offer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
 }
 
 function gotDescription1(description) {
@@ -221,8 +227,10 @@ function createAnswer() {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  remotePeerConnection.createAnswer(gotDescription2,
-      onCreateSessionDescriptionError);
+  remotePeerConnection.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function setAnswer() {
@@ -230,13 +238,15 @@ function setAnswer() {
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
   answer.sdp = sdp;
-  remotePeerConnection.setLocalDescription(answer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  remotePeerConnection.setLocalDescription(answer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
   trace('Modified Answer from remotePeerConnection \n' + sdp);
-  localPeerConnection.setRemoteDescription(answer,
-      onSetSessionDescriptionSuccess,
-      onSetSessionDescriptionError);
+  localPeerConnection.setRemoteDescription(answer).then(
+    onSetSessionDescriptionSuccess,
+    onSetSessionDescriptionError
+  );
 }
 
 function gotDescription2(description) {
@@ -283,16 +293,24 @@ function gotRemoteStream(e) {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    remotePeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    remotePeerConnection.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
 function iceCallback2(event) {
   if (event.candidate) {
-    localPeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    localPeerConnection.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
