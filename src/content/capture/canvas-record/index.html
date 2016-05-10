@@ -20,12 +20,12 @@
 
   <base target="_blank">
 
-  <title>Canvas to peer connection</title>
+  <title>Record canvas stream</title>
 
   <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
   <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="../../../css/main.css" />
-  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="css/main.css">
 
 </head>
 
@@ -33,26 +33,29 @@
 
   <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Stream from canvas to peer connection</span></h1>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Record stream from a canvas</span></h1>
 
     <canvas></canvas>
-    <video autoplay></video>
+    <video id="recorded" autoplay loop></video>
 
-    <p>Click and drag on the canvas element (on the left) to move the teapot.</p>
+    <div>
+      <button id="record">Start Recording</button>
+      <button id="play" disabled>Play</button>
+      <button id="download" disabled>Download</button>
+    </div>
+
+    <p>Click and drag on the canvas (on the left) to move the teapot.</p>
 
     <p>This demo requires Firefox 43 or above, Chrome 51 or above, or Chrome 50 with <strong>Experimental Web Platform features</strong> enabled.</p>
 
-    <p>The teapot is drawn on the canvas element using WebGL. A stream is captured from the canvas using its <code>captureStream()</code> method and streamed via a peer connection to the video element on the right.</p>
+    <p>The teapot is drawn on the canvas element using WebGL. A stream is captured from the canvas element using its <code>captureStream()</code> method then recorded using the <code>MediaRecorder</code> API.</p>
 
-    <p>View the browser console to see logging.</p>
-
-    <p>Several variables are in global scope, so you can inspect them from the console: <code>canvas</code>, <code>video</code>, <code>localPeerConnection</code>, <code>remotePeerConnection</code> and <code>stream</code>.</p>
+    <p>The <code>canvas</code>, <code>video</code>, and <code>stream</code> variables are in global scope, so you can inspect them from the browser console.</p>
 
     <p>For more demos and information about <code>captureStream()</code>, see <a href="https://docs.google.com/document/d/1JmWfOtUP6ZqsYJ--U8y0OtHkBt-VyjX4N-JqIjb1t78" title="Implementation overview doc">Media Capture from Canvas Implementation</a>.</p>
 
-    <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/" title="HTML5 Rocks article about WebRTC by Sam Dutton">Getting Started With WebRTC</a>.</p>
-
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/canvas-pc" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+    <p>For more information see the MediaStream Recording API <a href="http://w3c.github.io/mediacapture-record/MediaRecorder.html" title="W3C MediaStream Recording API Editor's Draft">Editor's&nbsp;Draft</a>.</p>
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
   </div>
 
@@ -64,10 +67,10 @@
   <script src="js/third_party/teapot-streams.js"></script>
   <script src="js/third_party/demo.js"></script>
 
+  <!-- include adapter for srcObject shim -->
   <script src="../../../js/adapter.js"></script>
-  <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
-
   <script src="../../../js/lib/ga.js"></script>
+
 </body>
 </html>
