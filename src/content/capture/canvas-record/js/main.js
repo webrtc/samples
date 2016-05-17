@@ -45,7 +45,7 @@ if (!isSecureOrigin) {
   location.protocol = 'HTTPS';
 }
 
-var stream = canvas.captureStream();
+var stream = canvas.captureStream(); // frames per second
 console.log('Started stream capture from canvas element: ', stream);
 
 function handleSourceOpen(event) {
@@ -105,7 +105,7 @@ function startRecording() {
   downloadButton.disabled = true;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
-  mediaRecorder.start(10); // collect 10ms of data
+  mediaRecorder.start(100); // collect 100ms of data
   console.log('MediaRecorder started', mediaRecorder);
 }
 
