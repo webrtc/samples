@@ -1,0 +1,43 @@
+/*
+*  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
+*/
+
+canvas {
+  background-color: #ccc;
+  height: 231px;
+  margin: 0 20px 0 0;
+  vertical-align: top;
+  width: calc(50% - 12px);
+}
+
+video {
+  height: 231px;
+  margin: 0 0 20px 0;
+  object-fit: cover;
+  width: calc(50% - 12px);
+}
+
+@media screen and (max-width: 400px) {
+  canvas {
+    margin: 0 10px 0 0;
+    width: calc(50% - 7px);
+  }
+  video {
+    margin: 0 0 20px 0;
+    width: calc(50% - 7px);
+  }
+}
+
+@media screen and (max-width: 700px) {
+  canvas {
+    border: 1px solid #ccc;
+    width: calc(50% - 14px);
+  }
+  video {
+    object-fit: inherit;
+  }
+}

@@ -92,8 +92,12 @@ function call() {
   pc2.onaddstream = gotRemoteStream;
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -104,7 +108,10 @@ function gotDescription1(description) {
   pc1.setLocalDescription(description);
   trace('Offer from pc1: \n' + description.sdp);
   pc2.setRemoteDescription(description);
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(description) {
@@ -170,8 +177,12 @@ function iceStateCallback2() {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc2.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   } else {
     trace('End of candidates added to PC2');
@@ -180,8 +191,12 @@ function iceCallback1(event) {
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc1.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   } else {
     trace('End of candidates added to PC1');

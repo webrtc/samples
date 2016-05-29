@@ -72,8 +72,12 @@ function start() {
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -96,22 +100,29 @@ function onSetLocalDescriptionSuccess() {
 }
 
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc, onSetLocalDescriptionSuccess,
-      onSetLocalDescriptionError);
+  pc1.setLocalDescription(desc).then(
+    onSetLocalDescriptionSuccess,
+    onSetLocalDescriptionError
+  );
   trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
   // Provisional answer, set a=inactive & set sdp type to pranswer.
   desc.sdp = desc.sdp.replace(/a=recvonly/g, 'a=inactive');
   desc.type = 'pranswer';
-  pc2.setLocalDescription(desc, onSetLocalDescriptionSuccess,
-      onSetLocalDescriptionError);
+  pc2.setLocalDescription(desc).then(
+    onSetLocalDescriptionSuccess,
+    onSetLocalDescriptionError
+  );
   trace('Pranswer from pc2 \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
 }
@@ -120,14 +131,19 @@ function gotDescription3(desc) {
   // Final answer, setting a=recvonly & sdp type to answer.
   desc.sdp = desc.sdp.replace(/a=inactive/g, 'a=recvonly');
   desc.type = 'answer';
-  pc2.setLocalDescription(desc, onSetLocalDescriptionSuccess,
-      onSetLocalDescriptionError);
+  pc2.setLocalDescription(desc).then(
+    onSetLocalDescriptionSuccess,
+    onSetLocalDescriptionError
+  );
   trace('Answer from pc2 \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
 }
 
 function accept() {
-  pc2.createAnswer(gotDescription3, onCreateAnswerError);
+  pc2.createAnswer().then(
+    gotDescription3,
+    onCreateAnswerError
+  );
   btn2.disabled = true;
   btn1.disabled = false;
 }
@@ -150,16 +166,24 @@ function gotRemoteStream(e) {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc2.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-                        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc1.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
