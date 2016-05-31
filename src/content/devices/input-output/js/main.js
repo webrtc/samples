@@ -1,10 +1,10 @@
 /*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
+*  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
+*/
 
 'use strict';
 
@@ -30,11 +30,11 @@ function gotDevices(deviceInfos) {
     option.value = deviceInfo.deviceId;
     if (deviceInfo.kind === 'audioinput') {
       option.text = deviceInfo.label ||
-        'microphone ' + (audioInputSelect.length + 1);
+      'microphone ' + (audioInputSelect.length + 1);
       audioInputSelect.appendChild(option);
     } else if (deviceInfo.kind === 'audiooutput') {
       option.text = deviceInfo.label || 'speaker ' +
-          (audioOutputSelect.length + 1);
+      (audioOutputSelect.length + 1);
       audioOutputSelect.appendChild(option);
     } else if (deviceInfo.kind === 'videoinput') {
       option.text = deviceInfo.label || 'camera ' + (videoSelect.length + 1);
@@ -52,13 +52,7 @@ function gotDevices(deviceInfos) {
   });
 }
 
-navigator.mediaDevices.enumerateDevices()
-.then(gotDevices)
-.catch(errorCallback);
-
-function errorCallback(error) {
-  console.log('navigator.getUserMedia error: ', error);
-}
+navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 
 // Attach audio output device to video element using device/sink ID.
 function attachSinkId(element, sinkId) {
@@ -71,10 +65,10 @@ function attachSinkId(element, sinkId) {
       var errorMessage = error;
       if (error.name === 'SecurityError') {
         errorMessage = 'You need to use HTTPS for selecting audio output ' +
-            'device: ' + error;
+        'device: ' + error;
       }
       console.error(errorMessage);
-      // Jump back to first output device in the list as it's the default.
+// Jump back to first output device in the list as it's the default.
       audioOutputSelect.selectedIndex = 0;
     });
   } else {
@@ -85,6 +79,13 @@ function attachSinkId(element, sinkId) {
 function changeAudioDestination() {
   var audioDestination = audioOutputSelect.value;
   attachSinkId(videoElement, audioDestination);
+}
+
+function gotStream(stream) {
+  window.stream = stream; // make stream available to console
+  videoElement.srcObject = stream;
+  // Refresh button list in case labels have become available
+  return navigator.mediaDevices.enumerateDevices();
 }
 
 function start() {
@@ -99,15 +100,8 @@ function start() {
     audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
     video: {deviceId: videoSource ? {exact: videoSource} : undefined}
   };
-  navigator.mediaDevices.getUserMedia(constraints)
-  .then(function(stream) {
-    window.stream = stream; // make stream available to console
-    videoElement.srcObject = stream;
-    // Refresh button list in case labels have become available
-    return navigator.mediaDevices.enumerateDevices();
-  })
-  .then(gotDevices)
-  .catch(errorCallback);
+  navigator.mediaDevices.getUserMedia(constraints).
+  then(gotStream).then(gotDevices).catch(handleError);
 }
 
 audioInputSelect.onchange = start;
@@ -115,3 +109,7 @@ audioOutputSelect.onchange = changeAudioDestination;
 videoSelect.onchange = start;
 
 start();
+
+function handleError(error) {
+  console.log('navigator.getUserMedia error: ', error);
+}

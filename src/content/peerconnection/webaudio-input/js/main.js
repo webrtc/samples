@@ -41,8 +41,7 @@ function start() {
     video: false
   };
   navigator.mediaDevices.getUserMedia(constraints)
-  .then(gotStream)
-  .catch(gotStreamFailed);
+    .then(handleSuccess).catch(handleFailure);
   startButton.disabled = true;
   stopButton.disabled = false;
 }
@@ -61,14 +60,12 @@ function stop() {
   });
 }
 
-function gotStream(stream) {
+function handleSuccess(stream) {
   renderLocallyCheckbox.disabled = false;
   var audioTracks = stream.getAudioTracks();
   if (audioTracks.length === 1) {
-    console.log('gotStream({audio:true, video:false})');
-
+    console.log('Got one audio track:', audioTracks);
     var filteredStream = webAudio.applyFilter(stream);
-
     var servers = null;
     pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
@@ -77,30 +74,29 @@ function gotStream(stream) {
     console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = iceCallback2;
     pc2.onaddstream = gotRemoteStream;
-
     pc1.addStream(filteredStream);
     pc1.createOffer()
-    .then(gotDescription1)
-    .catch(function(error) {
-      console.log('createOffer failed: ' + error);
-    });
+      .then(gotDescription1)
+      .catch(function(error) {
+        console.log('createOffer failed: ' + error);
+      });
 
-    stream.onended = function() {
-      console.log('stream.onended');
+    stream.oninactive = function() {
+      console.log('Stream inactive:', stream);
       startButton.disabled = false;
       stopButton.disabled = true;
     };
 
     localStream = stream;
   } else {
-    alert('The media stream contains an invalid amount of audio tracks.');
+    alert('The media stream contains an invalid number of audio tracks.');
     stream.getTracks().forEach(function(track) {
       track.stop();
     });
   }
 }
 
-function gotStreamFailed(error) {
+function handleFailure(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
   alert('Failed to get access to local media. Error: ' +

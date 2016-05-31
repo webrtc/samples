@@ -46,19 +46,7 @@ function gotDevices(deviceInfos) {
   }
 }
 
-navigator.mediaDevices.enumerateDevices()
-.then(gotDevices)
-.catch(errorCallback);
-
-function successCallback(stream) {
-  window.stream = stream; // make stream available to console
-  gumAudio.srcObject = stream;
-  gumVideo.srcObject = stream;
-}
-
-function errorCallback(error) {
-  console.log('Error: ', error);
-}
+navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 
 // Attach audio output device to the provided media element using the deviceId.
 function attachSinkId(element, sinkId, outputSelector) {
@@ -91,6 +79,12 @@ function changeAudioDestination(event) {
   attachSinkId(element, deviceId, outputSelector);
 }
 
+function gotStream(stream) {
+  window.stream = stream; // make stream available to console
+  gumAudio.srcObject = stream;
+  gumVideo.srcObject = stream;
+}
+
 function start() {
   if (window.stream) {
     window.stream.getTracks().forEach(function(track) {
@@ -101,12 +95,13 @@ function start() {
     audio: true,
     video: true
   };
-  navigator.mediaDevices.getUserMedia(
-    constraints
-  ).then(
-    successCallback,
-    errorCallback
-  );
+  navigator.mediaDevices.getUserMedia(constraints).
+    then(gotStream).catch(handleError);
 }
 
 start();
+
+function handleError(error) {
+  console.log('Error: ', error);
+}
+
