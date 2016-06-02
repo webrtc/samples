@@ -96,7 +96,7 @@ function start() {
     video: true
   };
   navigator.mediaDevices.getUserMedia(constraints).
-    then(gotStream).catch(handleError);
+      then(gotStream).catch(handleError);
 }
 
 start();

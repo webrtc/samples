@@ -30,11 +30,11 @@ function gotDevices(deviceInfos) {
     option.value = deviceInfo.deviceId;
     if (deviceInfo.kind === 'audioinput') {
       option.text = deviceInfo.label ||
-      'microphone ' + (audioInputSelect.length + 1);
+          'microphone ' + (audioInputSelect.length + 1);
       audioInputSelect.appendChild(option);
     } else if (deviceInfo.kind === 'audiooutput') {
       option.text = deviceInfo.label || 'speaker ' +
-      (audioOutputSelect.length + 1);
+          (audioOutputSelect.length + 1);
       audioOutputSelect.appendChild(option);
     } else if (deviceInfo.kind === 'videoinput') {
       option.text = deviceInfo.label || 'camera ' + (videoSelect.length + 1);
@@ -65,10 +65,10 @@ function attachSinkId(element, sinkId) {
       var errorMessage = error;
       if (error.name === 'SecurityError') {
         errorMessage = 'You need to use HTTPS for selecting audio output ' +
-        'device: ' + error;
+            'device: ' + error;
       }
       console.error(errorMessage);
-// Jump back to first output device in the list as it's the default.
+      // Jump back to first output device in the list as it's the default.
       audioOutputSelect.selectedIndex = 0;
     });
   } else {
@@ -101,7 +101,7 @@ function start() {
     video: {deviceId: videoSource ? {exact: videoSource} : undefined}
   };
   navigator.mediaDevices.getUserMedia(constraints).
-  then(gotStream).then(gotDevices).catch(handleError);
+      then(gotStream).then(gotDevices).catch(handleError);
 }
 
 audioInputSelect.onchange = start;

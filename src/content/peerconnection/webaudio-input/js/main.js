@@ -40,8 +40,8 @@ function start() {
     audio: true,
     video: false
   };
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(handleSuccess).catch(handleFailure);
+  navigator.mediaDevices.getUserMedia(constraints).
+      then(handleSuccess).catch(handleFailure);
   startButton.disabled = true;
   stopButton.disabled = false;
 }
@@ -75,11 +75,11 @@ function handleSuccess(stream) {
     pc2.onicecandidate = iceCallback2;
     pc2.onaddstream = gotRemoteStream;
     pc1.addStream(filteredStream);
-    pc1.createOffer()
-      .then(gotDescription1)
-      .catch(function(error) {
-        console.log('createOffer failed: ' + error);
-      });
+    pc1.createOffer().
+        then(gotDescription1).
+        catch(function(error) {
+          console.log('createOffer failed: ' + error);
+        });
 
     stream.oninactive = function() {
       console.log('Stream inactive:', stream);

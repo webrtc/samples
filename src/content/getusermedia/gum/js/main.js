@@ -48,4 +48,4 @@ function errorMsg(msg, error) {
 }
 
 navigator.mediaDevices.getUserMedia(constraints).
-  then(handleSuccess).catch(handleError);
+    then(handleSuccess).catch(handleError);
