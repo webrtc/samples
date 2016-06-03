@@ -67,7 +67,6 @@ function hangup() {
 }
 
 function getMedia() {
-  getMediaButton.disabled = true;
   if (localStream) {
     localStream.getTracks().forEach(function(track) {
       track.stop();
@@ -132,6 +131,8 @@ function displayGetUserMediaConstraints() {
 function createPeerConnection() {
   connectButton.disabled = true;
   hangupButton.disabled = false;
+  // We don't handle changing media midstream, so disallow re-getting.
+  getMediaButton.disabled = true;
 
   bytesPrev = 0;
   timestampPrev = 0;
@@ -200,6 +201,41 @@ function onAddIceCandidateSuccess() {
 
 function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
+}
+
+function videoStatistics(stream, video) {
+  var sizeFromTag;
+  var sizeFromSettings;
+  var frameRate;
+  // Collect some stats from the video tags.
+  if (video.videoWidth) {
+      sizeFromTag = video.videoWidth + 'x' + video.videoHeight;
+  }
+  // Use track's info if available.
+  // NOTE: getSettings is under development, so code adapts to various
+  // in-flight situations that aren't according to spec.
+  if (stream) {
+      if (stream.getVideoTracks()[0]) {
+	  if (stream.getVideoTracks()[0].getSettings) {
+	      var settings = stream.getVideoTracks()[0].getSettings();
+	      if (settings.width && settings.height) {
+		  sizeFromSettings = 
+		      settings.width + 'X' + settings.height;
+	      }
+	      frameRate = settings.frameRate;
+	  }
+      }
+  }
+  if (!sizeFromTag && sizeFromSettings) {
+      return undefined;
+  }
+  if (sizeFromSettings) {
+      return sizeFromSettings + '@' + frameRate;
+  } else if (frameRate) {
+      return sizeFromTag + '@' + frameRate;
+  } else {
+      return sizeFromTag;
+  }
 }
 
 // Display statistics
@@ -272,17 +308,19 @@ setInterval(function() {
     }, function(err) {
       console.log(err);
     });
-  } else {
-    console.log('Not connected yet');
   }
-  // Collect some stats from the video tags.
-  if (localVideo.videoWidth) {
-    localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
-      localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
+  if (videoStatistics(localStream, localVideo)) {
+      localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
+	  videoStatistics(localStream, localVideo);
   }
-  if (remoteVideo.videoWidth) {
-    remoteVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
-      remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight + 'px';
+  if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
+      if (videoStatistics(remotePeerConnection.getRemoteStreams()[0],
+			  remoteVideo)) {
+	  remoteVideoStatsDiv.innerHTML =
+	      '<strong>Video dimensions:</strong> ' +
+	      videoStatistics(remotePeerConnection.getRemoteStreams()[0],
+			      remoteVideo);
+      }
   }
 }, 1000);
 
