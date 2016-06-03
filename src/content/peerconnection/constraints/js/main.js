@@ -209,33 +209,35 @@ function videoStatistics(stream, video) {
   var frameRate;
   // Collect some stats from the video tags.
   if (video.videoWidth) {
-      sizeFromTag = video.videoWidth + 'x' + video.videoHeight;
+    sizeFromTag = video.videoWidth + 'x' + video.videoHeight;
   }
   // Use track's info if available.
   // NOTE: getSettings is under development, so code adapts to various
   // in-flight situations that aren't according to spec.
   if (stream) {
-      if (stream.getVideoTracks()[0]) {
-	  if (stream.getVideoTracks()[0].getSettings) {
-	      var settings = stream.getVideoTracks()[0].getSettings();
-	      if (settings.width && settings.height) {
-		  sizeFromSettings = 
-		      settings.width + 'X' + settings.height;
-	      }
-	      frameRate = settings.frameRate;
-	  }
+    if (stream.getVideoTracks()[0]) {
+      if (stream.getVideoTracks()[0].getSettings) {
+        var settings = stream.getVideoTracks()[0].getSettings();
+        if (settings.width && settings.height) {
+          sizeFromSettings =
+              settings.width + 'X' + settings.height;
+        }
+        frameRate = settings.frameRate;
       }
+    }
   }
   if (!sizeFromTag && sizeFromSettings) {
-      return undefined;
+    return undefined;
   }
+  var retval;
   if (sizeFromSettings) {
-      return sizeFromSettings + '@' + frameRate;
+    retval = sizeFromSettings + '@' + frameRate;
   } else if (frameRate) {
-      return sizeFromTag + '@' + frameRate;
+    retval = sizeFromTag + '@' + frameRate;
   } else {
-      return sizeFromTag;
+    retval = sizeFromTag;
   }
+  return retval;
 }
 
 // Display statistics
@@ -310,17 +312,17 @@ setInterval(function() {
     });
   }
   if (videoStatistics(localStream, localVideo)) {
-      localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
-	  videoStatistics(localStream, localVideo);
+    localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
+        videoStatistics(localStream, localVideo);
   }
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
-      if (videoStatistics(remotePeerConnection.getRemoteStreams()[0],
-			  remoteVideo)) {
-	  remoteVideoStatsDiv.innerHTML =
-	      '<strong>Video dimensions:</strong> ' +
-	      videoStatistics(remotePeerConnection.getRemoteStreams()[0],
-			      remoteVideo);
-      }
+    if (videoStatistics(remotePeerConnection.getRemoteStreams()[0],
+                        remoteVideo)) {
+      remoteVideoStatsDiv.innerHTML =
+          '<strong>Video dimensions:</strong> ' +
+          videoStatistics(remotePeerConnection.getRemoteStreams()[0],
+                          remoteVideo);
+    }
   }
 }, 1000);
 
