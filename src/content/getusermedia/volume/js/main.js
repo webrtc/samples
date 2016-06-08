@@ -43,11 +43,11 @@ function handleSuccess(stream) {
     }
     setInterval(function() {
       instantMeter.value = instantValueDisplay.innerText =
-        soundMeter.instant.toFixed(2);
+          soundMeter.instant.toFixed(2);
       slowMeter.value = slowValueDisplay.innerText =
-        soundMeter.slow.toFixed(2);
+          soundMeter.slow.toFixed(2);
       clipMeter.value = clipValueDisplay.innerText =
-        soundMeter.clip;
+          soundMeter.clip;
     }, 200);
   });
 }
