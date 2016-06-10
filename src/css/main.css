@@ -9,6 +9,11 @@
   display: none;
 }
 
+.warning {
+  color: red;
+  font-weight: 400;
+}
+
 div#errorMsg p {
   color: #F00;
 }

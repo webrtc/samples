@@ -49,12 +49,12 @@ var fullHdConstraints = {
   video: {width: {exact: 1920}, height: {exact: 1080}}
 };
 
-function successCallback(mediaStream) {
+function handleSuccess(mediaStream) {
   window.stream = mediaStream; // stream available to console
   video.srcObject = mediaStream;
 }
 
-function errorCallback(error) {
+function handleError(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
@@ -75,11 +75,7 @@ function getMedia(constraints) {
     });
   }
   setTimeout(function() {
-    navigator.mediaDevices.getUserMedia(
-      constraints
-    ).then(
-      successCallback,
-      errorCallback
-    );
+    navigator.mediaDevices.getUserMedia(constraints).
+        then(handleSuccess).catch(handleError);
   }, (stream ? 200 : 0));
 }
