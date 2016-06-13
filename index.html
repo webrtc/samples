@@ -50,6 +50,10 @@
 <body>
   <div id="container">
 
+    <div class="highlight">
+      <p>New codelab: <a href="https://codelabs.developers.google.com/codelabs/webrtc-web">Realtime communication with WebRTC</a></p>
+    </div>
+
     <h1>WebRTC samples</h1>
 
     <section>
@@ -167,12 +171,13 @@
   </div>
 
   <script src="src/js/lib/ga.js"></script>
+
   <script type="application/javascript">
   var isSecureOrigin = location.protocol === 'https:' ||
-    location.host === 'localhost';
+      location.host === 'localhost';
   if (!isSecureOrigin) {
     console.log('These demos must be run from a secure origin. \n' +
-      'Changing protocol to HTTPS');
+        'Changing protocol to HTTPS');
     location.protocol = 'HTTPS';
   }
   </script>

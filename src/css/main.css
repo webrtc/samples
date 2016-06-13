@@ -9,6 +9,12 @@
   display: none;
 }
 
+.highlight {
+  background-color: #eee;
+  font-size: 1.2em;
+  margin: 0 0 30px 0;
+  padding: 0.2em 1.5em;
+}
 .warning {
   color: red;
   font-weight: 400;
@@ -224,6 +230,11 @@ video {
 }
 
 @media screen and (max-width: 650px) {
+  .highlight {
+    font-size: 1em;
+    margin: 0 0 20px 0;
+    padding: 0.2em 1em;
+  }
   h1 {
     font-size: 24px;
   }
