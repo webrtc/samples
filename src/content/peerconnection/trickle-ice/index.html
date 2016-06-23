@@ -39,6 +39,8 @@
 
       <p>This page tests the trickle ICE functionality in a WebRTC implementation. It creates a PeerConnection with the specified ICEServers, and then starts candidate gathering for a session with a single audio stream. As candidates are gathered, they are displayed in the text box below, along with an indication when candidate gathering is complete.</p>
 
+      <p>Note that, since no media stream is added to the RTCPeerConnection, only candidates from a single interface will be gathered in Chrome. See <a href="https://tools.ietf.org/html/draft-ietf-rtcweb-ip-handling-01">the RTCWEB IP address handling recommendations draft</a> for details.</p>
+
       <p>Individual STUN and TURN servers can be added using the Add server / Remove server controls below; in addition, the type of candidates released to the application can be controlled via the IceTransports constraint.</p>
 
       <p>If you test just a single TURN/UDP server, this page even allows you to detect when you are using the wrong credential to authenticated.</p>
