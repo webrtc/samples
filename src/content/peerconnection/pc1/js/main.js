@@ -115,8 +115,12 @@ function call() {
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');
-  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    onCreateOfferSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -126,18 +130,27 @@ function onCreateSessionDescriptionError(error) {
 function onCreateOfferSuccess(desc) {
   trace('Offer from pc1\n' + desc.sdp);
   trace('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc, function() {
-    onSetLocalSuccess(pc1);
-  }, onSetSessionDescriptionError);
+  pc1.setLocalDescription(desc).then(
+    function() {
+      onSetLocalSuccess(pc1);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc, function() {
-    onSetRemoteSuccess(pc2);
-  }, onSetSessionDescriptionError);
+  pc2.setRemoteDescription(desc).then(
+    function() {
+      onSetRemoteSuccess(pc2);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError);
+  pc2.createAnswer().then(
+    onCreateAnswerSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onSetLocalSuccess(pc) {
@@ -160,24 +173,32 @@ function gotRemoteStream(e) {
 function onCreateAnswerSuccess(desc) {
   trace('Answer from pc2:\n' + desc.sdp);
   trace('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc, function() {
-    onSetLocalSuccess(pc2);
-  }, onSetSessionDescriptionError);
+  pc2.setLocalDescription(desc).then(
+    function() {
+      onSetLocalSuccess(pc2);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc, function() {
-    onSetRemoteSuccess(pc1);
-  }, onSetSessionDescriptionError);
+  pc1.setRemoteDescription(desc).then(
+    function() {
+      onSetRemoteSuccess(pc1);
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function onIceCandidate(pc, event) {
   if (event.candidate) {
-    getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
-        function() {
-          onAddIceCandidateSuccess(pc);
-        },
-        function(err) {
-          onAddIceCandidateError(pc, err);
-        }
+    getOtherPc(pc).addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      function() {
+        onAddIceCandidateSuccess(pc);
+      },
+      function(err) {
+        onAddIceCandidateError(pc, err);
+      }
     );
     trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
   }

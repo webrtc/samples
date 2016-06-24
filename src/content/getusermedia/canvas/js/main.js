@@ -27,13 +27,14 @@ var constraints = {
   video: true
 };
 
-function successCallback(stream) {
+function handleSuccess(stream) {
   window.stream = stream; // make stream available to browser console
   video.srcObject = stream;
 }
 
-function errorCallback(error) {
+function handleError(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
-navigator.getUserMedia(constraints, successCallback, errorCallback);
+navigator.mediaDevices.getUserMedia(constraints).
+    then(handleSuccess).catch(handleError);

@@ -43,8 +43,12 @@ function gotStream(stream) {
   pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError,
-      offerOptions);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
@@ -86,22 +90,37 @@ function call() {
 
 function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
-  pc1.setLocalDescription(desc, function() {
-    pc2.setRemoteDescription(desc, function() {
-      pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError);
-    }, onSetSessionDescriptionError);
-  }, onSetSessionDescriptionError);
+  pc1.setLocalDescription(desc).then(
+    function() {
+      pc2.setRemoteDescription(desc).then(
+        function() {
+          pc2.createAnswer().then(
+            gotDescription2,
+            onCreateSessionDescriptionError
+          );
+        },
+        onSetSessionDescriptionError
+      );
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
-  pc2.setLocalDescription(desc, function() {
-    trace('Answer from pc2 \n' + desc.sdp);
-    // insert b=AS after c= line.
-    desc.sdp = desc.sdp.replace(/c=IN IP4 (.*)\r\n/,
-        'c=IN IP4 $(1)\r\nb=AS:512\r\n');
-    pc1.setRemoteDescription(desc, function() {
-    }, onSetSessionDescriptionError);
-  }, onSetSessionDescriptionError);
+  pc2.setLocalDescription(desc).then(
+    function() {
+      trace('Answer from pc2 \n' + desc.sdp);
+      // insert b=AS after c= line.
+      desc.sdp = desc.sdp.replace(/c=IN IP4 (.*)\r\n/,
+          'c=IN IP4 $(1)\r\nb=AS:512\r\n');
+      pc1.setRemoteDescription(desc).then(
+        function() {
+        },
+        onSetSessionDescriptionError
+      );
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function hangup() {
@@ -125,16 +144,24 @@ function gotRemoteStream(e) {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc2.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc1.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
