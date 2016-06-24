@@ -73,9 +73,10 @@ function handleSourceOpen(event) {
   console.log('Source buffer: ', sourceBuffer);
 }
 
-recordedVideo.addEventListener("error", function (ev) {
-    console.error('MediaRecording.recordedMedia.error()');
-    alert('Your browser can not play\n\n' + recordedVideo.src + '\n\n media clip. event: ' + JSON.stringify(ev));
+recordedVideo.addEventListener('error', function(ev) {
+  console.error('MediaRecording.recordedMedia.error()');
+  alert('Your browser can not play\n\n' + recordedVideo.src
+    + '\n\n media clip. event: ' + JSON.stringify(ev));
 }, true); 
 
 function handleDataAvailable(event) {
