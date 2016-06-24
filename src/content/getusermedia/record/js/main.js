@@ -101,28 +101,28 @@ function toggleRecording() {
 
 // The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
-  var options = {mimeType: 'video/webm'};
   recordedBlobs = [];
   var options = {mimeType: 'video/webm;codecs=vp9'};
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+    console.log(options.mimeType + ' is not Supported');
+    options = {mimeType: 'video/webm;codecs=vp8'};
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
       console.log(options.mimeType + ' is not Supported');
-      options = {mimeType: 'video/webm;codecs=vp8'};
+      options = {mimeType: 'video/webm'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          console.log(options.mimeType + ' is not Supported');
-          options = {mimeType: 'video/webm'};
-          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-              console.log(options.mimeType + ' is not Supported');
-              options = {mimeType: ''};
-          }
+        console.log(options.mimeType + ' is not Supported');
+        options = {mimeType: ''};
       }
-  }
-    try {
-        mediaRecorder = new MediaRecorder(stream, options);
-    } catch (e) {
-        console.error('Exception while creating MediaRecorder: ' + e);
-        alert('Exception while creating MediaRecorder: ' + e + '. mimeType: ' + options.mimeType);
-        return;
     }
+  }
+  try {
+    mediaRecorder = new MediaRecorder(window.stream, options);
+  } catch (e) {
+    console.error('Exception while creating MediaRecorder: ' + e);
+    alert('Exception while creating MediaRecorder: ' + e
+      + '. mimeType: ' + options.mimeType);
+    return;
+  }
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
   playButton.disabled = true;
