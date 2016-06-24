@@ -119,8 +119,8 @@ function startRecording() {
     mediaRecorder = new MediaRecorder(window.stream, options);
   } catch (e) {
     console.error('Exception while creating MediaRecorder: ' + e);
-    alert('Exception while creating MediaRecorder: ' + e
-      + '. mimeType: ' + options.mimeType);
+    alert('Exception while creating MediaRecorder: '
+      + e + '. mimeType: ' + options.mimeType);
     return;
   }
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
