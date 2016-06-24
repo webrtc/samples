@@ -118,16 +118,16 @@ function toggleRecording() {
 function startRecording() {
   var options = {mimeType: 'video/webm'};
   recordedBlobs = [];
-  var options = { mimeType: 'video/webm;codecs=vp9' };
+  var options = {mimeType: 'video/webm;codecs=vp9'};
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
       console.log(options.mimeType + ' is not Supported');
-      options = { mimeType: 'video/webm;codecs=vp8' };
+      options = {mimeType: 'video/webm;codecs=vp8'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
           console.log(options.mimeType + ' is not Supported');
-          options = { mimeType: 'video/webm' };
+          options = {mimeType: 'video/webm'};
           if (!MediaRecorder.isTypeSupported(options.mimeType)) {
               console.log(options.mimeType + ' is not Supported');
-              options = { mimeType: '' };
+              options = {mimeType: ''};
           }
       }
   }
