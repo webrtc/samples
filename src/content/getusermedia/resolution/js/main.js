@@ -42,20 +42,16 @@ var vgaConstraints = {
 };
 
 var hdConstraints = {
-  video: {width: 1280, height: 720}
+  video: {width: {exact: 1280}, height: {exact: 720}}
 };
 
 var fullHdConstraints = {
   video: {width: {exact: 1920}, height: {exact: 1080}}
 };
 
-function handleSuccess(mediaStream) {
+function gotStream(mediaStream) {
   window.stream = mediaStream; // stream available to console
   video.srcObject = mediaStream;
-}
-
-function handleError(error) {
-  console.log('navigator.getUserMedia error: ', error);
 }
 
 function displayVideoDimensions() {
@@ -74,8 +70,12 @@ function getMedia(constraints) {
       track.stop();
     });
   }
-  setTimeout(function() {
-    navigator.mediaDevices.getUserMedia(constraints).
-        then(handleSuccess).catch(handleError);
-  }, (stream ? 200 : 0));
+
+  navigator.mediaDevices.getUserMedia(constraints)
+  .then(gotStream)
+  .catch(function(e) {
+    var message = 'getUserMedia error: ' + e.name;
+    alert(message);
+    console.log(message);
+  });
 }
