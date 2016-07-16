@@ -6,8 +6,6 @@
  *  tree.
  */
 
-/* global main */
-
 'use strict';
 
 var leftVideo = document.getElementById('leftVideo');
