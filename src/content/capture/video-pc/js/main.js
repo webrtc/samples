@@ -22,17 +22,23 @@ var offerOptions = {
 
 var startTime;
 
-if (leftVideo.captureStream) {
-  stream = leftVideo.captureStream();
-  console.log('Captured stream from leftVideo with captureStream', stream);
-  call();
-} else if (leftVideo.mozCaptureStream) {
-  stream = leftVideo.mozCaptureStream();
-  console.log('Captured stream from leftVideo with mozCaptureStream()', stream);
-  call();
-} else {
-  trace('captureStream() not supported');
-}
+leftVideo.onplay = function() {
+  if (leftVideo.captureStream) {
+    stream = leftVideo.captureStream();
+    console.log('Captured stream from leftVideo with captureStream',
+      stream);
+    call();
+  } else if (leftVideo.mozCaptureStream) {
+    stream = leftVideo.mozCaptureStream();
+    console.log('Captured stream from leftVideo with mozCaptureStream()',
+      stream);
+    call();
+  } else {
+    trace('captureStream() not supported');
+  }
+};
+
+leftVideo.play();
 
 rightVideo.onloadedmetadata = function() {
   trace('Remote video videoWidth: ' + this.videoWidth +

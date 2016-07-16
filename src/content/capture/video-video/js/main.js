@@ -13,14 +13,20 @@ var rightVideo = document.getElementById('rightVideo');
 
 var stream;
 
-if (leftVideo.captureStream) {
-  stream = leftVideo.captureStream();
-  rightVideo.srcObject = stream;
-  console.log('Captured stream from leftVideo with captureStream', stream);
-} else if (leftVideo.mozCaptureStream) {
-  stream = leftVideo.mozCaptureStream();
-  rightVideo.srcObject = stream;
-  console.log('Captured stream from leftVideo with mozCaptureStream()', stream);
-} else {
-  trace('captureStream() not supported');
-}
+leftVideo.onplay = function() {
+  if (leftVideo.captureStream) {
+    stream = leftVideo.captureStream();
+    rightVideo.srcObject = stream;
+    console.log('Captured stream from leftVideo with captureStream',
+      stream);
+  } else if (leftVideo.mozCaptureStream) {
+    stream = leftVideo.mozCaptureStream();
+    rightVideo.srcObject = stream;
+    console.log('Captured stream from leftVideo with mozCaptureStream()',
+      stream);
+  } else {
+    trace('captureStream() not supported');
+  }
+};
+
+leftVideo.play();
