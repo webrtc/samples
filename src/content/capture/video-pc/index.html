@@ -35,9 +35,10 @@
 
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Stream from a video to a peer connection</span></h1>
 
-    <video id="leftVideo" autoplay controls>
-      <source src="https://simpl.info/video/video/chrome.webm" type="video/webm" />
-      <source src="https://simpl.info/video/video/chrome.mp4" type="video/mp4" />
+    <video id="leftVideo" autoplay controls muted>
+      <!-- NB CORS: https://bugzilla.mozilla.org/show_bug.cgi?id=1177793 -->
+      <source src="../../../video/chrome.webm" type="video/webm" />
+      <source src="../../../video/chrome.mp4" type="video/mp4" />
       <p>This browser does not support the video element.</p>
     </video>
 

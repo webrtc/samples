@@ -11,7 +11,16 @@
 var leftVideo = document.getElementById('leftVideo');
 var rightVideo = document.getElementById('rightVideo');
 
-leftVideo.onloadedmetadata = function() {
-  var stream = leftVideo.captureStream();
+var stream;
+
+if (leftVideo.captureStream) {
+  stream = leftVideo.captureStream();
   rightVideo.srcObject = stream;
-};
+  console.log('Captured stream from leftVideo with captureStream', stream);
+} else if (leftVideo.mozCaptureStream) {
+  stream = leftVideo.mozCaptureStream();
+  rightVideo.srcObject = stream;
+  console.log('Captured stream from leftVideo with mozCaptureStream()', stream);
+} else {
+  trace('captureStream() not supported');
+}

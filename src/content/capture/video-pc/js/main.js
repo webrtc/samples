@@ -1,10 +1,10 @@
 /*
- *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
+*  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
+*/
 
 'use strict';
 
@@ -22,11 +22,17 @@ var offerOptions = {
 
 var startTime;
 
-leftVideo.onloadedmetadata = function() {
+if (leftVideo.captureStream) {
   stream = leftVideo.captureStream();
-  trace('Got stream from leftVideo');
+  console.log('Captured stream from leftVideo with captureStream', stream);
   call();
-};
+} else if (leftVideo.mozCaptureStream) {
+  stream = leftVideo.mozCaptureStream();
+  console.log('Captured stream from leftVideo with mozCaptureStream()', stream);
+  call();
+} else {
+  trace('captureStream() not supported');
+}
 
 rightVideo.onloadedmetadata = function() {
   trace('Remote video videoWidth: ' + this.videoWidth +
@@ -80,7 +86,7 @@ function call() {
 
   trace('pc1 createOffer start');
   pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError,
-      offerOptions);
+    offerOptions);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -116,9 +122,9 @@ function onSetSessionDescriptionError(error) {
   trace('Failed to set session description: ' + error.toString());
 }
 
-function gotRemoteStream(e) {
-  rightVideo.srcObject = e.stream;
-  trace('pc2 received remote stream');
+function gotRemoteStream(event) {
+  rightVideo.srcObject = event.stream;
+  console.log('pc2 received remote stream', event);
 }
 
 function onCreateAnswerSuccess(desc) {
@@ -136,13 +142,13 @@ function onCreateAnswerSuccess(desc) {
 function onIceCandidate(pc, event) {
   if (event.candidate) {
     getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
-        function() {
-          onAddIceCandidateSuccess(pc);
-        },
-        function(err) {
-          onAddIceCandidateError(pc, err);
-        }
-    );
+      function() {
+        onAddIceCandidateSuccess(pc);
+      },
+      function(err) {
+        onAddIceCandidateError(pc, err);
+      }
+      );
     trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
   }
 }
