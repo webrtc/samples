@@ -48,8 +48,8 @@ rightVideo.onloadedmetadata = function() {
 rightVideo.onresize = function() {
   trace('Remote video size changed to ' +
     rightVideo.videoWidth + 'x' + rightVideo.videoHeight);
-  // We'll use the first onsize callback as an indication that video has started
-  // playing out.
+  // We'll use the first onresize callback as an indication that
+  // video has started playing out.
   if (startTime) {
     var elapsedTime = window.performance.now() - startTime;
     trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
