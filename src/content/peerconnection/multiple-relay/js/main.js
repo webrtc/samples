@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -14,6 +14,8 @@ var video1 = document.querySelector('video#video1');
 var video2 = document.querySelector('video#video2');
 
 var statusDiv = document.querySelector('div#status');
+
+var audioCheckbox = document.querySelector('input#audio');
 
 var startButton = document.querySelector('button#start');
 var callButton = document.querySelector('button#call');
@@ -32,32 +34,31 @@ var remoteStream;
 
 function gotStream(stream) {
   trace('Received local stream');
-  attachMediaStream(video1, stream);
+  video1.srcObject = stream;
   localStream = stream;
   callButton.disabled = false;
 }
 
 function gotremoteStream(stream) {
   remoteStream = stream;
-  attachMediaStream(video2, stream);
+  video2.srcObject = stream;
   trace('Received remote stream');
-  trace(pipes.length + ' elements in chain');
-  statusDiv.textContent = pipes.length + ' elements in chain';
+  trace(pipes.length + ' element(s) in chain');
+  statusDiv.textContent = pipes.length + ' element(s) in chain';
   insertRelayButton.disabled = false;
 }
 
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  getUserMedia({
-      audio: false,
-      video: true
-    },
-    gotStream,
-    function(e) {
-      alert('getUserMedia() failed');
-      trace('getUserMedia() error: ', e);
-    });
+  var options = audioCheckbox.checked ?
+    {audio: true, video: true} : {audio: false, video: true};
+  navigator.mediaDevices.getUserMedia(options)
+  .then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() failed');
+    trace('getUserMedia() error: ', e);
+  });
 }
 
 function call() {

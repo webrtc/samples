@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -22,14 +22,12 @@ var localVideo = document.getElementById('localVideo');
 var remoteVideo = document.getElementById('remoteVideo');
 
 localVideo.addEventListener('loadedmetadata', function() {
-  trace('Local video currentSrc: ' + this.currentSrc +
-    ', videoWidth: ' + this.videoWidth +
+  trace('Local video videoWidth: ' + this.videoWidth +
     'px,  videoHeight: ' + this.videoHeight + 'px');
 });
 
 remoteVideo.addEventListener('loadedmetadata', function() {
-  trace('Remote video currentSrc: ' + this.currentSrc +
-    ', videoWidth: ' + this.videoWidth +
+  trace('Remote video videoWidth: ' + this.videoWidth +
     'px,  videoHeight: ' + this.videoHeight + 'px');
 });
 
@@ -48,11 +46,9 @@ remoteVideo.onresize = function() {
 var localStream;
 var pc1;
 var pc2;
-var sdpConstraints = {
-  'mandatory': {
-    'OfferToReceiveAudio': true,
-    'OfferToReceiveVideo': true
-  }
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1
 };
 
 function getName(pc) {
@@ -65,8 +61,7 @@ function getOtherPc(pc) {
 
 function gotStream(stream) {
   trace('Received local stream');
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(localVideo, stream);
+  localVideo.srcObject = stream;
   localStream = stream;
   callButton.disabled = false;
 }
@@ -74,14 +69,14 @@ function gotStream(stream) {
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({
-      audio: true,
-      video: true
-    }, gotStream,
-    function(e) {
-      alert('getUserMedia() error: ' + e.name);
-    });
+  navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: true
+  })
+  .then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() error: ' + e.name);
+  });
 }
 
 function call() {
@@ -120,7 +115,12 @@ function call() {
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');
-  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    onCreateOfferSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -130,19 +130,27 @@ function onCreateSessionDescriptionError(error) {
 function onCreateOfferSuccess(desc) {
   trace('Offer from pc1\n' + desc.sdp);
   trace('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc, function() {
-    onSetLocalSuccess(pc1);
-  });
+  pc1.setLocalDescription(desc).then(
+    function() {
+      onSetLocalSuccess(pc1);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc, function() {
-    onSetRemoteSuccess(pc2);
-  });
+  pc2.setRemoteDescription(desc).then(
+    function() {
+      onSetRemoteSuccess(pc2);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer(onCreateAnswerSuccess, onCreateSessionDescriptionError,
-      sdpConstraints);
+  pc2.createAnswer().then(
+    onCreateAnswerSuccess,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onSetLocalSuccess(pc) {
@@ -153,33 +161,44 @@ function onSetRemoteSuccess(pc) {
   trace(getName(pc) + ' setRemoteDescription complete');
 }
 
+function onSetSessionDescriptionError(error) {
+  trace('Failed to set session description: ' + error.toString());
+}
+
 function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(remoteVideo, e.stream);
+  remoteVideo.srcObject = e.stream;
   trace('pc2 received remote stream');
 }
 
 function onCreateAnswerSuccess(desc) {
   trace('Answer from pc2:\n' + desc.sdp);
   trace('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc, function() {
-    onSetLocalSuccess(pc2);
-  });
+  pc2.setLocalDescription(desc).then(
+    function() {
+      onSetLocalSuccess(pc2);
+    },
+    onSetSessionDescriptionError
+  );
   trace('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc, function() {
-    onSetRemoteSuccess(pc1);
-  });
+  pc1.setRemoteDescription(desc).then(
+    function() {
+      onSetRemoteSuccess(pc1);
+    },
+    onSetSessionDescriptionError
+  );
 }
 
 function onIceCandidate(pc, event) {
   if (event.candidate) {
-    getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
-        function() {
-          onAddIceCandidateSuccess(pc);
-        },
-        function(err) {
-          onAddIceCandidateError(pc, err);
-        }
+    getOtherPc(pc).addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      function() {
+        onAddIceCandidateSuccess(pc);
+      },
+      function(err) {
+        onAddIceCandidateError(pc, err);
+      }
     );
     trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
   }

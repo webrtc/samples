@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -40,7 +40,8 @@ function start() {
     audio: true,
     video: false
   };
-  getUserMedia(constraints, gotStream, gotStreamFailed);
+  navigator.mediaDevices.getUserMedia(constraints).
+      then(handleSuccess).catch(handleFailure);
   startButton.disabled = true;
   stopButton.disabled = false;
 }
@@ -54,48 +55,52 @@ function stop() {
   startButton.enabled = true;
   stopButton.enabled = false;
   renderLocallyCheckbox.disabled = true;
-  localStream.stop();
+  localStream.getTracks().forEach(function(track) {
+    track.stop();
+  });
 }
 
-function gotStream(stream) {
+function handleSuccess(stream) {
   renderLocallyCheckbox.disabled = false;
   var audioTracks = stream.getAudioTracks();
   if (audioTracks.length === 1) {
-    console.log('gotStream({audio:true, video:false})');
-
+    console.log('Got one audio track:', audioTracks);
     var filteredStream = webAudio.applyFilter(stream);
-
     var servers = null;
-
-    pc1 = new webkitRTCPeerConnection(servers);
+    pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
     pc1.onicecandidate = iceCallback1;
-    pc2 = new webkitRTCPeerConnection(servers);
+    pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = iceCallback2;
     pc2.onaddstream = gotRemoteStream;
-
     pc1.addStream(filteredStream);
-    pc1.createOffer(gotDescription1);
+    pc1.createOffer().
+        then(gotDescription1).
+        catch(function(error) {
+          console.log('createOffer failed: ' + error);
+        });
 
-    stream.onended = function() {
-      console.log('stream.onended');
+    stream.oninactive = function() {
+      console.log('Stream inactive:', stream);
       startButton.disabled = false;
       stopButton.disabled = true;
     };
 
     localStream = stream;
   } else {
-    alert('The media stream contains an invalid amount of audio tracks.');
-    stream.stop();
+    alert('The media stream contains an invalid number of audio tracks.');
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
 }
 
-function gotStreamFailed(error) {
+function handleFailure(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
-  alert('Failed to get access to local media. Error code: ' +
-    error.code);
+  alert('Failed to get access to local media. Error: ' +
+    error.name);
 }
 
 function forceOpus(sdp) {
@@ -112,10 +117,15 @@ function gotDescription1(desc) {
     type: 'offer',
     sdp: forceOpus(desc.sdp)
   });
+
   pc1.setLocalDescription(modifiedOffer);
   console.log('Offer from pc1 \n' + modifiedOffer.sdp);
   pc2.setRemoteDescription(modifiedOffer);
-  pc2.createAnswer(gotDescription2);
+  pc2.createAnswer()
+  .then(gotDescription2)
+  .catch(function(error) {
+    console.log('createAnswer failed: ' + error);
+  });
 }
 
 function gotDescription2(desc) {
@@ -125,21 +135,29 @@ function gotDescription2(desc) {
 }
 
 function gotRemoteStream(e) {
-  attachMediaStream(audioElement, e.stream);
+  audioElement.srcObject = e.stream;
 }
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc2.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     console.log('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc1.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     console.log('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }

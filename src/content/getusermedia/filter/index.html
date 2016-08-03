@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -27,23 +27,34 @@
   <link rel="stylesheet" href="../../../css/main.css">
 
   <style>
+    .none {
+      -webkit-filter: none;
+      filter: none;
+    }
     .blur {
       -webkit-filter: blur(3px);
+      filter: blur(3px);
     }
     .grayscale {
       -webkit-filter: grayscale(1);
+      filter: grayscale(1);
     }
     .invert {
       -webkit-filter: invert(1);
+      filter: invert(1);
     }
     .sepia {
       -webkit-filter: sepia(1);
+      filter: sepia(1);
     }
-    button {
-      width: 110px;
-    }
+
     button#snapshot {
       margin: 0 10px 25px 0;
+      width: 110px;
+    }
+
+    video {
+      object-fit: cover;
     }
   </style>
 
@@ -55,8 +66,18 @@
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia + CSS filters</span></h1>
 
     <video autoplay></video>
+
+    <label for="select">Filter: </label>
+    <select id="filter">
+      <option value="none">None</option>
+      <option value="blur">Blur</option>
+      <option value="grayscale">Grayscale</option>
+      <option value="invert">Invert</option>
+      <option value="sepia">Sepia</option>
+    </select>
+
     <button id="snapshot">Take snapshot</button>
-    <button id="filter">Apply a filter</button>
+
     <canvas></canvas>
 
     <p>Draw a frame from the getUserMedia video stream onto the canvas element, then apply CSS filters.</p>
@@ -66,6 +87,8 @@
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/filter" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
 
+  <script src="../../../js/adapter.js"></script>
+  <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
 
   <script src="../../../js/lib/ga.js"></script>

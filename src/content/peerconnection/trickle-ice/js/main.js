@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -17,7 +17,7 @@ var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
 var ipv6Check = document.querySelector('input#ipv6');
-var unbundleCheck = document.querySelector('input#unbundle');
+var rtcpMuxCheck = document.querySelector('input#unmux');
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -25,11 +25,12 @@ removeButton.onclick = removeServer;
 
 var begin;
 var pc;
+var candidates;
 
 function selectServer(event) {
   var option = event.target;
   var value = JSON.parse(option.value);
-  urlInput.value = value.url;
+  urlInput.value = value.urls[0];
   usernameInput.value = value.username || '';
   passwordInput.value = value.credential || '';
 }
@@ -43,8 +44,11 @@ function addServer() {
 
   // Store the ICE server as a stringified JSON object in option.value.
   var option = document.createElement('option');
-  var iceServer = createIceServer(urlInput.value, usernameInput.value,
-      passwordInput.value);
+  var iceServer = {
+    urls: [urlInput.value],
+    username: usernameInput.value,
+    credential: passwordInput.value
+  };
   option.value = JSON.stringify(iceServer);
   option.text = urlInput.value + ' ';
   var username = usernameInput.value;
@@ -87,24 +91,30 @@ function start() {
 
   // Create a PeerConnection with no streams, but force a m=audio line.
   // This will gather candidates for either 1 or 2 ICE components, depending
-  // on whether the unbundle RTCP checkbox is checked.
-  var config = {'iceServers': iceServers, iceTransports: iceTransports};
+  // on whether the un-muxed RTCP checkbox is checked.
+  var config = {'iceServers': iceServers, iceTransportPolicy: iceTransports,
+      rtcpMuxPolicy: rtcpMuxCheck.checked ? 'negotiate' : 'require'};
   var pcConstraints = {};
-  var offerConstraints = {'mandatory': {'OfferToReceiveAudio': true}};
+  var offerOptions = {offerToReceiveAudio: 1};
   // Whether we gather IPv6 candidates.
   pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
-  offerConstraints.optional = [{'googUseRtpMUX': !unbundleCheck.checked}];
 
   trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
         ', constraints=' + JSON.stringify(pcConstraints));
   pc = new RTCPeerConnection(config, pcConstraints);
   pc.onicecandidate = iceCallback;
-  pc.createOffer(gotDescription, noDescription, offerConstraints);
+  pc.createOffer(
+    offerOptions
+  ).then(
+    gotDescription,
+    noDescription
+  );
 }
 
 function gotDescription(desc) {
   begin = window.performance.now();
+  candidates = [];
   pc.setLocalDescription(desc);
 }
 
@@ -150,6 +160,46 @@ function appendCell(row, val, span) {
   row.appendChild(cell);
 }
 
+// Try to determine authentication failures and unreachable TURN
+// servers by using heuristics on the candidate types gathered.
+function getFinalResult() {
+  var result = 'Done';
+
+  // if more than one server is used, it can not be determined
+  // which server failed.
+  if (servers.length === 1) {
+    var server = JSON.parse(servers[0].value);
+
+    // get the candidates types (host, srflx, relay)
+    var types = candidates.map(function(cand) {
+      return cand.type;
+    });
+
+    // If the server is a TURN server we should have a relay candidate.
+    // If we did not get a relay candidate but a srflx candidate
+    // authentication might have failed.
+    // If we did not get  a relay candidate or a srflx candidate
+    // we could not reach the TURN server. Either it is not running at
+    // the target address or the clients access to the port is blocked.
+    //
+    // This only works for TURN/UDP since we do not get
+    // srflx candidates from TURN/TCP.
+    if (server.urls[0].indexOf('turn:') === 0 &&
+        server.urls[0].indexOf('?transport=tcp') === -1) {
+      if (types.indexOf('relay') === -1) {
+        if (types.indexOf('srflx') > -1) {
+          // a binding response but no relay candidate suggests auth failure.
+          result = 'Authentication failed?';
+        } else {
+          // either the TURN server is down or the clients access is blocked.
+          result = 'Not reachable?';
+        }
+      }
+    }
+  }
+  return result;
+}
+
 function iceCallback(event) {
   var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   var row = document.createElement('tr');
@@ -163,8 +213,9 @@ function iceCallback(event) {
     appendCell(row, c.address);
     appendCell(row, c.port);
     appendCell(row, formatPriority(c.priority));
+    candidates.push(c);
   } else {
-    appendCell(row, 'Done', 7);
+    appendCell(row, getFinalResult(), 7);
     pc.close();
     pc = null;
   }

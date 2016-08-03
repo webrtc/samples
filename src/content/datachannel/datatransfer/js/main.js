@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -15,29 +15,48 @@ var receiveChannel;
 var pcConstraint;
 var megsToSend = document.querySelector('input#megsToSend');
 var sendButton = document.querySelector('button#sendTheData');
+var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
+var errorMessage = document.querySelector('div#errorMsg');
 
 var receivedSize = 0;
 var bytesToSend = 0;
 
-var statsInterval = null;
-var bitrateMax = 0;
-
 sendButton.onclick = createConnection;
 
+// Prevent data sent to be set to 0.
+megsToSend.addEventListener('change', function(e) {
+  if (this.value <= 0) {
+    sendButton.disabled = true;
+    errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
+  } else {
+    errorMessage.innerHTML = '';
+    sendButton.disabled = false;
+  }
+});
+
 function createConnection() {
+  sendButton.disabled = true;
+  megsToSend.disabled = true;
   var servers = null;
   pcConstraint = null;
 
-  bytesToSend = megsToSend.value * 1024 * 1024;
+  bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created local peer connection object localConnection');
 
-  sendChannel = localConnection.createDataChannel('sendDataChannel');
+  var dataChannelParams = {ordered: false};
+  if (orderedCheckbox.checked) {
+    dataChannelParams.ordered = true;
+  }
+
+  sendChannel = localConnection.createDataChannel(
+      'sendDataChannel', dataChannelParams);
   sendChannel.binaryType = 'arraybuffer';
   trace('Created send data channel');
 
@@ -45,9 +64,13 @@ function createConnection() {
   sendChannel.onclose = onSendChannelStateChange;
   localConnection.onicecandidate = iceCallback1;
 
-  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localConnection.createOffer().then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
       pcConstraint);
   trace('Created remote peer connection object remoteConnection');
@@ -72,16 +95,48 @@ function randomAsciiString(length) {
 function sendGeneratedData() {
   sendProgress.max = bytesToSend;
   receiveProgress.max = sendProgress.max;
+  sendProgress.value = 0;
+  receiveProgress.value = 0;
+
   var chunkSize = 16384;
   var stringToSendRepeatedly = randomAsciiString(chunkSize);
-  var generateData = function(offset) {
-    sendChannel.send(stringToSendRepeatedly);
-    if (offset < sendProgress.max) {
-      window.setTimeout(generateData, 0, offset + chunkSize);
-    }
-    sendProgress.value = offset + chunkSize;
+  var bufferFullThreshold = 5 * chunkSize;
+  var usePolling = true;
+  if (typeof sendChannel.bufferedAmountLowThreshold === 'number') {
+    trace('Using the bufferedamountlow event for flow control');
+    usePolling = false;
+
+    // Reduce the buffer fullness threshold, since we now have more efficient
+    // buffer management.
+    bufferFullThreshold = chunkSize / 2;
+
+    // This is "overcontrol": our high and low thresholds are the same.
+    sendChannel.bufferedAmountLowThreshold = bufferFullThreshold;
+  }
+  // Listen for one bufferedamountlow event.
+  var listener = function() {
+    sendChannel.removeEventListener('bufferedamountlow', listener);
+    sendAllData();
   };
-  generateData(0);
+  var sendAllData = function() {
+    // Try to queue up a bunch of data and back off when the channel starts to
+    // fill up. We don't setTimeout after each send since this lowers our
+    // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
+    // seconds to execute).
+    while (sendProgress.value < sendProgress.max) {
+      if (sendChannel.bufferedAmount > bufferFullThreshold) {
+        if (usePolling) {
+          setTimeout(sendAllData, 250);
+        } else {
+          sendChannel.addEventListener('bufferedamountlow', listener);
+        }
+        return;
+      }
+      sendProgress.value += chunkSize;
+      sendChannel.send(stringToSendRepeatedly);
+    }
+  };
+  setTimeout(sendAllData, 0);
 }
 
 function closeDataChannels() {
@@ -101,8 +156,10 @@ function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
   trace('Offer from localConnection \n' + desc.sdp);
   remoteConnection.setRemoteDescription(desc);
-  remoteConnection.createAnswer(gotDescription2,
-      onCreateSessionDescriptionError);
+  remoteConnection.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
@@ -114,8 +171,12 @@ function gotDescription2(desc) {
 function iceCallback1(event) {
   trace('local ice callback');
   if (event.candidate) {
-    remoteConnection.addIceCandidate(event.candidate,
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    remoteConnection.addIceCandidate(
+      event.candidate
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -123,8 +184,12 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   trace('remote ice callback');
   if (event.candidate) {
-    localConnection.addIceCandidate(event.candidate,
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    localConnection.addIceCandidate(
+      event.candidate
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
@@ -144,20 +209,16 @@ function receiveChannelCallback(event) {
   receiveChannel.onmessage = onReceiveMessageCallback;
 
   receivedSize = 0;
-  bitrateMax = 0;
 }
 
 function onReceiveMessageCallback(event) {
   receivedSize += event.data.length;
   receiveProgress.value = receivedSize;
 
-  if (receivedSize >= bytesToSend) {
-    if (statsInterval) {
-      window.clearInterval(statsInterval);
-      statsInterval = null;
-    }
-
+  if (receivedSize === bytesToSend) {
     closeDataChannels();
+    sendButton.disabled = false;
+    megsToSend.disabled = false;
   }
 }
 

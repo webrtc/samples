@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -39,7 +39,11 @@
 
       <p>This page tests the trickle ICE functionality in a WebRTC implementation. It creates a PeerConnection with the specified ICEServers, and then starts candidate gathering for a session with a single audio stream. As candidates are gathered, they are displayed in the text box below, along with an indication when candidate gathering is complete.</p>
 
+      <p>Note that, since no media stream is added to the RTCPeerConnection, only candidates from a single interface will be gathered in Chrome. See <a href="https://tools.ietf.org/html/draft-ietf-rtcweb-ip-handling-01">the RTCWEB IP address handling recommendations draft</a> for details.</p>
+
       <p>Individual STUN and TURN servers can be added using the Add server / Remove server controls below; in addition, the type of candidates released to the application can be controlled via the IceTransports constraint.</p>
+
+      <p>If you test just a single TURN/UDP server, this page even allows you to detect when you are using the wrong credential to authenticated.</p>
 
     </section>
 
@@ -48,7 +52,7 @@
       <h2>ICE servers</h2>
 
       <select id="servers" size="4">
-        <option value="{&quot;url&quot;:&quot;stun:stun.l.google.com:19302&quot;}" ondblclick="selectServer(event);">stun:stun.l.google.com:19302</option>
+        <option value="{&quot;urls&quot;:[&quot;stun:stun.l.google.com:19302&quot;]}" ondblclick="selectServer(event);">stun:stun.l.google.com:19302</option>
       </select>
 
       <div>
@@ -90,8 +94,8 @@
         <input id="ipv6" type="checkbox" checked>
       </div>
       <div>
-        <label for="unbundle">Gather unbundled RTCP candidates:</label>
-        <input id="unbundle" type="checkbox" checked>
+        <label for="unmux">Gather RTCP candidates:</label>
+        <input id="unmux" type="checkbox" checked>
       </div>
 
     </section>
@@ -117,6 +121,7 @@
   </div>
 
   <script src="../../../js/adapter.js"></script>
+  <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
 
   <script src="../../../js/lib/ga.js"></script>

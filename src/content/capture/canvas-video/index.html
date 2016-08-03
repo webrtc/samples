@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC code samples">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="Client-side WebRTC code samples">
+  <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+  <meta itemprop="name" content="WebRTC code samples">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
+
+  <base target="_blank">
+
+  <title>Canvas to video</title>
+
+  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Stream from canvas to video element</span></h1>
+
+    <canvas></canvas>
+
+    <video autoplay></video>
+
+    <p>Click and drag on the canvas (on the left) to move the teapot.</p>
+
+    <p>This demo requires Firefox 47 or Chrome 52 (or later).</p>
+
+    <p>The teapot is drawn on the canvas element using WebGL. A stream is captured from the canvas element using its <code>captureStream()</code> method and set as the <code>srcObject</code> of the video element.</p>
+
+    <p>The <code>canvas</code>, <code>video</code>, and <code>stream</code> variables are in global scope, so you can inspect them from the browser console.</p>
+
+    <p>For more demos and information about <code>captureStream()</code>, see <a href="https://docs.google.com/document/d/1JmWfOtUP6ZqsYJ--U8y0OtHkBt-VyjX4N-JqIjb1t78" title="Implementation overview doc">Media Capture from Canvas Implementation</a>.</p>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/canvas-video" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+  <!-- Teapot code -->
+  <script src="js/third_party/webgl-utils.js"></script>
+  <script src="js/third_party/webgl-debug.js"></script>
+  <script src="js/third_party/matrix4x4.js"></script>
+  <script src="js/third_party/cameracontroller.js"></script>
+  <script src="js/third_party/teapot-streams.js"></script>
+  <script src="js/third_party/demo.js"></script>
+
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+</body>
+</html>

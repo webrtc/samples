@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -7,6 +7,21 @@
  */
 .hidden {
   display: none;
+}
+
+.highlight {
+  background-color: #eee;
+  font-size: 1.2em;
+  margin: 0 0 30px 0;
+  padding: 0.2em 1.5em;
+}
+.warning {
+  color: red;
+  font-weight: 400;
+}
+
+div#errorMsg p {
+  color: #F00;
 }
 
 body {
@@ -36,6 +51,10 @@ div#links a {
 display: block;
 line-height: 1.3em;
 margin: 0 0 1.5em 0;
+}
+
+div.outputSelector {
+margin: -1.3em 0 2em 0;
 }
 
 @media screen and (min-width: 1000px) {
@@ -211,6 +230,11 @@ video {
 }
 
 @media screen and (max-width: 650px) {
+  .highlight {
+    font-size: 1em;
+    margin: 0 0 20px 0;
+    padding: 0.2em 1em;
+  }
   h1 {
     font-size: 24px;
   }

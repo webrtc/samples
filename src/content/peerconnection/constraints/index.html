@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -42,8 +42,11 @@
       <p>The lefthand video shows the output of <code>getUserMedia()</code>; on the right is the video after being passed through the peer connection. The transmission bitrate is displayed below the righthand video.</p>
     </section>
 
-    <button id="getMedia">Get media</button>
-    <button id="connect" disabled>Connect</button>
+    <div>
+      <button id="getMedia">Get media</button>
+      <button id="connect" disabled>Connect</button>
+      <button id="hangup" disabled>Hang Up</button>
+    </div>
 
 
     <section id="constraints">
@@ -85,6 +88,7 @@
         <video autoplay muted></video>
         <div></div>
         <div id="bitrate"></div>
+        <div id="peer"></div>
       </div>
     </section>
 
@@ -98,6 +102,7 @@
   </div>
 
   <script src="../../../js/adapter.js"></script>
+  <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
   <script src="../../../js/lib/ga.js"></script>
 

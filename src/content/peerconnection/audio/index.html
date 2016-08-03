@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -52,8 +52,13 @@
         <!-- Codec values are matched with how they appear in the SDP.
         For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
         matches 16K iSAC (but not 32K iSAC). -->
+<<<<<<< HEAD
         <option value="OPUS">Opus</option>
         <option value="ISAC/16000">ISAC 16K</option>
+=======
+        <option value="opus">Opus</option>
+        <option value="ISAC">iSAC 16K</option>
+>>>>>>> origin/gh-pages
         <option value="G722">G722</option>
         <option value="PCMU">PCMU</option>
       </select>
@@ -72,14 +77,27 @@
       <button id="callButton">Call</button>
       <button id="hangupButton">Hang Up</button>
     </div>
+    <div class="graph-container" id="bitrateGraph">
+      <div>Bitrate</div>
+      <canvas id="bitrateCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="packetGraph">
+      <div>Packets sent per second</div>
+      <canvas id="packetCanvas"></canvas>
+    </div>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
   </div>
 
   <script src="../../../js/adapter.js"></script>
+<<<<<<< HEAD
   <script src="../../../js/sdputils.js"></script>
+=======
+  <script src="../../../js/common.js"></script>
+>>>>>>> origin/gh-pages
   <script src="js/main.js"></script>
+  <script src="../../../js/third_party/graph.js"></script>
 
   <script src="../../../js/lib/ga.js"></script>
 </body>

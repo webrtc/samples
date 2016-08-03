@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -34,76 +34,48 @@ fullHdButton.onclick = function() {
 };
 
 var qvgaConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 320,
-      minHeight: 180,
-      maxWidth: 320,
-      maxHeight: 180
-    }
-  }
+  video: {width: {exact: 320}, height: {exact: 240}}
 };
 
 var vgaConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 640,
-      minHeight: 360,
-      maxWidth: 640,
-      maxHeight: 360
-    }
-  }
+  video: {width: {exact: 640}, height: {exact: 480}}
 };
 
 var hdConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 1280,
-      minHeight: 720,
-      maxWidth: 1280,
-      maxHeight: 720
-    }
-  }
+  video: {width: {exact: 1280}, height: {exact: 720}}
 };
 
 var fullHdConstraints = {
-  video: {
-    mandatory: {
-      minWidth: 1920,
-      minHeight: 1080,
-      maxWidth: 1920,
-      maxHeight: 1080
-    }
-  }
+  video: {width: {exact: 1920}, height: {exact: 1080}}
 };
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-function successCallback(stream) {
-  window.stream = stream; // stream available to console
-  video.src = window.URL.createObjectURL(stream);
-}
-
-function errorCallback(error) {
-  console.log('navigator.getUserMedia error: ', error);
+function gotStream(mediaStream) {
+  window.stream = mediaStream; // stream available to console
+  video.srcObject = mediaStream;
 }
 
 function displayVideoDimensions() {
+  if (!video.videoWidth) {
+    setTimeout(displayVideoDimensions, 500);
+  }
   dimensions.innerHTML = 'Actual video dimensions: ' + video.videoWidth +
     'x' + video.videoHeight + 'px.';
 }
 
-video.onplay = function() {
-  setTimeout(function() {
-    displayVideoDimensions();
-  }, 500);
-};
+video.onloadedmetadata = displayVideoDimensions;
 
 function getMedia(constraints) {
   if (stream) {
-    video.src = null;
-    stream.stop();
+    stream.getTracks().forEach(function(track) {
+      track.stop();
+    });
   }
-  navigator.getUserMedia(constraints, successCallback, errorCallback);
+
+  navigator.mediaDevices.getUserMedia(constraints)
+  .then(gotStream)
+  .catch(function(e) {
+    var message = 'getUserMedia error: ' + e.name;
+    alert(message);
+    console.log(message);
+  });
 }

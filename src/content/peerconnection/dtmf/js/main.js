@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -23,6 +23,9 @@ var durationInput = document.querySelector('input#duration');
 var gapInput = document.querySelector('input#gap');
 var tonesInput = document.querySelector('input#tones');
 
+var durationValue = document.querySelector('span#durationValue');
+var gapValue = document.querySelector('span#gapValue');
+
 var sentTonesDiv = document.querySelector('div#sentTones');
 var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
@@ -33,11 +36,17 @@ var pc2;
 var localStream;
 var dtmfSender;
 
-var sdpConstraints = {
-  'mandatory': {
-    'OfferToReceiveAudio': true,
-    'OfferToReceiveVideo': false
-  }
+var offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 0
+};
+
+durationInput.oninput = function() {
+  durationValue.textContent = durationInput.value;
+};
+
+gapInput.oninput = function() {
+  gapValue.textContent = gapInput.value;
 };
 
 main();
@@ -48,7 +57,6 @@ function main() {
 
 function gotStream(stream) {
   trace('Received local stream');
-  // Call the polyfill wrapper to attach the media stream to this element.
   localStream = stream;
   var audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
@@ -56,7 +64,12 @@ function gotStream(stream) {
   }
   pc1.addStream(localStream);
   trace('Adding Local Stream to peer connection');
-  pc1.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  pc1.createOffer(
+    offerOptions
+  ).then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -78,14 +91,14 @@ function call() {
   pc2.onaddstream = gotRemoteStream;
 
   trace('Requesting local stream');
-  // Call into getUserMedia via the polyfill (adapter.js).
-  getUserMedia({
-      audio: true,
-      video: false
-    },
-    gotStream, function(e) {
-      alert('getUserMedia() error: ' + e.name);
-    });
+  navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: false
+  })
+  .then(gotStream)
+  .catch(function(e) {
+    alert('getUserMedia() error: ' + e.name);
+  });
 
   callButton.disabled = true;
   hangupButton.disabled = false;
@@ -99,15 +112,13 @@ function gotDescription1(desc) {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio.
-  pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-      sdpConstraints);
+  pc2.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
-  // Setting PCMU as the preferred codec.
-  desc.sdp = desc.sdp.replace(/m=.*\r\n/, 'm=audio 1 RTP/SAVPF 0 126\r\n');
-  // Workaround for issue 1603.
-  desc.sdp = desc.sdp.replace(/.*fmtp.*\r\n/g, '');
   pc2.setLocalDescription(desc);
   trace('Answer from pc2: \n' + desc.sdp);
   pc1.setRemoteDescription(desc);
@@ -128,8 +139,7 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  // Call the polyfill wrapper to attach the media stream to this element.
-  attachMediaStream(audio, e.stream);
+  audio.srcObject = e.stream;
   trace('Received remote stream');
   if (pc1.createDTMFSender) {
     enableDtmfSender();
@@ -139,21 +149,28 @@ function gotRemoteStream(e) {
         'which is not support by this browser.'
     );
   }
-
 }
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc2.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    pc1.addIceCandidate(
+      new RTCIceCandidate(event.candidate)
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }
@@ -207,6 +224,5 @@ function addDialPadHandlers() {
 }
 
 function sendDtmfTone() {
-  /*jshint validthis:true */
   sendTones(this.textContent);
 }

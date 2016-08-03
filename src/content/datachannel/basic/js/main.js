@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -41,7 +41,8 @@ function createConnection() {
   // SCTP is supported from Chrome 31 and is supported in FF.
   // No need to pass DTLS constraint as it is on by default in Chrome 31.
   // For SCTP, reliable and ordered is true by default.
-  // Add localConnection to global scope to make it visible from the browser console.
+  // Add localConnection to global scope to make it visible
+  // from the browser console.
   window.localConnection = localConnection =
       new RTCPeerConnection(servers, pcConstraint);
   trace('Created local peer connection object localConnection');
@@ -54,7 +55,8 @@ function createConnection() {
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
-  // Add remoteConnection to global scope to make it visible from the browser console.
+  // Add remoteConnection to global scope to make it visible
+  // from the browser console.
   window.remoteConnection = remoteConnection =
       new RTCPeerConnection(servers, pcConstraint);
   trace('Created remote peer connection object remoteConnection');
@@ -62,7 +64,10 @@ function createConnection() {
   remoteConnection.onicecandidate = iceCallback2;
   remoteConnection.ondatachannel = receiveChannelCallback;
 
-  localConnection.createOffer(gotDescription1, onCreateSessionDescriptionError);
+  localConnection.createOffer().then(
+    gotDescription1,
+    onCreateSessionDescriptionError
+  );
   startButton.disabled = true;
   closeButton.disabled = false;
 }
@@ -102,8 +107,10 @@ function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
   trace('Offer from localConnection \n' + desc.sdp);
   remoteConnection.setRemoteDescription(desc);
-  remoteConnection.createAnswer(gotDescription2,
-      onCreateSessionDescriptionError);
+  remoteConnection.createAnswer().then(
+    gotDescription2,
+    onCreateSessionDescriptionError
+  );
 }
 
 function gotDescription2(desc) {
@@ -115,8 +122,12 @@ function gotDescription2(desc) {
 function iceCallback1(event) {
   trace('local ice callback');
   if (event.candidate) {
-    remoteConnection.addIceCandidate(event.candidate,
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    remoteConnection.addIceCandidate(
+      event.candidate
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Local ICE candidate: \n' + event.candidate.candidate);
   }
 }
@@ -124,8 +135,12 @@ function iceCallback1(event) {
 function iceCallback2(event) {
   trace('remote ice callback');
   if (event.candidate) {
-    localConnection.addIceCandidate(event.candidate,
-        onAddIceCandidateSuccess, onAddIceCandidateError);
+    localConnection.addIceCandidate(
+      event.candidate
+    ).then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
     trace('Remote ICE candidate: \n ' + event.candidate.candidate);
   }
 }

@@ -1,0 +1,21 @@
+{
+  "background": {
+    "page": "background.html",
+    "persistent": false
+  },
+  "default_locale": "en",
+  "description": "__MSG_NETLI_APPDESC__",
+  "icons": {
+    "16": "img/icon_16.png",
+    "128": "img/icon_128.png"
+  },
+  "manifest_version": 2,
+  "minimum_chrome_version": "42.0.2311.135",
+  "name": "__MSG_NETLI_APPNAME__",
+  "options_ui": {
+    "chrome_style": true,
+    "page": "options.html"
+  },
+  "permissions": [ "privacy" ],
+  "version": "0.2.1.3"
+}

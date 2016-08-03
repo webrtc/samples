@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2014 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -31,27 +31,30 @@ var constraints = window.constraints = {
   video: false
 };
 
-navigator.getUserMedia = navigator.getUserMedia ||
-    navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-function successCallback(stream) {
-  // Put variables in global scope to make them available to the browser console.
+function handleSuccess(stream) {
+  // Put variables in global scope to make them available to the
+  // browser console.
   window.stream = stream;
   var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream);
-
-  setInterval(function() {
-    instantMeter.value = instantValueDisplay.innerText =
-        soundMeter.instant.toFixed(2);
-    slowMeter.value = slowValueDisplay.innerText =
-        soundMeter.slow.toFixed(2);
-    clipMeter.value = clipValueDisplay.innerText =
-        soundMeter.clip;
-  }, 200);
+  soundMeter.connectToSource(stream, function(e) {
+    if (e) {
+      alert(e);
+      return;
+    }
+    setInterval(function() {
+      instantMeter.value = instantValueDisplay.innerText =
+          soundMeter.instant.toFixed(2);
+      slowMeter.value = slowValueDisplay.innerText =
+          soundMeter.slow.toFixed(2);
+      clipMeter.value = clipValueDisplay.innerText =
+          soundMeter.clip;
+    }, 200);
+  });
 }
 
-function errorCallback(error) {
+function handleError(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
-navigator.getUserMedia(constraints, successCallback, errorCallback);
+navigator.mediaDevices.getUserMedia(constraints).
+    then(handleSuccess).catch(handleError);

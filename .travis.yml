@@ -1,9 +1,37 @@
+sudo: false
 language: node_js
 node_js:
-  - 0.10
+  - 4.2
 
-install:
+branches:
+  only:
+    - gh-pages
+
+env:
+  matrix:
+    - BROWSER=chrome  BVER=stable
+    - BROWSER=chrome  BVER=beta
+    - BROWSER=chrome  BVER=unstable
+    - BROWSER=firefox BVER=stable
+    - BROWSER=firefox BVER=beta
+    - BROWSER=firefox BVER=nightly
+
+matrix:
+  fast_finish: true
+
+  allow_failures:
+    - env: BROWSER=chrome  BVER=unstable
+    - env: BROWSER=firefox BVER=stable
+    - env: BROWSER=firefox BVER=beta
+    - env: BROWSER=firefox BVER=nightly
+
+before_install:
+  - npm install -g npm@'>=3.0.0'
+
+before_script:
   - npm install
+  - export DISPLAY=:99.0
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1200x16
 
 script:
-  - grunt
+  - npm test

@@ -3,34 +3,38 @@
 /* globals module */
 
 module.exports = function(grunt) {
-
   // configure project
   grunt.initConfig({
     // make node configurations available
     pkg: grunt.file.readJSON('package.json'),
-
     csslint: {
       options: {
-        csslintrc: 'src/.csslintrc'
+        csslintrc: '.csslintrc'
       },
       strict: {
         options: {
           import: 2
         },
-        src: ['src/content/**/*.css',
-              '!src/content/**/*_nolint.css'
-        ]
+        src: ['src/content/**/*.css', '!src/content/**/*_nolint.css']
       },
       lax: {
         options: {
           import: false
         },
-        src: ['src/content/**/*.css',
-              '!src/content/**/*_nolint.css'
-        ]
+        src: ['src/content/**/*.css', '!src/content/**/*_nolint.css']
       }
     },
-
+    eslint: {
+      options: {
+        configFile: '.eslintrc'
+      },
+      target: ['src/content/**/*.js', 'test/*.js']
+    },
+    githooks: {
+      all: {
+        'pre-commit': 'csslint htmlhint eslint'
+      }
+    },
     htmlhint: {
       html1: {
         src: [
@@ -40,38 +44,35 @@ module.exports = function(grunt) {
         ]
       }
     },
-
-    jscs: {
-      src: 'src/content/**/*.js',
-      options: {
-        config: 'src/.jscsrc',
-        'excludeFiles': [
+    // Leaving this as a manual step as the extension is not updated regularly.
+    compress: {
+      main: {
+        options: {
+          mode: 'zip',
+          archive: 'release/desktopCaptureExtension.zip'
+        },
+        files: [
+          {
+            expand: true,
+            cwd: 'src/content/extensions/desktopcapture/extension',
+            src: '**',
+            dest: 'desktopCaptureExtension',
+            isfile: true
+          }
         ]
       }
-    },
-
-    jshint: {
-      options: {
-        ignores: [
-        ],
-        // use default .jshintrc files
-        jshintrc: true
-      },
-      // files to validate
-      // can choose more than one name + array of paths
-      // usage with this name: grunt jshint:files
-      files: ['src/content/**/*.js']
     }
   });
 
   // enable plugins
+  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-contrib-csslint');
+  grunt.loadNpmTasks('grunt-eslint');
+  grunt.loadNpmTasks('grunt-githooks');
   grunt.loadNpmTasks('grunt-htmlhint');
-  grunt.loadNpmTasks('grunt-jscs');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'jscs', 'jshint']);
+  grunt.registerTask('default', ['csslint', 'htmlhint', 'eslint']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };
