@@ -25,7 +25,7 @@ leftVideo.onplay = function() {
     console.log('Captured stream from leftVideo with mozCaptureStream()',
       stream);
   } else {
-    trace('captureStream() not supported');
+    console.log('captureStream() not supported');
   }
 };
 
