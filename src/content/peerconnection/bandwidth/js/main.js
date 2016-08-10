@@ -184,12 +184,13 @@ bandwidthSelector.onchange = function() {
   pc1.setLocalDescription(pc1.localDescription)
   .then(function() {
     var desc = pc1.remoteDescription;
-    if (bandwidth == "unlimited") {
+    if (bandwidth === 'unlimited') {
       desc.sdp = removeBandwidthRestriction(desc.sdp);
     } else {
       desc.sdp = updateBandwidthRestriction(desc.sdp, bandwidth);
     }
-    trace('Applying bandwidth restriction to setRemoteDescription:\n' + desc.sdp);
+    trace('Applying bandwidth restriction to setRemoteDescription:\n' +
+        desc.sdp);
     return pc1.setRemoteDescription(desc);
   })
   .then(function() {
@@ -199,7 +200,7 @@ bandwidthSelector.onchange = function() {
 };
 
 function updateBandwidthRestriction(sdp, bandwidth) {
-  if (sdp.indexOf('b=AS:') == -1) {
+  if (sdp.indexOf('b=AS:') === -1) {
     // insert b=AS after c= line.
     sdp = sdp.replace(/c=IN IP4 (.*)\r\n/,
                       'c=IN IP4 $1\r\nb=AS:' + bandwidth + '\r\n');
