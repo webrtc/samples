@@ -187,6 +187,7 @@ bandwidthSelector.onchange = function() {
   .then(function() {
     var desc = pc1.remoteDescription;
     desc.sdp = desc.sdp.replace(/b=AS:(.*)\r\n/, 'b=AS:' + bandwidth + '\r\n');
+    trace('Applying bandwidth change to setRemoteDescription: ' + desc);
     return pc1.setRemoteDescription(desc);
   })
   .then(function() {
