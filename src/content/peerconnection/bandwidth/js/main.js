@@ -112,7 +112,7 @@ function gotDescription2(desc) {
       trace('Answer from pc2 \n' + desc.sdp);
       // insert b=AS after c= line.
       desc.sdp = desc.sdp.replace(/c=IN IP4 (.*)\r\n/,
-          'c=IN IP4 $(1)\r\nb=AS:512\r\n');
+          'c=IN IP4 $1\r\nb=AS:512\r\n');
       pc1.setRemoteDescription(desc).then(
         function() {
         },
