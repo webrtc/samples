@@ -20,11 +20,12 @@ var minWidthInput = document.querySelector('div#minWidth input');
 var maxWidthInput = document.querySelector('div#maxWidth input');
 var minHeightInput = document.querySelector('div#minHeight input');
 var maxHeightInput = document.querySelector('div#maxHeight input');
-var framerateInput = document.querySelector('div#framerate input');
+var minFramerateInput = document.querySelector('div#minFramerate input');
+var maxFramerateInput = document.querySelector('div#maxFramerate input');
 
 minWidthInput.onchange = maxWidthInput.onchange =
     minHeightInput.onchange = maxHeightInput.onchange =
-    framerateInput.onchange = displayRangeValue;
+    minFramerateInput.onchange = maxFramerateInput.onchange = displayRangeValue;
 
 var getUserMediaConstraintsDiv =
     document.querySelector('div#getUserMediaConstraints');
@@ -115,10 +116,15 @@ function getUserMediaConstraints() {
     constraints.video.height = constraints.video.height || {};
     constraints.video.height.max = maxHeightInput.value;
   }
-  if (framerateInput.value !== '0') {
+  if (minFramerateInput.value !== '0') {
     constraints.video.frameRate = {};
-    constraints.video.frameRate.min = framerateInput.value;
+    constraints.video.frameRate.min = minFramerateInput.value;
   }
+  if (maxFramerateInput.value !== '0') {
+    constraints.video.frameRate = constraints.video.frameRate || {};
+    constraints.video.frameRate.max = maxFramerateInput.value;
+  }
+
   return constraints;
 }
 
