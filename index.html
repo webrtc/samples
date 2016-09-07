@@ -50,6 +50,10 @@
 <body>
   <div id="container">
 
+    <div class="highlight">
+      <p>New codelab: <a href="https://codelabs.developers.google.com/codelabs/webrtc-web">Realtime communication with WebRTC</a></p>
+    </div>
+
     <h1>WebRTC samples</h1>
 
     <section>
@@ -67,6 +71,8 @@
       <p>For more information about WebRTC, we maintain a list of resources at <a href="https://g.co/webrtc">g.co/webrtc</a>. If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O <a href="https://www.youtube.com/watch?v=p2HzZkd2A40">WebRTC presentation</a>.</p>
 
       <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a> for instructions. The <a href="https://bit.ly/webrtcdevguide">Developer's Guide</a> for this repo has more information about code style, structure and validation. Head over to <a href="test/README.md">test/README.md</a> and get started developing.</p>
+
+      <p class="warning"><strong>Warning:</strong> some of these demos will result in loud feedback if used without headphones.</p>
 
     </section>
 
@@ -96,13 +102,15 @@
 
       <h3 id="capture">Stream capture</h3>
 
-      <!-- <p><a href="https://webrtc.github.io/samples/src/content/capture/video-pc/">Stream from a video element to a peer connection</a></p> -->
+      <p><a href="src/content/capture/video-video/">Stream from a video element to a video element</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/capture/canvas-video/">Stream from a canvas element to a video element</a></p>
+      <p><a href="src/content/capture/video-pc/">Stream from a video element to a peer connection</a></p>
 
-      <p><a href="https://webrtc.github.io/samples/src/content/capture/canvas-pc/">Stream from a canvas element to a peer connection</a></p>
+      <p><a href="src/content/capture/canvas-video/">Stream from a canvas element to a video element</a></p>
 
-      <!-- <p><a href="https://webrtc.github.io/samples/src/content/capture/canvas-record/">Record a stream from a canvas element</a></p> -->
+      <p><a href="src/content/capture/canvas-pc/">Stream from a canvas element to a peer connection</a></p>
+
+      <p><a href="src/content/capture/canvas-record/">Record a stream from a canvas element</a></p>
 
 
       <h3 id="devices">Devices</h3>
@@ -165,12 +173,13 @@
   </div>
 
   <script src="src/js/lib/ga.js"></script>
+
   <script type="application/javascript">
   var isSecureOrigin = location.protocol === 'https:' ||
-    location.host === 'localhost';
+      location.host === 'localhost';
   if (!isSecureOrigin) {
     console.log('These demos must be run from a secure origin. \n' +
-      'Changing protocol to HTTPS');
+        'Changing protocol to HTTPS');
     location.protocol = 'HTTPS';
   }
   </script>
