@@ -249,13 +249,7 @@ setInterval(function() {
         }
       });
       if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-        Object.keys(results).forEach(function(result) {
-          var report = results[result];
-          if (report.type === 'remotecandidate' &&
-              report.id === activeCandidatePair.remoteCandidateId) {
-            remoteCandidate = report;
-          }
-        });
+        remoteCandidate = results[activeCandidatePair.remoteCandidateId];
       }
       if (remoteCandidate && remoteCandidate.ipAddress &&
           remoteCandidate.portNumber) {

@@ -110,9 +110,7 @@ function gotDescription2(desc) {
   pc2.setLocalDescription(desc).then(
     function() {
       trace('Answer from pc2 \n' + desc.sdp);
-      // insert b=AS after c= line.
-      desc.sdp = desc.sdp.replace(/c=IN IP4 (.*)\r\n/,
-          'c=IN IP4 $1\r\nb=AS:512\r\n');
+      desc.sdp = updateBandwidthRestriction(desc.sdp, '500');
       pc1.setRemoteDescription(desc).then(
         function() {
         },
@@ -186,8 +184,13 @@ bandwidthSelector.onchange = function() {
   pc1.setLocalDescription(pc1.localDescription)
   .then(function() {
     var desc = pc1.remoteDescription;
-    desc.sdp = desc.sdp.replace(/b=AS:(.*)\r\n/, 'b=AS:' + bandwidth + '\r\n');
-    trace('Applying bandwidth change to setRemoteDescription:\n' + desc.sdp);
+    if (bandwidth === 'unlimited') {
+      desc.sdp = removeBandwidthRestriction(desc.sdp);
+    } else {
+      desc.sdp = updateBandwidthRestriction(desc.sdp, bandwidth);
+    }
+    trace('Applying bandwidth restriction to setRemoteDescription:\n' +
+        desc.sdp);
     return pc1.setRemoteDescription(desc);
   })
   .then(function() {
@@ -195,6 +198,21 @@ bandwidthSelector.onchange = function() {
   })
   .catch(onSetSessionDescriptionError);
 };
+
+function updateBandwidthRestriction(sdp, bandwidth) {
+  if (sdp.indexOf('b=AS:') === -1) {
+    // insert b=AS after c= line.
+    sdp = sdp.replace(/c=IN IP4 (.*)\r\n/,
+                      'c=IN IP4 $1\r\nb=AS:' + bandwidth + '\r\n');
+  } else {
+    sdp = sdp.replace(/b=AS:(.*)\r\n/, 'b=AS:' + bandwidth + '\r\n');
+  }
+  return sdp;
+}
+
+function removeBandwidthRestriction(sdp) {
+  return sdp.replace(/b=AS:(.*)\r\n/, '');
+}
 
 // query getStats every second
 window.setInterval(function() {
