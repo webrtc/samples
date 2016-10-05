@@ -12,7 +12,6 @@ button {
 }
 div#getUserMedia {
   padding: 0 0 8px 0;
-  border-bottom: 1px solid #eee;
 }
 section#statistics div {
   display: inline-block;
@@ -28,7 +27,7 @@ section#constraints > div {
 }
 div.input {
   display: inline-block;
-  margin: 0 20px 0 0;
+  margin: 0 4px 0 0;
   vertical-align: top;
   width: 310px;
 }
