@@ -154,10 +154,10 @@ function createPeerConnection() {
 
   localPeerConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localPeerConnection');
+  localPeerConnection.onicecandidate = iceCallback1;
   if (RTCPeerConnection.prototype.createDataChannel) {
     sendChannel = localPeerConnection.createDataChannel('sendDataChannel',
         dataChannelOptions);
-    localPeerConnection.onicecandidate = iceCallback1;
     sendChannel.onopen = onSendChannelStateChange;
     sendChannel.onclose = onSendChannelStateChange;
     sendChannel.onerror = onSendChannelStateChange;
