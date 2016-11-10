@@ -51,7 +51,6 @@ var constraints = {
 };
 
 function handleSuccess(stream) {
-  recordButton.disabled =
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream;
   if (window.URL) {
