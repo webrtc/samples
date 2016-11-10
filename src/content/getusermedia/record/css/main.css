@@ -7,9 +7,9 @@
  */
  button {
   margin: 0 3px 10px 0;
-  width: 99px;
   padding-left: 2px;
   padding-right: 2px;
+  width: 99px;
 }
 
 button:last-of-type {
