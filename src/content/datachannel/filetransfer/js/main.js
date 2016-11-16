@@ -5,7 +5,6 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-
 'use strict';
 
 var localConnection;
@@ -29,7 +28,16 @@ var timestampStart;
 var statsInterval = null;
 var bitrateMax = 0;
 
-fileInput.addEventListener('change', createConnection, false);
+fileInput.addEventListener('change', handleFileInputChange, false);
+
+function handleFileInputChange() {
+  var file = fileInput.files[0];
+  if (!file) {
+    trace('No file chosen');
+  } else {
+    createConnection();
+  }
+}
 
 function createConnection() {
   var servers = null;
@@ -71,8 +79,9 @@ function onCreateSessionDescriptionError(error) {
 
 function sendData() {
   var file = fileInput.files[0];
-  trace('file is ' + [file.name, file.size, file.type,
-      file.lastModifiedDate].join(' '));
+  trace('File is ' + [file.name, file.size, file.type,
+      file.lastModifiedDate
+  ].join(' '));
 
   // Handle 0 size files.
   statusMessage.textContent = '';
@@ -250,8 +259,7 @@ function displayStats() {
         bitrate + ' kbits/sec';
   };
 
-  if (remoteConnection &&
-      remoteConnection.iceConnectionState === 'connected') {
+  if (remoteConnection && remoteConnection.iceConnectionState === 'connected') {
     if (adapter.browserDetails.browser === 'chrome') {
       // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
       // lands those stats should be preferrred over the connection stats.
