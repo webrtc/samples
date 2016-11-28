@@ -91,7 +91,6 @@ function toggleRecording() {
   }
 }
 
-// The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
   recordedBlobs = [];
   var options = {mimeType: 'video/webm;codecs=vp9'};
