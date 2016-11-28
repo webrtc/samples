@@ -10,13 +10,6 @@
 
 /* globals MediaRecorder */
 
-// This code is adapted from
-// https://rawgit.com/Miguelao/demos/master/mediarecorder.html
-
-'use strict';
-
-/* globals MediaRecorder */
-
 var mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
 var mediaRecorder;
@@ -41,9 +34,6 @@ if (!isSecureOrigin) {
     '\n\nChanging protocol to HTTPS');
   location.protocol = 'HTTPS';
 }
-
-// Use old-style gUM to avoid requirement to enable the
-// Enable experimental Web Platform features flag in Chrome 49
 
 var constraints = {
   audio: true,
