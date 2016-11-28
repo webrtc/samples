@@ -6,10 +6,6 @@
 *  tree.
 */
 
-'use strict';
-
-/* globals MediaRecorder */
-
 // This code is adapted from
 // https://rawgit.com/Miguelao/demos/master/mediarecorder.html
 
@@ -35,15 +31,12 @@ downloadButton.onclick = download;
 
 // window.isSecureContext could be used for Chrome
 var isSecureOrigin = location.protocol === 'https:' ||
-location.host === 'localhost';
+location.hostname === 'localhost';
 if (!isSecureOrigin) {
   alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.' +
     '\n\nChanging protocol to HTTPS');
   location.protocol = 'HTTPS';
 }
-
-// Use old-style gUM to avoid requirement to enable the
-// Enable experimental Web Platform features flag in Chrome 49
 
 var constraints = {
   audio: true,
@@ -51,6 +44,7 @@ var constraints = {
 };
 
 function handleSuccess(stream) {
+  recordButton.disabled = false;
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream;
   if (window.URL) {
@@ -100,7 +94,6 @@ function toggleRecording() {
   }
 }
 
-// The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
   recordedBlobs = [];
   var options = {mimeType: 'video/webm;codecs=vp9'};

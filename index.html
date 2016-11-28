@@ -176,7 +176,7 @@
 
   <script type="application/javascript">
   var isSecureOrigin = location.protocol === 'https:' ||
-      location.host === 'localhost';
+      location.hostname === 'localhost';
   if (!isSecureOrigin) {
     console.log('These demos must be run from a secure origin. \n' +
         'Changing protocol to HTTPS');
