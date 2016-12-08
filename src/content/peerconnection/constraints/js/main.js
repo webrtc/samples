@@ -211,12 +211,12 @@ function onAddIceCandidateError(error) {
 // Display statistics
 setInterval(function() {
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
-    remotePeerConnection.getStats(null, function(results) {
+    remotePeerConnection.getStats(null)
+    .then(function(results) {
       var statsString = dumpStats(results);
       receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
       // calculate video bitrate
-      Object.keys(results).forEach(function(result) {
-        var report = results[result];
+      results.forEach(function(report) {
         var now = report.timestamp;
 
         var bitrate;
@@ -246,8 +246,7 @@ setInterval(function() {
       var remoteCandidate = null;
 
       // search for the candidate pair
-      Object.keys(results).forEach(function(result) {
-        var report = results[result];
+      results.forEach(function(report) {
         if (report.type === 'candidatepair' && report.selected ||
             report.type === 'googCandidatePair' &&
             report.googActiveConnection === 'true') {
@@ -266,7 +265,8 @@ setInterval(function() {
     }, function(err) {
       console.log(err);
     });
-    localPeerConnection.getStats(null, function(results) {
+    localPeerConnection.getStats(null)
+    .then(function(results) {
       var statsString = dumpStats(results);
       senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
     }, function(err) {
@@ -290,10 +290,9 @@ setInterval(function() {
 // might be named toString?
 function dumpStats(results) {
   var statsString = '';
-  Object.keys(results).forEach(function(key, index) {
-    var res = results[key];
+  results.forEach(function(res) {
     statsString += '<h3>Report ';
-    statsString += index;
+    statsString += res.type;
     statsString += '</h3>\n';
     statsString += 'time ' + res.timestamp + '<br>\n';
     statsString += 'type ' + res.type + '<br>\n';
