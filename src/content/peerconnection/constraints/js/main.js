@@ -154,9 +154,8 @@ function createPeerConnection() {
   localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
-      remotePeerConnection.addIceCandidate(
-        new RTCIceCandidate(e.candidate)
-      ).then(
+      remotePeerConnection.addIceCandidate(e.candidate)
+      .then(
         onAddIceCandidateSuccess,
         onAddIceCandidateError
       );
@@ -165,10 +164,8 @@ function createPeerConnection() {
   remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
-      var newCandidate = new RTCIceCandidate(e.candidate);
-      localPeerConnection.addIceCandidate(
-        newCandidate
-      ).then(
+      localPeerConnection.addIceCandidate(e.candidate)
+      .then(
         onAddIceCandidateSuccess,
         onAddIceCandidateError
       );
