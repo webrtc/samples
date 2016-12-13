@@ -291,13 +291,13 @@ setInterval(function() {
 function dumpStats(results) {
   var statsString = '';
   results.forEach(function(res) {
-    statsString += '<h3>Report ';
+    statsString += '<h3>Report type=';
     statsString += res.type;
     statsString += '</h3>\n';
+    statsString += 'id ' + res.id + '<br>\n';
     statsString += 'time ' + res.timestamp + '<br>\n';
-    statsString += 'type ' + res.type + '<br>\n';
     Object.keys(res).forEach(function(k) {
-      if (k !== 'timestamp' && k !== 'type') {
+      if (k !== 'timestamp' && k !== 'type' && k !== 'id') {
         statsString += k + ': ' + res[k] + '<br>\n';
       }
     });
