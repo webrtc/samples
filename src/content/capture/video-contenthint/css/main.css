@@ -1,0 +1,23 @@
+/*
+*  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+*
+*  Use of this source code is governed by a BSD-style license
+*  that can be found in the LICENSE file in the root of the source
+*  tree.
+*/
+
+video {
+  height: auto;
+  width: 480px;
+}
+
+.video-container {
+  border-bottom: 1px solid grey;
+  font-style: italic;
+  margin: 20px;
+}
+
+#videos {
+  text-align: center;
+  width: 100%;
+}
