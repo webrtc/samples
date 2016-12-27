@@ -35,3 +35,10 @@ before_script:
 
 script:
   - npm test
+
+notifications:
+  email:
+    recipients:
+      forward-webrtc-github@webrtc.org
+    on_success: always
+    on_failure: always
