@@ -40,5 +40,5 @@ notifications:
   email:
     recipients:
       forward-webrtc-github@webrtc.org
-    on_success: always
+    on_success: change
     on_failure: always
