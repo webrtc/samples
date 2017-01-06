@@ -158,7 +158,8 @@ function onCreateAnswerSuccess(desc) {
 
 function onIceCandidate(pc, event) {
   if (event.candidate) {
-    getOtherPc(pc).addIceCandidate(new RTCIceCandidate(event.candidate),
+    getOtherPc(pc).addIceCandidate(event.candidate)
+    .then(
       function() {
         onAddIceCandidateSuccess(pc);
       },

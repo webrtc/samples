@@ -177,9 +177,8 @@ function iceStateCallback2() {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
+    pc2.addIceCandidate(event.candidate)
+    .then(
       onAddIceCandidateSuccess,
       onAddIceCandidateError
     );
@@ -191,9 +190,8 @@ function iceCallback1(event) {
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
+    pc1.addIceCandidate(event.candidate)
+    .then(
       onAddIceCandidateSuccess,
       onAddIceCandidateError
     );
