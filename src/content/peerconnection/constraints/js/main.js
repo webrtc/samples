@@ -154,9 +154,8 @@ function createPeerConnection() {
   localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
     if (e.candidate) {
-      remotePeerConnection.addIceCandidate(
-        new RTCIceCandidate(e.candidate)
-      ).then(
+      remotePeerConnection.addIceCandidate(e.candidate)
+      .then(
         onAddIceCandidateSuccess,
         onAddIceCandidateError
       );
@@ -165,10 +164,8 @@ function createPeerConnection() {
   remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
     if (e.candidate) {
-      var newCandidate = new RTCIceCandidate(e.candidate);
-      localPeerConnection.addIceCandidate(
-        newCandidate
-      ).then(
+      localPeerConnection.addIceCandidate(e.candidate)
+      .then(
         onAddIceCandidateSuccess,
         onAddIceCandidateError
       );
@@ -211,12 +208,12 @@ function onAddIceCandidateError(error) {
 // Display statistics
 setInterval(function() {
   if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
-    remotePeerConnection.getStats(null, function(results) {
+    remotePeerConnection.getStats(null)
+    .then(function(results) {
       var statsString = dumpStats(results);
       receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
       // calculate video bitrate
-      Object.keys(results).forEach(function(result) {
-        var report = results[result];
+      results.forEach(function(report) {
         var now = report.timestamp;
 
         var bitrate;
@@ -246,8 +243,7 @@ setInterval(function() {
       var remoteCandidate = null;
 
       // search for the candidate pair
-      Object.keys(results).forEach(function(result) {
-        var report = results[result];
+      results.forEach(function(report) {
         if (report.type === 'candidatepair' && report.selected ||
             report.type === 'googCandidatePair' &&
             report.googActiveConnection === 'true') {
@@ -266,7 +262,8 @@ setInterval(function() {
     }, function(err) {
       console.log(err);
     });
-    localPeerConnection.getStats(null, function(results) {
+    localPeerConnection.getStats(null)
+    .then(function(results) {
       var statsString = dumpStats(results);
       senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
     }, function(err) {
@@ -290,15 +287,14 @@ setInterval(function() {
 // might be named toString?
 function dumpStats(results) {
   var statsString = '';
-  Object.keys(results).forEach(function(key, index) {
-    var res = results[key];
-    statsString += '<h3>Report ';
-    statsString += index;
+  results.forEach(function(res) {
+    statsString += '<h3>Report type=';
+    statsString += res.type;
     statsString += '</h3>\n';
+    statsString += 'id ' + res.id + '<br>\n';
     statsString += 'time ' + res.timestamp + '<br>\n';
-    statsString += 'type ' + res.type + '<br>\n';
     Object.keys(res).forEach(function(k) {
-      if (k !== 'timestamp' && k !== 'type') {
+      if (k !== 'timestamp' && k !== 'type' && k !== 'id') {
         statsString += k + ': ' + res[k] + '<br>\n';
       }
     });

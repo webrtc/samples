@@ -142,9 +142,8 @@ function gotRemoteStream(e) {
 
 function iceCallback1(event) {
   if (event.candidate) {
-    pc2.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
+    pc2.addIceCandidate(event.candidate)
+    .then(
       onAddIceCandidateSuccess,
       onAddIceCandidateError
     );
@@ -154,9 +153,8 @@ function iceCallback1(event) {
 
 function iceCallback2(event) {
   if (event.candidate) {
-    pc1.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
+    pc1.addIceCandidate(event.candidate)
+    .then(
       onAddIceCandidateSuccess,
       onAddIceCandidateError
     );
@@ -220,8 +218,7 @@ window.setInterval(function() {
     return;
   }
   window.pc1.getStats(null).then(function(res) {
-    Object.keys(res).forEach(function(key) {
-      var report = res[key];
+    res.forEach(function(report) {
       var bytes;
       var packets;
       var now = report.timestamp;
@@ -230,10 +227,10 @@ window.setInterval(function() {
           (report.type === 'ssrc' && report.bytesSent)) {
         bytes = report.bytesSent;
         packets = report.packetsSent;
-        if (lastResult && lastResult[report.id]) {
+        if (lastResult && lastResult.get(report.id)) {
           // calculate bitrate
-          var bitrate = 8 * (bytes - lastResult[report.id].bytesSent) /
-              (now - lastResult[report.id].timestamp);
+          var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+              (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -242,7 +239,7 @@ window.setInterval(function() {
 
           // calculate number of packets and append to chart
           packetSeries.addPoint(now, packets -
-              lastResult[report.id].packetsSent);
+              lastResult.get(report.id).packetsSent);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }

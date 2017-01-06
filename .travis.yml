@@ -1,7 +1,7 @@
 sudo: false
 language: node_js
 node_js:
-  - 4.2
+  - 6
 
 branches:
   only:
@@ -33,3 +33,10 @@ before_script:
 
 script:
   - npm test
+
+notifications:
+  email:
+    recipients:
+      forward-webrtc-github@webrtc.org
+    on_success: change
+    on_failure: always
