@@ -110,7 +110,5 @@ function onCreateAnswerSuccess(pc1, pc2, desc) {
 }
 
 function onIceCandidate(pc, otherPc, event) {
-  if (event.candidate) {
-    otherPc.addIceCandidate(event.candidate);
-  }
+  otherPc.addIceCandidate(event.candidate);
 }
