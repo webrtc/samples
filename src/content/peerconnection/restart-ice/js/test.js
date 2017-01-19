@@ -26,11 +26,10 @@ var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 function getTransportAddresses(stats) {
   var localAddress;
   var remoteAddress;
-  Object.keys(stats).forEach(function(id) {
-    var report = stats[id];
+  stats.forEach(function(report) {
     if (report.googActiveConnection === 'true') {
-      var localCandidate = stats[report.localCandidateId];
-      var remoteCandidate = stats[report.remoteCandidateId];
+      var localCandidate = stats.get(report.localCandidateId);
+      var remoteCandidate = stats.get(report.remoteCandidateId);
       localAddress = localCandidate.ipAddress + ':' +
           localCandidate.portNumber;
       remoteAddress = remoteCandidate.ipAddress + ':' +

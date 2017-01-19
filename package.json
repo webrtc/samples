@@ -36,6 +36,6 @@
     "grunt-htmlhint": ">=0.9.12",
     "pem": "^1.8.1",
     "webrtc-adapter": "^1.1.0",
-    "webrtc-utilities": ">=0.0.1"
+    "webrtc-utilities": "^1.0.0"
   }
 }

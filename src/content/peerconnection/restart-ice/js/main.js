@@ -243,18 +243,16 @@ function onIceStateChange(pc, event) {
         var remoteCandidate = null;
 
         // search for the candidate pair
-        Object.keys(results).forEach(function(result) {
-          var report = results[result];
-          if (report.type === 'candidatepair' && report.selected ||
+        results.forEach(function(report) {
+          if (report.type === 'candidate-pair' && report.selected ||
               report.type === 'googCandidatePair' &&
               report.googActiveConnection === 'true') {
             activeCandidatePair = report;
           }
         });
         if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-          Object.keys(results).forEach(function(result) {
-            var report = results[result];
-            if (report.type === 'remotecandidate' &&
+          results.forEach(function(report) {
+            if (report.type === 'remote-candidate' &&
                 report.id === activeCandidatePair.remoteCandidateId) {
               remoteCandidate = report;
             }
