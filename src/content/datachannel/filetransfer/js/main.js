@@ -55,7 +55,9 @@ function createConnection() {
 
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
-  localConnection.onicecandidate = iceCallback1;
+  localConnection.onicecandidate = function(e) {
+    onIceCandidate(localConnection, e);
+  };
 
   localConnection.createOffer().then(
     gotDescription1,
@@ -67,7 +69,9 @@ function createConnection() {
       pcConstraint);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = iceCallback2;
+  remoteConnection.onicecandidate = function(e) {
+    onIceCandidate(remoteConnection, e);
+  };
   remoteConnection.ondatachannel = receiveChannelCallback;
 
   fileInput.disabled = true;
@@ -146,30 +150,27 @@ function gotDescription2(desc) {
   localConnection.setRemoteDescription(desc);
 }
 
-function iceCallback1(event) {
-  trace('local ice callback');
-  if (event.candidate) {
-    remoteConnection.addIceCandidate(
-      event.candidate
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === localConnection) ? remoteConnection : localConnection;
 }
 
-function iceCallback2(event) {
-  trace('remote ice callback');
-  if (event.candidate) {
-    localConnection.addIceCandidate(
-      event.candidate
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getName(pc) {
+  return (pc === localConnection) ? 'localPeerConnection' :
+      'remotePeerConnection';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

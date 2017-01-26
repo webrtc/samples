@@ -69,10 +69,14 @@ function handleSuccess(stream) {
     var servers = null;
     pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
-    pc1.onicecandidate = iceCallback1;
+    pc1.onicecandidate = function(e) {
+      onIceCandidate(pc1, e);
+    };
     pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
-    pc2.onicecandidate = iceCallback2;
+    pc2.onicecandidate = function(e) {
+      onIceCandidate(pc2, e);
+    };
     pc2.onaddstream = gotRemoteStream;
     pc1.addStream(filteredStream);
     pc1.createOffer().
@@ -138,26 +142,26 @@ function gotRemoteStream(e) {
   audioElement.srcObject = e.stream;
 }
 
-function iceCallback1(event) {
-  if (event.candidate) {
-    pc2.addIceCandidate(event.candidate)
-    .then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    console.log('Local ICE candidate: \n' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === pc1) ? pc2 : pc1;
 }
 
-function iceCallback2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(event.candidate)
-    .then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    console.log('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getName(pc) {
+  return (pc === pc1) ? 'pc1' : 'pc2';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

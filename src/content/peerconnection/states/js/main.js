@@ -79,7 +79,9 @@ function call() {
 
   pc1IceStateDiv.textContent = pc1.iceConnectionState;
   pc1.oniceconnectionstatechange = iceStateCallback1;
-  pc1.onicecandidate = iceCallback1;
+  pc1.onicecandidate = function(e) {
+    onIceCandidate(pc1, e);
+  };
 
   pc2 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created remote peer connection object pc2');
@@ -88,7 +90,9 @@ function call() {
 
   pc2IceStateDiv.textContent = pc2.iceConnectionState;
   pc2.oniceconnectionstatechange = iceStateCallback2;
-  pc2.onicecandidate = iceCallback2;
+  pc2.onicecandidate = function(e) {
+    onIceCandidate(pc2, e);
+  };
   pc2.onaddstream = gotRemoteStream;
   pc1.addStream(localstream);
   trace('Adding Local Stream to peer connection');
@@ -175,30 +179,26 @@ function iceStateCallback2() {
   }
 }
 
-function iceCallback1(event) {
-  if (event.candidate) {
-    pc2.addIceCandidate(event.candidate)
-    .then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
-  } else {
-    trace('End of candidates added to PC2');
-  }
+function getOtherPc(pc) {
+  return (pc === pc1) ? pc2 : pc1;
 }
 
-function iceCallback2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(event.candidate)
-    .then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  } else {
-    trace('End of candidates added to PC1');
-  }
+function getName(pc) {
+  return (pc === pc1) ? 'pc1' : 'pc2';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {
