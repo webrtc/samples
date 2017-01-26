@@ -179,9 +179,8 @@ function iceCallback2Remote(event) {
 
 function handleCandidate(candidate, dest, prefix, type) {
   if (candidate) {
-    dest.addIceCandidate(
-      new RTCIceCandidate(candidate)
-    ).then(
+    dest.addIceCandidate(candidate)
+    .then(
       onAddIceCandidateSuccess,
       onAddIceCandidateError
     );

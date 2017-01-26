@@ -208,19 +208,17 @@ function onCreateAnswerSuccess(desc) {
 }
 
 function onIceCandidate(pc, event) {
-  if (event.candidate) {
-    getOtherPc(pc).addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      function() {
-        onAddIceCandidateSuccess(pc);
-      },
-      function(err) {
-        onAddIceCandidateError(pc, err);
-      }
-    );
-    trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
-  }
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess(pc) {
@@ -244,18 +242,16 @@ function onIceStateChange(pc, event) {
         var remoteCandidate = null;
 
         // search for the candidate pair
-        Object.keys(results).forEach(function(result) {
-          var report = results[result];
-          if (report.type === 'candidatepair' && report.selected ||
+        results.forEach(function(report) {
+          if (report.type === 'candidate-pair' && report.selected ||
               report.type === 'googCandidatePair' &&
               report.googActiveConnection === 'true') {
             activeCandidatePair = report;
           }
         });
         if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-          Object.keys(results).forEach(function(result) {
-            var report = results[result];
-            if (report.type === 'remotecandidate' &&
+          results.forEach(function(report) {
+            if (report.type === 'remote-candidate' &&
                 report.id === activeCandidatePair.remoteCandidateId) {
               remoteCandidate = report;
             }

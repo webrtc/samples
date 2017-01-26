@@ -75,6 +75,8 @@ function start() {
     candidateTBody.removeChild(candidateTBody.firstChild);
   }
 
+  gatherButton.disabled = true;
+
   // Read the values from the input boxes.
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
@@ -218,6 +220,7 @@ function iceCallback(event) {
     appendCell(row, getFinalResult(), 7);
     pc.close();
     pc = null;
+    gatherButton.disabled = false;
   }
   candidateTBody.appendChild(row);
 }
