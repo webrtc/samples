@@ -178,14 +178,13 @@ function iceCallback2Remote(event) {
 }
 
 function handleCandidate(candidate, dest, prefix, type) {
-  if (candidate) {
-    dest.addIceCandidate(candidate)
-    .then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace(prefix + 'New ' + type + ' ICE candidate: ' + candidate.candidate);
-  }
+  dest.addIceCandidate(candidate)
+  .then(
+    onAddIceCandidateSuccess,
+    onAddIceCandidateError
+  );
+  trace(prefix + 'New ' + type + ' ICE candidate: ' +
+      (candidate ? candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {
