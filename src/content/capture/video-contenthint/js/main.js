@@ -9,12 +9,12 @@
 'use strict';
 
 var srcVideo = document.getElementById('srcVideo');
-var fluidVideo = document.getElementById('fluidVideo');
-var detailedVideo = document.getElementById('detailedVideo');
+var motionVideo = document.getElementById('motionVideo');
+var detailVideo = document.getElementById('detailVideo');
 
 var srcStream;
-var fluidStream;
-var detailedStream;
+var motionStream;
+var detailStream;
 
 var offerOptions = {
   offerToReceiveAudio: 0,
@@ -61,12 +61,17 @@ function call() {
   // This creates multiple independent PeerConnections instead of multiple
   // streams on a single PeerConnection object so that b=AS (the bitrate
   // constraints) can be applied independently.
-  fluidStream = srcStream.clone();
-  setVideoTrackContentHints(fluidStream, 'fluid');
-  establishPC(fluidVideo, fluidStream);
-  detailedStream = srcStream.clone();
-  setVideoTrackContentHints(detailedStream, 'detailed');
-  establishPC(detailedVideo, detailedStream);
+  motionStream = srcStream.clone();
+  // TODO(pbos): Remove fluid when no clients use it, motion is the newer name.
+  setVideoTrackContentHints(motionStream, 'fluid');
+  setVideoTrackContentHints(motionStream, 'motion');
+  establishPC(motionVideo, motionStream);
+  detailStream = srcStream.clone();
+  // TODO(pbos): Remove detailed when no clients use it, detail is the newer
+  // name.
+  setVideoTrackContentHints(detailStream, 'detailed');
+  setVideoTrackContentHints(detailStream, 'detail');
+  establishPC(detailVideo, detailStream);
 }
 
 function establishPC(videoTag, stream) {

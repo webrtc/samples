@@ -44,12 +44,12 @@
         </video>
         </div>
       <div class='video-container'>
-        <h2>"Fluid" video @ 50kbps</h2>
-        <video id="fluidVideo" autoplay muted></video>
+        <h2>"motion" video @ 50kbps</h2>
+        <video id="motionVideo" autoplay muted></video>
       </div>
       <div class='video-container'>
-        <h2>"Detailed" video @ 50kbps</h2>
-        <video id="detailedVideo" autoplay muted></video>
+        <h2>"detail" video @ 50kbps</h2>
+        <video id="detailVideo" autoplay muted></video>
       </div>
     </div>
 
@@ -57,9 +57,9 @@
 
     <p>A stream is captured from the source video using the <code>captureStream()</code> method. The stream is cloned and transmitted via two separate PeerConnections using 50kbps of video bandwidth. This is insufficient to generate good quality in the encoded bitstream, so trade-offs have to be made.</p>
 
-    <p>The transmitted stream tracks are using <a href="https://wicg.github.io/mst-content-hint/">MediaStreamTrack Content Hints</a> to indicate characteristics in the video stream, which informs PeerConnection on how to encode the track (to prefer fluid motion or individual frame detail).</p>
+    <p>The transmitted stream tracks are using <a href="https://wicg.github.io/mst-content-hint/">MediaStreamTrack Content Hints</a> to indicate characteristics in the video stream, which informs PeerConnection on how to encode the track (to prefer motion or individual frame detail).</p>
 
-    <p>The text part of the clip shows a clear case for when <tt>'detailed'</tt> is better, and the fighting scene shows a clear case for when <tt>'fluid'</tt> is better. The spinning model however shows a case where <tt>'fluid'</tt> or <tt>'detailed'</tt> are not clear-cut decisions and even with good content detection what's preferred depends on what the user prefers.</p>
+    <p>The text part of the clip shows a clear case for when <tt>'detail'</tt> is better, and the fighting scene shows a clear case for when <tt>'motion'</tt> is better. The spinning model however shows a case where <tt>'motion'</tt> or <tt>'detail'</tt> are not clear-cut decisions and even with good content detection what's preferred depends on what the user prefers.</p>
 
     <p>Other MediaStreamTrack consumers such as MediaStreamRecorder can also make use of this information to guide encoding parameters for the stream without additional extensions to the MediaStreamRecorder specification, but this is currently not implemented in Chromium.</p>
 
