@@ -23,27 +23,19 @@ var seleniumHelpers = require('webrtc-utilities').seleniumLib;
  * TODO: once onselectedcandidatepairchange is supported this test gets simpler.
  */
 
-function getTransportAddresses(stats) {
-  var localAddress;
-  var remoteAddress;
+function getTransportIds(stats) {
+  var localId;
+  var remoteId;
   stats.forEach(function(report) {
-    if (report.googActiveConnection === 'true') {
-      var localCandidate = stats.get(report.localCandidateId);
-      var remoteCandidate = stats.get(report.remoteCandidateId);
-      localAddress = localCandidate.ipAddress + ':' +
-          localCandidate.portNumber;
-      remoteAddress = remoteCandidate.ipAddress + ':' +
-          remoteCandidate.portNumber;
+    if (report.googActiveConnection === 'true' ||
+        report.state === 'succeeded') {
+      localId = report.localCandidateId;
+      remoteId = report.remoteCandidateId;
     }
   });
-  return localAddress + ' ' + remoteAddress;
+  return localId + ' ' + remoteId;
 }
 test('PeerConnection restart ICE sample', function(t) {
-  if (process.env.BROWSER === 'firefox') {
-    t.pass('skipping. ICE restart is not yet implemented in Firefox');
-    t.end();
-    return;
-  }
   var driver = seleniumHelpers.buildDriver();
 
   var firstStats = null;
@@ -55,18 +47,28 @@ test('PeerConnection restart ICE sample', function(t) {
   })
   .then(function() {
     t.pass('got media');
-    return driver.findElement(webdriver.By.id('callButton')).click();
+    return driver.wait(function() {
+      return driver.findElement(webdriver.By.id('callButton')).isEnabled();
+    }, 30 * 1000);
   })
   .then(function() {
+    driver.findElement(webdriver.By.id('callButton')).click();
+    t.pass('Pressed callButton');
     return driver.wait(function() {
       return driver.executeScript(
-          'return pc1 && pc1.iceConnectionState === \'completed\';');
+          'return pc1 && pc1.iceConnectionState === \'completed\' || ' +
+          '\'connected\';');
     }, 30 * 1000);
   })
   .then(function() {
     t.pass('pc2 ICE connected');
-    // Query the transport address. It should change during the
+    // Query the candidate ID's address. It should change during the
     // ICE restart.
+    return driver.wait(function() {
+      return driver.findElement(webdriver.By.id('restartButton')).isEnabled();
+    }, 30 * 1000);
+  })
+  .then(function() {
     return seleniumHelpers.getStats(driver, 'pc1');
   })
   .then(function(stats) {
@@ -75,11 +77,11 @@ test('PeerConnection restart ICE sample', function(t) {
   })
   .then(function() {
     t.pass('ICE restart triggered');
-    driver.manage().timeouts().setScriptTimeout(15000);
+    driver.manage().timeouts().setScriptTimeout(150000);
     return driver.executeAsyncScript(
         'var callback = arguments[arguments.length - 1];' +
         'pc1.addEventListener(\'iceconnectionstatechange\', function() {' +
-        '  if (pc1.iceConnectionState === \'completed\') {' +
+        '  if (pc1.iceConnectionState === \'completed\' || \'connected\') {' +
         '    callback();' +
         '  }' +
         '});');
@@ -88,9 +90,12 @@ test('PeerConnection restart ICE sample', function(t) {
     return seleniumHelpers.getStats(driver, 'pc1');
   })
   .then(function(newStats) {
-    var newAddress = getTransportAddresses(newStats);
-    var oldAddress = getTransportAddresses(firstStats);
-    t.ok(newAddress !== oldAddress, 'address changed during ICE restart');
+    var newCandidateIds = getTransportIds(newStats);
+    var oldRemoteIds = getTransportIds(firstStats);
+    t.notDeepEqual(oldRemoteIds, 'undefined undefined', 'Candidate Ids found ' +
+        'in getStats reports');
+    t.notEqual(newCandidateIds, oldRemoteIds, 'Candidate ids changed during ' +
+        'ICE restart.');
   })
   .then(function() {
     t.end();
