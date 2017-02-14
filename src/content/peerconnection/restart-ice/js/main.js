@@ -43,6 +43,11 @@ remoteVideo.onresize = function() {
     var elapsedTime = window.performance.now() - startTime;
     trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
     startTime = null;
+    // Have run these functions again in order to get the getStats() reports
+    // with type candidatePair||googCandidatePair and populate the candidate id
+    // elements.
+    checkStats(pc1);
+    checkStats(pc2);
   }
 };
 
@@ -236,40 +241,40 @@ function onIceStateChange(pc, event) {
     // TODO: get rid of this in favor of http://w3c.github.io/webrtc-pc/#widl-RTCIceTransport-onselectedcandidatepairchange
     if (pc.iceConnectionState === 'connected' ||
         pc.iceConnectionState === 'completed') {
-      pc.getStats(null).then(function(results) {
-        // figure out the peer's ip
-        var activeCandidatePair = null;
-        var remoteCandidate = null;
+      checkStats(pc);
+    }
+  }
+}
 
-        // search for the candidate pair
-        results.forEach(function(report) {
-          if (report.type === 'candidate-pair' && report.selected ||
-              report.type === 'googCandidatePair' &&
-              report.googActiveConnection === 'true') {
-            activeCandidatePair = report;
-          }
-        });
-        if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-          results.forEach(function(report) {
-            if (report.type === 'remote-candidate' &&
-                report.id === activeCandidatePair.remoteCandidateId) {
-              remoteCandidate = report;
-            }
-          });
-        }
-        if (remoteCandidate && remoteCandidate.ipAddress &&
-            remoteCandidate.portNumber) {
-          console.log(pc === pc1 ? 'PC1' : 'PC2', 'remote address changed',
-              remoteCandidate.ipAddress, remoteCandidate.portNumber);
-          // TODO: update a div showing the remote ip/port?
-          document.getElementById(pc === pc1 ? 'localAddress' :
-              'remoteAddress')
-              .textContent = remoteCandidate.ipAddress + ':' +
-                  remoteCandidate.portNumber;
+function checkStats(pc) {
+  pc.getStats(null).then(function(results) {
+    // figure out the peer's ip
+    var activeCandidatePair = null;
+    var remoteCandidate = null;
+
+    // search for the candidate pair
+    results.forEach(function(report) {
+      if (report.type === 'candidate-pair' && report.state === 'succeeded' &&
+          report.selected || report.type === 'googCandidatePair' &&
+          report.googActiveConnection === 'true') {
+        activeCandidatePair = report;
+      }
+    });
+    if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
+      results.forEach(function(report) {
+        if (report.type === 'remote-candidate' &&
+            report.id === activeCandidatePair.remoteCandidateId) {
+          remoteCandidate = report;
         }
       });
     }
-  }
+    console.log(remoteCandidate);
+    if (remoteCandidate && remoteCandidate.id) {
+      // TODO: update a div showing the remote ip/port?
+      document.getElementById(pc === pc1 ? 'localCandidateId' :
+          'remoteCandidateId').textContent = remoteCandidate.id;
+    }
+  });
 }
 
 function hangup() {

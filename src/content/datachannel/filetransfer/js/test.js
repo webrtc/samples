@@ -83,6 +83,8 @@ test('Filetransfer via Datachannels: empty file', function(t) {
     fs.writeFileSync(emptyFilePath, '');
     sendFile(t, emptyFilePath);
     // Remove the empty file.
-    fs.unlink(emptyFilePath);
+    fs.unlink(emptyFilePath, function(error) {
+      console.log('Failed to remove file: ' + error);
+    });
   }
 });

@@ -21,7 +21,6 @@ matrix:
 
   allow_failures:
     - env: BROWSER=chrome  BVER=unstable
-    - env: BROWSER=firefox BVER=stable
     - env: BROWSER=firefox BVER=beta
     - env: BROWSER=firefox BVER=nightly
 
