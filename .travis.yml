@@ -5,7 +5,6 @@ cache:
 node_js:
   - 6
 
-
 branches:
   only:
     - gh-pages
