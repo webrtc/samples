@@ -22,9 +22,6 @@ require('../src/content/peerconnection/pc1/js/test');
 require('../src/content/peerconnection/audio/js/test');
 
 // Tests basic functionality of the peerconnection dtmf demo.
-// Disabled for Firefox due not supporting DTMF.
-// Disabled due to being flaky on Chrome.
-// TODO(jansson): Fix flakiness
 require('../src/content/peerconnection/dtmf/js/test');
 
 // Tests basic functionality of the peerconnection multiple demo.
