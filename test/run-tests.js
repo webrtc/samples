@@ -25,7 +25,7 @@ require('../src/content/peerconnection/audio/js/test');
 // Disabled for Firefox due not supporting DTMF.
 // Disabled due to being flaky on Chrome.
 // TODO(jansson): Fix flakiness
-// require('../src/content/peerconnection/dtmf/js/test');
+require('../src/content/peerconnection/dtmf/js/test');
 
 // Tests basic functionality of the peerconnection multiple demo.
 require('../src/content/peerconnection/multiple/js/test');
@@ -37,8 +37,7 @@ require('../src/content/peerconnection/munge-sdp/js/test');
 require('../src/content/peerconnection/trickle-ice/js/test');
 
 // Tests basic functionality of the ice restart demo.
-// TODO(jansson) fix flakiness
-// require('../src/content/peerconnection/restart-ice/js/test.js');
+require('../src/content/peerconnection/restart-ice/js/test.js');
 
 // Tests basic functionality of the datachannel textchat demo.
 require('../src/content/datachannel/basic/js/test');
