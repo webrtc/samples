@@ -41,6 +41,13 @@ test('Candidate Gathering', function(t) {
 });
 
 test('Loading server data', function(t) {
+  if (process.env.BROWSER === 'firefox') {
+    t.pass('skipping. webdriver.ActionSequence is not implemented in '+
+      'marionette/geckodriver hence we cannot double click the server option ' +
+      'menu without hacks');
+    t.end();
+    return;
+  }
   var driver = seleniumHelpers.buildDriver();
 
   driver.get('file://' + process.cwd() +
