@@ -25,11 +25,18 @@ test('Munge SDP sample', function(t) {
     return driver.findElement(webdriver.By.id('getMedia')).click();
   })
   .then(function() {
+    return driver.wait(function() {
+      return driver.executeScript('return typeof window.localStream ' +
+        '!== \'undefined\'');
+    });
+  })
+  .then(function() {
     t.pass('got media');
     return driver.findElement(webdriver.By.id('createPeerConnection')).click();
   })
   .then(function() {
-    return driver.findElement(webdriver.By.id('createOffer')).click();
+    return driver.wait(webdriver.until.elementIsVisible(
+        driver.findElement(webdriver.By.id('createOffer')))).click();
   })
   .then(function() {
     // Need to wait for createOffer to succeed which takes some time
