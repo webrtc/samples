@@ -35,7 +35,9 @@ function getTransportIds(stats) {
   });
   return localId + ' ' + remoteId;
 }
-test('PeerConnection restart ICE sample', function(t) {
+// Disabled due to flakiness.
+// TODO(jansson) fix flakiness
+test('PeerConnection restart ICE sample', {skip: true}, function(t) {
   var driver = seleniumHelpers.buildDriver();
 
   var firstStats = null;
