@@ -145,14 +145,28 @@ function hangup() {
 function gotRemoteStream(e) {
   audio.srcObject = e.stream;
   trace('Received remote stream');
-  if (pc1.createDTMFSender) {
-    enableDtmfSender();
-  } else {
-    alert(
-      'This demo requires the RTCPeerConnection method createDTMFSender() ' +
-        'which is not support by this browser.'
-    );
+
+  if (!pc1.getSenders) {
+    alert('This demo requires the RTCPeerConnection method getSenders() ' +
+          'which is not support by this browser.');
+    return;
   }
+  var senders = pc1.getSenders();
+  var audioSender = senders.find(function(sender) {
+    return sender.track && sender.track.kind === 'audio';
+  });
+  if (!audioSender) {
+    trace('No local audio track to send DTMF with\n');
+    return;
+  }
+  if (!audioSender.dtmf) {
+    alert('This demo requires DTMF which is not support by this browser.');
+    return;
+  }
+  dtmfSender = audioSender.dtmf;
+  dtmfStatusDiv.textContent = 'DTMF available';
+  trace('Got DTMFSender\n');
+  dtmfSender.ontonechange = dtmfOnToneChange;
 }
 
 function getOtherPc(pc) {
@@ -183,18 +197,6 @@ function onAddIceCandidateSuccess() {
 
 function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
-}
-
-function enableDtmfSender() {
-  dtmfStatusDiv.textContent = 'DTMF activated';
-  if (localStream !== null) {
-    var localAudioTrack = localStream.getAudioTracks()[0];
-    dtmfSender = pc1.createDTMFSender(localAudioTrack);
-    trace('Created DTMFSender:\n');
-    dtmfSender.ontonechange = dtmfOnToneChange;
-  } else {
-    trace('No local stream to create DTMF Sender\n');
-  }
 }
 
 function dtmfOnToneChange(tone) {
