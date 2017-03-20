@@ -33,20 +33,6 @@ var pc1;
 var pc2;
 var localStream;
 
-<<<<<<< HEAD
-// double-check this all works before submitting.
-function onCodecChange() {
-  var name = codecSelector.value;
-  for (var i = 0; i < codecDefaults.length; ++i) {
-    var entry = codecDefaults[i];
-    if (name === entry.name) {
-      bitRateField.placeholder = entry.bitrate;
-      //bitRateField.disabled = !entry.vbr;
-      ptimeField.placeholder = entry.ptime;
-    }
-  }
-}
-=======
 var bitrateGraph;
 var bitrateSeries;
 
@@ -60,7 +46,19 @@ var offerOptions = {
   offerToReceiveVideo: 0,
   voiceActivityDetection: false
 };
->>>>>>> origin/gh-pages
+
+// double-check this all works before submitting.
+function onCodecChange() {
+  var name = codecSelector.value;
+  for (var i = 0; i < codecDefaults.length; ++i) {
+    var entry = codecDefaults[i];
+    if (name === entry.name) {
+      bitRateField.placeholder = entry.bitrate;
+      //bitRateField.disabled = !entry.vbr;
+      ptimeField.placeholder = entry.ptime;
+    }
+  }
+}
 
 function gotStream(stream) {
   hangupButton.disabled = false;
@@ -120,34 +118,15 @@ function call() {
 
 function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
-<<<<<<< HEAD
-  pc1.setLocalDescription(desc, function() {
-    pc2.setRemoteDescription(desc, function() {
-      // We configure VAD for the answer SDP here.
-      var sdpConstraints = {
-        'mandatory': {
-          'VoiceActivityDetection': vadCheck.checked
-        }
-      };
-      pc2.createAnswer(gotDescription2, onCreateSessionDescriptionError,
-          sdpConstraints);
-    });
-  });
-}
-
-function gotDescription2(desc) {
-  desc.sdp = applyParamsToSdp(desc.sdp);
-  pc2.setLocalDescription(desc, function() {
-    trace('Answer from pc2 \n' + desc.sdp);
-    pc1.setRemoteDescription(desc);
-  });
-=======
   pc1.setLocalDescription(desc).then(
     function() {
-      desc.sdp = forceChosenAudioCodec(desc.sdp);
+      desc.sdp = applyParamsToSdp(desc.sdp);
       pc2.setRemoteDescription(desc).then(
         function() {
-          pc2.createAnswer().then(
+          var sdpConstraints = {
+            'VoiceActivityDetection': vadCheck.checked
+          };
+          pc2.createAnswer(sdpConstraints).then(
             gotDescription2,
             onCreateSessionDescriptionError
           );
@@ -163,7 +142,7 @@ function gotDescription2(desc) {
   trace('Answer from pc2 \n' + desc.sdp);
   pc2.setLocalDescription(desc).then(
     function() {
-      desc.sdp = forceChosenAudioCodec(desc.sdp);
+      desc.sdp = applyParamsToSdp(desc.sdp);
       pc1.setRemoteDescription(desc).then(
         function() {
         },
@@ -172,7 +151,6 @@ function gotDescription2(desc) {
     },
     onSetSessionDescriptionError
   );
->>>>>>> origin/gh-pages
 }
 
 function hangup() {
@@ -229,15 +207,6 @@ function onAddIceCandidateError(error) {
   trace('Failed to add ICE Candidate: ' + error.toString());
 }
 
-<<<<<<< HEAD
-// Sets m= codec ordering, b= bitrate, and a=ptime based on the in-page prefs.
-function applyParamsToSdp(sdp) {
-  var newSdp = maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
-  if (bitRateField.value > 0) {
-    newSdp = preferBitRate(newSdp, bitRateField.value / 1000, 'audio');
-  }
-  if (ptimeField.value > 0) {
-    newSdp += ('a=ptime:' + ptimeField.value + '\r\n');
 =======
 function onSetSessionDescriptionError(error) {
   trace('Failed to set session description: ' + error.toString());
@@ -247,36 +216,14 @@ function forceChosenAudioCodec(sdp) {
   return maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
 }
 
-// Copied from AppRTC's sdputils.js:
-
-// Sets |codec| as the default |type| codec if it's present.
-// The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
-function maybePreferCodec(sdp, type, dir, codec) {
-  var str = type + ' ' + dir + ' codec';
-  if (codec === '') {
-    trace('No preference on ' + str + '.');
-    return sdp;
+// Sets m= codec ordering, b= bitrate, and a=ptime based on the in-page prefs.
+function applyParamsToSdp(sdp) {
+  var newSdp = maybePreferCodec(sdp, 'audio', 'send', codecSelector.value);
+  if (bitRateField.value > 0) {
+    newSdp = preferBitRate(newSdp, bitRateField.value / 1000, 'audio');
   }
-
-  trace('Prefer ' + str + ': ' + codec);
-
-  var sdpLines = sdp.split('\r\n');
-
-  // Search for m line.
-  var mLineIndex = findLine(sdpLines, 'm=', type);
-  if (mLineIndex === null) {
-    return sdp;
-  }
-
-  // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
-  console.log('codecIndex', codecIndex);
-  if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
-    if (payload) {
-      sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
-    }
->>>>>>> origin/gh-pages
+  if (ptimeField.value > 0) {
+    newSdp += ('a=ptime:' + ptimeField.value + '\r\n');
   }
   // Since Chrome doesn't currently set Opus DTX based on the
   // VoiceActivityDetection value, we can clumsily set it here.
