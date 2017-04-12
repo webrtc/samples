@@ -73,15 +73,13 @@ function call() {
   };
   pc1 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = function(e) {
-    onIceCandidate(pc1, e);
-  };
+  pc1.onicecandidate = onIceCandidate.bind(pc1);
+
   pc2 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = function(e) {
-    onIceCandidate(pc2, e);
-  };
+  pc2.onicecandidate = onIceCandidate.bind(pc2);
   pc2.onaddstream = gotRemoteStream;
+
   trace('Requesting local stream');
   navigator.mediaDevices.getUserMedia({
     video: true
@@ -145,24 +143,20 @@ function gotRemoteStream(e) {
 }
 
 function getOtherPc(pc) {
-  return (pc === pc1) ? pc2 : pc1;
+  return pc === pc1 ? pc2 : pc1;
 }
 
 function getName(pc) {
-  return (pc === pc1) ? 'pc1' : 'pc2';
+  return pc === pc1 ? 'pc1' : 'pc2';
 }
 
-function onIceCandidate(pc, event) {
-  getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+function onIceCandidate(event) {
+  getOtherPc(this)
+  .addIceCandidate(event.candidate)
+  .then(onAddIceCandidateSuccess)
+  .catch(onAddIceCandidateError);
+
+  trace(getName(this) + ' ICE candidate: \n' + (event.candidate ?
       event.candidate.candidate : '(null)'));
 }
 
@@ -186,11 +180,9 @@ bandwidthSelector.onchange = function() {
   pc1.setLocalDescription(pc1.localDescription)
   .then(function() {
     var desc = pc1.remoteDescription;
-    if (bandwidth === 'unlimited') {
-      desc.sdp = removeBandwidthRestriction(desc.sdp);
-    } else {
-      desc.sdp = updateBandwidthRestriction(desc.sdp, bandwidth);
-    }
+    desc.sdp = bandwidth === 'unlimited'
+             ? removeBandwidthRestriction(desc.sdp)
+             : updateBandwidthRestriction(desc.sdp, bandwidth);
     trace('Applying bandwidth restriction to setRemoteDescription:\n' +
         desc.sdp);
     return pc1.setRemoteDescription(desc);
@@ -207,13 +199,13 @@ function updateBandwidthRestriction(sdp, bandwidth) {
     sdp = sdp.replace(/c=IN IP4 (.*)\r\n/,
                       'c=IN IP4 $1\r\nb=AS:' + bandwidth + '\r\n');
   } else {
-    sdp = sdp.replace(/b=AS:(.*)\r\n/, 'b=AS:' + bandwidth + '\r\n');
+    sdp = sdp.replace(/b=AS:.*\r\n/, 'b=AS:' + bandwidth + '\r\n');
   }
   return sdp;
 }
 
 function removeBandwidthRestriction(sdp) {
-  return sdp.replace(/b=AS:(.*)\r\n/, '');
+  return sdp.replace(/b=AS:.*\r\n/, '');
 }
 
 // query getStats every second
