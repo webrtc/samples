@@ -111,7 +111,26 @@ function call() {
   };
   pc2.onaddstream = gotRemoteStream;
 
-  pc1.addStream(localStream);
+  if (RTCPeerConnection.prototype.addTrack) {
+    localStream.getTracks().forEach(
+      function(track) {
+        pc1.addTrack(track);
+      }
+    );
+  } else {
+    if (RTCPeerConnection.prototype.addTrack) {
+      localStream.getTracks().forEach(
+        function(track) {
+          pc1.addTrack(track);
+        }
+      );
+    } else {
+      pc1.addStream(
+        localStream
+      );
+    }
+  }
+
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');

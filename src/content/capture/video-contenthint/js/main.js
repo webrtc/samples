@@ -87,7 +87,16 @@ function establishPC(videoTag, stream) {
     videoTag.srcObject = event.stream;
   };
 
-  pc1.addStream(stream);
+  if (RTCPeerConnection.prototype.addTrack) {
+    stream.getTracks().forEach(
+      function(track) {
+        pc1.addTrack(track);
+      }
+    );
+  } else {
+    pc1.addStream(stream);
+  }
+
   pc1.createOffer(offerOptions).then(function(desc) {
     pc1.setLocalDescription(desc).then(function() {
       return pc2.setRemoteDescription(desc);
