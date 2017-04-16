@@ -156,10 +156,11 @@ function parseCandidate(text) {
 // type preference, local preference, and (256 - component ID).
 // ex: 126 | 32252 | 255 (126 is host preference, 255 is component ID 1)
 function formatPriority(priority) {
-  var s = [priority >> 24,
-           (priority >> 8) & 0xFFFF,
-           priority & 0xFF];
-  return s.join(' | ');
+  return [
+    priority >> 24,
+    (priority >> 8) & 0xFFFF,
+    priority & 0xFF
+  ].join(' | ');
 }
 
 function appendCell(row, val, span) {
