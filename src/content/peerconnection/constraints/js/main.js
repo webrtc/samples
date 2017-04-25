@@ -153,23 +153,19 @@ function createPeerConnection() {
   };
   localPeerConnection.onicecandidate = function(e) {
     console.log('Candidate localPeerConnection');
-    if (e.candidate) {
-      remotePeerConnection.addIceCandidate(e.candidate)
-      .then(
-        onAddIceCandidateSuccess,
-        onAddIceCandidateError
-      );
-    }
+    remotePeerConnection.addIceCandidate(e.candidate)
+    .then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
   };
   remotePeerConnection.onicecandidate = function(e) {
     console.log('Candidate remotePeerConnection');
-    if (e.candidate) {
-      localPeerConnection.addIceCandidate(e.candidate)
-      .then(
-        onAddIceCandidateSuccess,
-        onAddIceCandidateError
-      );
-    }
+    localPeerConnection.addIceCandidate(e.candidate)
+    .then(
+      onAddIceCandidateSuccess,
+      onAddIceCandidateError
+    );
   };
   remotePeerConnection.onaddstream = function(e) {
     console.log('remotePeerConnection got stream');
