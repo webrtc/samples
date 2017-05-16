@@ -40,7 +40,14 @@ function gotStream(stream) {
   trace('Received local stream');
   localStream = stream;
   localVideo.srcObject = stream;
-  pc1.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(

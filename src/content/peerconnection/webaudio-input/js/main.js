@@ -78,7 +78,14 @@ function handleSuccess(stream) {
       onIceCandidate(pc2, e);
     };
     pc2.onaddstream = gotRemoteStream;
-    pc1.addStream(filteredStream);
+    filteredStream.getTracks().forEach(
+      function(track) {
+        pc1.addTrack(
+          track,
+          filteredStream
+        );
+      }
+    );
     pc1.createOffer().
         then(gotDescription1).
         catch(function(error) {
