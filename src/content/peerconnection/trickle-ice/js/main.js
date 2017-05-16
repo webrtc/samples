@@ -25,7 +25,7 @@ gatherButton.onclick = start;
 removeButton.onclick = removeServer;
 
 
-iceCandidatePoolInput.onchange = function (e) {
+iceCandidatePoolInput.onchange = function(e) {
   var span = e.target.parentElement.querySelector('span');
   span.textContent = e.target.value;
 };
@@ -141,7 +141,8 @@ function noDescription(error) {
 function parseCandidate(text) {
   var candidateStr = 'candidate:';
   var pos = text.indexOf(candidateStr) + candidateStr.length;
-  var [foundation, component, protocol, priority, address, port, , type] = text.substr(pos).split(' ');
+  var [foundation, component, protocol, priority, address, port, , type] =
+    text.substr(pos).split(' ');
   return {
     'component': component,
     'type': type,
