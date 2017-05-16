@@ -43,7 +43,18 @@ function createOffer() {
     // Note that this fails if you try to do more than one track in Chrome
     // right now.
     var dst = acx.createMediaStreamDestination();
-    pc.addStream(dst.stream);
+
+    if (RTCPeerConnection.prototype.addTrack) {
+      dst.stream.getTracks().forEach(
+        function(track) {
+          pc.addTrack(track);
+        }
+      );
+    } else {
+      pc.addStream(
+        dst.stream
+      );
+    }
   }
 
   var offerOptions = {

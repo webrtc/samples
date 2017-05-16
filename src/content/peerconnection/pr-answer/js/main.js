@@ -73,7 +73,18 @@ function start() {
   };
   pc2.onaddstream = gotRemoteStream;
 
-  pc1.addStream(localstream);
+  if (RTCPeerConnection.prototype.addTrack) {
+    localstream.getTracks().forEach(
+      function(track) {
+        pc1.addTrack(track);
+      }
+    );
+  } else {
+    pc1.addStream(
+      localstream
+    );
+  }
+
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(

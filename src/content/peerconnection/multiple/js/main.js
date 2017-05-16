@@ -78,7 +78,18 @@ function call() {
   pc2Remote.onicecandidate = iceCallback2Remote;
   trace('pc2: created local and remote peer connection objects');
 
-  pc1Local.addStream(window.localStream);
+  if (RTCPeerConnection.prototype.addTrack) {
+    window.localStream.getTracks().forEach(
+      function(track) {
+        pc1Local.addTrack(track);
+      }
+    );
+  } else {
+    pc1Local.addStream(
+      window.localStream
+    );
+  }
+
   trace('Adding local stream to pc1Local');
   pc1Local.createOffer(
     offerOptions
@@ -87,7 +98,18 @@ function call() {
     onCreateSessionDescriptionError
   );
 
-  pc2Local.addStream(window.localStream);
+  if (RTCPeerConnection.prototype.addTrack) {
+    window.localStream.getTracks().forEach(
+      function(track) {
+        pc2Local.addTrack(track);
+      }
+    );
+  } else {
+    pc2Local.addStream(
+      window.localStream
+    );
+  }
+
   trace('Adding local stream to pc2Local');
   pc2Local.createOffer(
     offerOptions

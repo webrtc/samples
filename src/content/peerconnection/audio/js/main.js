@@ -43,7 +43,19 @@ function gotStream(stream) {
   if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
   }
-  pc1.addStream(localStream);
+
+  if (RTCPeerConnection.prototype.addTrack) {
+    localStream.getTracks().forEach(
+      function(track) {
+        pc1.addTrack(track);
+      }
+    );
+  } else {
+    pc1.addStream(
+      localStream
+    );
+  }
+
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(
