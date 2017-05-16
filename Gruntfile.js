@@ -11,13 +11,14 @@ module.exports = function(grunt) {
       options: {
         csslintrc: '.csslintrc'
       },
-      src: ['src/content/**/*.css']
+      src: ['src/content/**/*.css', '!**/third_party/*.css' ]
     },
     eslint: {
       options: {
-        configFile: '.eslintrc'
+        configFile: '.eslintrc',
+        cache: true
       },
-      target: ['src/content/**/*.js', 'test/*.js']
+      target: ['src/content/**/*.js', 'test/*.js', '!**/third_party/*.js' ]
     },
     githooks: {
       all: {
@@ -27,9 +28,8 @@ module.exports = function(grunt) {
     htmlhint: {
       html1: {
         src: [
-          'src/content/datachannel/**/index.html',
-          'src/content/getusermedia/**/index.html',
-          'src/content/peerconnection/**/index.html'
+          'src/content/**/*.html',
+          '!**/third_party/*.html'
         ]
       }
     },
