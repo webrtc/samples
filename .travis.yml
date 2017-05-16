@@ -5,14 +5,17 @@ cache:
 node_js:
   - 6
 
-addons:
-  apt:
-    packages:
-      - pulseaudio
-
 branches:
   only:
     - gh-pages
+
+addons:
+  apt:
+    packages:
+      - gcc
+      - g++
+      - libstdc++6
+      - pulseaudio
 
 env:
   global:
@@ -35,11 +38,11 @@ matrix:
 
 before_install:
   - npm install -g npm@'>=3.0.0'
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1400x16
 
 before_script:
-  - npm install
-  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1200x16
   - pulseaudio --start
+  - npm install
 
 script:
   - npm test
