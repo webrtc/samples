@@ -66,14 +66,14 @@ function call() {
   var servers = null;
   pc1Local = new RTCPeerConnection(servers);
   pc1Remote = new RTCPeerConnection(servers);
-  pc1Remote.onaddstream = gotRemoteStream1;
+  pc1Remote.ontrack = gotRemoteStream1;
   pc1Local.onicecandidate = iceCallback1Local;
   pc1Remote.onicecandidate = iceCallback1Remote;
   trace('pc1: created local and remote peer connection objects');
 
   pc2Local = new RTCPeerConnection(servers);
   pc2Remote = new RTCPeerConnection(servers);
-  pc2Remote.onaddstream = gotRemoteStream2;
+  pc2Remote.ontrack = gotRemoteStream2;
   pc2Local.onicecandidate = iceCallback2Local;
   pc2Remote.onicecandidate = iceCallback2Remote;
   trace('pc2: created local and remote peer connection objects');
@@ -166,13 +166,17 @@ function hangup() {
 }
 
 function gotRemoteStream1(e) {
-  video2.srcObject = e.stream;
-  trace('pc1: received remote stream');
+  if (video2.srcObject !== e.streams[0]) {
+    video2.srcObject = e.streams[0];
+    trace('pc1: received remote stream');
+  }
 }
 
 function gotRemoteStream2(e) {
-  video3.srcObject = e.stream;
-  trace('pc2: received remote stream');
+  if (video3.srcObject !== e.streams[0]) {
+    video3.srcObject = e.streams[0];
+    trace('pc2: received remote stream');
+  }
 }
 
 function iceCallback1Local(event) {

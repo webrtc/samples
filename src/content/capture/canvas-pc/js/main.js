@@ -75,7 +75,7 @@ function call() {
   pc2.oniceconnectionstatechange = function(e) {
     onIceStateChange(pc2, e);
   };
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
 
   stream.getTracks().forEach(
     function(track) {
@@ -126,8 +126,10 @@ function onSetSessionDescriptionError(error) {
 }
 
 function gotRemoteStream(e) {
-  video.srcObject = e.stream;
-  trace('pc2 received remote stream');
+  if (video.srcObject !== e.streams[0]) {
+    video.srcObject = e.streams[0];
+    trace('pc2 received remote stream');
+  }
 }
 
 function onCreateAnswerSuccess(desc) {

@@ -77,7 +77,7 @@ function handleSuccess(stream) {
     pc2.onicecandidate = function(e) {
       onIceCandidate(pc2, e);
     };
-    pc2.onaddstream = gotRemoteStream;
+    pc2.ontrack = gotRemoteStream;
     filteredStream.getTracks().forEach(
       function(track) {
         pc1.addTrack(
@@ -146,7 +146,9 @@ function gotDescription2(desc) {
 }
 
 function gotRemoteStream(e) {
-  audioElement.srcObject = e.stream;
+  if (audioElement.srcObject !== e.streams[0]) {
+    audioElement.srcObject = e.streams[0];
+  }
 }
 
 function getOtherPc(pc) {

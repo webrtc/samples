@@ -91,7 +91,7 @@ function call() {
   pc2.onicecandidate = function(e) {
     onIceCandidate(pc2, e);
   };
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
   trace('Requesting local stream');
   navigator.mediaDevices.getUserMedia({
     audio: true,
@@ -152,8 +152,10 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  audio2.srcObject = e.stream;
-  trace('Received remote stream');
+  if (audio2.srcObject !== e.streams[0]) {
+    audio2.srcObject = e.streams[0];
+    trace('Received remote stream');
+  }
 }
 
 function getOtherPc(pc) {

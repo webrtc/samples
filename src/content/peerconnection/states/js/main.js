@@ -93,7 +93,7 @@ function call() {
   pc2.onicecandidate = function(e) {
     onIceCandidate(pc2, e);
   };
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
   localstream.getTracks().forEach(
     function(track) {
       pc1.addTrack(
@@ -146,8 +146,10 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  video2.srcObject = e.stream;
-  trace('Got remote stream');
+  if (video2.srcObject !== e.streams[0]) {
+    video2.srcObject = e.streams[0];
+    trace('Got remote stream');
+  }
 }
 
 function stateCallback1() {

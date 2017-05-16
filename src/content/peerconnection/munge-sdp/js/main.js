@@ -170,7 +170,7 @@ function createPeerConnection() {
   remotePeerConnection.onicecandidate = function(e) {
     onIceCandidate(remotePeerConnection, e);
   };
-  remotePeerConnection.onaddstream = gotRemoteStream;
+  remotePeerConnection.ontrack = gotRemoteStream;
   remotePeerConnection.ondatachannel = receiveChannelCallback;
 
   localStream.getTracks().forEach(
@@ -300,8 +300,10 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  remoteVideo.srcObject = e.stream;
-  trace('Received remote stream');
+  if (remoteVideo.srcObject !== e.streams[0]) {
+    remoteVideo.srcObject = e.streams[0];
+    trace('Received remote stream');
+  }
 }
 
 function getOtherPc(pc) {

@@ -174,9 +174,11 @@ function createPeerConnection() {
       onAddIceCandidateError
     );
   };
-  remotePeerConnection.onaddstream = function(e) {
-    console.log('remotePeerConnection got stream');
-    remoteVideo.srcObject = e.stream;
+  remotePeerConnection.ontrack = function(e) {
+    if (remoteVideo.srcObject !== e.streams[0]) {
+      console.log('remotePeerConnection got stream');
+      remoteVideo.srcObject = e.streams[0];
+    }
   };
   localPeerConnection.createOffer().then(
     function(desc) {

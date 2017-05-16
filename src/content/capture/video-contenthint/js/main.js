@@ -83,8 +83,10 @@ function establishPC(videoTag, stream) {
   pc2.onicecandidate = function(e) {
     onIceCandidate(pc2, pc1, e);
   };
-  pc2.onaddstream = function(event) {
-    videoTag.srcObject = event.stream;
+  pc2.ontrack = function(event) {
+    if (videoTag.srcObject !== event.streams[0]) {
+      videoTag.srcObject = event.streams[0];
+    }
   };
 
   stream.getTracks().forEach(
