@@ -106,6 +106,7 @@ function start() {
         ', constraints=' + JSON.stringify(pcConstraints));
   pc = new RTCPeerConnection(config, pcConstraints);
   pc.onicecandidate = iceCallback;
+  pc.onicegatheringstatechange = gatheringStateChange;
   pc.createOffer(
     offerOptions
   ).then(
@@ -216,11 +217,26 @@ function iceCallback(event) {
     appendCell(row, c.port);
     appendCell(row, formatPriority(c.priority));
     candidates.push(c);
-  } else {
+  } else if (!('onicegatheringstatechange' in RTCPeerConnection.prototype)) {
+    // should not be done if its done in the icegatheringstatechange callback.
     appendCell(row, getFinalResult(), 7);
     pc.close();
     pc = null;
     gatherButton.disabled = false;
   }
+  candidateTBody.appendChild(row);
+}
+
+function gatheringStateChange() {
+  if (pc.iceGatheringState !== 'complete') {
+    return;
+  }
+  var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
+  var row = document.createElement('tr');
+  appendCell(row, elapsed);
+  appendCell(row, getFinalResult(), 7);
+  pc.close();
+  pc = null;
+  gatherButton.disabled = false;
   candidateTBody.appendChild(row);
 }
