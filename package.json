@@ -34,6 +34,8 @@
     "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.9.12",
     "pem": "^1.9.4",
-    "webrtc-utilities": "^1.0.0"
+    "webrtc-utilities": "^1.0.0",
+    "geckodriver": "1.4.0",
+    "selenium-webdriver": "3.3.0"
   }
 }
