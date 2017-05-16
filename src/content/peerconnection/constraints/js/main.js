@@ -143,7 +143,14 @@ function createPeerConnection() {
   timestampPrev = 0;
   localPeerConnection = new RTCPeerConnection(null);
   remotePeerConnection = new RTCPeerConnection(null);
-  localPeerConnection.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      localPeerConnection.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   console.log('localPeerConnection creating offer');
   localPeerConnection.onnegotiationeeded = function() {
     console.log('Negotiation needed - localPeerConnection');

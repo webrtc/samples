@@ -135,7 +135,14 @@ function call() {
   };
   pc2.onaddstream = gotRemoteStream;
 
-  pc1.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');

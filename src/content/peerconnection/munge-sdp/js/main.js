@@ -173,7 +173,14 @@ function createPeerConnection() {
   remotePeerConnection.onaddstream = gotRemoteStream;
   remotePeerConnection.ondatachannel = receiveChannelCallback;
 
-  localPeerConnection.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      localPeerConnection.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 }
 
