@@ -83,11 +83,20 @@ function establishPC(videoTag, stream) {
   pc2.onicecandidate = function(e) {
     onIceCandidate(pc2, pc1, e);
   };
-  pc2.onaddstream = function(event) {
-    videoTag.srcObject = event.stream;
+  pc2.ontrack = function(event) {
+    if (videoTag.srcObject !== event.streams[0]) {
+      videoTag.srcObject = event.streams[0];
+    }
   };
 
-  pc1.addStream(stream);
+  stream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        stream
+      );
+    }
+  );
   pc1.createOffer(offerOptions).then(function(desc) {
     pc1.setLocalDescription(desc).then(function() {
       return pc2.setRemoteDescription(desc);

@@ -40,7 +40,14 @@ function gotStream(stream) {
   trace('Received local stream');
   localStream = stream;
   localVideo.srcObject = stream;
-  pc1.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(
@@ -78,7 +85,7 @@ function call() {
   pc2 = new RTCPeerConnection(servers, pcConstraints);
   trace('Created remote peer connection object pc2');
   pc2.onicecandidate = onIceCandidate.bind(pc2);
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
 
   trace('Requesting local stream');
   navigator.mediaDevices.getUserMedia({
@@ -140,8 +147,10 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  remoteVideo.srcObject = e.stream;
-  trace('Received remote stream');
+  if (remoteVideo.srcObject !== e.streams[0]) {
+    remoteVideo.srcObject = e.streams[0];
+    trace('Received remote stream');
+  }
 }
 
 function getOtherPc(pc) {
