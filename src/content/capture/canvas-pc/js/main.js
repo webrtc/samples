@@ -75,9 +75,16 @@ function call() {
   pc2.oniceconnectionstatechange = function(e) {
     onIceStateChange(pc2, e);
   };
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
 
-  pc1.addStream(stream);
+  stream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        stream
+      );
+    }
+  );
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');
@@ -119,8 +126,10 @@ function onSetSessionDescriptionError(error) {
 }
 
 function gotRemoteStream(e) {
-  video.srcObject = e.stream;
-  trace('pc2 received remote stream');
+  if (video.srcObject !== e.streams[0]) {
+    video.srcObject = e.streams[0];
+    trace('pc2 received remote stream');
+  }
 }
 
 function onCreateAnswerSuccess(desc) {

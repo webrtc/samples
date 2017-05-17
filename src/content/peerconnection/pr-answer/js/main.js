@@ -71,9 +71,16 @@ function start() {
   pc2.onicecandidate = function(e) {
     onIceCandidate(pc2, e);
   };
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
 
-  pc1.addStream(localstream);
+  localstream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localstream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(
@@ -164,8 +171,10 @@ function stop() {
 }
 
 function gotRemoteStream(e) {
-  vid2.srcObject = e.stream;
-  trace('Received remote stream');
+  if (vid2.srcObject !== e.streams[0]) {
+    vid2.srcObject = e.streams[0];
+    trace('Received remote stream');
+  }
 }
 
 function getOtherPc(pc) {
