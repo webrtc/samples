@@ -82,12 +82,11 @@
       <h2>ICE options</h2>
 
       <div id="iceTransports">
-        <span>IceTransports value:</span>
-        <input type="radio" name="transports" value="all" id="all" checked><label for="all">all</label>
+        <label for="ipv6"><span>IceTransports value:</span></label>
+        <input type="radio" name="transports" value="all" id="all" checked>
+        <span>all</span>
         <input type="radio" name="transports" value="relay" id="relay">
-        <label for="relay">relay</label>
-        <input type="radio" name="transports" value="none" id="none">
-        <label for="none">none</label>
+        <span>relay</span>
       </div>
       <div>
         <label for="ipv6">Gather IPv6 candidates:</label>
@@ -96,6 +95,13 @@
       <div>
         <label for="unmux">Gather RTCP candidates:</label>
         <input id="unmux" type="checkbox" checked>
+      </div>
+      <div>
+        <label>ICE Candidate Pool:</label>
+        <span id="poolValue">0</span>
+        <span class="gray">0</span>
+        <input id="iceCandidatePool" type="range" min="0" max="10" value="0">
+        <span class="gray">10</span>
       </div>
 
     </section>
@@ -110,7 +116,6 @@
         <tbody id="candidatesBody"></tbody>
       </table>
       <button id="gather">Gather candidates</button>
-
     </section>
 
 
