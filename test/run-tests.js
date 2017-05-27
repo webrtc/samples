@@ -18,6 +18,9 @@ require('../src/content/getusermedia/gum/js/test');
 // Tests basic functionality of the pc1 demo.
 require('../src/content/peerconnection/pc1/js/test');
 
+// Tests basic functionality of the upgrade demo.
+require('../src/content/peerconnection/upgrade/js/test');
+
 // Tests basic functionality of the peerconnection audio demo.
 require('../src/content/peerconnection/audio/js/test');
 
