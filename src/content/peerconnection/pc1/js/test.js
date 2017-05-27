@@ -25,6 +25,11 @@ test('PeerConnection pc1 sample', function(t) {
     return driver.findElement(webdriver.By.id('startButton')).click();
   })
   .then(function() {
+    return driver.wait(function() {
+      return driver.executeScript('return localStream !== null');
+    }, 30 * 1000);
+  })
+  .then(function() {
     t.pass('got media');
     return driver.findElement(webdriver.By.id('callButton')).click();
   })
