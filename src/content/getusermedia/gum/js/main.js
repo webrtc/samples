@@ -30,8 +30,11 @@ function handleSuccess(stream) {
 
 function handleError(error) {
   if (error.name === 'ConstraintNotSatisfiedError') {
-    errorMsg('The resolution ' + constraints.video.width.exact + 'x' +
-        constraints.video.height.exact + ' px is not supported by your device.');
+    errorMsg(
+      'The resolution ' + 
+      constraints.video.width.exact + 'x' + constraints.video.height.exact +
+      ' px is not supported by your device.'
+    );
   } else if (error.name === 'PermissionDeniedError') {
     errorMsg('Permissions have not been granted to use your camera and ' +
       'microphone, you need to allow the page access to your devices in ' +
