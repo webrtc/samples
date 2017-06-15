@@ -36,7 +36,8 @@ test('PeerConnection pc1 sample', function(t) {
   .then(function() {
     return driver.wait(function() {
       return driver.executeScript(
-          'return pc2 && pc2.iceConnectionState === \'connected\';');
+          'return window.pc2 && window.pc2.iceConnectionState === ' +
+          ' \'connected\';');
     }, 30 * 1000);
   })
   .then(function() {
@@ -45,7 +46,7 @@ test('PeerConnection pc1 sample', function(t) {
   })
   .then(function() {
     return driver.wait(function() {
-      return driver.executeScript('return pc1 === null');
+      return driver.executeScript('return window.pc1 === null');
     }, 30 * 1000);
   })
   .then(function() {
