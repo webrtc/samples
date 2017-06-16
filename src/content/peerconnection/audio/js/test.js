@@ -27,7 +27,9 @@ test('Audio-only sample codec preference', function(t) {
   driver.get('file://' + process.cwd() +
       '/src/content/peerconnection/audio/index.html');
   var codecs = ['opus', 'ISAC', 'G722', 'PCMU'];
-
+  // Override the trace function to ensure console logging works for
+  // webdriver.
+  seleniumHelpers.overrideTrace(driver);
   var last;
   codecs.forEach(function(codecName) {
     last = driver.findElement(webdriver.By.css(
@@ -68,6 +70,7 @@ test('Audio-only sample codec preference', function(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });

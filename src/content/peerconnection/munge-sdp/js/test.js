@@ -22,6 +22,9 @@ test('Munge SDP sample', function(t) {
       '/src/content/peerconnection/munge-sdp/index.html')
   .then(function() {
     t.pass('page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
     return driver.findElement(webdriver.By.id('getMedia')).click();
   })
   .then(function() {
@@ -100,6 +103,7 @@ test('Munge SDP sample', function(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });

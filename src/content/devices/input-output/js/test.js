@@ -28,6 +28,9 @@ test('Fake device selection and check video element dimensions ' +
         '/src/content/devices/input-output/index.html')
       .then(function() {
         t.pass('Page loaded');
+        // Override the trace function to ensure console logging works for
+        // webdriver.
+        seleniumHelpers.overrideTrace(driver);
         // Making sure we can select the 1st audio device.
         // TODO: Select more devices if Firefox adds a 2nd fake A&V device and
         // Chrome adds another fake video device.
@@ -152,6 +155,7 @@ test('Fake device selection and check video element dimensions ' +
         t.end();
       })
       .then(null, function(err) {
+        seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
         t.fail(err);
         t.end();
       });

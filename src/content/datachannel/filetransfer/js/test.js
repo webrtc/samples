@@ -24,6 +24,9 @@ function sendFile(t, path) {
     '/src/content/datachannel/filetransfer/index.html')
   .then(function() {
     t.pass('page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
     // Based on https://saucelabs.com/resources/articles/selenium-file-upload
     return driver.findElement(webdriver.By.id('fileInput'))
     .sendKeys(path);
@@ -50,6 +53,7 @@ function sendFile(t, path) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });

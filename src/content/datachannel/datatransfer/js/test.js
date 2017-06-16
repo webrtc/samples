@@ -24,6 +24,9 @@ function sendData(t) {
       '/src/content/datachannel/datatransfer/index.html')
   .then(function() {
     t.pass('page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
     // Based on https://saucelabs.com/resources/articles/selenium-file-upload
     return driver.findElement(webdriver.By.id('sendTheData'));
   })
@@ -40,6 +43,7 @@ function sendData(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });
