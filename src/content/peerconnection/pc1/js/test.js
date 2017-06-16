@@ -15,6 +15,7 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
+
 test('PeerConnection pc1 sample', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
@@ -22,6 +23,9 @@ test('PeerConnection pc1 sample', function(t) {
       '/src/content/peerconnection/pc1/index.html')
   .then(function() {
     t.pass('page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
     return driver.findElement(webdriver.By.id('startButton')).click();
   })
   .then(function() {
@@ -36,9 +40,8 @@ test('PeerConnection pc1 sample', function(t) {
   .then(function() {
     return driver.wait(function() {
       return driver.executeScript(
-          'return window.pc2 && window.pc2.iceConnectionState === ' +
-          ' \'connected\';');
-    }, 30 * 1000);
+          'return pc2 && pc2.iceConnectionState === \'connected\';');
+    }, 3 * 1000);
   })
   .then(function() {
     t.pass('pc2 ICE connected');
@@ -54,6 +57,7 @@ test('PeerConnection pc1 sample', function(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });
