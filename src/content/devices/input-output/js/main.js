@@ -14,6 +14,8 @@ var audioOutputSelect = document.querySelector('select#audioOutput');
 var videoSelect = document.querySelector('select#videoSource');
 var selectors = [audioInputSelect, audioOutputSelect, videoSelect];
 
+audioOutputSelect.disabled = !('sinkId' in HTMLMediaElement.prototype);
+
 function gotDevices(deviceInfos) {
   // Handles being called several times to update labels. Preserve values.
   var values = selectors.map(function(select) {
