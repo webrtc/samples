@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -15,11 +15,11 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
-test('PeerConnection pc1 sample', function(t) {
+test('PeerConnection upgrade sample', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
   driver.get('file://' + process.cwd() +
-      '/src/content/peerconnection/pc1/index.html')
+      '/src/content/peerconnection/upgrade/index.html')
   .then(function() {
     t.pass('page loaded');
     return driver.findElement(webdriver.By.id('startButton')).click();
@@ -41,6 +41,15 @@ test('PeerConnection pc1 sample', function(t) {
   })
   .then(function() {
     t.pass('pc2 ICE connected');
+    return driver.findElement(webdriver.By.id('upgradeButton')).click();
+  })
+  .then(function() {
+    return driver.wait(function() {
+      return driver.executeScript(
+          'return remoteVideo.videoWidth === 640;');
+    }, 30 * 1000);
+  })
+  .then(function() {
     return driver.findElement(webdriver.By.id('hangupButton')).click();
   })
   .then(function() {
