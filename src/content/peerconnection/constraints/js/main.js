@@ -247,22 +247,35 @@ setInterval(function() {
       var activeCandidatePair = null;
       var remoteCandidate = null;
 
-      // search for the candidate pair
+      // Search for the candidate pair, spec-way first.
       results.forEach(function(report) {
-        if (report.type === 'candidatepair' && report.selected ||
-            report.type === 'googCandidatePair' &&
-            report.googActiveConnection === 'true') {
-          activeCandidatePair = report;
+        if (report.type === 'transport') {
+          activeCandidatePair = results.get(report.selectedCandidatePairId);
         }
       });
-      if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-        remoteCandidate = results[activeCandidatePair.remoteCandidateId];
+      // Fallback for Firefox and Chrome legacy stats.
+      if (!activeCandidatePair) {
+        results.forEach(function(report) {
+          if (report.type === 'candidate-pair' && report.selected ||
+              report.type === 'googCandidatePair' &&
+              report.googActiveConnection === 'true') {
+            activeCandidatePair = report;
+          }
+        });
       }
-      if (remoteCandidate && remoteCandidate.ipAddress &&
-          remoteCandidate.portNumber) {
-        peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
-            remoteCandidate.ipAddress +
-            ':' + remoteCandidate.portNumber;
+      if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
+        remoteCandidate = results.get(activeCandidatePair.remoteCandidateId);
+      }
+      if (remoteCandidate) {
+        if (remoteCandidate.ip && remoteCandidate.port) {
+          peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
+              remoteCandidate.ip + ':' + remoteCandidate.port;
+        } else if (remoteCandidate.ipAddress && remoteCandidate.portNumber) {
+          // Fall back to old names.
+          peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
+              remoteCandidate.ipAddress +
+              ':' + remoteCandidate.portNumber;
+        }
       }
     }, function(err) {
       console.log(err);
