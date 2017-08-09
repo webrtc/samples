@@ -330,7 +330,6 @@ function findRtpmapLine(sdpLines, contains, lastInstance) {
     for (var i = sdpLines.length - 1; i >= 0 ; i--) {
       if (isRtpmapLine(sdpLines[i], contains))
       {
-        trace('Hey: ' + i);
         return i;
      }
     }
@@ -338,7 +337,6 @@ function findRtpmapLine(sdpLines, contains, lastInstance) {
     for (var i = 0; i < sdpLines.length; i++) {
       if (isRtpmapLine(sdpLines[i], contains))
       {
-        trace('Hey ya: ' + i)
         return i;
       }
     }
