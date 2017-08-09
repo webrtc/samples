@@ -23,8 +23,8 @@ var remoteVideo = document.getElementById('remoteVideo');
 
 function getSelectedVideoCodec() {
   var codec;
-  if (document.getElementById('Opus').checked) {
-    codec = document.getElementById('Opus').value;
+  if (document.getElementById('H264').checked) {
+    codec = document.getElementById('H264').value;
   }
   else if (document.getElementById('VP8').checked) {
     codec = document.getElementById('VP8').value;
