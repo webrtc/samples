@@ -25,14 +25,17 @@ function getSelectedVideoCodec() {
   var codec;
   if (document.getElementById('H264').checked) {
     codec = document.getElementById('H264').value;
-  }
-  else if (document.getElementById('VP8').checked) {
+  } else if (document.getElementById('VP8').checked) {
     codec = document.getElementById('VP8').value;
-  }
-  else {
+  } else {
     codec = document.getElementById('VP9').value;
   }
   return codec;
+}
+
+function Failure(message) {
+  this.message = message;
+  this.name = 'Failure';
 }
 
 localVideo.addEventListener('loadedmetadata', function() {
@@ -149,57 +152,10 @@ function onCreateSessionDescriptionError(error) {
 }
 
 /**
- * Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-/**
- * See |setSdpDefaultCodec|.
- */
-function setSdpDefaultAudioCodec(sdp, codec) {
-  return setSdpDefaultCodec(sdp, 'audio', codec, false /* preferHwCodec */);
-}
-
-/**
  * See |setSdpDefaultCodec|.
  */
 function setSdpDefaultVideoCodec(sdp, codec, preferHwCodec) {
   return setSdpDefaultCodec(sdp, 'video', codec, preferHwCodec);
-}
-
-/**
- * Returns a modified version of |sdp| where the opus DTX flag has been
- * enabled.
- */
-function setOpusDtxEnabled(sdp) {
-  var sdpLines = splitSdpLines(sdp);
-
-  // Get default audio codec
-  var defaultCodec = getSdpDefaultAudioCodec(sdp);
-  if (defaultCodec !== 'opus') {
-    failure('setOpusDtxEnabled',
-            'Default audio codec is not set to \'opus\'.');
-  }
-
-  // Find codec ID for Opus, e.g. 111 if 'a=rtpmap:111 opus/48000/2'.
-  var codecId = findRtpmapId(sdpLines, 'opus');
-  if (codecId === null) {
-    failure('setOpusDtxEnabled', 'Unknown ID for |codec| = \'opus\'.');
-  }
-
-  // Find 'a=fmtp:111' line, where 111 is the codecId
-  var fmtLineNo = findFmtpLine(sdpLines, codecId);
-  if (fmtLineNo === null) {
-    // Add the line to the SDP.
-    newLine = 'a=fmtp:' + codecId + ' usedtx=1'
-    rtpMapLine = findRtpmapLine(sdpLines, codecId);
-    sdpLines.splice(rtpMapLine + 1, 0, newLine);
-  } else {
-    // Modify the line to enable Opus Dtx.
-    sdpLines[fmtLineNo] += ';usedtx=1'
-  }
-  return mergeSdpLines(sdpLines);
 }
 
 /**
@@ -217,66 +173,20 @@ function setSdpDefaultCodec(sdp, type, codec, preferHwCodec) {
   // Find codec ID, e.g. 100 for 'VP8' if 'a=rtpmap:100 VP8/9000'.
   var codecId = findRtpmapId(sdpLines, codec, preferHwCodec);
   if (codecId === null) {
-    failure('setSdpDefaultCodec',
+    throw new Failure('setSdpDefaultCodec',
             'Unknown ID for |codec| = \'' + codec + '\'.');
   }
 
   // Find 'm=|type|' line, e.g. 'm=video 9 UDP/TLS/RTP/SAVPF 100 101 107 116'.
   var mLineNo = findLine(sdpLines, 'm=' + type);
   if (mLineNo === null) {
-    failure('setSdpDefaultCodec',
+    throw new Failure('setSdpDefaultCodec',
             '\'m=' + type + '\' line missing from |sdp|.');
   }
 
   // Modify video line to use the desired codec as the default.
   sdpLines[mLineNo] = setMLineDefaultCodec(sdpLines[mLineNo], codecId);
   return mergeSdpLines(sdpLines);
-}
-
-/**
- * See |getSdpDefaultCodec|.
- */
-function getSdpDefaultAudioCodec(sdp) {
-  return getSdpDefaultCodec(sdp, 'audio');
-}
-
-/**
- * See |getSdpDefaultCodec|.
- */
-function getSdpDefaultVideoCodec(sdp) {
-  return getSdpDefaultCodec(sdp, 'video');
-}
-
-/**
- * Gets the default codec according to the |sdp|, i.e. the name of the codec
- * whose ID is first in the list of codecs on the 'm=|type|' line, where |type|
- * is 'audio' or 'video'.
- * @private
- */
-function getSdpDefaultCodec(sdp, type) {
-  var sdpLines = splitSdpLines(sdp);
-
-  // Find 'm=|type|' line, e.g. 'm=video 9 UDP/TLS/RTP/SAVPF 100 101 107 116'.
-  var mLineNo = findLine(sdpLines, 'm=' + type);
-  if (mLineNo === null) {
-    failure('getSdpDefaultCodec',
-            '\'m=' + type + '\' line missing from |sdp|.');
-  }
-
-  // The default codec's ID.
-  var defaultCodecId = getMLineDefaultCodec(sdpLines[mLineNo]);
-  if (defaultCodecId === null) {
-    failure('getSdpDefaultCodec',
-            '\'m=' + type + '\' line contains no codecs.');
-  }
-
-  // Find codec name, e.g. 'VP8' for 100 if 'a=rtpmap:100 VP8/9000'.
-  var defaultCodec = findRtpmapCodec(sdpLines, defaultCodecId);
-  if (defaultCodec === null) {
-    failure('getSdpDefaultCodec',
-            'Unknown codec name for default codec ' + defaultCodecId + '.');
-  }
-  return defaultCodec;
 }
 
 /**
@@ -291,30 +201,12 @@ function getSdpDefaultCodec(sdp, type) {
  */
 function findRtpmapId(sdpLines, codec, lastInstance) {
   var lineNo = findRtpmapLine(sdpLines, codec, lastInstance);
-  if (lineNo === null)
+  if (lineNo === null) {
     return null;
+  }
   // Parse <id> from 'a=rtpmap:<id> <codec>/<rate>'.
   var id = sdpLines[lineNo].substring(9, sdpLines[lineNo].indexOf(' '));
   return parseInt(id);
-}
-
-/**
- * Searches through all |sdpLines| for the 'a=rtpmap:' line for the codec of
- * the specified codec ID, returning its name if found, or null otherwise.
- * For example, if |sdpLines| contains 'a=rtpmap:100 VP8/9000' and |id| is 100,
- * this function returns 'VP8'.
- * @private
- */
-function findRtpmapCodec(sdpLines, id) {
-  var lineNo = findRtpmapLine(sdpLines, id);
-  if (lineNo === null)
-    return null;
-  // Parse <codec> from 'a=rtpmap:<id> <codec>/<rate>'.
-  var from = sdpLines[lineNo].indexOf(' ');
-  var to = sdpLines[lineNo].indexOf('/', from);
-  if (from === null || to === null || from + 1 >= to)
-    failure('findRtpmapCodec', '');
-  return sdpLines[lineNo].substring(from + 1, to);
 }
 
 /**
@@ -328,15 +220,13 @@ function findRtpmapCodec(sdpLines, id) {
 function findRtpmapLine(sdpLines, contains, lastInstance) {
   if (lastInstance === true) {
     for (var i = sdpLines.length - 1; i >= 0 ; i--) {
-      if (isRtpmapLine(sdpLines[i], contains))
-      {
+      if (isRtpmapLine(sdpLines[i], contains)) {
         return i;
-     }
+      }
     }
   } else {
-    for (var i = 0; i < sdpLines.length; i++) {
-      if (isRtpmapLine(sdpLines[i], contains))
-      {
+    for (i = 0; i < sdpLines.length; i++) {
+      if (isRtpmapLine(sdpLines[i], contains)) {
         return i;
       }
     }
@@ -351,24 +241,15 @@ function findRtpmapLine(sdpLines, contains, lastInstance) {
 function isRtpmapLine(sdpLine, contains) {
   // Is 'a=rtpmap:' line containing |contains| string?
   if (sdpLine.startsWith('a=rtpmap:') &&
-      sdpLine.indexOf(contains) != -1) {
+      sdpLine.indexOf(contains) !== -1) {
     // Expecting pattern 'a=rtpmap:<id> <codec>/<rate>'.
     var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
-    if (!sdpLine.match(pattern))
-      failure('isRtpmapLine', 'Unexpected "a=rtpmap:" pattern.');
+    if (!sdpLine.match(pattern)) {
+      throw new Failure('isRtpmapLine', 'Unexpected "a=rtpmap:" pattern.');
+    }
     return true;
   }
   return false;
-}
-
-/**
- * Finds the fmtp line in |sdpLines| for the given |codecId|, and returns its
- * line number. The line starts with 'a=fmtp:<codecId>'.
- * @private
- */
-function findFmtpLine(sdpLines, codecId) {
-  return findLine(sdpLines, 'a=fmtp:' + codecId);
-
 }
 
 /**
@@ -388,27 +269,12 @@ function setMLineDefaultCodec(mLine, codecId) {
   // Put target |codecId| first and copy the rest.
   newLine.push(codecId);
   for (var i = 3; i < elements.length; i++) {
-    if (elements[i] != codecId)
+    if (elements[i] !== codecId) {
       newLine.push(elements[i]);
+    }
   }
 
   return newLine.join(' ');
-}
-
-/**
- * Returns the default codec's ID from the |mLine|, or null if the codec list is
- * empty. The default codec is the codec whose ID is first in the list of codec
- * IDs on the |mLine|. For example, getMLineDefaultCodec(
- *     'm=video 9 UDP/TLS/RTP/SAVPF 100 101 107 116 117 96')
- * Returns:
- *     100
- * @private
- */
-function getMLineDefaultCodec(mLine) {
-  var elements = mLine.split(' ');
-  if (elements.length < 4)
-    return null;
-  return parseInt(elements[3]);
 }
 
 /** @private */
@@ -424,15 +290,16 @@ function mergeSdpLines(sdpLines) {
 /** @private */
 function findLine(lines, lineStartsWith, startingLine = 0) {
   for (var i = startingLine; i < lines.length; i++) {
-    if (lines[i].startsWith(lineStartsWith))
+    if (lines[i].startsWith(lineStartsWith)) {
       return i;
+    }
   }
   return null;
 }
 
 function onCreateOfferSuccess(desc) {
-  var video_codec = getSelectedVideoCodec();
-  desc.sdp = setSdpDefaultVideoCodec(desc.sdp, video_codec, video_codec);
+  var videoCodec = getSelectedVideoCodec();
+  desc.sdp = setSdpDefaultVideoCodec(desc.sdp, videoCodec, videoCodec);
   trace('Offer from pc1\n' + desc.sdp);
   trace('Ok-' + JSON.stringify(desc));
   trace('pc1 setLocalDescription start');
