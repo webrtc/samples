@@ -47,11 +47,7 @@ function handleSuccess(stream) {
   recordButton.disabled = false;
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream;
-  if (window.URL) {
-    gumVideo.src = window.URL.createObjectURL(stream);
-  } else {
-    gumVideo.src = stream;
-  }
+  gumVideo.srcObject = stream;
 }
 
 function handleError(error) {
@@ -136,6 +132,20 @@ function stopRecording() {
 function play() {
   var superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
   recordedVideo.src = window.URL.createObjectURL(superBuffer);
+  // workaround for non-seekable video taken from
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=642012#c23
+  recordedVideo.addEventListener('loadedmetadata', function() {
+    if (recordedVideo.duration === Infinity) {
+      recordedVideo.currentTime = 1e101;
+      recordedVideo.ontimeupdate = function() {
+        recordedVideo.currentTime = 0;
+        recordedVideo.ontimeupdate = function() {
+          delete recordedVideo.ontimeupdate;
+          recordedVideo.play();
+        };
+      };
+    }
+  });
 }
 
 function download() {
