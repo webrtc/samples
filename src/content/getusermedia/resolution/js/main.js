@@ -22,6 +22,8 @@ var messagebox = document.querySelector('#errormessage');
 
 var widthInput = document.querySelector('div#width input');
 var widthOutput = document.querySelector('div#width span');
+var aspectLock = document.querySelector('#aspectlock');
+var sizeLock = document.querySelector('#sizelock');
 
 var currentWidth = 0;
 var currentHeight = 0;
@@ -112,7 +114,15 @@ video.onresize = function() {
 function constraintChange(e) {
   widthOutput.textContent = e.target.value;
   let track = window.stream.getVideoTracks()[0];
-  let constraints = {width: {exact: e.target.value}};
+  let constraints;
+  if (aspectLock.checked) {
+    constraints = {width: {exact: e.target.value},
+                       aspectRatio: {
+                         exact: video.videoWidth / video.videoHeight
+                       }};
+  } else {
+    constraints = {width: {exact: e.target.value}};
+  }
   clearErrorMessage();
   console.log('applying ' + JSON.stringify(constraints));
   track.applyConstraints(constraints)
@@ -126,6 +136,16 @@ function constraintChange(e) {
 }
 
 widthInput.onchange = constraintChange;
+
+sizeLock.onchange = function() {
+  if (sizeLock.checked) {
+    console.log('Setting fixed size');
+    video.style.width = '100%';
+  } else {
+    console.log('Setting auto size');
+    video.style.width = 'auto';
+  }
+};
 
 function getMedia(constraints) {
   if (stream) {
