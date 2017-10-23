@@ -44,6 +44,15 @@
       max-width: 100%;
     }
 
+    #errormessage {
+      display: none;
+      font-size: 300%;
+    }
+
+    #videoblock {
+      display: none;
+    }
+
     p#dimensions {
       height: 1em;
       margin: 0 0 1.5em 0;
@@ -76,9 +85,16 @@
       <button id="full-hd">Full HD</button>
     </div>
 
-    <p id="dimensions"></p>
+    <div id="videoblock">
+      <p id="dimensions"></p>
 
-    <video id="gum-res-local" autoplay></video>
+      <video id="gum-res-local" autoplay></video>
+      <div id="width">
+        <label>Width <span></span>px:</label>
+        <input type="range" min="0" max="1920" value="0">
+      </div>
+    </div>
+    <p id="errormessage"></p>
 
     <p>For more information, see <a href="http://www.html5rocks.com/en/tutorials/getusermedia/intro/" title="Media capture article by Eric Bidelman on HTML5 Rocks">Capturing Audio &amp; Video in HTML5</a> on HTML5 Rocks.</p>
 
