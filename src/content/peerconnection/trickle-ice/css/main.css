@@ -61,3 +61,7 @@ th:nth-child(6),td:nth-child(6) {
   display: inline-block;
   width: 30px
 }
+
+#getUserMediaPermissions {
+  display: none;
+}
