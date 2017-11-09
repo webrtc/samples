@@ -212,7 +212,7 @@ function onAddIceCandidateError(error) {
 
 // Display statistics
 setInterval(function() {
-  if (remotePeerConnection && remotePeerConnection.getRemoteStreams()[0]) {
+  if (localPeerConnection && remotePeerConnection) {
     remotePeerConnection.getStats(null)
     .then(function(results) {
       var statsString = dumpStats(results);

@@ -41,7 +41,7 @@ window.addEventListener('message', function(event) {
 });
 
 function handleSuccess(screenStream) {
-  videoElement.src = URL.createObjectURL(screenStream);
+  videoElement.srcObject = screenStream;
   videoElement.play();
 }
 

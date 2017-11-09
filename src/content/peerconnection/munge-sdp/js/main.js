@@ -96,7 +96,7 @@ function getMedia() {
   createPeerConnectionButton.disabled = false;
 
   if (localStream) {
-    localVideo.src = null;
+    localVideo.srcObject = null;
     localStream.getTracks().forEach(function(track) {
       track.stop();
     });
@@ -277,7 +277,7 @@ function sendData() {
 }
 
 function hangup() {
-  remoteVideo.src = '';
+  remoteVideo.srcObject = null;
   trace('Ending call');
   localStream.getTracks().forEach(function(track) {
     track.stop();
