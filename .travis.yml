@@ -33,7 +33,6 @@ matrix:
 
   allow_failures:
     - env: BROWSER=chrome  BVER=unstable
-    - env: BROWSER=firefox BVER=beta
     - env: BROWSER=firefox BVER=nightly
 
 before_install:
@@ -41,7 +40,6 @@ before_install:
 
 before_script:
   - pulseaudio --start
-  - npm install
 
 script:
   - npm test

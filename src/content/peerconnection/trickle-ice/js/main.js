@@ -251,3 +251,14 @@ function gatheringStateChange() {
   gatherButton.disabled = false;
   candidateTBody.appendChild(row);
 }
+
+// check if we have getUserMedia permissions.
+navigator.mediaDevices.enumerateDevices()
+  .then(function(devices) {
+    devices.forEach(function(device) {
+      if (device.label !== '') {
+        document.getElementById('getUserMediaPermissions').style.display =
+           'block';
+      }
+    });
+  });
