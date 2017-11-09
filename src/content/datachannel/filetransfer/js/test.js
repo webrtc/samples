@@ -20,7 +20,7 @@ var emptyFilePath =
 function sendFile(t, path) {
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  return driver.get('file://' + process.cwd() +
     '/src/content/datachannel/filetransfer/index.html')
   .then(function() {
     t.pass('page loaded');
@@ -90,10 +90,12 @@ test('Filetransfer via Datachannels: empty file', function(t) {
     var fs = require('fs');
     // Create empty file.
     fs.writeFileSync(emptyFilePath, '');
-    sendFile(t, emptyFilePath);
-    // Remove the empty file.
-    fs.unlink(emptyFilePath, function(error) {
-      console.log('Failed to remove file: ' + error);
-    });
+    sendFile(t, emptyFilePath)
+        .then(() => {
+          // Remove the empty file.
+          fs.unlink(emptyFilePath, function(error) {
+            console.log('Failed to remove file: ' + error);
+          });
+        });
   }
 });
