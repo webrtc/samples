@@ -15,6 +15,9 @@ var test = require('tape');
 // Tests basic functionality of the the gum demo.
 require('../src/content/getusermedia/gum/js/test');
 
+// Tests basic functionality of the the resolution demo.
+require('../src/content/getusermedia/resolution/js/test');
+
 // Tests basic functionality of the pc1 demo.
 require('../src/content/peerconnection/pc1/js/test');
 
