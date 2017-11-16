@@ -11,6 +11,7 @@
   firstOptionNode.appendChild(
     document.createTextNode(versionName + '; Select different webrtc-adapter version...')
   );
+  selectNode.className = 'versionselector';
   selectNode.appendChild(firstOptionNode);
 
   selectNode.onclick = function(e) {
@@ -55,5 +56,5 @@
     request.send();
   };
 
-  document.body.appendChild(selectNode);
+  document.getElementById('container').appendChild(selectNode);
 })();
