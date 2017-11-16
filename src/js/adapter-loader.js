@@ -11,6 +11,7 @@
   firstOptionNode.appendChild(
     document.createTextNode(versionName + '; Select different webrtc-adapter version...')
   );
+  firstOptionNode.value = '';
   selectNode.className = 'versionselector';
   selectNode.appendChild(firstOptionNode);
 
