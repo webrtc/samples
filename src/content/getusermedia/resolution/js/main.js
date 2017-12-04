@@ -16,6 +16,7 @@ var vgaButton = document.querySelector('#vga');
 var qvgaButton = document.querySelector('#qvga');
 var hdButton = document.querySelector('#hd');
 var fullHdButton = document.querySelector('#full-hd');
+var 4kButton = document.querySelector('#4k');
 
 var videoblock = document.querySelector('#videoblock');
 var messagebox = document.querySelector('#errormessage');
@@ -44,6 +45,10 @@ fullHdButton.onclick = function() {
   getMedia(fullHdConstraints);
 };
 
+4kButton.onclick = function() {
+  getMedia(4kConstraints);
+};
+
 var qvgaConstraints = {
   video: {width: {exact: 320}, height: {exact: 240}}
 };
@@ -58,6 +63,10 @@ var hdConstraints = {
 
 var fullHdConstraints = {
   video: {width: {exact: 1920}, height: {exact: 1080}}
+};
+
+var 4kConstraints = {
+  video: {width: {exact: 4096}, height: {exact: 2160}}
 };
 
 function gotStream(mediaStream) {
