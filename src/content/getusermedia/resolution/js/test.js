@@ -68,6 +68,6 @@ test('FULL HD capture', function(t) {
   resolutionTest(t, 'full-hd', 1920);
 });
 
-test('Four K capture', function(t) {
+test('4K capture', function(t) {
   resolutionTest(t, 'fourK', 4096);
 });
