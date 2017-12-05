@@ -55,7 +55,6 @@ test('QVGA capture', function(t) {
   resolutionTest(t, 'qvga', 320);
 });
 
-
 test('VGA capture', function(t) {
   resolutionTest(t, 'vga', 640);
 });
@@ -67,3 +66,10 @@ test('HD capture', function(t) {
 test('FULL HD capture', function(t) {
   resolutionTest(t, 'full-hd', 1920);
 });
+
+/*
+//Fake camera capture device does not support 4K yet.
+test('4K capture', function(t) {
+  resolutionTest(t, 'fourK', 4096);
+});
+*/
