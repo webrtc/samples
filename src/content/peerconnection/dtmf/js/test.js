@@ -15,15 +15,7 @@ var test = require('tape');
 var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
-// Disabled for Firefox due not supporting DTMF.
-// Disabled due to being flaky on Chrome.
-// TODO(jansson): Fix flakiness
-test('DTMF tones',{skip: true}, function(t) {
-  if (process.env.BROWSER === 'firefox') {
-    t.pass('Firefox not supported yet');
-    t.end();
-    return;
-  }
+test('DTMF tones', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
   driver.get('file://' + process.cwd() +
@@ -36,14 +28,14 @@ test('DTMF tones',{skip: true}, function(t) {
     return driver.wait(function() {
       return driver.executeScript(
           'return document.querySelector(\'#dtmfStatus\').innerHTML === ' +
-          '\'DTMF activated\';');
+          '\'DTMF available\';');
     }, 30 * 1000);
   })
   .then(function() {
-    t.pass('DTMF activated');
+    t.pass('DTMF available');
     // Set the tones to be sent.
     return driver.executeScript(
-        'document.querySelector(\'#tones\').value = \'1 # , 9 \'');
+        'document.querySelector(\'#tones\').value = \'1#,9\'');
   })
   .then(function() {
     return driver.findElement(webdriver.By.id('sendTonesButton')).click();
