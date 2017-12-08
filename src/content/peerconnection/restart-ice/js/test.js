@@ -45,6 +45,9 @@ test('PeerConnection restart ICE sample', {skip: true}, function(t) {
       '/src/content/peerconnection/restart-ice/index.html')
   .then(function() {
     t.pass('page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
     return driver.findElement(webdriver.By.id('startButton')).click();
   })
   .then(function() {
@@ -103,6 +106,7 @@ test('PeerConnection restart ICE sample', {skip: true}, function(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });

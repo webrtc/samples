@@ -30,6 +30,9 @@ test('DTMF tones',{skip: true}, function(t) {
       '/src/content/peerconnection/dtmf/index.html')
   .then(function() {
     t.pass('page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
     return driver.findElement(webdriver.By.id('callButton')).click();
   })
   .then(function() {
@@ -75,6 +78,7 @@ test('DTMF tones',{skip: true}, function(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });

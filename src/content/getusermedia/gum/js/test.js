@@ -23,6 +23,9 @@ test('Video width and video height are set on GUM sample', function(t) {
       '/src/content/getusermedia/gum/index.html')
   .then(function() {
     t.pass('Page loaded');
+    // Override the trace function to ensure console logging works for
+    // webdriver.
+    seleniumHelpers.overrideTrace(driver);
   })
   .then(function() {
     return driver.wait(function() {
@@ -94,6 +97,7 @@ test('Check that errorMsg can add msg to the page', function(t) {
     t.end();
   })
   .then(null, function(err) {
+    seleniumHelpers.printLogs(driver, webdriver.logging.Type.BROWSER);
     t.fail(err);
     t.end();
   });
