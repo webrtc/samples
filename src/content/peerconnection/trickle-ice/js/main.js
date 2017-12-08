@@ -17,7 +17,6 @@ var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
 var ipv6Check = document.querySelector('input#ipv6');
-var rtcpMuxCheck = document.querySelector('input#unmux');
 var iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
 
 addButton.onclick = addServer;
@@ -99,12 +98,9 @@ function start() {
   }
 
   // Create a PeerConnection with no streams, but force a m=audio line.
-  // This will gather candidates for either 1 or 2 ICE components, depending
-  // on whether the un-muxed RTCP checkbox is checked.
   var config = {
     iceServers: iceServers,
     iceTransportPolicy: iceTransports,
-    rtcpMuxPolicy: rtcpMuxCheck.checked ? 'negotiate' : 'require',
     iceCandidatePoolSize: iceCandidatePoolInput.value
   };
 
