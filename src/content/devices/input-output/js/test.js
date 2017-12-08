@@ -24,7 +24,8 @@ test('Fake device selection and check video element dimensions ' +
 
     var browser = process.env.BROWSER;
 
-    driver.get('file://' + process.cwd() +
+    driver.get((process.env.BASEURL ? process.env.BASEURL :
+        ('file://' + process.cwd())) +
         '/src/content/devices/input-output/index.html')
       .then(function() {
         t.pass('Page loaded');
