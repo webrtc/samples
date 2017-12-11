@@ -18,7 +18,8 @@ var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 test('PeerConnection pc1 sample', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  driver.get((process.env.BASEURL ? process.env.BASEURL :
+      ('file://' + process.cwd())) +
       '/src/content/peerconnection/pc1/index.html')
   .then(function() {
     t.pass('page loaded');
