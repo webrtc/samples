@@ -8,7 +8,6 @@
 -->
 <html>
 <head>
-
   <meta charset="utf-8">
   <meta name="description" content="WebRTC code samples">
   <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
@@ -27,15 +26,11 @@
   <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="../../../css/main.css" />
   <link rel="stylesheet" href="css/main.css" />
-
 </head>
 
 <body>
-
 <div id="container">
-
   <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: audio only</span></h1>
-
   <div id="audio">
     <div>
       <div class="label">Local audio:</div><audio id="audio1" autoplay controls muted></audio>
@@ -78,12 +73,14 @@
     <th>iSAC 16K</th>
     <th>G722</th>
     <th>PCMU</th>
+    <th>Browsers Tested</th>
   </tr>
   <tr>
-    <td>~40 kbps / Muted : Same, ~50 Packets, Muted : Same</td>
-    <td>~30 kbps / Muted : Same, ~35 Packets, Muted : Same</td>
+    <td>~40 kbps / Muted : Same, ~50 Packets, Muted : Same or slight drop</td>
+    <td>~30 kbps / Muted : Same, ~33 Packets, Muted : Same or slight drop</td>
     <td>~70 kbps / Muted : Same, ~50 Packets, Muted : Same</td>
     <td>~70 kbps / Muted : Same, ~55 Packets, Muted : Same</td>
+    <td>Tested in Chrome, Not tested in Opera, Firefox, Safari, Edge</td>
   </tr>
 </table>
 <hr>
