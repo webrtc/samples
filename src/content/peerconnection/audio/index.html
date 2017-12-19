@@ -29,7 +29,7 @@
 </head>
 
 <body>
-<div id="container">
+  <div id="container">
   <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: audio only</span></h1>
   <div id="audio">
     <div>
@@ -53,38 +53,37 @@
     <button id="callButton">Call</button>
     <button id="hangupButton">Hang Up</button>
   </div>
-  <div class="graph-container" id="bitrateGraph">
+    <div class="graph-container" id="bitrateGraph">
     <div>Bitrate</div>
     <canvas id="bitrateCanvas"></canvas>
-  </div>
+    </div>
   <div class="graph-container" id="packetGraph">
     <div>Packets sent per second</div>
     <canvas id="packetCanvas"></canvas>
   </div>
   <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
-</div>
-<table>
-  <caption>Bitrate and Packes sent per second - approximate results in browsers</caption>
-  <tr>
-    <th>Opus</th>
-    <th>iSAC 16K</th>
-    <th>G722</th>
-    <th>PCMU</th>
-    <th>Browsers Tested</th>
-  </tr>
-  <tr>
-    <td>~40 kbps / Muted : Same, ~50 Packets, Muted : Same or slight drop</td>
-    <td>~30 kbps / Muted : Same, ~33 Packets, Muted : Same or slight drop</td>
-    <td>~70 kbps / Muted : Same, ~50 Packets, Muted : Same</td>
-    <td>~70 kbps / Muted : Same, ~55 Packets, Muted : Same</td>
-    <td>Tested in Chrome, Not tested in Opera, Firefox, Safari, Edge</td>
-  </tr>
-</table>
-<hr>
-<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-<script src="../../../js/common.js"></script>
-<script src="js/main.js"></script>
-<script src="../../../js/third_party/graph.js"></script>
-<script src="../../../js/lib/ga.js"></script>
+  </div>
+  <table>
+    <caption>Bitrate and Packes sent per second - approximate results in browsers</caption>
+    <tr>
+      <th>Opus</th>
+      <th>iSAC 16K</th>
+      <th>G722</th>
+      <th>PCMU</th>
+      <th>Browsers Tested</th>
+    </tr>
+    <tr>
+      <td>~40 kbps / Muted : Same, ~50 Packets, Muted : Same or slight drop</td>
+      <td>~30 kbps / Muted : Same, ~33 Packets, Muted : Same or slight drop</td>
+      <td>~70 kbps / Muted : Same, ~50 Packets, Muted : Same</td>
+      <td>~70 kbps / Muted : Same, ~55 Packets, Muted : Same</td>
+      <td>Tested in Chrome, Not tested in Opera, Firefox, Safari, Edge</td>
+    </tr>
+  </table>
+  <hr>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script><script src="../../../js/common.js"></script>
+  <script src="js/main.js"></script>
+  <script src="../../../js/third_party/graph.js"></script>
+  <script src="../../../js/lib/ga.js"></script>
 </body>
 </html>
