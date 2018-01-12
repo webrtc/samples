@@ -12,7 +12,6 @@ var localConnection;
 var remoteConnection;
 var sendChannel;
 var receiveChannel;
-var pcConstraint;
 var megsToSend = document.querySelector('input#megsToSend');
 var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
@@ -40,14 +39,10 @@ function createConnection() {
   sendButton.disabled = true;
   megsToSend.disabled = true;
   var servers = null;
-  pcConstraint = null;
 
   bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
-  // Add localConnection to global scope to make it visible
-  // from the browser console.
-  window.localConnection = localConnection = new RTCPeerConnection(servers,
-      pcConstraint);
+  localConnection = localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
   var dataChannelParams = {ordered: false};
@@ -71,10 +66,7 @@ function createConnection() {
     onCreateSessionDescriptionError
   );
 
-  // Add remoteConnection to global scope to make it visible
-  // from the browser console.
-  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
-      pcConstraint);
+  remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = function(e) {

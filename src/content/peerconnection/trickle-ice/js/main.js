@@ -16,7 +16,6 @@ var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
-var ipv6Check = document.querySelector('input#ipv6');
 var iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
 
 addButton.onclick = addServer;
@@ -104,15 +103,12 @@ function start() {
     iceCandidatePoolSize: iceCandidatePoolInput.value
   };
 
-  var pcConstraints = {};
   var offerOptions = {offerToReceiveAudio: 1};
   // Whether we gather IPv6 candidates.
-  pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
-  trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
-        ', constraints=' + JSON.stringify(pcConstraints));
-  pc = new RTCPeerConnection(config, pcConstraints);
+  trace('Creating new PeerConnection with config=' + JSON.stringify(config));
+  pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
   pc.createOffer(
