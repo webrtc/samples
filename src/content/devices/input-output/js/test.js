@@ -81,12 +81,15 @@ test('Fake device selection and check video element dimensions ' +
 
         switch (browser) {
         case 'chrome':
-          fakeAudioDeviceNames = ['Fake Audio 1', 'Fake Default Audio Input'];
+          fakeAudioDeviceNames = [
+            'Fake Default Audio Input', // Chrome <= 63
+            'Fake Default Audio Input - Fake Audio Input 1', // Chrome 64+
+            'Fake Audio Input 1',
+            'Fake Audio Input 2'
+          ];
           break;
         case 'firefox':
-          // TODO: Remove the "deviceLabel === ''" check once Firefox ESR
-          // reaches 46 (supports device labels for fake devices).
-          fakeAudioDeviceNames = ['', 'Default Audio Device'];
+          fakeAudioDeviceNames = ['Default Audio Device'];
           break;
         default:
           t.skip('unsupported browser');
