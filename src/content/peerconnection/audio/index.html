@@ -8,6 +8,7 @@
 -->
 <html>
 <head>
+
   <meta charset="utf-8">
   <meta name="description" content="WebRTC code samples">
   <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
@@ -26,42 +27,48 @@
   <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="../../../css/main.css" />
   <link rel="stylesheet" href="css/main.css" />
+
 </head>
 
 <body>
-  <div id="container">
-  <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: audio only</span></h1>
-  <div id="audio">
-    <div>
-      <div class="label">Local audio:</div><audio id="audio1" autoplay controls muted></audio>
-    </div>
-    <div>
-      <div class="label">Remote audio:</div><audio id="audio2" autoplay controls></audio>
-    </div>
-  </div>
 
-  <div id="buttons">
-    <select id="codec">
-      <!-- Codec values are matched with how they appear in the SDP.
-      For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
-      matches 16K iSAC (but not 32K iSAC). -->
-      <option value="opus">Opus</option>
-      <option value="ISAC">iSAC 16K</option>
-      <option value="G722">G722</option>
-      <option value="PCMU">PCMU</option>
-    </select>
-    <button id="callButton">Call</button>
-    <button id="hangupButton">Hang Up</button>
-  </div>
-    <div class="graph-container" id="bitrateGraph">
-    <div>Bitrate</div>
-    <canvas id="bitrateCanvas"></canvas>
+  <div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: audio only</span></h1>
+
+    <div id="audio">
+      <div>
+        <div class="label">Local audio:</div><audio id="audio1" autoplay controls muted></audio>
+      </div>
+      <div>
+        <div class="label">Remote audio:</div><audio id="audio2" autoplay controls></audio>
+      </div>
     </div>
-  <div class="graph-container" id="packetGraph">
-    <div>Packets sent per second</div>
-    <canvas id="packetCanvas"></canvas>
-  </div>
-  <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+    <div id="buttons">
+      <select id="codec">
+        <!-- Codec values are matched with how they appear in the SDP.
+        For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
+        matches 16K iSAC (but not 32K iSAC). -->
+        <option value="opus">Opus</option>
+        <option value="ISAC">iSAC 16K</option>
+        <option value="G722">G722</option>
+        <option value="PCMU">PCMU</option>
+      </select>
+      <button id="callButton">Call</button>
+      <button id="hangupButton">Hang Up</button>
+    </div>
+    <div class="graph-container" id="bitrateGraph">
+      <div>Bitrate</div>
+      <canvas id="bitrateCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="packetGraph">
+      <div>Packets sent per second</div>
+      <canvas id="packetCanvas"></canvas>
+    </div>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/audio" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
   </div>
   <table>
     <caption>Bitrate and Packes sent per second - approximate results in browsers</caption>
@@ -81,12 +88,11 @@
     </tr>
   </table>
   <hr>
-
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
   <script src="../../../js/third_party/graph.js"></script>
-  
+
   <script src="../../../js/lib/ga.js"></script>
 </body>
 </html>
