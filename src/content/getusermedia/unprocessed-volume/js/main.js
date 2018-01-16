@@ -27,7 +27,7 @@ try {
 
 // Put variables in global scope to make them available to the browser console.
 var constraints = window.constraints = {
-  audio: { echoCancellation: true },
+  audio: {echoCancellation: true},
   video: false
 };
 
@@ -48,9 +48,10 @@ function handleSuccess(stream) {
           soundMeter.slow.toFixed(2);
     }, 200);
   });
-  console.log('First track settings:', JSON.stringify(stream.getAudioTracks()[0].getSettings()));
+  console.log('First track settings:',
+              JSON.stringify(stream.getAudioTracks()[0].getSettings()));
   // Set up second track with audio processing disabled
-  constraints.audio = { echoCancellation: { exact: false } };
+  constraints.audio = {echoCancellation: {exact: false}};
   console.log('Getting second audio stream');
   navigator.mediaDevices.getUserMedia(constraints)
     .then(handleUnprocessedStream).catch(handleError);
@@ -58,8 +59,10 @@ function handleSuccess(stream) {
 
 function handleUnprocessedStream(stream) {
   console.log('Got second audio stream');
-  console.log('Second track settings:', JSON.stringify(stream.getAudioTracks()[0].getSettings()));
-  console.log('Second track constraints:', JSON.stringify(stream.getAudioTracks()[0].getConstraints()));
+  console.log('Second track settings:',
+              JSON.stringify(stream.getAudioTracks()[0].getSettings()));
+  console.log('Second track constraints:',
+              JSON.stringify(stream.getAudioTracks()[0].getConstraints()));
   var unprocMeter = window.unprocMeter = new SoundMeter(window.audioContext);
   unprocMeter.connectToSource(stream, function(e) {
     if (e) {
