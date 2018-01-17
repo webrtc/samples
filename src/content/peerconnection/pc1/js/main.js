@@ -11,11 +11,14 @@
 var startButton = document.getElementById('startButton');
 var callButton = document.getElementById('callButton');
 var hangupButton = document.getElementById('hangupButton');
+var restartButton = document.getElementById('restartButton');
 callButton.disabled = true;
 hangupButton.disabled = true;
+restartButton.disabled = true;
 startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
+restartButton.onclick = restartVideo;
 
 var startTime;
 var localVideo = document.getElementById('localVideo');
@@ -82,6 +85,8 @@ function start() {
 function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
+  restartButton.disabled = !('RTCRtpSender' in window &&
+      'replaceTrack' in RTCRtpSender.prototype);
   trace('Starting call');
   startTime = window.performance.now();
   var videoTracks = localStream.getVideoTracks();
@@ -233,5 +238,28 @@ function hangup() {
   pc1 = null;
   pc2 = null;
   hangupButton.disabled = true;
+  restartButton.disabled = true;
   callButton.disabled = false;
+}
+
+// Stops and restarts the video with replaceTrack.
+function restartVideo() {
+  localStream.getVideoTracks()[0].stop();
+  localStream.removeTrack(localStream.getVideoTracks()[0]);
+  window.setTimeout(function() {
+    navigator.mediaDevices.getUserMedia({video: true})
+    .then(function(stream) {
+      localStream.addTrack(stream.getVideoTracks()[0]);
+      var sender = pc1.getSenders().find(function(s) {
+        return s.track && s.track.kind === 'video';
+      });
+      return sender.replaceTrack(stream.getVideoTracks()[0]);
+    })
+    .then(function() {
+      console.log('Replaced video track');
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+  }, 5000);
 }
