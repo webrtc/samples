@@ -22,7 +22,8 @@ test('Basic datachannel sample', {skip: process.env.BROWSER === 'firefox'},
   function(t) {
     var driver = seleniumHelpers.buildDriver();
 
-    driver.get('file://' + process.cwd() +
+    driver.get((process.env.BASEURL ? process.env.BASEURL :
+        ('file://' + process.cwd())) +
         '/src/content/datachannel/basic/index.html')
     .then(function() {
       t.pass('page loaded');

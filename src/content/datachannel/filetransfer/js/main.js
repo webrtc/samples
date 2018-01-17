@@ -11,7 +11,6 @@ var localConnection;
 var remoteConnection;
 var sendChannel;
 var receiveChannel;
-var pcConstraint;
 var bitrateDiv = document.querySelector('div#bitrate');
 var fileInput = document.querySelector('input#fileInput');
 var downloadAnchor = document.querySelector('a#download');
@@ -41,12 +40,8 @@ function handleFileInputChange() {
 
 function createConnection() {
   var servers = null;
-  pcConstraint = null;
 
-  // Add localConnection to global scope to make it visible
-  // from the browser console.
-  window.localConnection = localConnection = new RTCPeerConnection(servers,
-      pcConstraint);
+  localConnection = localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel');
@@ -63,10 +58,7 @@ function createConnection() {
     gotDescription1,
     onCreateSessionDescriptionError
   );
-  // Add remoteConnection to global scope to make it visible
-  // from the browser console.
-  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
-      pcConstraint);
+  remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = function(e) {

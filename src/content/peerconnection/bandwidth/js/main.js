@@ -75,14 +75,11 @@ function call() {
   bandwidthSelector.disabled = false;
   trace('Starting call');
   var servers = null;
-  var pcConstraints = {
-    'optional': []
-  };
-  pc1 = new RTCPeerConnection(servers, pcConstraints);
+  pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
   pc1.onicecandidate = onIceCandidate.bind(pc1);
 
-  pc2 = new RTCPeerConnection(servers, pcConstraints);
+  pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
   pc2.onicecandidate = onIceCandidate.bind(pc2);
   pc2.ontrack = gotRemoteStream;

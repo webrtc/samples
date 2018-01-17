@@ -16,8 +16,6 @@ var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
-var ipv6Check = document.querySelector('input#ipv6');
-var rtcpMuxCheck = document.querySelector('input#unmux');
 var iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
 
 addButton.onclick = addServer;
@@ -99,24 +97,18 @@ function start() {
   }
 
   // Create a PeerConnection with no streams, but force a m=audio line.
-  // This will gather candidates for either 1 or 2 ICE components, depending
-  // on whether the un-muxed RTCP checkbox is checked.
   var config = {
     iceServers: iceServers,
     iceTransportPolicy: iceTransports,
-    rtcpMuxPolicy: rtcpMuxCheck.checked ? 'negotiate' : 'require',
     iceCandidatePoolSize: iceCandidatePoolInput.value
   };
 
-  var pcConstraints = {};
   var offerOptions = {offerToReceiveAudio: 1};
   // Whether we gather IPv6 candidates.
-  pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
-  trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
-        ', constraints=' + JSON.stringify(pcConstraints));
-  pc = new RTCPeerConnection(config, pcConstraints);
+  trace('Creating new PeerConnection with config=' + JSON.stringify(config));
+  pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
   pc.createOffer(
