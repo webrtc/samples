@@ -55,8 +55,21 @@ function hangup() {
   trace('Ending call');
   localPeerConnection.close();
   remotePeerConnection.close();
-  localPeerConnection = null;
-  remotePeerConnection = null;
+
+  // query stats one last time.
+  Promise.all([
+    remotePeerConnection.getStats(null)
+    .then(showRemoteStats, function(err) {
+      console.log(err);
+    }),
+    localPeerConnection.getStats(null)
+    .then(showLocalStats, function(err) {
+      console.log(err);
+    })
+  ]).then(() => {
+    localPeerConnection = null;
+    remotePeerConnection = null;
+  });
 
   localStream.getTracks().forEach(function(track) {
     track.stop();
@@ -210,81 +223,84 @@ function onAddIceCandidateError(error) {
   trace('Failed to add Ice Candidate: ' + error.toString());
 }
 
+function showRemoteStats(results) {
+  var statsString = dumpStats(results);
+  receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
+  // calculate video bitrate
+  results.forEach(function(report) {
+    var now = report.timestamp;
+
+    var bitrate;
+    if (report.type === 'inboundrtp' && report.mediaType === 'video') {
+      // firefox calculates the bitrate for us
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=951496
+      bitrate = Math.floor(report.bitrateMean / 1024);
+    } else if (report.type === 'ssrc' && report.bytesReceived &&
+         report.googFrameHeightReceived) {
+      // chrome does not so we need to do it ourselves
+      var bytes = report.bytesReceived;
+      if (timestampPrev) {
+        bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
+        bitrate = Math.floor(bitrate);
+      }
+      bytesPrev = bytes;
+      timestampPrev = now;
+    }
+    if (bitrate) {
+      bitrate += ' kbits/sec';
+      bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate;
+    }
+  });
+
+  // figure out the peer's ip
+  var activeCandidatePair = null;
+  var remoteCandidate = null;
+
+  // Search for the candidate pair, spec-way first.
+  results.forEach(function(report) {
+    if (report.type === 'transport') {
+      activeCandidatePair = results.get(report.selectedCandidatePairId);
+    }
+  });
+  // Fallback for Firefox and Chrome legacy stats.
+  if (!activeCandidatePair) {
+    results.forEach(function(report) {
+      if (report.type === 'candidate-pair' && report.selected ||
+          report.type === 'googCandidatePair' &&
+          report.googActiveConnection === 'true') {
+        activeCandidatePair = report;
+      }
+    });
+  }
+  if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
+    remoteCandidate = results.get(activeCandidatePair.remoteCandidateId);
+  }
+  if (remoteCandidate) {
+    if (remoteCandidate.ip && remoteCandidate.port) {
+      peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
+          remoteCandidate.ip + ':' + remoteCandidate.port;
+    } else if (remoteCandidate.ipAddress && remoteCandidate.portNumber) {
+      // Fall back to old names.
+      peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
+          remoteCandidate.ipAddress +
+          ':' + remoteCandidate.portNumber;
+    }
+  }
+}
+
+function showLocalStats(results) {
+  var statsString = dumpStats(results);
+  senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
+}
 // Display statistics
 setInterval(function() {
   if (localPeerConnection && remotePeerConnection) {
     remotePeerConnection.getStats(null)
-    .then(function(results) {
-      var statsString = dumpStats(results);
-      receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
-      // calculate video bitrate
-      results.forEach(function(report) {
-        var now = report.timestamp;
-
-        var bitrate;
-        if (report.type === 'inboundrtp' && report.mediaType === 'video') {
-          // firefox calculates the bitrate for us
-          // https://bugzilla.mozilla.org/show_bug.cgi?id=951496
-          bitrate = Math.floor(report.bitrateMean / 1024);
-        } else if (report.type === 'ssrc' && report.bytesReceived &&
-             report.googFrameHeightReceived) {
-          // chrome does not so we need to do it ourselves
-          var bytes = report.bytesReceived;
-          if (timestampPrev) {
-            bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
-            bitrate = Math.floor(bitrate);
-          }
-          bytesPrev = bytes;
-          timestampPrev = now;
-        }
-        if (bitrate) {
-          bitrate += ' kbits/sec';
-          bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate;
-        }
-      });
-
-      // figure out the peer's ip
-      var activeCandidatePair = null;
-      var remoteCandidate = null;
-
-      // Search for the candidate pair, spec-way first.
-      results.forEach(function(report) {
-        if (report.type === 'transport') {
-          activeCandidatePair = results.get(report.selectedCandidatePairId);
-        }
-      });
-      // Fallback for Firefox and Chrome legacy stats.
-      if (!activeCandidatePair) {
-        results.forEach(function(report) {
-          if (report.type === 'candidate-pair' && report.selected ||
-              report.type === 'googCandidatePair' &&
-              report.googActiveConnection === 'true') {
-            activeCandidatePair = report;
-          }
-        });
-      }
-      if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
-        remoteCandidate = results.get(activeCandidatePair.remoteCandidateId);
-      }
-      if (remoteCandidate) {
-        if (remoteCandidate.ip && remoteCandidate.port) {
-          peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
-              remoteCandidate.ip + ':' + remoteCandidate.port;
-        } else if (remoteCandidate.ipAddress && remoteCandidate.portNumber) {
-          // Fall back to old names.
-          peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
-              remoteCandidate.ipAddress +
-              ':' + remoteCandidate.portNumber;
-        }
-      }
-    }, function(err) {
+    .then(showRemoteStats, function(err) {
       console.log(err);
     });
     localPeerConnection.getStats(null)
-    .then(function(results) {
-      var statsString = dumpStats(results);
-      senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
-    }, function(err) {
+    .then(showLocalStats, function(err) {
       console.log(err);
     });
   } else {
