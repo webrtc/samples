@@ -12,7 +12,6 @@ var localConnection;
 var remoteConnection;
 var sendChannel;
 var receiveChannel;
-var pcConstraint;
 var dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
@@ -35,7 +34,6 @@ function disableSendButton() {
 function createConnection() {
   dataChannelSend.placeholder = '';
   var servers = null;
-  pcConstraint = null;
   dataConstraint = null;
   trace('Using SCTP based data channels');
   // SCTP is supported from Chrome 31 and is supported in FF.
@@ -44,7 +42,7 @@ function createConnection() {
   // Add localConnection to global scope to make it visible
   // from the browser console.
   window.localConnection = localConnection =
-      new RTCPeerConnection(servers, pcConstraint);
+      new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel',
@@ -60,7 +58,7 @@ function createConnection() {
   // Add remoteConnection to global scope to make it visible
   // from the browser console.
   window.remoteConnection = remoteConnection =
-      new RTCPeerConnection(servers, pcConstraint);
+      new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = function(e) {

@@ -68,11 +68,8 @@ function call() {
     trace('Using Audio device: ' + audioTracks[0].label);
   }
   var servers = null;
-  var pcConstraints = {
-    'optional': []
-  };
 
-  pc1 = new RTCPeerConnection(servers, pcConstraints);
+  pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
   pc1StateDiv.textContent = pc1.signalingState || pc1.readyState;
   pc1.onsignalingstatechange = stateCallback1;
@@ -83,7 +80,7 @@ function call() {
     onIceCandidate(pc1, e);
   };
 
-  pc2 = new RTCPeerConnection(servers, pcConstraints);
+  pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
   pc2StateDiv.textContent = pc2.signalingState || pc2.readyState;
   pc2.onsignalingstatechange = stateCallback2;
