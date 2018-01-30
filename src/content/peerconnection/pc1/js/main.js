@@ -234,4 +234,5 @@ function hangup() {
   pc2 = null;
   hangupButton.disabled = true;
   callButton.disabled = false;
+  pc1.getStats(); // just to have something testing getstats-after-close.
 }
