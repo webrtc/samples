@@ -12,11 +12,14 @@
 var audio2 = document.querySelector('audio#audio2');
 var callButton = document.querySelector('button#callButton');
 var hangupButton = document.querySelector('button#hangupButton');
+var muteButton = document.querySelector('button#muteButton');
 var codecSelector = document.querySelector('select#codec');
-hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
+muteButton.onclick = toggleMute;
 
+var supportsReplaceTrack = window.RTCRtpSender &&
+    'replaceTrack' in RTCRtpSender.prototype;
 var pc1;
 var pc2;
 var localStream;
@@ -126,6 +129,7 @@ function gotDescription2(desc) {
       desc.sdp = forceChosenAudioCodec(desc.sdp);
       pc1.setRemoteDescription(desc).then(
         function() {
+          muteButton.disabled = !supportsReplaceTrack;
         },
         onSetSessionDescriptionError
       );
@@ -144,8 +148,27 @@ function hangup() {
   pc1 = null;
   pc2 = null;
   hangupButton.disabled = true;
+  muteButton.disabled = true;
   callButton.disabled = false;
   codecSelector.disabled = false;
+}
+
+function toggleMute() {
+  var sender = pc1.getSenders()[0];
+  var p;
+  if (!sender.track) {
+    trace('re-adding audio track');
+    p = sender.replaceTrack(localStream.getAudioTracks()[0]);
+  } else {
+    trace('replacing audio track with null');
+    p = sender.replaceTrack(null);
+  }
+  p.then(function() {
+    console.log('replaced track');
+  })
+  .catch(function(err) {
+    console.error('during replaceTrack', err);
+  });
 }
 
 function gotRemoteStream(e) {
