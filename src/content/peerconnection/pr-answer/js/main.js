@@ -156,7 +156,7 @@ function accept() {
     onCreateAnswerError
   );
   btn2.disabled = true;
-  btn1.disabled = false;
+  btn1.disabled = true;
 }
 
 function stop() {
