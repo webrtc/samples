@@ -29,6 +29,9 @@ megsToSend.addEventListener('change', function(e) {
   if (this.value <= 0) {
     sendButton.disabled = true;
     errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
+  } else if (this.value > 1000) {
+        errorMessage.innerHTML = '<p>Progress can be slow when the values are greater than 1000.</p>';
+        sendButton.disabled = false;
   } else {
     errorMessage.innerHTML = '';
     sendButton.disabled = false;
