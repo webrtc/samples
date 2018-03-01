@@ -62,7 +62,8 @@ function gotStream(stream) {
   if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
   }
-  if (adapter.browserDetails.browser !== 'chrome') {
+  if (adapter.browserDetails.browser !== 'chrome' ||
+      adapter.browserDetails.version >= 66) {
     localStream.getTracks().forEach(
       function(track) {
         pc1.addTrack(
@@ -73,7 +74,7 @@ function gotStream(stream) {
     );
   } else {
     // TODO: https://github.com/webrtc/adapter/issues/733
-    // chrome does not yet support addTrack + dtmf
+    // chrome does not yet support addTrack + dtmf until M66.
     pc1.addStream(localStream);
   }
   trace('Adding Local Stream to peer connection');
