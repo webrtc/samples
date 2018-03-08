@@ -10,17 +10,17 @@
 
 var vid1 = document.getElementById('vid1');
 var vid2 = document.getElementById('vid2');
-var btn1 = document.getElementById('btn1');
-var btn2 = document.getElementById('btn2');
-var btn3 = document.getElementById('btn3');
+var callbtn = document.getElementById('callbtn');
+var acceptbtn = document.getElementById('acceptbtn');
+var hangupbtn = document.getElementById('hangupbtn');
 
-btn1.addEventListener('click', start);
-btn2.addEventListener('click', accept);
-btn3.addEventListener('click', stop);
+callbtn.addEventListener('click', start);
+acceptbtn.addEventListener('click', accept);
+hangupbtn.addEventListener('click', stop);
 
-btn1.disabled = true;
-btn2.disabled = true;
-btn3.disabled = true;
+callbtn.disabled = true;
+acceptbtn.disabled = true;
+hangupbtn.disabled = true;
 
 var pc1 = null;
 var pc2 = null;
@@ -34,7 +34,7 @@ function gotStream(stream) {
   trace('Received local stream');
   vid1.srcObject = stream;
   localstream = stream;
-  btn1.disabled = false;
+  callbtn.disabled = false;
 }
 
 navigator.mediaDevices.getUserMedia({
@@ -47,9 +47,9 @@ navigator.mediaDevices.getUserMedia({
 });
 
 function start() {
-  btn1.disabled = true;
-  btn2.disabled = false;
-  btn3.disabled = false;
+  callbtn.disabled = true;
+  acceptbtn.disabled = false;
+  hangupbtn.disabled = false;
   trace('Starting Call');
   var videoTracks = localstream.getVideoTracks();
   var audioTracks = localstream.getAudioTracks();
@@ -155,8 +155,8 @@ function accept() {
     gotDescription3,
     onCreateAnswerError
   );
-  btn2.disabled = true;
-  btn1.disabled = true;
+  acceptbtn.disabled = true;
+  callbtn.disabled = true;
 }
 
 function stop() {
@@ -165,9 +165,9 @@ function stop() {
   pc2.close();
   pc1 = null;
   pc2 = null;
-  btn2.disabled = true;
-  btn1.disabled = false;
-  btn3.disabled = true;
+  acceptbtn.disabled = true;
+  callbtn.disabled = false;
+  hangupbtn.disabled = true;
 }
 
 function gotRemoteStream(e) {
