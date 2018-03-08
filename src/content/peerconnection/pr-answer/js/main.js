@@ -10,17 +10,17 @@
 
 var vid1 = document.getElementById('vid1');
 var vid2 = document.getElementById('vid2');
-var callbtn = document.getElementById('callbtn');
-var acceptbtn = document.getElementById('acceptbtn');
-var hangupbtn = document.getElementById('hangupbtn');
+var callButton = document.getElementById('callButton');
+var acceptButton = document.getElementById('acceptButton');
+var hangUpButton = document.getElementById('hangUpButton');
 
-callbtn.addEventListener('click', start);
-acceptbtn.addEventListener('click', accept);
-hangupbtn.addEventListener('click', stop);
+callButton.addEventListener('click', start);
+acceptButton.addEventListener('click', accept);
+hangUpButton.addEventListener('click', stop);
 
-callbtn.disabled = true;
-acceptbtn.disabled = true;
-hangupbtn.disabled = true;
+callButton.disabled = true;
+acceptButton.disabled = true;
+hangUpButton.disabled = true;
 
 var pc1 = null;
 var pc2 = null;
@@ -34,7 +34,7 @@ function gotStream(stream) {
   trace('Received local stream');
   vid1.srcObject = stream;
   localstream = stream;
-  callbtn.disabled = false;
+  callButton.disabled = false;
 }
 
 navigator.mediaDevices.getUserMedia({
@@ -47,9 +47,9 @@ navigator.mediaDevices.getUserMedia({
 });
 
 function start() {
-  callbtn.disabled = true;
-  acceptbtn.disabled = false;
-  hangupbtn.disabled = false;
+  callButton.disabled = true;
+  acceptButton.disabled = false;
+  hangUpButton.disabled = false;
   trace('Starting Call');
   var videoTracks = localstream.getVideoTracks();
   var audioTracks = localstream.getAudioTracks();
@@ -155,8 +155,8 @@ function accept() {
     gotDescription3,
     onCreateAnswerError
   );
-  acceptbtn.disabled = true;
-  callbtn.disabled = true;
+  acceptButton.disabled = true;
+  callButton.disabled = true;
 }
 
 function stop() {
@@ -165,9 +165,9 @@ function stop() {
   pc2.close();
   pc1 = null;
   pc2 = null;
-  acceptbtn.disabled = true;
-  callbtn.disabled = false;
-  hangupbtn.disabled = true;
+  acceptButton.disabled = true;
+  callButton.disabled = false;
+  hangUpButton.disabled = true;
 }
 
 function gotRemoteStream(e) {
