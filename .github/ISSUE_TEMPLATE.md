@@ -2,7 +2,8 @@
 Please use [discuss-webrtc](https://groups.google.com/forum/#!forum/discuss-webrtc) for general technical discussions and questions.
 
 - [ ] I have provided steps to reproduce
-- [ ] I have provided browser name, version and adapter.js version
+- [ ] I have provided browser name and version
+- [ ] I have provided a link to the sample here or a modified version thereof
 
 **Note: If the checkboxes above are not checked (which you do after the issue is posted), the issue will be closed.**
 
