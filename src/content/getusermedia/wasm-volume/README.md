@@ -12,3 +12,8 @@ To setup: Run `setup.sh`, and then `source emsdk/emsdk_env.sh`
 
 To compile: Run `make`
 
+The resulting content has to be served from a http: URL with the root
+pointing above the "content" directory, because WASM fetching uses CORS,
+and there are links to "../../.." in the HTML files here.
+
+
