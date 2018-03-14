@@ -24,11 +24,11 @@ var Module = {
 
 var instantMeter = document.querySelector('#instant meter');
 var slowMeter = document.querySelector('#slow meter');
-var clipMeter = document.querySelector('#clip meter');
+var wasmMeter = document.querySelector('#wasm meter');
 
 var instantValueDisplay = document.querySelector('#instant .value');
 var slowValueDisplay = document.querySelector('#slow .value');
-var clipValueDisplay = document.querySelector('#clip .value');
+var wasmValueDisplay = document.querySelector('#wasm .value');
 
 try {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -60,15 +60,15 @@ function handleSuccess(stream) {
           soundMeter.slow.toFixed(2);
     }, 200);
   });
-  var wasmMeter = window.wasmMeter = new WasmSoundMeter(window.audioContext);
-  wasmMeter.connectToSource(stream, function(e) {
+  var wasmSoundMeter = window.wasmSoundMeter = new WasmSoundMeter(window.audioContext);
+  wasmSoundMeter.connectToSource(stream, function(e) {
     if (e) {
       alert(e);
       return;
     }
     setInterval(function() {
       wasmMeter.value = wasmValueDisplay.innerText =
-        wasmMeter.instant;
+        wasmSoundMeter.instant.toFixed(2);
     }, 200);
   });
 }

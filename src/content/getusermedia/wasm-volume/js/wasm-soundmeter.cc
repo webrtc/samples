@@ -9,13 +9,15 @@
 // This uses the "Embind" method of defining the interface.
 // http://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/embind.html#embind
 
+#include <math.h>
 #include <emscripten/bind.h>
 
 class SoundMeter {
  public:
-  SoundMeter() {};
-  void load_data(std::vector<float>& data);
-  std::vector<float> data() { return data_; }  // pass-by-value
+  SoundMeter(size_t buffer_size)
+    : data_(buffer_size) {};
+  std::vector<float>* data_buffer() { return &data_; } // pass by reference
+  void process_data_buffer();
   float get_fast_volume() { return decay_short_; }
   float get_slow_volume() { return decay_long_; }
  private:
@@ -24,15 +26,20 @@ class SoundMeter {
   std::vector<float> data_;
 };
 
-void SoundMeter::load_data(std::vector<float>& data) {
-
+void SoundMeter::process_data_buffer() {
+  float sum = 0.0;
+  for (int i = 0; i < data_.size(); i++) {
+    sum += data_[i] * data_[i];
+  }
+  decay_short_ = sqrt(sum / data_.size());
+  decay_long_ = 0.95 * decay_long_ + 0.05 * decay_short_;
 }
 
 EMSCRIPTEN_BINDINGS(random_string) {
   emscripten::class_<SoundMeter>("SoundMeter")
-      .constructor()
-    .function("load_data", &SoundMeter::load_data)
-    .function("data", &SoundMeter::data)
+    .constructor<size_t>()
+    .function("data_buffer", &SoundMeter::data_buffer, emscripten::allow_raw_pointers())
+    .function("process_data_buffer", &SoundMeter::process_data_buffer)
     .function("get_fast_volume", &SoundMeter::get_fast_volume)
     .function("get_slow_volume", &SoundMeter::get_slow_volume);
 }

@@ -19,12 +19,15 @@ function WasmSoundMeter(context) {
   this.slow = 0.0;
   this.clip = 0.0;
   this.script = context.createScriptProcessor(2048, 1, 1);
-  this.measurer = new Module.SoundMeter();
+  this.measurer = new Module.SoundMeter(2048);
   var that = this;
   this.script.onaudioprocess = function(event) {
-    var input = event.inputBuffer.getChannelData(0);
-    // Waiting for how to pass Float32Array to JS
-    // that.measurer.load_data(input);
+    var inputbuf = event.inputBuffer.getChannelData(0);
+    var asmbuf = that.measurer.data_buffer();
+    for (let i = 0; i < inputbuf.length; i++) {
+      asmbuf.set(i, inputbuf[i]);
+    }
+    that.measurer.process_data_buffer();
     that.instant = that.measurer.get_fast_volume();
     that.slow = that.measurer.get_slow_volume();
   };

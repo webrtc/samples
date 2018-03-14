@@ -1728,7 +1728,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 9152;
+STATICTOP = STATIC_BASE + 9168;
 /* global initializers */  __ATINIT__.push({ func: function() { __GLOBAL__sub_I_wasm_soundmeter_cc() } }, { func: function() { __GLOBAL__sub_I_bind_cpp() } });
 
 
@@ -1737,7 +1737,7 @@ STATICTOP = STATIC_BASE + 9152;
 
 
 
-var STATIC_BUMP = 9152;
+var STATIC_BUMP = 9168;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -3700,9 +3700,9 @@ function nullFunc_viiiii(x) { Module["printErr"]("Invalid function pointer calle
 
 function nullFunc_viiiiii(x) { Module["printErr"]("Invalid function pointer called with signature 'viiiiii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-Module['wasmTableSize'] = 1344;
+Module['wasmTableSize'] = 1280;
 
-Module['wasmMaxTableSize'] = 1344;
+Module['wasmMaxTableSize'] = 1280;
 
 function invoke_fi(index,a1) {
   try {
