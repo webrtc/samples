@@ -69,12 +69,23 @@ function handleSuccess(stream) {
     var servers = null;
     pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
-    pc1.onicecandidate = iceCallback1;
+    pc1.onicecandidate = function(e) {
+      onIceCandidate(pc1, e);
+    };
     pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
-    pc2.onicecandidate = iceCallback2;
-    pc2.onaddstream = gotRemoteStream;
-    pc1.addStream(filteredStream);
+    pc2.onicecandidate = function(e) {
+      onIceCandidate(pc2, e);
+    };
+    pc2.ontrack = gotRemoteStream;
+    filteredStream.getTracks().forEach(
+      function(track) {
+        pc1.addTrack(
+          track,
+          filteredStream
+        );
+      }
+    );
     pc1.createOffer().
         then(gotDescription1).
         catch(function(error) {
@@ -113,10 +124,10 @@ function forceOpus(sdp) {
 
 function gotDescription1(desc) {
   console.log('Offer from pc1 \n' + desc.sdp);
-  var modifiedOffer = new RTCSessionDescription({
+  var modifiedOffer = {
     type: 'offer',
     sdp: forceOpus(desc.sdp)
-  });
+  };
 
   pc1.setLocalDescription(modifiedOffer);
   console.log('Offer from pc1 \n' + modifiedOffer.sdp);
@@ -135,31 +146,31 @@ function gotDescription2(desc) {
 }
 
 function gotRemoteStream(e) {
-  audioElement.srcObject = e.stream;
-}
-
-function iceCallback1(event) {
-  if (event.candidate) {
-    pc2.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    console.log('Local ICE candidate: \n' + event.candidate.candidate);
+  if (audioElement.srcObject !== e.streams[0]) {
+    audioElement.srcObject = e.streams[0];
   }
 }
 
-function iceCallback2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    console.log('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === pc1) ? pc2 : pc1;
+}
+
+function getName(pc) {
+  return (pc === pc1) ? 'pc1' : 'pc2';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

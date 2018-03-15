@@ -109,9 +109,16 @@ function call() {
   pc2.oniceconnectionstatechange = function(e) {
     onIceStateChange(pc2, e);
   };
-  pc2.onaddstream = gotRemoteStream;
+  pc2.ontrack = gotRemoteStream;
 
-  pc1.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Added local stream to pc1');
 
   trace('pc1 createOffer start');
@@ -166,8 +173,10 @@ function onSetSessionDescriptionError(error) {
 }
 
 function gotRemoteStream(e) {
-  remoteVideo.srcObject = e.stream;
-  trace('pc2 received remote stream');
+  if (remoteVideo.srcObject !== e.streams[0]) {
+    remoteVideo.srcObject = e.streams[0];
+    trace('pc2 received remote stream');
+  }
 }
 
 function onCreateAnswerSuccess(desc) {
@@ -189,19 +198,17 @@ function onCreateAnswerSuccess(desc) {
 }
 
 function onIceCandidate(pc, event) {
-  if (event.candidate) {
-    getOtherPc(pc).addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      function() {
-        onAddIceCandidateSuccess(pc);
-      },
-      function(err) {
-        onAddIceCandidateError(pc, err);
-      }
-    );
-    trace(getName(pc) + ' ICE candidate: \n' + event.candidate.candidate);
-  }
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess(pc) {

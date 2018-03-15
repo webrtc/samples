@@ -23,6 +23,12 @@ section#iceServers label {
   display: inline-block;
   width: 150px;
 }
+
+section#iceOptions label {
+  display: inline-block;
+  width: 200px;
+}
+
 select#servers {
   font-size: 1em;
   padding: 5px;
@@ -33,8 +39,8 @@ div#iceTransports span {
 }
 table#candidates {
   font-size: 0.7em;
-  text-align: right;
   overflow-y: auto;
+  text-align: right;
   width: 100%;
 }
 th {
@@ -47,3 +53,15 @@ th:nth-child(6),td:nth-child(6) {
   text-align: left
 }
 
+.gray {
+  color: gray
+}
+
+#poolValue {
+  display: inline-block;
+  width: 30px
+}
+
+#getUserMediaPermissions {
+  display: none;
+}

@@ -24,7 +24,8 @@ test('Fake device selection and check video element dimensions ' +
 
     var browser = process.env.BROWSER;
 
-    driver.get('file://' + process.cwd() +
+    driver.get((process.env.BASEURL ? process.env.BASEURL :
+        ('file://' + process.cwd())) +
         '/src/content/devices/input-output/index.html')
       .then(function() {
         t.pass('Page loaded');
@@ -76,22 +77,26 @@ test('Fake device selection and check video element dimensions ' +
         return driver.executeScript('return stream.getAudioTracks()[0].label');
       })
       .then(function(deviceLabel) {
-        var fakeAudioDeviceName = null;
+        var fakeAudioDeviceNames = null;
 
         switch (browser) {
         case 'chrome':
-          fakeAudioDeviceName = 'Fake Audio 1';
+          fakeAudioDeviceNames = [
+            'Fake Default Audio Input', // Chrome <= 63
+            'Fake Default Audio Input - Fake Audio Input 1', // Chrome 64+
+            'Fake Audio Input 1',
+            'Fake Audio Input 2'
+          ];
           break;
         case 'firefox':
-          // TODO: Remove the "deviceLabel === ''" check once Firefox ESR
-          // reaches 46 (supports device labels for fake devices).
-          fakeAudioDeviceName = (deviceLabel === '') ? '' :
-              'Default Audio Device';
+          fakeAudioDeviceNames = ['Default Audio Device'];
           break;
         default:
           t.skip('unsupported browser');
         }
-        t.ok(fakeAudioDeviceName === deviceLabel,
+        console.log(fakeAudioDeviceNames, deviceLabel,
+            fakeAudioDeviceNames.indexOf(deviceLabel));
+        t.ok(fakeAudioDeviceNames.indexOf(deviceLabel) !== -1,
           'Fake audio device found with label: ' + deviceLabel);
       })
       // Check for a fake video device label (Chrome only).

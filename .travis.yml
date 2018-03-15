@@ -1,13 +1,25 @@
-sudo: false
+dist: trusty
 language: node_js
+cache:
+ - node_modules
 node_js:
-  - 4.2
+  - 6
 
 branches:
   only:
     - gh-pages
 
+addons:
+  apt:
+    packages:
+      - gcc
+      - g++
+      - libstdc++6
+      - pulseaudio
+
 env:
+  global:
+    - DISPLAY=:99.0
   matrix:
     - BROWSER=chrome  BVER=stable
     - BROWSER=chrome  BVER=beta
@@ -21,16 +33,20 @@ matrix:
 
   allow_failures:
     - env: BROWSER=chrome  BVER=unstable
-    - env: BROWSER=firefox BVER=beta
     - env: BROWSER=firefox BVER=nightly
 
 before_install:
-  - npm install -g npm@'>=3.0.0'
+  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1400x16
 
 before_script:
-  - npm install
-  - export DISPLAY=:99.0
-  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1200x16
+  - pulseaudio --start
 
 script:
   - npm test
+
+notifications:
+  email:
+    recipients:
+      forward-webrtc-github@webrtc.org
+    on_success: change
+    on_failure: always

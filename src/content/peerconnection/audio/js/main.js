@@ -43,7 +43,14 @@ function gotStream(stream) {
   if (audioTracks.length > 0) {
     trace('Using Audio device: ' + audioTracks[0].label);
   }
-  pc1.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(
@@ -71,16 +78,17 @@ function call() {
   codecSelector.disabled = true;
   trace('Starting call');
   var servers = null;
-  var pcConstraints = {
-    'optional': []
-  };
-  pc1 = new RTCPeerConnection(servers, pcConstraints);
+  pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = iceCallback1;
-  pc2 = new RTCPeerConnection(servers, pcConstraints);
+  pc1.onicecandidate = function(e) {
+    onIceCandidate(pc1, e);
+  };
+  pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
+  pc2.onicecandidate = function(e) {
+    onIceCandidate(pc2, e);
+  };
+  pc2.ontrack = gotRemoteStream;
   trace('Requesting local stream');
   navigator.mediaDevices.getUserMedia({
     audio: true,
@@ -141,32 +149,32 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  audio2.srcObject = e.stream;
-  trace('Received remote stream');
-}
-
-function iceCallback1(event) {
-  if (event.candidate) {
-    pc2.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
+  if (audio2.srcObject !== e.streams[0]) {
+    audio2.srcObject = e.streams[0];
+    trace('Received remote stream');
   }
 }
 
-function iceCallback2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === pc1) ? pc2 : pc1;
+}
+
+function getName(pc) {
+  return (pc === pc1) ? 'pc1' : 'pc2';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {
@@ -271,8 +279,7 @@ window.setInterval(function() {
     return;
   }
   window.pc1.getStats(null).then(function(res) {
-    Object.keys(res).forEach(function(key) {
-      var report = res[key];
+    res.forEach(function(report) {
       var bytes;
       var packets;
       var now = report.timestamp;
@@ -281,10 +288,10 @@ window.setInterval(function() {
           (report.type === 'ssrc' && report.bytesSent)) {
         bytes = report.bytesSent;
         packets = report.packetsSent;
-        if (lastResult && lastResult[report.id]) {
+        if (lastResult && lastResult.get(report.id)) {
           // calculate bitrate
-          var bitrate = 8 * (bytes - lastResult[report.id].bytesSent) /
-              (now - lastResult[report.id].timestamp);
+          var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+              (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -293,7 +300,7 @@ window.setInterval(function() {
 
           // calculate number of packets and append to chart
           packetSeries.addPoint(now, packets -
-              lastResult[report.id].packetsSent);
+              lastResult.get(report.id).packetsSent);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }

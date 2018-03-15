@@ -20,7 +20,8 @@ var emptyFilePath =
 function sendFile(t, path) {
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  return driver.get((process.env.BASEURL ? process.env.BASEURL :
+      ('file://' + process.cwd())) +
     '/src/content/datachannel/filetransfer/index.html')
   .then(function() {
     t.pass('page loaded');
@@ -56,21 +57,30 @@ function sendFile(t, path) {
 }
 
 // Test various files with different sizes
-test('Filetransfer via Datachannels: small text file', function(t) {
-  sendFile(t, process.cwd() + '/index.html');
-});
+// Disabling on firefox until sendKeys is fixed.
+// https://github.com/mozilla/geckodriver/issues/683
+test('Filetransfer via Datachannels: small text file',
+  {skip: process.env.BROWSER === 'firefox'}, function(t) {
+    sendFile(t, process.cwd() + '/index.html');
+  });
 
-test('Filetransfer via Datachannels: image', function(t) {
-  sendFile(t, process.cwd() + '/src/content/devices/multi/images/poster.jpg');
-});
+test('Filetransfer via Datachannels: image',
+  {skip: process.env.BROWSER === 'firefox'}, function(t) {
+    sendFile(t, process.cwd() +
+        '/src/content/devices/multi/images/poster.jpg');
+  });
 
-test('Filetransfer via Datachannels: audio', function(t) {
-  sendFile(t, process.cwd() + '/src/content/devices/multi/audio/audio.mp3');
-});
+test('Filetransfer via Datachannels: audio',
+  {skip: process.env.BROWSER === 'firefox'},function(t) {
+    sendFile(t, process.cwd() +
+        '/src/content/devices/multi/audio/audio.mp3');
+  });
 
-test('Filetransfer via Datachannels: video', function(t) {
-  sendFile(t, process.cwd() + '/src/content/devices/multi/video/chrome.webm');
-});
+test('Filetransfer via Datachannels: video',
+  {skip: process.env.BROWSER === 'firefox'}, function(t) {
+    sendFile(t, process.cwd() +
+        '/src/content/devices/multi/video/chrome.webm');
+  });
 
 test('Filetransfer via Datachannels: empty file', function(t) {
   // TODO: Remove when supported in Firefox.
@@ -81,8 +91,12 @@ test('Filetransfer via Datachannels: empty file', function(t) {
     var fs = require('fs');
     // Create empty file.
     fs.writeFileSync(emptyFilePath, '');
-    sendFile(t, emptyFilePath);
-    // Remove the empty file.
-    fs.unlink(emptyFilePath);
+    sendFile(t, emptyFilePath)
+        .then(() => {
+          // Remove the empty file.
+          fs.unlink(emptyFilePath, function(error) {
+            console.log('Failed to remove file: ' + error);
+          });
+        });
   }
 });

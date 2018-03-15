@@ -18,11 +18,17 @@ var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 test('PeerConnection pc1 sample', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  driver.get((process.env.BASEURL ? process.env.BASEURL :
+      ('file://' + process.cwd())) +
       '/src/content/peerconnection/pc1/index.html')
   .then(function() {
     t.pass('page loaded');
     return driver.findElement(webdriver.By.id('startButton')).click();
+  })
+  .then(function() {
+    return driver.wait(function() {
+      return driver.executeScript('return localStream !== null');
+    }, 30 * 1000);
   })
   .then(function() {
     t.pass('got media');

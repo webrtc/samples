@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC code samples">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="Client-side WebRTC code samples">
+  <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+  <meta itemprop="name" content="WebRTC code samples">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
+
+  <base target="_blank">
+
+  <title>MediaStreamTrack Content Hints</title>
+
+  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Guiding video encoding with content hints</span></h1>
+
+    <div id="videos">
+      <div class="video-container">
+      <h2>Source video file (high bitrate)</h2>
+        <video id="srcVideo" controls muted loop>
+          <source src="../../../video/mixed-content.webm" type="video/webm" />
+          <p>This browser does not support the video element.</p>
+        </video>
+        </div>
+      <div class="video-container">
+        <h2>"motion" video @ 50kbps</h2>
+        <video id="motionVideo" autoplay muted></video>
+      </div>
+      <div class="video-container">
+        <h2>"detail" video @ 50kbps</h2>
+        <video id="detailVideo" autoplay muted></video>
+      </div>
+    </div>
+
+    <p>This demo requires Chrome 57.0.2957.0 or later with <strong>Experimental Web Platform features</strong> enabled from <tt>chrome://flags</tt>.</p>
+
+    <p>A stream is captured from the source video using the <code>captureStream()</code> method. The stream is cloned and transmitted via two separate PeerConnections using 50kbps of video bandwidth. This is insufficient to generate good quality in the encoded bitstream, so trade-offs have to be made.</p>
+
+    <p>The transmitted stream tracks are using <a href="https://wicg.github.io/mst-content-hint/">MediaStreamTrack Content Hints</a> to indicate characteristics in the video stream, which informs PeerConnection on how to encode the track (to prefer motion or individual frame detail).</p>
+
+    <p>The text part of the clip shows a clear case for when <tt>'detail'</tt> is better, and the fighting scene shows a clear case for when <tt>'motion'</tt> is better. The spinning model however shows a case where <tt>'motion'</tt> or <tt>'detail'</tt> are not clear-cut decisions and even with good content detection what's preferred depends on what the user prefers.</p>
+
+    <p>Other MediaStreamTrack consumers such as MediaStreamRecorder can also make use of this information to guide encoding parameters for the stream without additional extensions to the MediaStreamRecorder specification, but this is currently not implemented in Chromium.</p>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/video-pc" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="../../../js/common.js"></script>
+  <script src="js/main.js"></script>
+
+  <script src="../../../js/lib/ga.js"></script>
+</body>
+</html>

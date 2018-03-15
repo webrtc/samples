@@ -12,7 +12,6 @@ var localConnection;
 var remoteConnection;
 var sendChannel;
 var receiveChannel;
-var pcConstraint;
 var megsToSend = document.querySelector('input#megsToSend');
 var sendButton = document.querySelector('button#sendTheData');
 var orderedCheckbox = document.querySelector('input#ordered');
@@ -40,14 +39,10 @@ function createConnection() {
   sendButton.disabled = true;
   megsToSend.disabled = true;
   var servers = null;
-  pcConstraint = null;
 
   bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
-  // Add localConnection to global scope to make it visible
-  // from the browser console.
-  window.localConnection = localConnection = new RTCPeerConnection(servers,
-      pcConstraint);
+  localConnection = localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
   var dataChannelParams = {ordered: false};
@@ -62,20 +57,21 @@ function createConnection() {
 
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
-  localConnection.onicecandidate = iceCallback1;
+  localConnection.onicecandidate = function(e) {
+    onIceCandidate(localConnection, e);
+  };
 
   localConnection.createOffer().then(
     gotDescription1,
     onCreateSessionDescriptionError
   );
 
-  // Add remoteConnection to global scope to make it visible
-  // from the browser console.
-  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers,
-      pcConstraint);
+  remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = iceCallback2;
+  remoteConnection.onicecandidate = function(e) {
+    onIceCandidate(remoteConnection, e);
+  };
   remoteConnection.ondatachannel = receiveChannelCallback;
 }
 
@@ -168,30 +164,27 @@ function gotDescription2(desc) {
   localConnection.setRemoteDescription(desc);
 }
 
-function iceCallback1(event) {
-  trace('local ice callback');
-  if (event.candidate) {
-    remoteConnection.addIceCandidate(
-      event.candidate
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === localConnection) ? remoteConnection : localConnection;
 }
 
-function iceCallback2(event) {
-  trace('remote ice callback');
-  if (event.candidate) {
-    localConnection.addIceCandidate(
-      event.candidate
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getName(pc) {
+  return (pc === localConnection) ? 'localPeerConnection' :
+      'remotePeerConnection';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

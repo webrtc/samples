@@ -18,7 +18,8 @@ var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 test('PeerConnection multiple sample', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  driver.get((process.env.BASEURL ? process.env.BASEURL :
+      ('file://' + process.cwd())) +
       '/src/content/peerconnection/multiple/index.html')
   .then(function() {
     t.pass('page loaded');
@@ -26,9 +27,12 @@ test('PeerConnection multiple sample', function(t) {
   })
   .then(function() {
     t.pass('got media');
-    return driver.findElement(webdriver.By.id('callButton')).click();
+    return driver.wait(function() {
+      return driver.findElement(webdriver.By.id('callButton')).isEnabled();
+    });
   })
   .then(function() {
+    driver.findElement(webdriver.By.id('callButton')).click();
     return driver.wait(function() {
       return driver.executeScript(
           'return pc1Remote && pc1Remote.iceConnectionState === \'connected\'' +

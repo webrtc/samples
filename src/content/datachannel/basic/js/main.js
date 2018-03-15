@@ -12,7 +12,6 @@ var localConnection;
 var remoteConnection;
 var sendChannel;
 var receiveChannel;
-var pcConstraint;
 var dataConstraint;
 var dataChannelSend = document.querySelector('textarea#dataChannelSend');
 var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
@@ -35,7 +34,6 @@ function disableSendButton() {
 function createConnection() {
   dataChannelSend.placeholder = '';
   var servers = null;
-  pcConstraint = null;
   dataConstraint = null;
   trace('Using SCTP based data channels');
   // SCTP is supported from Chrome 31 and is supported in FF.
@@ -44,24 +42,28 @@ function createConnection() {
   // Add localConnection to global scope to make it visible
   // from the browser console.
   window.localConnection = localConnection =
-      new RTCPeerConnection(servers, pcConstraint);
+      new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel',
       dataConstraint);
   trace('Created send data channel');
 
-  localConnection.onicecandidate = iceCallback1;
+  localConnection.onicecandidate = function(e) {
+    onIceCandidate(localConnection, e);
+  };
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
   // Add remoteConnection to global scope to make it visible
   // from the browser console.
   window.remoteConnection = remoteConnection =
-      new RTCPeerConnection(servers, pcConstraint);
+      new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = iceCallback2;
+  remoteConnection.onicecandidate = function(e) {
+    onIceCandidate(remoteConnection, e);
+  };
   remoteConnection.ondatachannel = receiveChannelCallback;
 
   localConnection.createOffer().then(
@@ -119,30 +121,27 @@ function gotDescription2(desc) {
   localConnection.setRemoteDescription(desc);
 }
 
-function iceCallback1(event) {
-  trace('local ice callback');
-  if (event.candidate) {
-    remoteConnection.addIceCandidate(
-      event.candidate
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === localConnection) ? remoteConnection : localConnection;
 }
 
-function iceCallback2(event) {
-  trace('remote ice callback');
-  if (event.candidate) {
-    localConnection.addIceCandidate(
-      event.candidate
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getName(pc) {
+  return (pc === localConnection) ? 'localPeerConnection' :
+      'remotePeerConnection';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

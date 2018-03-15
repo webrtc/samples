@@ -16,14 +16,10 @@ var webdriver = require('selenium-webdriver');
 var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
 test('DTMF tones', function(t) {
-  if (process.env.BROWSER === 'firefox') {
-    t.pass('Firefox not supported yet');
-    t.end();
-    return;
-  }
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  driver.get((process.env.BASEURL ? process.env.BASEURL :
+      ('file://' + process.cwd())) +
       '/src/content/peerconnection/dtmf/index.html')
   .then(function() {
     t.pass('page loaded');
@@ -33,14 +29,14 @@ test('DTMF tones', function(t) {
     return driver.wait(function() {
       return driver.executeScript(
           'return document.querySelector(\'#dtmfStatus\').innerHTML === ' +
-          '\'DTMF activated\';');
+          '\'DTMF available\';');
     }, 30 * 1000);
   })
   .then(function() {
-    t.pass('DTMF activated');
+    t.pass('DTMF available');
     // Set the tones to be sent.
     return driver.executeScript(
-        'document.querySelector(\'#tones\').value = \'1 # , 9 \'');
+        'document.querySelector(\'#tones\').value = \'1#,9\'');
   })
   .then(function() {
     return driver.findElement(webdriver.By.id('sendTonesButton')).click();

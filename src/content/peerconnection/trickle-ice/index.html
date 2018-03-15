@@ -39,6 +39,8 @@
 
       <p>This page tests the trickle ICE functionality in a WebRTC implementation. It creates a PeerConnection with the specified ICEServers, and then starts candidate gathering for a session with a single audio stream. As candidates are gathered, they are displayed in the text box below, along with an indication when candidate gathering is complete.</p>
 
+      <p>Note that if no getUserMedia permissions for this origin are persisted only candidates from a single interface will be gathered in Chrome. See <a href="https://tools.ietf.org/html/draft-ietf-rtcweb-ip-handling-01">the RTCWEB IP address handling recommendations draft</a> for details.<span id="getUserMediaPermissions">You have given permission, candidate from multiple interface will be gathered.</span></p>
+
       <p>Individual STUN and TURN servers can be added using the Add server / Remove server controls below; in addition, the type of candidates released to the application can be controlled via the IceTransports constraint.</p>
 
       <p>If you test just a single TURN/UDP server, this page even allows you to detect when you are using the wrong credential to authenticated.</p>
@@ -80,20 +82,18 @@
       <h2>ICE options</h2>
 
       <div id="iceTransports">
-        <span>IceTransports value:</span>
-        <input type="radio" name="transports" value="all" id="all" checked><label for="all">all</label>
+        <label for="transports"><span>IceTransports value:</span></label>
+        <input type="radio" name="transports" value="all" id="all" checked>
+        <span>all</span>
         <input type="radio" name="transports" value="relay" id="relay">
-        <label for="relay">relay</label>
-        <input type="radio" name="transports" value="none" id="none">
-        <label for="none">none</label>
+        <span>relay</span>
       </div>
       <div>
-        <label for="ipv6">Gather IPv6 candidates:</label>
-        <input id="ipv6" type="checkbox" checked>
-      </div>
-      <div>
-        <label for="unmux">Gather RTCP candidates:</label>
-        <input id="unmux" type="checkbox" checked>
+        <label>ICE Candidate Pool:</label>
+        <span id="poolValue">0</span>
+        <span class="gray">0</span>
+        <input id="iceCandidatePool" type="range" min="0" max="10" value="0">
+        <span class="gray">10</span>
       </div>
 
     </section>
@@ -108,7 +108,6 @@
         <tbody id="candidatesBody"></tbody>
       </table>
       <button id="gather">Gather candidates</button>
-
     </section>
 
 
@@ -118,7 +117,7 @@
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/trickle-ice" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
 
-  <script src="../../../js/adapter.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script src="../../../js/common.js"></script>
   <script src="js/main.js"></script>
 

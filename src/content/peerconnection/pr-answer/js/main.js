@@ -10,17 +10,17 @@
 
 var vid1 = document.getElementById('vid1');
 var vid2 = document.getElementById('vid2');
-var btn1 = document.getElementById('btn1');
-var btn2 = document.getElementById('btn2');
-var btn3 = document.getElementById('btn3');
+var callButton = document.getElementById('callButton');
+var acceptButton = document.getElementById('acceptButton');
+var hangUpButton = document.getElementById('hangUpButton');
 
-btn1.addEventListener('click', start);
-btn2.addEventListener('click', accept);
-btn3.addEventListener('click', stop);
+callButton.addEventListener('click', start);
+acceptButton.addEventListener('click', accept);
+hangUpButton.addEventListener('click', stop);
 
-btn1.disabled = true;
-btn2.disabled = true;
-btn3.disabled = true;
+callButton.disabled = true;
+acceptButton.disabled = true;
+hangUpButton.disabled = true;
 
 var pc1 = null;
 var pc2 = null;
@@ -34,7 +34,7 @@ function gotStream(stream) {
   trace('Received local stream');
   vid1.srcObject = stream;
   localstream = stream;
-  btn1.disabled = false;
+  callButton.disabled = false;
 }
 
 navigator.mediaDevices.getUserMedia({
@@ -47,9 +47,9 @@ navigator.mediaDevices.getUserMedia({
 });
 
 function start() {
-  btn1.disabled = true;
-  btn2.disabled = false;
-  btn3.disabled = false;
+  callButton.disabled = true;
+  acceptButton.disabled = false;
+  hangUpButton.disabled = false;
   trace('Starting Call');
   var videoTracks = localstream.getVideoTracks();
   var audioTracks = localstream.getAudioTracks();
@@ -63,13 +63,24 @@ function start() {
   var servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = iceCallback1;
+  pc1.onicecandidate = function(e) {
+    onIceCandidate(pc1, e);
+  };
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = iceCallback2;
-  pc2.onaddstream = gotRemoteStream;
+  pc2.onicecandidate = function(e) {
+    onIceCandidate(pc2, e);
+  };
+  pc2.ontrack = gotRemoteStream;
 
-  pc1.addStream(localstream);
+  localstream.getTracks().forEach(
+    function(track) {
+      pc1.addTrack(
+        track,
+        localstream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(
@@ -144,8 +155,8 @@ function accept() {
     gotDescription3,
     onCreateAnswerError
   );
-  btn2.disabled = true;
-  btn1.disabled = false;
+  acceptButton.disabled = true;
+  callButton.disabled = true;
 }
 
 function stop() {
@@ -154,38 +165,38 @@ function stop() {
   pc2.close();
   pc1 = null;
   pc2 = null;
-  btn2.disabled = true;
-  btn1.disabled = false;
-  btn3.disabled = true;
+  acceptButton.disabled = true;
+  callButton.disabled = false;
+  hangUpButton.disabled = true;
 }
 
 function gotRemoteStream(e) {
-  vid2.srcObject = e.stream;
-  trace('Received remote stream');
-}
-
-function iceCallback1(event) {
-  if (event.candidate) {
-    pc2.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
+  if (vid2.srcObject !== e.streams[0]) {
+    vid2.srcObject = e.streams[0];
+    trace('Received remote stream');
   }
 }
 
-function iceCallback2(event) {
-  if (event.candidate) {
-    pc1.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === pc1) ? pc2 : pc1;
+}
+
+function getName(pc) {
+  return (pc === pc1) ? 'pc1' : 'pc2';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

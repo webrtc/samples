@@ -33,7 +33,7 @@ var offerOptions = {
 function gotStream(stream) {
   trace('Received local stream');
   video1.srcObject = stream;
-  window.localstream = stream;
+  window.localStream = stream;
   callButton.disabled = false;
 }
 
@@ -54,8 +54,8 @@ function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   trace('Starting calls');
-  var audioTracks = window.localstream.getAudioTracks();
-  var videoTracks = window.localstream.getVideoTracks();
+  var audioTracks = window.localStream.getAudioTracks();
+  var videoTracks = window.localStream.getVideoTracks();
   if (audioTracks.length > 0) {
     trace('Using audio device: ' + audioTracks[0].label);
   }
@@ -66,19 +66,26 @@ function call() {
   var servers = null;
   pc1Local = new RTCPeerConnection(servers);
   pc1Remote = new RTCPeerConnection(servers);
-  pc1Remote.onaddstream = gotRemoteStream1;
+  pc1Remote.ontrack = gotRemoteStream1;
   pc1Local.onicecandidate = iceCallback1Local;
   pc1Remote.onicecandidate = iceCallback1Remote;
   trace('pc1: created local and remote peer connection objects');
 
   pc2Local = new RTCPeerConnection(servers);
   pc2Remote = new RTCPeerConnection(servers);
-  pc2Remote.onaddstream = gotRemoteStream2;
+  pc2Remote.ontrack = gotRemoteStream2;
   pc2Local.onicecandidate = iceCallback2Local;
   pc2Remote.onicecandidate = iceCallback2Remote;
   trace('pc2: created local and remote peer connection objects');
 
-  pc1Local.addStream(window.localstream);
+  window.localStream.getTracks().forEach(
+    function(track) {
+      pc1Local.addTrack(
+        track,
+        window.localStream
+      );
+    }
+  );
   trace('Adding local stream to pc1Local');
   pc1Local.createOffer(
     offerOptions
@@ -87,7 +94,14 @@ function call() {
     onCreateSessionDescriptionError
   );
 
-  pc2Local.addStream(window.localstream);
+  window.localStream.getTracks().forEach(
+    function(track) {
+      pc2Local.addTrack(
+        track,
+        window.localStream
+      );
+    }
+  );
   trace('Adding local stream to pc2Local');
   pc2Local.createOffer(
     offerOptions
@@ -152,13 +166,17 @@ function hangup() {
 }
 
 function gotRemoteStream1(e) {
-  video2.srcObject = e.stream;
-  trace('pc1: received remote stream');
+  if (video2.srcObject !== e.streams[0]) {
+    video2.srcObject = e.streams[0];
+    trace('pc1: received remote stream');
+  }
 }
 
 function gotRemoteStream2(e) {
-  video3.srcObject = e.stream;
-  trace('pc2: received remote stream');
+  if (video3.srcObject !== e.streams[0]) {
+    video3.srcObject = e.streams[0];
+    trace('pc2: received remote stream');
+  }
 }
 
 function iceCallback1Local(event) {
@@ -178,15 +196,13 @@ function iceCallback2Remote(event) {
 }
 
 function handleCandidate(candidate, dest, prefix, type) {
-  if (candidate) {
-    dest.addIceCandidate(
-      new RTCIceCandidate(candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace(prefix + 'New ' + type + ' ICE candidate: ' + candidate.candidate);
-  }
+  dest.addIceCandidate(candidate)
+  .then(
+    onAddIceCandidateSuccess,
+    onAddIceCandidateError
+  );
+  trace(prefix + 'New ' + type + ' ICE candidate: ' +
+      (candidate ? candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

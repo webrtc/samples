@@ -26,9 +26,7 @@ createAnswerButton.onclick = createAnswer;
 setAnswerButton.onclick = setAnswer;
 hangupButton.onclick = hangup;
 
-var offer;
 var offerSdpTextarea = document.querySelector('div#local textarea');
-var answer;
 var answerSdpTextarea = document.querySelector('div#remote textarea');
 
 var audioSelect = document.querySelector('select#audioSrc');
@@ -98,7 +96,7 @@ function getMedia() {
   createPeerConnectionButton.disabled = false;
 
   if (localStream) {
-    localVideo.src = null;
+    localVideo.srcObject = null;
     localStream.getTracks().forEach(function(track) {
       track.stop();
     });
@@ -154,20 +152,33 @@ function createPeerConnection() {
 
   localPeerConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localPeerConnection');
-  sendChannel = localPeerConnection.createDataChannel('sendDataChannel',
-      dataChannelOptions);
-  localPeerConnection.onicecandidate = iceCallback1;
-  sendChannel.onopen = onSendChannelStateChange;
-  sendChannel.onclose = onSendChannelStateChange;
-  sendChannel.onerror = onSendChannelStateChange;
+  localPeerConnection.onicecandidate = function(e) {
+    onIceCandidate(localPeerConnection, e);
+  };
+  if (RTCPeerConnection.prototype.createDataChannel) {
+    sendChannel = localPeerConnection.createDataChannel('sendDataChannel',
+        dataChannelOptions);
+    sendChannel.onopen = onSendChannelStateChange;
+    sendChannel.onclose = onSendChannelStateChange;
+    sendChannel.onerror = onSendChannelStateChange;
+  }
 
   remotePeerConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remotePeerConnection');
-  remotePeerConnection.onicecandidate = iceCallback2;
-  remotePeerConnection.onaddstream = gotRemoteStream;
+  remotePeerConnection.onicecandidate = function(e) {
+    onIceCandidate(remotePeerConnection, e);
+  };
+  remotePeerConnection.ontrack = gotRemoteStream;
   remotePeerConnection.ondatachannel = receiveChannelCallback;
 
-  localPeerConnection.addStream(localStream);
+  localStream.getTracks().forEach(
+    function(track) {
+      localPeerConnection.addTrack(
+        track,
+        localStream
+      );
+    }
+  );
   trace('Adding Local Stream to peer connection');
 }
 
@@ -205,7 +216,10 @@ function setOffer() {
   var sdp = offerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
-  offer.sdp = sdp;
+  var offer = {
+    type: 'offer',
+    sdp: sdp
+  };
   localPeerConnection.setLocalDescription(offer).then(
     onSetSessionDescriptionSuccess,
     onSetSessionDescriptionError
@@ -218,7 +232,6 @@ function setOffer() {
 }
 
 function gotDescription1(description) {
-  offer = description;
   offerSdpTextarea.disabled = false;
   offerSdpTextarea.value = description.sdp;
 }
@@ -237,7 +250,10 @@ function setAnswer() {
   var sdp = answerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
-  answer.sdp = sdp;
+  var answer = {
+    type: 'answer',
+    sdp: sdp
+  };
   remotePeerConnection.setLocalDescription(answer).then(
     onSetSessionDescriptionSuccess,
     onSetSessionDescriptionError
@@ -250,7 +266,6 @@ function setAnswer() {
 }
 
 function gotDescription2(description) {
-  answer = description;
   answerSdpTextarea.disabled = false;
   answerSdpTextarea.value = description.sdp;
 }
@@ -262,7 +277,7 @@ function sendData() {
 }
 
 function hangup() {
-  remoteVideo.src = '';
+  remoteVideo.srcObject = null;
   trace('Ending call');
   localStream.getTracks().forEach(function(track) {
     track.stop();
@@ -287,32 +302,34 @@ function hangup() {
 }
 
 function gotRemoteStream(e) {
-  remoteVideo.srcObject = e.stream;
-  trace('Received remote stream');
-}
-
-function iceCallback1(event) {
-  if (event.candidate) {
-    remotePeerConnection.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Local ICE candidate: \n' + event.candidate.candidate);
+  if (remoteVideo.srcObject !== e.streams[0]) {
+    remoteVideo.srcObject = e.streams[0];
+    trace('Received remote stream');
   }
 }
 
-function iceCallback2(event) {
-  if (event.candidate) {
-    localPeerConnection.addIceCandidate(
-      new RTCIceCandidate(event.candidate)
-    ).then(
-      onAddIceCandidateSuccess,
-      onAddIceCandidateError
-    );
-    trace('Remote ICE candidate: \n ' + event.candidate.candidate);
-  }
+function getOtherPc(pc) {
+  return (pc === localPeerConnection) ? remotePeerConnection :
+      localPeerConnection;
+}
+
+function getName(pc) {
+  return (pc === localPeerConnection) ? 'localPeerConnection' :
+      'remotePeerConnection';
+}
+
+function onIceCandidate(pc, event) {
+  getOtherPc(pc).addIceCandidate(event.candidate)
+  .then(
+    function() {
+      onAddIceCandidateSuccess(pc);
+    },
+    function(err) {
+      onAddIceCandidateError(pc, err);
+    }
+  );
+  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+      event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {

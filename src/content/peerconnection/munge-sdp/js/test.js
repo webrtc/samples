@@ -18,18 +18,26 @@ var seleniumHelpers = require('webrtc-utilities').seleniumLib;
 test('Munge SDP sample', function(t) {
   var driver = seleniumHelpers.buildDriver();
 
-  driver.get('file://' + process.cwd() +
+  driver.get((process.env.BASEURL ? process.env.BASEURL :
+      ('file://' + process.cwd())) +
       '/src/content/peerconnection/munge-sdp/index.html')
   .then(function() {
     t.pass('page loaded');
     return driver.findElement(webdriver.By.id('getMedia')).click();
   })
   .then(function() {
+    return driver.wait(function() {
+      return driver.executeScript('return typeof window.localStream ' +
+        '!== \'undefined\'');
+    });
+  })
+  .then(function() {
     t.pass('got media');
     return driver.findElement(webdriver.By.id('createPeerConnection')).click();
   })
   .then(function() {
-    return driver.findElement(webdriver.By.id('createOffer')).click();
+    return driver.wait(webdriver.until.elementIsVisible(
+        driver.findElement(webdriver.By.id('createOffer')))).click();
   })
   .then(function() {
     // Need to wait for createOffer to succeed which takes some time

@@ -16,12 +16,17 @@ var removeButton = document.querySelector('button#remove');
 var servers = document.querySelector('select#servers');
 var urlInput = document.querySelector('input#url');
 var usernameInput = document.querySelector('input#username');
-var ipv6Check = document.querySelector('input#ipv6');
-var rtcpMuxCheck = document.querySelector('input#unmux');
+var iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
 removeButton.onclick = removeServer;
+
+
+iceCandidatePoolInput.onchange = function(e) {
+  var span = e.target.parentElement.querySelector('span');
+  span.textContent = e.target.value;
+};
 
 var begin;
 var pc;
@@ -75,6 +80,8 @@ function start() {
     candidateTBody.removeChild(candidateTBody.firstChild);
   }
 
+  gatherButton.disabled = true;
+
   // Read the values from the input boxes.
   var iceServers = [];
   for (var i = 0; i < servers.length; ++i) {
@@ -90,20 +97,20 @@ function start() {
   }
 
   // Create a PeerConnection with no streams, but force a m=audio line.
-  // This will gather candidates for either 1 or 2 ICE components, depending
-  // on whether the un-muxed RTCP checkbox is checked.
-  var config = {'iceServers': iceServers, iceTransportPolicy: iceTransports,
-      rtcpMuxPolicy: rtcpMuxCheck.checked ? 'negotiate' : 'require'};
-  var pcConstraints = {};
+  var config = {
+    iceServers: iceServers,
+    iceTransportPolicy: iceTransports,
+    iceCandidatePoolSize: iceCandidatePoolInput.value
+  };
+
   var offerOptions = {offerToReceiveAudio: 1};
   // Whether we gather IPv6 candidates.
-  pcConstraints.optional = [{'googIPv6': ipv6Check.checked}];
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
-  trace('Creating new PeerConnection with config=' + JSON.stringify(config) +
-        ', constraints=' + JSON.stringify(pcConstraints));
-  pc = new RTCPeerConnection(config, pcConstraints);
+  trace('Creating new PeerConnection with config=' + JSON.stringify(config));
+  pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
+  pc.onicegatheringstatechange = gatheringStateChange;
   pc.createOffer(
     offerOptions
   ).then(
@@ -126,15 +133,16 @@ function noDescription(error) {
 function parseCandidate(text) {
   var candidateStr = 'candidate:';
   var pos = text.indexOf(candidateStr) + candidateStr.length;
-  var fields = text.substr(pos).split(' ');
+  var [foundation, component, protocol, priority, address, port, , type] =
+    text.substr(pos).split(' ');
   return {
-    'component': fields[1],
-    'type': fields[7],
-    'foundation': fields[0],
-    'protocol': fields[2],
-    'address': fields[4],
-    'port': fields[5],
-    'priority': fields[3]
+    'component': component,
+    'type': type,
+    'foundation': foundation,
+    'protocol': protocol,
+    'address': address,
+    'port': port,
+    'priority': priority
   };
 }
 
@@ -142,13 +150,11 @@ function parseCandidate(text) {
 // type preference, local preference, and (256 - component ID).
 // ex: 126 | 32252 | 255 (126 is host preference, 255 is component ID 1)
 function formatPriority(priority) {
-  var s = '';
-  s += (priority >> 24);
-  s += ' | ';
-  s += (priority >> 8) & 0xFFFF;
-  s += ' | ';
-  s += priority & 0xFF;
-  return s;
+  return [
+    priority >> 24,
+    (priority >> 8) & 0xFFFF,
+    priority & 0xFF
+  ].join(' | ');
 }
 
 function appendCell(row, val, span) {
@@ -214,10 +220,37 @@ function iceCallback(event) {
     appendCell(row, c.port);
     appendCell(row, formatPriority(c.priority));
     candidates.push(c);
-  } else {
+  } else if (!('onicegatheringstatechange' in RTCPeerConnection.prototype)) {
+    // should not be done if its done in the icegatheringstatechange callback.
     appendCell(row, getFinalResult(), 7);
     pc.close();
     pc = null;
+    gatherButton.disabled = false;
   }
   candidateTBody.appendChild(row);
 }
+
+function gatheringStateChange() {
+  if (pc.iceGatheringState !== 'complete') {
+    return;
+  }
+  var elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
+  var row = document.createElement('tr');
+  appendCell(row, elapsed);
+  appendCell(row, getFinalResult(), 7);
+  pc.close();
+  pc = null;
+  gatherButton.disabled = false;
+  candidateTBody.appendChild(row);
+}
+
+// check if we have getUserMedia permissions.
+navigator.mediaDevices.enumerateDevices()
+  .then(function(devices) {
+    devices.forEach(function(device) {
+      if (device.label !== '') {
+        document.getElementById('getUserMediaPermissions').style.display =
+           'block';
+      }
+    });
+  });
