@@ -36,8 +36,6 @@ Head over to [test/README.md](https://github.com/webrtc/samples/blob/gh-pages/te
 
 [Audio-only getUserMedia displaying volume](https://webrtc.github.io/samples/src/content/getusermedia/volume/)
 
-[Face tracking](https://webrtc.github.io/samples/src/content/getusermedia/face/)
-
 [Record stream](https://webrtc.github.io/samples/src/content/getusermedia/record/)
 
 ### Stream capture ###
