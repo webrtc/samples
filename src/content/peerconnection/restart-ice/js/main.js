@@ -261,14 +261,22 @@ function checkStats(pc) {
     var activeCandidatePair = null;
     var remoteCandidate = null;
 
-    // search for the candidate pair
+    // Search for the candidate pair, spec-way first.
     results.forEach(function(report) {
-      if (report.type === 'candidate-pair' && report.state === 'succeeded' &&
-          report.selected || report.type === 'googCandidatePair' &&
-          report.googActiveConnection === 'true') {
-        activeCandidatePair = report;
+      if (report.type === 'transport') {
+        activeCandidatePair = results.get(report.selectedCandidatePairId);
       }
     });
+    // Fallback for Firefox and Chrome legacy stats.
+    if (!activeCandidatePair) {
+      results.forEach(function(report) {
+        if (report.type === 'candidate-pair' && report.state === 'succeeded' &&
+            report.selected || report.type === 'googCandidatePair' &&
+            report.googActiveConnection === 'true') {
+          activeCandidatePair = report;
+        }
+      });
+    }
     if (activeCandidatePair && activeCandidatePair.remoteCandidateId) {
       results.forEach(function(report) {
         if (report.type === 'remote-candidate' &&
