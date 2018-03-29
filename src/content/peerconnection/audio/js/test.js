@@ -53,8 +53,15 @@ test('Audio-only sample codec preference', function(t) {
     .then(function(stats) {
       // Find the sending audio track.
       stats.forEach(function(report) {
-        if (report.type === 'ssrc' && report.googTrackId === trackId) {
-          t.ok(codecName === report.googCodecName, 'preferring ' + codecName);
+        if (report.type === 'outbound-rtp') {
+          var trackStats = stats.get(report.trackId);
+          if (trackStats && trackStats.trackIdentifier === trackId) {
+            var codecStats = stats.get(report.codecId);
+            if (codecStats) {
+              t.ok('audio/' + codecName === codecStats.mimeType,
+                  'preferring ' + codecName);
+            }
+          }
         }
       });
       return driver.findElement(webdriver.By.id('hangupButton')).click();
