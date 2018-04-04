@@ -231,13 +231,7 @@ function showRemoteStats(results) {
     var now = report.timestamp;
 
     var bitrate;
-    if (report.type === 'inboundrtp' && report.mediaType === 'video') {
-      // firefox calculates the bitrate for us
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=951496
-      bitrate = Math.floor(report.bitrateMean / 1024);
-    } else if (report.type === 'ssrc' && report.bytesReceived &&
-         report.googFrameHeightReceived) {
-      // chrome does not so we need to do it ourselves
+    if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
       var bytes = report.bytesReceived;
       if (timestampPrev) {
         bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
