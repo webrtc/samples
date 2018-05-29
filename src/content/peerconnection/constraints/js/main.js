@@ -256,12 +256,10 @@ function showRemoteStats(results) {
       activeCandidatePair = results.get(report.selectedCandidatePairId);
     }
   });
-  // Fallback for Firefox and Chrome legacy stats.
+  // Fallback for Firefox.
   if (!activeCandidatePair) {
     results.forEach(function(report) {
-      if (report.type === 'candidate-pair' && report.selected ||
-          report.type === 'googCandidatePair' &&
-          report.googActiveConnection === 'true') {
+      if (report.type === 'candidate-pair' && report.selected) {
         activeCandidatePair = report;
       }
     });

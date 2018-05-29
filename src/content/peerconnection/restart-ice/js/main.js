@@ -44,7 +44,7 @@ remoteVideo.onresize = function() {
     trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
     startTime = null;
     // Have run these functions again in order to get the getStats() reports
-    // with type candidatePair||googCandidatePair and populate the candidate id
+    // with type candidatePair and populate the candidate id
     // elements.
     checkStats(pc1);
     checkStats(pc2);
@@ -267,12 +267,11 @@ function checkStats(pc) {
         activeCandidatePair = results.get(report.selectedCandidatePairId);
       }
     });
-    // Fallback for Firefox and Chrome legacy stats.
+    // Fallback for Firefox.
     if (!activeCandidatePair) {
       results.forEach(function(report) {
         if (report.type === 'candidate-pair' && report.state === 'succeeded' &&
-            report.selected || report.type === 'googCandidatePair' &&
-            report.googActiveConnection === 'true') {
+            report.selected) {
           activeCandidatePair = report;
         }
       });
