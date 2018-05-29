@@ -232,7 +232,8 @@ window.setInterval(function() {
   if (!window.pc1) {
     return;
   }
-  window.pc1.getStats(null).then(function(res) {
+  var sender = pc1.getSenders()[0];
+  sender.getStats().then(function(res) {
     res.forEach(function(report) {
       var bytes;
       var packets;
