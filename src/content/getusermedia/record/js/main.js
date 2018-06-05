@@ -53,6 +53,8 @@ playButton.addEventListener('click', () => {
           recordedVideo.play();
         };
       };
+    } else {
+      recordedVideo.play();
     }
   });
 });
