@@ -9,18 +9,18 @@
 'use strict';
 
 // Put variables in global scope to make them available to the browser console.
-var audio = document.querySelector('audio');
+const audio = document.querySelector('audio');
 
-var constraints = window.constraints = {
+const constraints = window.constraints = {
   audio: true,
   video: false
 };
 
 function handleSuccess(stream) {
-  var audioTracks = stream.getAudioTracks();
+  const audioTracks = stream.getAudioTracks();
   console.log('Got stream with constraints:', constraints);
-  console.log('Using audio device: ' + audioTracks[0].label);
-  stream.oninactive = function() {
+  console.log(`Using audio device: ${audioTracks[0].label}`);
+  stream.oninactive = () => {
     console.log('Stream ended');
   };
   window.stream = stream; // make variable available to browser console

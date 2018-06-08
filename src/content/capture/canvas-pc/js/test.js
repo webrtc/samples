@@ -10,45 +10,36 @@
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
-var test = require('tape');
+const test = require('tape');
 
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
-test('PeerConnection pc1 sample', function(t) {
-  var driver = seleniumHelpers.buildDriver();
+test('PeerConnection pc1 sample', t => {
+  const driver = seleniumHelpers.buildDriver();
 
-  driver.get((process.env.BASEURL ? process.env.BASEURL :
-      ('file://' + process.cwd())) +
-      '/src/content/peerconnection/pc1/index.html')
-  .then(function() {
+  driver.get(`${process.env.BASEURL ? process.env.BASEURL :
+    (`file://${process.cwd()}`)}/src/content/peerconnection/pc1/index.html`)
+  .then(() => {
     t.pass('page loaded');
     return driver.findElement(webdriver.By.id('startButton')).click();
   })
-  .then(function() {
+  .then(() => {
     t.pass('got media');
     return driver.findElement(webdriver.By.id('callButton')).click();
   })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript(
-          'return pc2 && pc2.iceConnectionState === \'connected\';');
-    }, 30 * 1000);
-  })
-  .then(function() {
+  .then(() => driver.wait(() => driver.executeScript(
+      'return pc2 && pc2.iceConnectionState === \'connected\';'), 30 * 1000))
+  .then(() => {
     t.pass('pc2 ICE connected');
     return driver.findElement(webdriver.By.id('hangupButton')).click();
   })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript('return pc1 === null');
-    }, 30 * 1000);
-  })
-  .then(function() {
+  .then(() => driver.wait(() => driver.executeScript('return pc1 === null'), 30 * 1000))
+  .then(() => {
     t.pass('hangup');
     t.end();
   })
-  .then(null, function(err) {
+  .then(null, err => {
     t.fail(err);
     t.end();
   });

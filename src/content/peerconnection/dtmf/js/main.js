@@ -8,9 +8,9 @@
 
 'use strict';
 
-var callButton = document.querySelector('button#callButton');
-var sendTonesButton = document.querySelector('button#sendTonesButton');
-var hangupButton = document.querySelector('button#hangupButton');
+const callButton = document.querySelector('button#callButton');
+const sendTonesButton = document.querySelector('button#sendTonesButton');
+const hangupButton = document.querySelector('button#hangupButton');
 
 sendTonesButton.disabled = true;
 hangupButton.disabled = true;
@@ -19,33 +19,33 @@ callButton.onclick = call;
 sendTonesButton.onclick = handleSendTonesClick;
 hangupButton.onclick = hangup;
 
-var durationInput = document.querySelector('input#duration');
-var gapInput = document.querySelector('input#gap');
-var tonesInput = document.querySelector('input#tones');
+const durationInput = document.querySelector('input#duration');
+const gapInput = document.querySelector('input#gap');
+const tonesInput = document.querySelector('input#tones');
 
-var durationValue = document.querySelector('span#durationValue');
-var gapValue = document.querySelector('span#gapValue');
+const durationValue = document.querySelector('span#durationValue');
+const gapValue = document.querySelector('span#gapValue');
 
-var sentTonesDiv = document.querySelector('div#sentTones');
-var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
+const sentTonesDiv = document.querySelector('div#sentTones');
+const dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
-var audio = document.querySelector('audio');
+const audio = document.querySelector('audio');
 
-var pc1;
-var pc2;
-var localStream;
-var dtmfSender;
+let pc1;
+let pc2;
+let localStream;
+let dtmfSender;
 
-var offerOptions = {
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0
 };
 
-durationInput.oninput = function() {
+durationInput.oninput = () => {
   durationValue.textContent = durationInput.value;
 };
 
-gapInput.oninput = function() {
+gapInput.oninput = () => {
   gapValue.textContent = gapInput.value;
 };
 
@@ -58,14 +58,14 @@ function main() {
 function gotStream(stream) {
   trace('Received local stream');
   localStream = stream;
-  var audioTracks = localStream.getAudioTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace('Using Audio device: ' + audioTracks[0].label);
+    trace(`Using Audio device: ${audioTracks[0].label}`);
   }
   if (adapter.browserDetails.browser !== 'chrome' ||
       adapter.browserDetails.version >= 66) {
     localStream.getTracks().forEach(
-      function(track) {
+      track => {
         pc1.addTrack(
           track,
           localStream
@@ -87,20 +87,20 @@ function gotStream(stream) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function call() {
   trace('Starting call');
-  var servers = null;
+  const servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = function(e) {
+  pc1.onicecandidate = e => {
     onIceCandidate(pc1, e);
   };
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = function(e) {
+  pc2.onicecandidate = e => {
     onIceCandidate(pc2, e);
   };
   pc2.ontrack = gotRemoteStream;
@@ -111,8 +111,8 @@ function call() {
     video: false
   })
   .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
+  .catch(e => {
+    alert(`getUserMedia() error: ${e.name}`);
   });
 
   callButton.disabled = true;
@@ -122,7 +122,7 @@ function call() {
 
 function gotDescription1(desc) {
   pc1.setLocalDescription(desc);
-  trace('Offer from pc1 \n' + desc.sdp);
+  trace(`Offer from pc1 \n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -135,7 +135,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc);
-  trace('Answer from pc2: \n' + desc.sdp);
+  trace(`Answer from pc2: \n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
@@ -163,10 +163,8 @@ function gotRemoteStream(e) {
             'which is not support by this browser.');
       return;
     }
-    var senders = pc1.getSenders();
-    var audioSender = senders.find(function(sender) {
-      return sender.track && sender.track.kind === 'audio';
-    });
+    const senders = pc1.getSenders();
+    const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
     if (!audioSender) {
       trace('No local audio track to send DTMF with\n');
       return;
@@ -193,15 +191,15 @@ function getName(pc) {
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
   .then(
-    function() {
+    () => {
       onAddIceCandidateSuccess(pc);
     },
-    function(err) {
+    err => {
       onAddIceCandidateError(pc, err);
     }
   );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  trace(`${getName(pc)} ICE candidate: \n${event.candidate ?
+    event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -209,20 +207,20 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function dtmfOnToneChange(tone) {
   if (tone) {
-    trace('Sent DTMF tone: ' + tone.tone);
-    sentTonesDiv.textContent += tone.tone + ' ';
+    trace(`Sent DTMF tone: ${tone.tone}`);
+    sentTonesDiv.textContent += `${tone.tone} `;
   }
 }
 
 function sendTones(tones) {
   if (dtmfSender) {
-    var duration = durationInput.value;
-    var gap = gapInput.value;
+    const duration = durationInput.value;
+    const gap = gapInput.value;
     console.log('Tones, duration, gap: ', tones, duration, gap);
     dtmfSender.insertDTMF(tones, duration, gap);
   }
@@ -233,9 +231,9 @@ function handleSendTonesClick() {
 }
 
 function addDialPadHandlers() {
-  var dialPad = document.querySelector('div#dialPad');
-  var buttons = dialPad.querySelectorAll('button');
-  for (var i = 0; i !== buttons.length; ++i) {
+  const dialPad = document.querySelector('div#dialPad');
+  const buttons = dialPad.querySelectorAll('button');
+  for (let i = 0; i !== buttons.length; ++i) {
     buttons[i].onclick = sendDtmfTone;
   }
 }

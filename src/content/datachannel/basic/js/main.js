@@ -8,16 +8,16 @@
 
 'use strict';
 
-var localConnection;
-var remoteConnection;
-var sendChannel;
-var receiveChannel;
-var dataConstraint;
-var dataChannelSend = document.querySelector('textarea#dataChannelSend');
-var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
-var startButton = document.querySelector('button#startButton');
-var sendButton = document.querySelector('button#sendButton');
-var closeButton = document.querySelector('button#closeButton');
+let localConnection;
+let remoteConnection;
+let sendChannel;
+let receiveChannel;
+let dataConstraint;
+const dataChannelSend = document.querySelector('textarea#dataChannelSend');
+const dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
+const startButton = document.querySelector('button#startButton');
+const sendButton = document.querySelector('button#sendButton');
+const closeButton = document.querySelector('button#closeButton');
 
 startButton.onclick = createConnection;
 sendButton.onclick = sendData;
@@ -33,7 +33,7 @@ function disableSendButton() {
 
 function createConnection() {
   dataChannelSend.placeholder = '';
-  var servers = null;
+  const servers = null;
   dataConstraint = null;
   trace('Using SCTP based data channels');
   // SCTP is supported from Chrome 31 and is supported in FF.
@@ -49,7 +49,7 @@ function createConnection() {
       dataConstraint);
   trace('Created send data channel');
 
-  localConnection.onicecandidate = function(e) {
+  localConnection.onicecandidate = e => {
     onIceCandidate(localConnection, e);
   };
   sendChannel.onopen = onSendChannelStateChange;
@@ -61,7 +61,7 @@ function createConnection() {
       new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = function(e) {
+  remoteConnection.onicecandidate = e => {
     onIceCandidate(remoteConnection, e);
   };
   remoteConnection.ondatachannel = receiveChannelCallback;
@@ -75,21 +75,21 @@ function createConnection() {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function sendData() {
-  var data = dataChannelSend.value;
+  const data = dataChannelSend.value;
   sendChannel.send(data);
-  trace('Sent Data: ' + data);
+  trace(`Sent Data: ${data}`);
 }
 
 function closeDataChannels() {
   trace('Closing data channels');
   sendChannel.close();
-  trace('Closed data channel with label: ' + sendChannel.label);
+  trace(`Closed data channel with label: ${sendChannel.label}`);
   receiveChannel.close();
-  trace('Closed data channel with label: ' + receiveChannel.label);
+  trace(`Closed data channel with label: ${receiveChannel.label}`);
   localConnection.close();
   remoteConnection.close();
   localConnection = null;
@@ -107,7 +107,7 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace('Offer from localConnection \n' + desc.sdp);
+  trace(`Offer from localConnection \n${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -117,7 +117,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace('Answer from remoteConnection \n' + desc.sdp);
+  trace(`Answer from remoteConnection \n${desc.sdp}`);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -133,15 +133,15 @@ function getName(pc) {
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
   .then(
-    function() {
+    () => {
       onAddIceCandidateSuccess(pc);
     },
-    function(err) {
+    err => {
       onAddIceCandidateError(pc, err);
     }
   );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  trace(`${getName(pc)} ICE candidate: \n${event.candidate ?
+    event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -149,7 +149,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function receiveChannelCallback(event) {
@@ -166,8 +166,8 @@ function onReceiveMessageCallback(event) {
 }
 
 function onSendChannelStateChange() {
-  var readyState = sendChannel.readyState;
-  trace('Send channel state is: ' + readyState);
+  const readyState = sendChannel.readyState;
+  trace(`Send channel state is: ${readyState}`);
   if (readyState === 'open') {
     dataChannelSend.disabled = false;
     dataChannelSend.focus();
@@ -181,6 +181,6 @@ function onSendChannelStateChange() {
 }
 
 function onReceiveChannelStateChange() {
-  var readyState = receiveChannel.readyState;
-  trace('Receive channel state is: ' + readyState);
+  const readyState = receiveChannel.readyState;
+  trace(`Receive channel state is: ${readyState}`);
 }

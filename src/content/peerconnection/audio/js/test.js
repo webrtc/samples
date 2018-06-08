@@ -10,72 +10,59 @@
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
-var test = require('tape');
+const test = require('tape');
 
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('webrtc-utilities').seleniumLib;
 
-test('Audio-only sample codec preference', function(t) {
+test('Audio-only sample codec preference', t => {
   if (process.env.BROWSER === 'firefox') {
     t.pass('Firefox not supported yet');
     t.end();
     return;
   }
-  var trackId;
-  var driver = seleniumHelpers.buildDriver();
+  let trackId;
+  const driver = seleniumHelpers.buildDriver();
 
-  driver.get((process.env.BASEURL ? process.env.BASEURL :
-      ('file://' + process.cwd())) +
-      '/src/content/peerconnection/audio/index.html');
-  var codecs = ['opus', 'ISAC', 'G722', 'PCMU'];
+  driver.get(`${process.env.BASEURL ? process.env.BASEURL :
+    (`file://${process.cwd()}`)}/src/content/peerconnection/audio/index.html`);
+  const codecs = ['opus', 'ISAC', 'G722', 'PCMU'];
 
-  var last;
-  codecs.forEach(function(codecName) {
+  let last;
+  codecs.forEach(codecName => {
     last = driver.findElement(webdriver.By.css(
-        '#codec>option[value="' + codecName + '"]'))
+        `#codec>option[value="${codecName}"]`))
     .click()
-    .then(function() {
-      return driver.findElement(webdriver.By.id('callButton')).click();
-    })
-    .then(function() {
-      return driver.wait(function() {
-        return driver.executeScript(
-            'return pc2 && pc2.iceConnectionState === \'connected\';');
-      }, 30 * 1000);
-    })
-    .then(function() {
-      return driver.executeScript('return localStream.getAudioTracks()[0].id;');
-    })
-    .then(function(id) {
+    .then(() => driver.findElement(webdriver.By.id('callButton')).click())
+    .then(() => driver.wait(() => driver.executeScript(
+        'return pc2 && pc2.iceConnectionState === \'connected\';'), 30 * 1000))
+    .then(() => driver.executeScript('return localStream.getAudioTracks()[0].id;'))
+    .then(id => {
       trackId = id;
       return seleniumHelpers.getStats(driver, 'pc1');
     })
-    .then(function(stats) {
+    .then(stats => {
       // Find the sending audio track.
-      stats.forEach(function(report) {
+      stats.forEach(report => {
         if (report.type === 'outbound-rtp') {
-          var trackStats = stats.get(report.trackId);
+          const trackStats = stats.get(report.trackId);
           if (trackStats && trackStats.trackIdentifier === trackId) {
-            var codecStats = stats.get(report.codecId);
+            const codecStats = stats.get(report.codecId);
             if (codecStats) {
-              t.ok('audio/' + codecName === codecStats.mimeType,
-                  'preferring ' + codecName);
+              t.ok(`audio/${codecName}` === codecStats.mimeType,
+                  `preferring ${codecName}`);
             }
           }
         }
       });
       return driver.findElement(webdriver.By.id('hangupButton')).click();
     })
-    .then(function() {
-      return driver.wait(function() {
-        return driver.executeScript('return pc1 === null');
-      }, 30 * 1000);
-    });
+    .then(() => driver.wait(() => driver.executeScript('return pc1 === null'), 30 * 1000));
   });
-  last.then(function() {
+  last.then(() => {
     t.end();
   })
-  .then(null, function(err) {
+  .then(null, err => {
     t.fail(err);
     t.end();
   });

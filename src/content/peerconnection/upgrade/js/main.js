@@ -8,10 +8,10 @@
 
 'use strict';
 
-var startButton = document.getElementById('startButton');
-var callButton = document.getElementById('callButton');
-var upgradeButton = document.getElementById('upgradeButton');
-var hangupButton = document.getElementById('hangupButton');
+const startButton = document.getElementById('startButton');
+const callButton = document.getElementById('callButton');
+const upgradeButton = document.getElementById('upgradeButton');
+const hangupButton = document.getElementById('hangupButton');
 callButton.disabled = true;
 hangupButton.disabled = true;
 upgradeButton.disabled = true;
@@ -20,37 +20,34 @@ callButton.onclick = call;
 upgradeButton.onclick = upgrade;
 hangupButton.onclick = hangup;
 
-var startTime;
-var localVideo = document.getElementById('localVideo');
-var remoteVideo = document.getElementById('remoteVideo');
+let startTime;
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
 
 localVideo.addEventListener('loadedmetadata', function() {
-  trace('Local video videoWidth: ' + this.videoWidth +
-    'px,  videoHeight: ' + this.videoHeight + 'px');
+  trace(`Local video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
 
 remoteVideo.addEventListener('loadedmetadata', function() {
-  trace('Remote video videoWidth: ' + this.videoWidth +
-    'px,  videoHeight: ' + this.videoHeight + 'px');
+  trace(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
 
-remoteVideo.onresize = function() {
-  trace('Remote video size changed to ' +
-    remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight);
+remoteVideo.onresize = () => {
+  trace(`Remote video size changed to ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
   console.warn('RESIZE', remoteVideo.videoWidth, remoteVideo.videoHeight);
   // We'll use the first onsize callback as an indication that video has started
   // playing out.
   if (startTime) {
-    var elapsedTime = window.performance.now() - startTime;
-    trace('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
+    const elapsedTime = window.performance.now() - startTime;
+    trace(`Setup time: ${elapsedTime.toFixed(3)}ms`);
     startTime = null;
   }
 };
 
-var localStream;
-var pc1;
-var pc2;
-var offerOptions = {
+let localStream;
+let pc1;
+let pc2;
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0
 };
@@ -78,8 +75,8 @@ function start() {
     video: false
   })
   .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
+  .catch(e => {
+    alert(`getUserMedia() error: ${e.name}`);
   });
 }
 
@@ -89,31 +86,31 @@ function call() {
   hangupButton.disabled = false;
   trace('Starting call');
   startTime = window.performance.now();
-  var audioTracks = localStream.getAudioTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace('Using audio device: ' + audioTracks[0].label);
+    trace(`Using audio device: ${audioTracks[0].label}`);
   }
-  var servers = null;
+  const servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = function(e) {
+  pc1.onicecandidate = e => {
     onIceCandidate(pc1, e);
   };
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = function(e) {
+  pc2.onicecandidate = e => {
     onIceCandidate(pc2, e);
   };
-  pc1.oniceconnectionstatechange = function(e) {
+  pc1.oniceconnectionstatechange = e => {
     onIceStateChange(pc1, e);
   };
-  pc2.oniceconnectionstatechange = function(e) {
+  pc2.oniceconnectionstatechange = e => {
     onIceStateChange(pc2, e);
   };
   pc2.ontrack = gotRemoteStream;
 
   localStream.getTracks().forEach(
-    function(track) {
+    track => {
       pc1.addTrack(
         track,
         localStream
@@ -132,21 +129,21 @@ function call() {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function onCreateOfferSuccess(desc) {
-  trace('Offer from pc1\n' + desc.sdp);
+  trace(`Offer from pc1\n${desc.sdp}`);
   trace('pc1 setLocalDescription start');
   pc1.setLocalDescription(desc).then(
-    function() {
+    () => {
       onSetLocalSuccess(pc1);
     },
     onSetSessionDescriptionError
   );
   trace('pc2 setRemoteDescription start');
   pc2.setRemoteDescription(desc).then(
-    function() {
+    () => {
       onSetRemoteSuccess(pc2);
     },
     onSetSessionDescriptionError
@@ -162,15 +159,15 @@ function onCreateOfferSuccess(desc) {
 }
 
 function onSetLocalSuccess(pc) {
-  trace(getName(pc) + ' setLocalDescription complete');
+  trace(`${getName(pc)} setLocalDescription complete`);
 }
 
 function onSetRemoteSuccess(pc) {
-  trace(getName(pc) + ' setRemoteDescription complete');
+  trace(`${getName(pc)} setRemoteDescription complete`);
 }
 
 function onSetSessionDescriptionError(error) {
-  trace('Failed to set session description: ' + error.toString());
+  trace(`Failed to set session description: ${error.toString()}`);
 }
 
 function gotRemoteStream(e) {
@@ -182,17 +179,17 @@ function gotRemoteStream(e) {
 }
 
 function onCreateAnswerSuccess(desc) {
-  trace('Answer from pc2:\n' + desc.sdp);
+  trace(`Answer from pc2:\n${desc.sdp}`);
   trace('pc2 setLocalDescription start');
   pc2.setLocalDescription(desc).then(
-    function() {
+    () => {
       onSetLocalSuccess(pc2);
     },
     onSetSessionDescriptionError
   );
   trace('pc1 setRemoteDescription start');
   pc1.setRemoteDescription(desc).then(
-    function() {
+    () => {
       onSetRemoteSuccess(pc1);
     },
     onSetSessionDescriptionError
@@ -202,28 +199,28 @@ function onCreateAnswerSuccess(desc) {
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
   .then(
-    function() {
+    () => {
       onAddIceCandidateSuccess(pc);
     },
-    function(err) {
+    err => {
       onAddIceCandidateError(pc, err);
     }
   );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  trace(`${getName(pc)} ICE candidate: \n${event.candidate ?
+    event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess(pc) {
-  trace(getName(pc) + ' addIceCandidate success');
+  trace(`${getName(pc)} addIceCandidate success`);
 }
 
 function onAddIceCandidateError(pc, error) {
-  trace(getName(pc) + ' failed to add ICE Candidate: ' + error.toString());
+  trace(`${getName(pc)} failed to add ICE Candidate: ${error.toString()}`);
 }
 
 function onIceStateChange(pc, event) {
   if (pc) {
-    trace(getName(pc) + ' ICE state: ' + pc.iceConnectionState);
+    trace(`${getName(pc)} ICE state: ${pc.iceConnectionState}`);
     console.log('ICE state change event: ', event);
   }
 }
@@ -231,10 +228,10 @@ function onIceStateChange(pc, event) {
 function upgrade() {
   upgradeButton.disabled = true;
   navigator.mediaDevices.getUserMedia({video: true})
-  .then(function(stream) {
-    var videoTracks = stream.getVideoTracks();
+  .then(stream => {
+    const videoTracks = stream.getVideoTracks();
     if (videoTracks.length > 0) {
-      trace('Using video device: ' + videoTracks[0].label);
+      trace(`Using video device: ${videoTracks[0].label}`);
     }
     localStream.addTrack(videoTracks[0]);
     localVideo.srcObject = null;
@@ -245,21 +242,11 @@ function upgrade() {
     );
     return pc1.createOffer();
   })
-  .then(function(offer) {
-    return pc1.setLocalDescription(offer);
-  })
-  .then(function() {
-    return pc2.setRemoteDescription(pc1.localDescription);
-  })
-  .then(function() {
-    return pc2.createAnswer();
-  })
-  .then(function(answer) {
-    return pc2.setLocalDescription(answer);
-  })
-  .then(function() {
-    return pc1.setRemoteDescription(pc2.localDescription);
-  });
+  .then(offer => pc1.setLocalDescription(offer))
+  .then(() => pc2.setRemoteDescription(pc1.localDescription))
+  .then(() => pc2.createAnswer())
+  .then(answer => pc2.setLocalDescription(answer))
+  .then(() => pc1.setRemoteDescription(pc2.localDescription));
 }
 
 function hangup() {
@@ -269,8 +256,8 @@ function hangup() {
   pc1 = null;
   pc2 = null;
 
-  var videoTracks = localStream.getVideoTracks();
-  videoTracks.forEach(function(videoTrack) {
+  const videoTracks = localStream.getVideoTracks();
+  videoTracks.forEach(videoTrack => {
     videoTrack.stop();
     localStream.removeTrack(videoTrack);
   });

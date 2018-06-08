@@ -17,18 +17,18 @@
 
 /* globals main, MediaRecorder */
 
-var mediaSource = new MediaSource();
+const mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
-var mediaRecorder;
-var recordedBlobs;
-var sourceBuffer;
+let mediaRecorder;
+let recordedBlobs;
+let sourceBuffer;
 
-var canvas = document.querySelector('canvas');
-var video = document.querySelector('video');
+const canvas = document.querySelector('canvas');
+const video = document.querySelector('video');
 
-var recordButton = document.querySelector('button#record');
-var playButton = document.querySelector('button#play');
-var downloadButton = document.querySelector('button#download');
+const recordButton = document.querySelector('button#record');
+const playButton = document.querySelector('button#play');
+const downloadButton = document.querySelector('button#download');
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
@@ -37,7 +37,7 @@ downloadButton.onclick = download;
 main();
 
 // window.isSecureContext could be used for Chrome
-var isSecureOrigin = location.protocol === 'https:' ||
+const isSecureOrigin = location.protocol === 'https:' ||
 location.hostname === 'localhost';
 if (!isSecureOrigin) {
   alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.' +
@@ -45,7 +45,7 @@ if (!isSecureOrigin) {
   location.protocol = 'HTTPS';
 }
 
-var stream = canvas.captureStream(); // frames per second
+const stream = canvas.captureStream(); // frames per second
 console.log('Started stream capture from canvas element: ', stream);
 
 function handleSourceOpen(event) {
@@ -77,7 +77,7 @@ function toggleRecording() {
 
 // The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
-  var options = {mimeType: 'video/webm'};
+  let options = {mimeType: 'video/webm'};
   recordedBlobs = [];
   try {
     mediaRecorder = new MediaRecorder(stream, options);
@@ -116,20 +116,20 @@ function stopRecording() {
 }
 
 function play() {
-  var superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
+  const superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
   video.src = window.URL.createObjectURL(superBuffer);
 }
 
 function download() {
-  var blob = new Blob(recordedBlobs, {type: 'video/webm'});
-  var url = window.URL.createObjectURL(blob);
-  var a = document.createElement('a');
+  const blob = new Blob(recordedBlobs, {type: 'video/webm'});
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
   a.download = 'test.webm';
   document.body.appendChild(a);
   a.click();
-  setTimeout(function() {
+  setTimeout(() => {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   }, 100);
