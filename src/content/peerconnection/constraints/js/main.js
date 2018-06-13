@@ -8,42 +8,42 @@
 
 'use strict';
 
-var getMediaButton = document.querySelector('button#getMedia');
-var connectButton = document.querySelector('button#connect');
-var hangupButton = document.querySelector('button#hangup');
+const getMediaButton = document.querySelector('button#getMedia');
+const connectButton = document.querySelector('button#connect');
+const hangupButton = document.querySelector('button#hangup');
 
 getMediaButton.onclick = getMedia;
 connectButton.onclick = createPeerConnection;
 hangupButton.onclick = hangup;
 
-var minWidthInput = document.querySelector('div#minWidth input');
-var maxWidthInput = document.querySelector('div#maxWidth input');
-var minHeightInput = document.querySelector('div#minHeight input');
-var maxHeightInput = document.querySelector('div#maxHeight input');
-var minFramerateInput = document.querySelector('div#minFramerate input');
-var maxFramerateInput = document.querySelector('div#maxFramerate input');
+const minWidthInput = document.querySelector('div#minWidth input');
+const maxWidthInput = document.querySelector('div#maxWidth input');
+const minHeightInput = document.querySelector('div#minHeight input');
+const maxHeightInput = document.querySelector('div#maxHeight input');
+const minFramerateInput = document.querySelector('div#minFramerate input');
+const maxFramerateInput = document.querySelector('div#maxFramerate input');
 
 minWidthInput.onchange = maxWidthInput.onchange =
     minHeightInput.onchange = maxHeightInput.onchange =
     minFramerateInput.onchange = maxFramerateInput.onchange = displayRangeValue;
 
-var getUserMediaConstraintsDiv =
+const getUserMediaConstraintsDiv =
     document.querySelector('div#getUserMediaConstraints');
-var bitrateDiv = document.querySelector('div#bitrate');
-var peerDiv = document.querySelector('div#peer');
-var senderStatsDiv = document.querySelector('div#senderStats');
-var receiverStatsDiv = document.querySelector('div#receiverStats');
+const bitrateDiv = document.querySelector('div#bitrate');
+const peerDiv = document.querySelector('div#peer');
+const senderStatsDiv = document.querySelector('div#senderStats');
+const receiverStatsDiv = document.querySelector('div#receiverStats');
 
-var localVideo = document.querySelector('div#localVideo video');
-var remoteVideo = document.querySelector('div#remoteVideo video');
-var localVideoStatsDiv = document.querySelector('div#localVideo div');
-var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
+const localVideo = document.querySelector('div#localVideo video');
+const remoteVideo = document.querySelector('div#remoteVideo video');
+const localVideoStatsDiv = document.querySelector('div#localVideo div');
+const remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 
-var localPeerConnection;
-var remotePeerConnection;
-var localStream;
-var bytesPrev;
-var timestampPrev;
+let localPeerConnection;
+let remotePeerConnection;
+let localStream;
+let bytesPrev;
+let timestampPrev;
 
 main();
 
@@ -59,11 +59,11 @@ function hangup() {
   // query stats one last time.
   Promise.all([
     remotePeerConnection.getStats(null)
-    .then(showRemoteStats, function(err) {
+    .then(showRemoteStats, err => {
       console.log(err);
     }),
     localPeerConnection.getStats(null)
-    .then(showLocalStats, function(err) {
+    .then(showLocalStats, err => {
       console.log(err);
     })
   ]).then(() => {
@@ -71,7 +71,7 @@ function hangup() {
     remotePeerConnection = null;
   });
 
-  localStream.getTracks().forEach(function(track) {
+  localStream.getTracks().forEach(track => {
     track.stop();
   });
   localStream = null;
@@ -83,19 +83,18 @@ function hangup() {
 function getMedia() {
   getMediaButton.disabled = true;
   if (localStream) {
-    localStream.getTracks().forEach(function(track) {
+    localStream.getTracks().forEach(track => {
       track.stop();
     });
-    var videoTracks = localStream.getVideoTracks();
-    for (var i = 0; i !== videoTracks.length; ++i) {
+    const videoTracks = localStream.getVideoTracks();
+    for (let i = 0; i !== videoTracks.length; ++i) {
       videoTracks[i].stop();
     }
   }
   navigator.mediaDevices.getUserMedia(getUserMediaConstraints())
   .then(gotStream)
-  .catch(function(e) {
-    var message = 'getUserMedia error: ' + e.name + '\n' +
-        'PermissionDeniedError may mean invalid constraints.';
+  .catch(e => {
+    const message = `getUserMedia error: ${e.name}\nPermissionDeniedError may mean invalid constraints.`;
     alert(message);
     console.log(message);
     getMediaButton.disabled = false;
@@ -110,7 +109,7 @@ function gotStream(stream) {
 }
 
 function getUserMediaConstraints() {
-  var constraints = {};
+  const constraints = {};
   constraints.audio = true;
   constraints.video = {};
   if (minWidthInput.value !== '0') {
@@ -142,7 +141,7 @@ function getUserMediaConstraints() {
 }
 
 function displayGetUserMediaConstraints() {
-  var constraints = getUserMediaConstraints();
+  const constraints = getUserMediaConstraints();
   console.log('getUserMedia constraints', constraints);
   getUserMediaConstraintsDiv.textContent =
       JSON.stringify(constraints, null, '    ');
@@ -157,7 +156,7 @@ function createPeerConnection() {
   localPeerConnection = new RTCPeerConnection(null);
   remotePeerConnection = new RTCPeerConnection(null);
   localStream.getTracks().forEach(
-    function(track) {
+    track => {
       localPeerConnection.addTrack(
         track,
         localStream
@@ -165,13 +164,13 @@ function createPeerConnection() {
     }
   );
   console.log('localPeerConnection creating offer');
-  localPeerConnection.onnegotiationeeded = function() {
+  localPeerConnection.onnegotiationeeded = () => {
     console.log('Negotiation needed - localPeerConnection');
   };
-  remotePeerConnection.onnegotiationeeded = function() {
+  remotePeerConnection.onnegotiationeeded = () => {
     console.log('Negotiation needed - remotePeerConnection');
   };
-  localPeerConnection.onicecandidate = function(e) {
+  localPeerConnection.onicecandidate = e => {
     console.log('Candidate localPeerConnection');
     remotePeerConnection.addIceCandidate(e.candidate)
     .then(
@@ -179,7 +178,7 @@ function createPeerConnection() {
       onAddIceCandidateError
     );
   };
-  remotePeerConnection.onicecandidate = function(e) {
+  remotePeerConnection.onicecandidate = e => {
     console.log('Candidate remotePeerConnection');
     localPeerConnection.addIceCandidate(e.candidate)
     .then(
@@ -187,29 +186,29 @@ function createPeerConnection() {
       onAddIceCandidateError
     );
   };
-  remotePeerConnection.ontrack = function(e) {
+  remotePeerConnection.ontrack = e => {
     if (remoteVideo.srcObject !== e.streams[0]) {
       console.log('remotePeerConnection got stream');
       remoteVideo.srcObject = e.streams[0];
     }
   };
   localPeerConnection.createOffer().then(
-    function(desc) {
+    desc => {
       console.log('localPeerConnection offering');
       localPeerConnection.setLocalDescription(desc);
       remotePeerConnection.setRemoteDescription(desc);
       remotePeerConnection.createAnswer().then(
-        function(desc2) {
+        desc2 => {
           console.log('remotePeerConnection answering');
           remotePeerConnection.setLocalDescription(desc2);
           localPeerConnection.setRemoteDescription(desc2);
         },
-        function(err) {
+        err => {
           console.log(err);
         }
       );
     },
-    function(err) {
+    err => {
       console.log(err);
     }
   );
@@ -220,19 +219,19 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function showRemoteStats(results) {
-  var statsString = dumpStats(results);
-  receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
+  const statsString = dumpStats(results);
+  receiverStatsDiv.innerHTML = `<h2>Receiver stats</h2>${statsString}`;
   // calculate video bitrate
-  results.forEach(function(report) {
-    var now = report.timestamp;
+  results.forEach(report => {
+    const now = report.timestamp;
 
-    var bitrate;
+    let bitrate;
     if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
-      var bytes = report.bytesReceived;
+      const bytes = report.bytesReceived;
       if (timestampPrev) {
         bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
         bitrate = Math.floor(bitrate);
@@ -242,23 +241,23 @@ function showRemoteStats(results) {
     }
     if (bitrate) {
       bitrate += ' kbits/sec';
-      bitrateDiv.innerHTML = '<strong>Bitrate:</strong> ' + bitrate;
+      bitrateDiv.innerHTML = `<strong>Bitrate:</strong> ${bitrate}`;
     }
   });
 
   // figure out the peer's ip
-  var activeCandidatePair = null;
-  var remoteCandidate = null;
+  let activeCandidatePair = null;
+  let remoteCandidate = null;
 
   // Search for the candidate pair, spec-way first.
-  results.forEach(function(report) {
+  results.forEach(report => {
     if (report.type === 'transport') {
       activeCandidatePair = results.get(report.selectedCandidatePairId);
     }
   });
   // Fallback for Firefox and Chrome legacy stats.
   if (!activeCandidatePair) {
-    results.forEach(function(report) {
+    results.forEach(report => {
       if (report.type === 'candidate-pair' && report.selected ||
           report.type === 'googCandidatePair' &&
           report.googActiveConnection === 'true') {
@@ -271,30 +270,27 @@ function showRemoteStats(results) {
   }
   if (remoteCandidate) {
     if (remoteCandidate.ip && remoteCandidate.port) {
-      peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
-          remoteCandidate.ip + ':' + remoteCandidate.port;
+      peerDiv.innerHTML = `<strong>Connected to:</strong> ${remoteCandidate.ip}:${remoteCandidate.port}`;
     } else if (remoteCandidate.ipAddress && remoteCandidate.portNumber) {
       // Fall back to old names.
-      peerDiv.innerHTML = '<strong>Connected to:</strong> ' +
-          remoteCandidate.ipAddress +
-          ':' + remoteCandidate.portNumber;
+      peerDiv.innerHTML = `<strong>Connected to:</strong> ${remoteCandidate.ipAddress}:${remoteCandidate.portNumber}`;
     }
   }
 }
 
 function showLocalStats(results) {
-  var statsString = dumpStats(results);
-  senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
+  const statsString = dumpStats(results);
+  senderStatsDiv.innerHTML = `<h2>Sender stats</h2>${statsString}`;
 }
 // Display statistics
-setInterval(function() {
+setInterval(() => {
   if (localPeerConnection && remotePeerConnection) {
     remotePeerConnection.getStats(null)
-    .then(showRemoteStats, function(err) {
+    .then(showRemoteStats, err => {
       console.log(err);
     });
     localPeerConnection.getStats(null)
-    .then(showLocalStats, function(err) {
+    .then(showLocalStats, err => {
       console.log(err);
     });
   } else {
@@ -302,28 +298,30 @@ setInterval(function() {
   }
   // Collect some stats from the video tags.
   if (localVideo.videoWidth) {
-    localVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
-      localVideo.videoWidth + 'x' + localVideo.videoHeight + 'px';
+    let lWidth = localVideo.videoWidth;
+    let lHeight = localVideo.videoHeight;
+    localVideoStatsDiv.innerHTML = `<strong>Video dimensions:</strong> ${lWidth}x${lHeight}px`;
   }
   if (remoteVideo.videoWidth) {
-    remoteVideoStatsDiv.innerHTML = '<strong>Video dimensions:</strong> ' +
-      remoteVideo.videoWidth + 'x' + remoteVideo.videoHeight + 'px';
+    let rWidth = remoteVideo.videoWidth;
+    let rHeight = remoteVideo.videoHeight;
+    remoteVideoStatsDiv.innerHTML = `<strong>Video dimensions:</strong> ${rWidth}x${rHeight}px`;
   }
 }, 1000);
 
 // Dumping a stats variable as a string.
 // might be named toString?
 function dumpStats(results) {
-  var statsString = '';
-  results.forEach(function(res) {
+  let statsString = '';
+  results.forEach(res => {
     statsString += '<h3>Report type=';
     statsString += res.type;
     statsString += '</h3>\n';
-    statsString += 'id ' + res.id + '<br>\n';
-    statsString += 'time ' + res.timestamp + '<br>\n';
-    Object.keys(res).forEach(function(k) {
+    statsString += `id ${res.id}<br>\n`;
+    statsString += `time ${res.timestamp}<br>\n`;
+    Object.keys(res).forEach(k => {
       if (k !== 'timestamp' && k !== 'type' && k !== 'id') {
-        statsString += k + ': ' + res[k] + '<br>\n';
+        statsString += `${k}: ${res[k]}<br>\n`;
       }
     });
   });
@@ -332,7 +330,7 @@ function dumpStats(results) {
 
 // Utility to show the value of a range in a sibling span element
 function displayRangeValue(e) {
-  var span = e.target.parentElement.querySelector('span');
+  const span = e.target.parentElement.querySelector('span');
   span.textContent = e.target.value;
   displayGetUserMediaConstraints();
 }

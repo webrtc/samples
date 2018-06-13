@@ -13,24 +13,24 @@
 
 /* globals MediaRecorder */
 
-var mediaSource = new MediaSource();
+const mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
-var mediaRecorder;
-var recordedBlobs;
-var sourceBuffer;
+let mediaRecorder;
+let recordedBlobs;
+let sourceBuffer;
 
-var gumVideo = document.querySelector('video#gum');
-var recordedVideo = document.querySelector('video#recorded');
+const gumVideo = document.querySelector('video#gum');
+const recordedVideo = document.querySelector('video#recorded');
 
-var recordButton = document.querySelector('button#record');
-var playButton = document.querySelector('button#play');
-var downloadButton = document.querySelector('button#download');
+const recordButton = document.querySelector('button#record');
+const playButton = document.querySelector('button#play');
+const downloadButton = document.querySelector('button#download');
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
 
 // window.isSecureContext could be used for Chrome
-var isSecureOrigin = location.protocol === 'https:' ||
+const isSecureOrigin = location.protocol === 'https:' ||
 location.hostname === 'localhost';
 if (!isSecureOrigin) {
   alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.' +
@@ -38,7 +38,7 @@ if (!isSecureOrigin) {
   location.protocol = 'HTTPS';
 }
 
-var constraints = {
+const constraints = {
   audio: true,
   video: true
 };
@@ -63,10 +63,9 @@ function handleSourceOpen(event) {
   console.log('Source buffer: ', sourceBuffer);
 }
 
-recordedVideo.addEventListener('error', function(ev) {
+recordedVideo.addEventListener('error', ev => {
   console.error('MediaRecording.recordedMedia.error()');
-  alert('Your browser can not play\n\n' + recordedVideo.src
-    + '\n\n media clip. event: ' + JSON.stringify(ev));
+  alert(`Your browser can not play\n\n${recordedVideo.src}\n\n media clip. event: ${JSON.stringify(ev)}`);
 }, true);
 
 function handleDataAvailable(event) {
@@ -92,15 +91,15 @@ function toggleRecording() {
 
 function startRecording() {
   recordedBlobs = [];
-  var options = {mimeType: 'video/webm;codecs=vp9'};
+  let options = {mimeType: 'video/webm;codecs=vp9'};
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.log(options.mimeType + ' is not Supported');
+    console.log(`${options.mimeType} is not Supported`);
     options = {mimeType: 'video/webm;codecs=vp8'};
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      console.log(options.mimeType + ' is not Supported');
+      console.log(`${options.mimeType} is not Supported`);
       options = {mimeType: 'video/webm'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.log(options.mimeType + ' is not Supported');
+        console.log(`${options.mimeType} is not Supported`);
         options = {mimeType: ''};
       }
     }
@@ -108,9 +107,8 @@ function startRecording() {
   try {
     mediaRecorder = new MediaRecorder(window.stream, options);
   } catch (e) {
-    console.error('Exception while creating MediaRecorder: ' + e);
-    alert('Exception while creating MediaRecorder: '
-      + e + '. mimeType: ' + options.mimeType);
+    console.error(`Exception while creating MediaRecorder: ${e}`);
+    alert(`Exception while creating MediaRecorder: ${e}. mimeType: ${options.mimeType}`);
     return;
   }
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
@@ -130,16 +128,16 @@ function stopRecording() {
 }
 
 function play() {
-  var superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
+  const superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
   recordedVideo.src = window.URL.createObjectURL(superBuffer);
   // workaround for non-seekable video taken from
   // https://bugs.chromium.org/p/chromium/issues/detail?id=642012#c23
-  recordedVideo.addEventListener('loadedmetadata', function() {
+  recordedVideo.addEventListener('loadedmetadata', () => {
     if (recordedVideo.duration === Infinity) {
       recordedVideo.currentTime = 1e101;
-      recordedVideo.ontimeupdate = function() {
+      recordedVideo.ontimeupdate = () => {
         recordedVideo.currentTime = 0;
-        recordedVideo.ontimeupdate = function() {
+        recordedVideo.ontimeupdate = () => {
           delete recordedVideo.ontimeupdate;
           recordedVideo.play();
         };
@@ -149,15 +147,15 @@ function play() {
 }
 
 function download() {
-  var blob = new Blob(recordedBlobs, {type: 'video/webm'});
-  var url = window.URL.createObjectURL(blob);
-  var a = document.createElement('a');
+  const blob = new Blob(recordedBlobs, {type: 'video/webm'});
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
   a.download = 'test.webm';
   document.body.appendChild(a);
   a.click();
-  setTimeout(function() {
+  setTimeout(() => {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
   }, 100);

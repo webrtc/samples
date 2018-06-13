@@ -10,13 +10,13 @@
 
 'use strict';
 
-var instantMeter = document.querySelector('#instant meter');
-var slowMeter = document.querySelector('#slow meter');
-var clipMeter = document.querySelector('#clip meter');
+const instantMeter = document.querySelector('#instant meter');
+const slowMeter = document.querySelector('#slow meter');
+const clipMeter = document.querySelector('#clip meter');
 
-var instantValueDisplay = document.querySelector('#instant .value');
-var slowValueDisplay = document.querySelector('#slow .value');
-var clipValueDisplay = document.querySelector('#clip .value');
+const instantValueDisplay = document.querySelector('#instant .value');
+const slowValueDisplay = document.querySelector('#slow .value');
+const clipValueDisplay = document.querySelector('#clip .value');
 
 try {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -26,7 +26,7 @@ try {
 }
 
 // Put variables in global scope to make them available to the browser console.
-var constraints = window.constraints = {
+const constraints = window.constraints = {
   audio: true,
   video: false
 };
@@ -35,13 +35,13 @@ function handleSuccess(stream) {
   // Put variables in global scope to make them available to the
   // browser console.
   window.stream = stream;
-  var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream, function(e) {
+  const soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
+  soundMeter.connectToSource(stream, e => {
     if (e) {
       alert(e);
       return;
     }
-    setInterval(function() {
+    setInterval(() => {
       instantMeter.value = instantValueDisplay.innerText =
           soundMeter.instant.toFixed(2);
       slowMeter.value = slowValueDisplay.innerText =

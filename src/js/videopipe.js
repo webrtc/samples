@@ -35,11 +35,10 @@ function successHandler(context) {
 function noAction() {
 }
 
-
 function VideoPipe(stream, handler) {
-  var servers = null;
-  var pc1 = new RTCPeerConnection(servers);
-  var pc2 = new RTCPeerConnection(servers);
+  const servers = null;
+  const pc1 = new RTCPeerConnection(servers);
+  const pc2 = new RTCPeerConnection(servers);
 
   pc1.addStream(stream);
   pc1.onicecandidate = function(event) {
@@ -47,16 +46,16 @@ function VideoPipe(stream, handler) {
       pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
                           noAction, errorHandler('AddIceCandidate'));
     }
-  }
+  };
   pc2.onicecandidate = function(event) {
     if (event.candidate) {
       pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
                           noAction, errorHandler('AddIceCandidate'));
     }
-  }
+  };
   pc2.onaddstream = function(e) {
     handler(e.stream);
-  }
+  };
   pc1.createOffer(function(desc) {
     pc1.setLocalDescription(desc);
     pc2.setRemoteDescription(desc);
@@ -72,4 +71,4 @@ function VideoPipe(stream, handler) {
 VideoPipe.prototype.close = function() {
   this.pc1.close();
   this.pc2.close();
-}
+};

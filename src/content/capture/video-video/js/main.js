@@ -8,10 +8,10 @@
 
 'use strict';
 
-var leftVideo = document.getElementById('leftVideo');
-var rightVideo = document.getElementById('rightVideo');
+const leftVideo = document.getElementById('leftVideo');
+const rightVideo = document.getElementById('rightVideo');
 
-var stream;
+let stream;
 
 function maybeCreateStream() {
   if (stream) {
