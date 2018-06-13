@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>Samples</title>
+    <meta name="description" content="webrtc-samples description">
+
+    <script src="https://unpkg.com/@webcomponents/webcomponentsjs@next/webcomponents-loader.js"></script>
+    <script type="module" src="https://unpkg.com/@polymer/app-layout/app-layout.js?module"></script>
+    <script type="module" src="https://unpkg.com/@polymer/app-layout/app-grid/app-grid-style.js?module"></script>
+    <script type="module" src="https://unpkg.com/@polymer/polymer/lib/elements/custom-style.js?module"></script>
+    <script type="module" src="https://unpkg.com/@polymer/paper-styles/paper-styles.js?module"></script>
+
+    <style>
+        body {
+            margin: 0px
+        }
+    </style>
+
+</head>
+
+<body>
+<custom-style>
+    <style>
+        app-header {
+            background-color: #4285f4;
+            color: white;
+            @apply --paper-font-title;
+            @apply --shadow-elevation-8dp;
+        }
+    </style>
+</custom-style>
+<app-header-layout>
+    <app-header slot="header">
+        <app-toolbar>
+            <div main-title>My App</div>
+        </app-toolbar>
+    </app-header>
+</app-header-layout>
+<div class="content">
+    <custom-styles>
+        <style include="app-grid-style">
+            :host {
+                --app-grid-columns: 3;
+                --app-grid-item-height: 100px;
+            }
+
+            ul {
+                padding: 0;
+                list-style: none;
+            }
+
+            .item {
+                background-color: white;
+            }
+        </style>
+    </custom-styles>
+    <ul class="app-grid">
+        <li class="item">1</li>
+        <li class="item">2</li>
+        <li class="item">3</li>
+    </ul>
+</div>
+</body>
+
+</html>
