@@ -80,14 +80,14 @@ document.onreadystatechange = () => {
         const message = 'getUserMedia error: ' + e.name + '\n' +
           'PermissionDeniedError may mean invalid constraints.'
         alert(message)
-        console.log(message)
+        trace(message)
         getMediaButton.disabled = false
       })
   }
 
   function gotStream (stream) {
     connectButton.disabled = false
-    console.log('GetUserMedia succeeded')
+    trace('GetUserMedia succeeded')
     localStream = stream
     localVideo.srcObject = stream
   }
@@ -126,7 +126,7 @@ document.onreadystatechange = () => {
 
   function displayGetUserMediaConstraints () {
     const constraints = getUserMediaConstraints()
-    console.log('getUserMedia constraints', constraints)
+    trace('getUserMedia constraints', constraints)
     getUserMediaConstraintsDiv.textContent =
       JSON.stringify(constraints, null, '    ')
   }
@@ -147,15 +147,15 @@ document.onreadystatechange = () => {
         )
       }
     )
-    console.log('localPeerConnection creating offer')
+    trace('localPeerConnection creating offer')
     localPeerConnection.onnegotiationeeded = function () {
-      console.log('Negotiation needed - localPeerConnection')
+      trace('Negotiation needed - localPeerConnection')
     }
     remotePeerConnection.onnegotiationeeded = function () {
-      console.log('Negotiation needed - remotePeerConnection')
+      trace('Negotiation needed - remotePeerConnection')
     }
     localPeerConnection.onicecandidate = function (e) {
-      console.log('Candidate localPeerConnection')
+      trace('Candidate localPeerConnection')
       remotePeerConnection.addIceCandidate(e.candidate)
         .then(
           onAddIceCandidateSuccess,
@@ -163,7 +163,7 @@ document.onreadystatechange = () => {
         )
     }
     remotePeerConnection.onicecandidate = function (e) {
-      console.log('Candidate remotePeerConnection')
+      trace('Candidate remotePeerConnection')
       localPeerConnection.addIceCandidate(e.candidate)
         .then(
           onAddIceCandidateSuccess,
@@ -172,28 +172,28 @@ document.onreadystatechange = () => {
     }
     remotePeerConnection.ontrack = function (e) {
       if (remoteVideo.srcObject !== e.streams[0]) {
-        console.log('remotePeerConnection got stream')
+        trace('remotePeerConnection got stream')
         remoteVideo.srcObject = e.streams[0]
       }
     }
     localPeerConnection.createOffer().then(
       function (desc) {
-        console.log('localPeerConnection offering')
+        trace('localPeerConnection offering')
         localPeerConnection.setLocalDescription(desc)
         remotePeerConnection.setRemoteDescription(desc)
         remotePeerConnection.createAnswer().then(
           function (desc2) {
-            console.log('remotePeerConnection answering')
+            trace('remotePeerConnection answering')
             remotePeerConnection.setLocalDescription(desc2)
             localPeerConnection.setRemoteDescription(desc2)
           },
           function (err) {
-            console.log(err)
+            trace(err)
           }
         )
       },
       function (err) {
-        console.log(err)
+        trace(err)
       }
     )
   }
@@ -224,10 +224,10 @@ document.onreadystatechange = () => {
           const statsString = dumpStats(results)
           senderStatsDiv.innerHTML = '<h2>New stats</h2>' + statsString
         }, function (err) {
-          console.log(err)
+          trace(err)
         })
     } else {
-      console.log('Not connected yet')
+      trace('Not connected yet')
     }
     // Collect some stats from the video tags.
     if (localVideo.videoWidth) {
@@ -261,9 +261,9 @@ document.onreadystatechange = () => {
 
   function dumpOldStats (results) {
     let statsString = ''
-    console.log(JSON.stringify(results))
+    trace(JSON.stringify(results))
     results.result().forEach(function (res) {
-      console.log(JSON.stringify(res))
+      trace(JSON.stringify(res))
       statsString += '<h3>Report type='
       statsString += res.type
       statsString += '</h3>\n'
