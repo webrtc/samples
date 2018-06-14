@@ -10,13 +10,14 @@
 
 'use strict';
 
-var instantMeter = document.querySelector('#instant meter');
-var slowMeter = document.querySelector('#slow meter');
-var unprocessedMeter = document.querySelector('#unprocessed meter');
+const instantMeter = document.querySelector('#instant meter')
+const slowMeter = document.querySelector('#slow meter')
+const unprocessedMeter = document.querySelector('#unprocessed meter')
 
-var instantValueDisplay = document.querySelector('#instant .value');
-var slowValueDisplay = document.querySelector('#slow .value');
-var unprocessedValueDisplay = document.querySelector('#unprocessed .value');
+const instantValueDisplay = document.querySelector('#instant .value')
+const slowValueDisplay = document.querySelector('#slow .value')
+const unprocessedValueDisplay = document.querySelector('#unprocessed .value')
+const errorMsg = document.querySelector('#errorMsg')
 
 try {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -26,19 +27,20 @@ try {
 }
 
 // Put variables in global scope to make them available to the browser console.
-var constraints = window.constraints = {
+let constraints = window.constraints = {
   audio: {echoCancellation: true},
   video: false
-};
+}
 
 function handleSuccess(stream) {
   // Put variables in global scope to make them available to the
   // browser console.
   window.stream = stream;
-  var soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream, function(e) {
-    if (e) {
-      alert(e);
+  const soundMeter = window.soundMeter = new SoundMeter(window.audioContext)
+  errorMsg.innerText = ''
+  soundMeter.connectToSource(stream, function(error) {
+    if (error) {
+      handleError(error)
       return;
     }
     setInterval(function() {
@@ -52,18 +54,18 @@ function handleSuccess(stream) {
               JSON.stringify(stream.getAudioTracks()[0].getSettings()));
   // Set up second track with audio processing disabled
   constraints.audio = {echoCancellation: {exact: false}};
-  console.log('Getting second audio stream');
+  trace(`Getting second audio stream`);
   navigator.mediaDevices.getUserMedia(constraints)
     .then(handleUnprocessedStream).catch(handleError);
 }
 
 function handleUnprocessedStream(stream) {
-  console.log('Got second audio stream');
-  console.log('Second track settings:',
+  trace('Got second audio stream');
+  trace(`Second track settings: `,
               JSON.stringify(stream.getAudioTracks()[0].getSettings()));
-  console.log('Second track constraints:',
+  trace(`Second track constraints: `,
               JSON.stringify(stream.getAudioTracks()[0].getConstraints()));
-  var unprocMeter = window.unprocMeter = new SoundMeter(window.audioContext);
+  const unprocMeter = window.unprocMeter = new SoundMeter(window.audioContext);
   unprocMeter.connectToSource(stream, function(e) {
     if (e) {
       alert(e);
@@ -77,7 +79,8 @@ function handleUnprocessedStream(stream) {
 }
 
 function handleError(error) {
-  console.log('navigator.getUserMedia error: ', error);
+  trace(`navigator.getUserMedia error: `, error);
+  errorMsg.innerText = `navigator.getUserMedia error: ${error}`
 }
 
 navigator.mediaDevices.getUserMedia(constraints).
