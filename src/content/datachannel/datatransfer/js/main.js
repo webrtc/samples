@@ -42,7 +42,7 @@ function createConnection() {
 
   bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
-  localConnection = localConnection = new RTCPeerConnection(servers);
+  localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
   var dataChannelParams = {ordered: false};
