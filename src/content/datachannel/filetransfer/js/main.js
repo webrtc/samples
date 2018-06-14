@@ -256,24 +256,27 @@ function displayStats() {
     if (adapter.browserDetails.browser === 'chrome') {
       // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
       // lands those stats should be preferrred over the connection stats.
-      remoteConnection.getStats(null, function(stats) {
-        for (var key in stats) {
-          var res = stats[key];
-          if (timestampPrev === res.timestamp) {
+      remoteConnection.getStats().then(function(stats) {
+        // Search for the active candidate pair.
+        let activeCandidatePair;
+        stats.forEach(function(report) {
+          if (report.type === 'transport') {
+            activeCandidatePair = stats.get(report.selectedCandidatePairId);
+          }
+        });
+        if (activeCandidatePair) {
+          if (timestampPrev === activeCandidatePair.timestamp) {
             return;
           }
-          if (res.type === 'googCandidatePair' &&
-              res.googActiveConnection === 'true') {
-            // calculate current bitrate
-            var bytesNow = res.bytesReceived;
-            var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-                (res.timestamp - timestampPrev));
-            display(bitrate);
-            timestampPrev = res.timestamp;
-            bytesPrev = bytesNow;
-            if (bitrate > bitrateMax) {
-              bitrateMax = bitrate;
-            }
+          // calculate current bitrate
+          var bytesNow = activeCandidatePair.bytesReceived;
+          var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+              (activeCandidatePair.timestamp - timestampPrev));
+          display(bitrate);
+          timestampPrev = activeCandidatePair.timestamp;
+          bytesPrev = bytesNow;
+          if (bitrate > bitrateMax) {
+            bitrateMax = bitrate;
           }
         }
       });
