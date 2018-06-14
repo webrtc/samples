@@ -8,42 +8,42 @@
 
 'use strict';
 
-var getMediaButton = document.querySelector('button#getMedia');
-var connectButton = document.querySelector('button#connect');
-var hangupButton = document.querySelector('button#hangup');
+const getMediaButton = document.querySelector('button#getMedia')
+const connectButton = document.querySelector('button#connect')
+const hangupButton = document.querySelector('button#hangup')
 
 getMediaButton.onclick = getMedia;
 connectButton.onclick = createPeerConnection;
 hangupButton.onclick = hangup;
 
-var minWidthInput = document.querySelector('div#minWidth input');
-var maxWidthInput = document.querySelector('div#maxWidth input');
-var minHeightInput = document.querySelector('div#minHeight input');
-var maxHeightInput = document.querySelector('div#maxHeight input');
-var minFramerateInput = document.querySelector('div#minFramerate input');
-var maxFramerateInput = document.querySelector('div#maxFramerate input');
+const minWidthInput = document.querySelector('div#minWidth input')
+const maxWidthInput = document.querySelector('div#maxWidth input')
+const minHeightInput = document.querySelector('div#minHeight input')
+const maxHeightInput = document.querySelector('div#maxHeight input')
+const minFramerateInput = document.querySelector('div#minFramerate input')
+const maxFramerateInput = document.querySelector('div#maxFramerate input')
 
 minWidthInput.onchange = maxWidthInput.onchange =
     minHeightInput.onchange = maxHeightInput.onchange =
     minFramerateInput.onchange = maxFramerateInput.onchange = displayRangeValue;
 
-var getUserMediaConstraintsDiv =
-    document.querySelector('div#getUserMediaConstraints');
-var bitrateDiv = document.querySelector('div#bitrate');
-var peerDiv = document.querySelector('div#peer');
-var senderStatsDiv = document.querySelector('div#senderStats');
-var receiverStatsDiv = document.querySelector('div#receiverStats');
+const getUserMediaConstraintsDiv =
+  document.querySelector('div#getUserMediaConstraints')
+const bitrateDiv = document.querySelector('div#bitrate')
+const peerDiv = document.querySelector('div#peer')
+const senderStatsDiv = document.querySelector('div#senderStats')
+const receiverStatsDiv = document.querySelector('div#receiverStats')
 
-var localVideo = document.querySelector('div#localVideo video');
-var remoteVideo = document.querySelector('div#remoteVideo video');
-var localVideoStatsDiv = document.querySelector('div#localVideo div');
-var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
+const localVideo = document.querySelector('div#localVideo video')
+const remoteVideo = document.querySelector('div#remoteVideo video')
+const localVideoStatsDiv = document.querySelector('div#localVideo div')
+const remoteVideoStatsDiv = document.querySelector('div#remoteVideo div')
 
-var localPeerConnection;
-var remotePeerConnection;
-var localStream;
-var bytesPrev;
-var timestampPrev;
+let localPeerConnection
+let remotePeerConnection
+let localStream
+let bytesPrev
+let timestampPrev
 
 main();
 
@@ -73,16 +73,16 @@ function getMedia() {
     localStream.getTracks().forEach(function(track) {
       track.stop();
     });
-    var videoTracks = localStream.getVideoTracks();
-    for (var i = 0; i !== videoTracks.length; ++i) {
+    const videoTracks = localStream.getVideoTracks()
+    for (let i = 0; i !== videoTracks.length; ++i) {
       videoTracks[i].stop();
     }
   }
   navigator.mediaDevices.getUserMedia(getUserMediaConstraints())
   .then(gotStream)
   .catch(function(e) {
-    var message = 'getUserMedia error: ' + e.name + '\n' +
-        'PermissionDeniedError may mean invalid constraints.';
+    const message = 'getUserMedia error: ' + e.name + '\n' +
+      'PermissionDeniedError may mean invalid constraints.'
     alert(message);
     console.log(message);
     getMediaButton.disabled = false;
@@ -97,7 +97,7 @@ function gotStream(stream) {
 }
 
 function getUserMediaConstraints() {
-  var constraints = {};
+  const constraints = {}
   constraints.audio = true;
   constraints.video = {};
   if (minWidthInput.value !== '0') {
@@ -129,7 +129,7 @@ function getUserMediaConstraints() {
 }
 
 function displayGetUserMediaConstraints() {
-  var constraints = getUserMediaConstraints();
+  const constraints = getUserMediaConstraints()
   console.log('getUserMedia constraints', constraints);
   getUserMediaConstraintsDiv.textContent =
       JSON.stringify(constraints, null, '    ');
@@ -215,17 +215,17 @@ setInterval(function() {
   if (localPeerConnection && remotePeerConnection) {
     // Dump old statistics to the right
     localPeerConnection.getStats(function(results) {
-      var statsString = dumpOldStats(results);
+      const statsString = dumpOldStats(results)
       receiverStatsDiv.innerHTML = '<h2>Old stats - local</h2>' + statsString;
     });
     remotePeerConnection.getStats(function(results) {
-      var statsString = dumpOldStats(results);
+      const statsString = dumpOldStats(results)
       receiverStatsDiv.innerHTML += '<p>END</p><h2>Old stats - remote</h2>' + statsString;
     });
     // Display new-style getstats to the left
     localPeerConnection.getStats(null)
     .then(function(results) {
-      var statsString = dumpStats(results);
+      const statsString = dumpStats(results)
       senderStatsDiv.innerHTML = '<h2>New stats</h2>' + statsString;
     }, function(err) {
       console.log(err);
@@ -247,7 +247,7 @@ setInterval(function() {
 // Dumping a stats variable as a string.
 // might be named toString?
 function dumpStats(results) {
-  var statsString = '';
+  let statsString = ''
   results.forEach(function(res) {
     statsString += '<h3>Report type=';
     statsString += res.type;
@@ -264,7 +264,7 @@ function dumpStats(results) {
 }
 
 function dumpOldStats(results) {
-  var statsString = '';
+  let statsString = ''
   console.log(JSON.stringify(results));
   results.result().forEach(function(res) {
     console.log(JSON.stringify(res));
@@ -282,7 +282,7 @@ function dumpOldStats(results) {
 
 // Utility to show the value of a range in a sibling span element
 function displayRangeValue(e) {
-  var span = e.target.parentElement.querySelector('span');
+  const span = e.target.parentElement.querySelector('span')
   span.textContent = e.target.value;
   displayGetUserMediaConstraints();
 }
