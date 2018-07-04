@@ -8,27 +8,50 @@
 -->
 <html>
 <head>
-  <title>PeerConnection PRANSWER Demo</title>
-  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
-  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-  <style>
-    video {
-      border:5px solid black;
-      width:320px;
-      height:240px;
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+
+    <title>PeerConnection PRANSWER Demo</title>
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+    <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
+    <style>
+        video {
+            border: 5px solid black;
+            width: 320px;
+            height: 240px;
+        }
+    </style>
 </head>
 <body>
-  <video id="vid1" autoplay="true" muted="true"></video>
-  <video id="vid2" autoplay></video>
-  <br>
-  <button id="callButton">Call</button>
-  <button id="acceptButton">Accept</button>
-  <button id="hangUpButton">Hang Up</button>
+    <div id="container">
+
+        <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Use pranswer when setting up a peer connection</span></h1>
+
+        <video id="vid1" autoplay="true" muted="true"></video>
+        <video id="vid2" autoplay></video>
+        <br>
+        <button id="callButton">Call</button>
+        <button id="acceptButton">Accept</button>
+        <button id="hangUpButton">Hang Up</button>
+        <p>View the console to see logging and to inspect the <code>MediaStream</code> object <code>localStream</code>.</p>
+    </div>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="../../../js/common.js"></script>
+    <script src="js/main.js"></script>
+    <script src="../../../js/lib/ga.js"></script>
 </body>
-<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-<script src="../../../js/common.js"></script>
-<script src="js/main.js"></script>
 </html>
 
