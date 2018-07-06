@@ -23,7 +23,6 @@
     "test": "grunt && start-tests"
   },
   "devDependencies": {
-    "eslint-config-webrtc": "^1.0.0",
     "express": "^4.14.1",
     "faucet": "0.0.1",
     "geckodriver": "^1.10.0",
