@@ -18,6 +18,7 @@ var orderedCheckbox = document.querySelector('input#ordered');
 var sendProgress = document.querySelector('progress#sendProgress');
 var receiveProgress = document.querySelector('progress#receiveProgress');
 var errorMessage = document.querySelector('div#errorMsg');
+var warningMessage = document.querySelector('div#warningMessage');
 
 var receivedSize = 0;
 var bytesToSend = 0;
@@ -29,6 +30,9 @@ megsToSend.addEventListener('change', function(e) {
   if (this.value <= 0) {
     sendButton.disabled = true;
     errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
+  } else if (this.value > 1000) {
+    warningMessage.innerHTML = '<p>Progress can be slow when the values are greater than 1000.</p>';
+    sendButton.disabled = false;
   } else {
     errorMessage.innerHTML = '';
     sendButton.disabled = false;

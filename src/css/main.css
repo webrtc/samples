@@ -24,6 +24,10 @@ div#errorMsg p {
   color: #F00;
 }
 
+div#warningMessage p {
+  color: #F1BB58;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
