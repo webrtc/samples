@@ -9,119 +9,138 @@
 <html>
 <head>
 
-  <meta charset="utf-8">
-  <meta name="description" content="WebRTC code samples">
-  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-  <meta itemprop="description" content="Client-side WebRTC code samples">
-  <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
-  <meta itemprop="name" content="WebRTC code samples">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta id="theme-color" name="theme-color" content="#ffffff">
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
 
-  <base target="_blank">
+    <base target="_blank">
 
-  <title>Trickle ICE</title>
+    <title>Trickle ICE</title>
 
-  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
-  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="../../../css/main.css">
-  <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="stylesheet" href="css/main.css"/>
 
 </head>
 
 <body>
 
-  <div id="container">
+<div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Trickle ICE</span></h1>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+        <span>Trickle ICE</span></h1>
 
     <section>
 
-      <p>This page tests the trickle ICE functionality in a WebRTC implementation. It creates a PeerConnection with the specified ICEServers, and then starts candidate gathering for a session with a single audio stream. As candidates are gathered, they are displayed in the text box below, along with an indication when candidate gathering is complete.</p>
+        <p>This page tests the trickle ICE functionality in a WebRTC implementation. It creates a PeerConnection with
+            the specified ICEServers, and then starts candidate gathering for a session with a single audio stream. As
+            candidates are gathered, they are displayed in the text box below, along with an indication when candidate
+            gathering is complete.</p>
 
-      <p>Note that if no getUserMedia permissions for this origin are persisted only candidates from a single interface will be gathered in Chrome. See <a href="https://tools.ietf.org/html/draft-ietf-rtcweb-ip-handling-01">the RTCWEB IP address handling recommendations draft</a> for details.<span id="getUserMediaPermissions">You have given permission, candidate from multiple interface will be gathered.</span></p>
+        <p>Note that if no getUserMedia permissions for this origin are persisted only candidates from a single
+            interface will be gathered in Chrome. See <a
+                    href="https://tools.ietf.org/html/draft-ietf-rtcweb-ip-handling-01">the RTCWEB IP address handling
+                recommendations draft</a> for details.<span id="getUserMediaPermissions">You have given permission, candidate from multiple interface will be gathered.</span>
+        </p>
 
-      <p>Individual STUN and TURN servers can be added using the Add server / Remove server controls below; in addition, the type of candidates released to the application can be controlled via the IceTransports constraint.</p>
+        <p>Individual STUN and TURN servers can be added using the Add server / Remove server controls below; in
+            addition, the type of candidates released to the application can be controlled via the IceTransports
+            constraint.</p>
 
-      <p>If you test just a single TURN/UDP server, this page even allows you to detect when you are using the wrong credential to authenticated.</p>
+        <p>If you test just a single TURN/UDP server, this page even allows you to detect when you are using the wrong
+            credential to authenticated.</p>
 
     </section>
 
     <section id="iceServers">
 
-      <h2>ICE servers</h2>
+        <h2>ICE servers</h2>
 
-      <select id="servers" size="4">
-        <option value="{&quot;urls&quot;:[&quot;stun:stun.l.google.com:19302&quot;]}" ondblclick="selectServer(event);">stun:stun.l.google.com:19302</option>
-      </select>
+        <select id="servers" size="4">
+            <option value="{&quot;urls&quot;:[&quot;stun:stun.l.google.com:19302&quot;]}"
+                    ondblclick="selectServer(event);">stun:stun.l.google.com:19302
+            </option>
+        </select>
 
-      <div>
-        <label for="url">STUN or TURN URI:</label>
-        <input id="url">
-      </div>
+        <div>
+            <label for="url">STUN or TURN URI:</label>
+            <input id="url">
+        </div>
 
-      <div>
-        <label for="username">TURN username:</label>
-        <input id="username">
-      </div>
+        <div>
+            <label for="username">TURN username:</label>
+            <input id="username">
+        </div>
 
-      <div>
-        <label for="password">TURN password:</label>
-        <input id="password">
-      </div>
+        <div>
+            <label for="password">TURN password:</label>
+            <input id="password">
+        </div>
 
-      <div>
-        <button id="add">Add Server</button>
-        <button id="remove">Remove Server</button>
-      </div>
+        <div>
+            <button id="add">Add Server</button>
+            <button id="remove">Remove Server</button>
+        </div>
 
     </section>
 
     <section id="iceOptions">
 
-      <h2>ICE options</h2>
+        <h2>ICE options</h2>
 
-      <div id="iceTransports">
-        <label for="transports"><span>IceTransports value:</span></label>
-        <input type="radio" name="transports" value="all" id="all" checked>
-        <span>all</span>
-        <input type="radio" name="transports" value="relay" id="relay">
-        <span>relay</span>
-      </div>
-      <div>
-        <label>ICE Candidate Pool:</label>
-        <span id="poolValue">0</span>
-        <span class="gray">0</span>
-        <input id="iceCandidatePool" type="range" min="0" max="10" value="0">
-        <span class="gray">10</span>
-      </div>
+        <div id="iceTransports">
+            <label for="transports"><span>IceTransports value:</span></label>
+            <input type="radio" name="transports" value="all" id="all" checked>
+            <span>all</span>
+            <input type="radio" name="transports" value="relay" id="relay">
+            <span>relay</span>
+        </div>
+        <div>
+            <label>ICE Candidate Pool:</label>
+            <span id="poolValue">0</span>
+            <span class="gray">0</span>
+            <input id="iceCandidatePool" type="range" min="0" max="10" value="0">
+            <span class="gray">10</span>
+        </div>
 
     </section>
 
     <section>
 
-      <table id="candidates">
-        <thead id="candidatesHead"><tr>
-          <th>Time</th><th>Component</th><th>Type</th><th>Foundation</th>
-          <th>Protocol</th><th>Address</th><th>Port</th><th>Priority</th>
-        </tr></thead>
-        <tbody id="candidatesBody"></tbody>
-      </table>
-      <button id="gather">Gather candidates</button>
+        <table id="candidates">
+            <thead id="candidatesHead">
+            <tr>
+                <th>Time</th>
+                <th>Component</th>
+                <th>Type</th>
+                <th>Foundation</th>
+                <th>Protocol</th>
+                <th>Address</th>
+                <th>Port</th>
+                <th>Priority</th>
+            </tr>
+            </thead>
+            <tbody id="candidatesBody"></tbody>
+        </table>
+        <button id="gather">Gather candidates</button>
     </section>
 
 
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/trickle-ice"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+</div>
 
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="../../../js/common.js"></script>
+<script src="js/main.js" async></script>
 
-
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/trickle-ice" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
-  </div>
-
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-  <script src="../../../js/common.js"></script>
-  <script src="js/main.js"></script>
-
-  <script src="../../../js/lib/ga.js"></script>
+<script src="../../../js/lib/ga.js"></script>
 
 </body>
 </html>

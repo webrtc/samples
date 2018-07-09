@@ -9,28 +9,28 @@
 
 'use strict';
 
-var remoteVideo = document.querySelector('video#remoteVideo');
-var localVideo = document.querySelector('video#localVideo');
-var callButton = document.querySelector('button#callButton');
-var hangupButton = document.querySelector('button#hangupButton');
-var bandwidthSelector = document.querySelector('select#bandwidth');
+const remoteVideo = document.querySelector('video#remoteVideo');
+const localVideo = document.querySelector('video#localVideo');
+const callButton = document.querySelector('button#callButton');
+const hangupButton = document.querySelector('button#hangupButton');
+const bandwidthSelector = document.querySelector('select#bandwidth');
 hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-var pc1;
-var pc2;
-var localStream;
+let pc1;
+let pc2;
+let localStream;
 
-var bitrateGraph;
-var bitrateSeries;
+let bitrateGraph;
+let bitrateSeries;
 
-var packetGraph;
-var packetSeries;
+let packetGraph;
+let packetSeries;
 
-var lastResult;
+let lastResult;
 
-var offerOptions = {
+const offerOptions = {
   offerToReceiveAudio: 0,
   offerToReceiveVideo: 1
 };
@@ -40,14 +40,7 @@ function gotStream(stream) {
   trace('Received local stream');
   localStream = stream;
   localVideo.srcObject = stream;
-  localStream.getTracks().forEach(
-    function(track) {
-      pc1.addTrack(
-        track,
-        localStream
-      );
-    }
-  );
+  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   trace('Adding Local Stream to peer connection');
 
   pc1.createOffer(
@@ -74,7 +67,7 @@ function call() {
   callButton.disabled = true;
   bandwidthSelector.disabled = false;
   trace('Starting call');
-  var servers = null;
+  const servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
   pc1.onicecandidate = onIceCandidate.bind(pc1);
@@ -85,45 +78,32 @@ function call() {
   pc2.ontrack = gotRemoteStream;
 
   trace('Requesting local stream');
-  navigator.mediaDevices.getUserMedia({
-    video: true
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
-  });
+  navigator.mediaDevices.getUserMedia({video: true})
+    .then(gotStream)
+    .catch(e => alert('getUserMedia() error: ' + e.name));
 }
 
 function gotDescription1(desc) {
   trace('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc).then(
-    function() {
-      pc2.setRemoteDescription(desc).then(
-        function() {
-          pc2.createAnswer().then(
-            gotDescription2,
-            onCreateSessionDescriptionError
-          );
-        },
-        onSetSessionDescriptionError
-      );
-    },
-    onSetSessionDescriptionError
+    () => {
+      pc2.setRemoteDescription(desc)
+        .then(() => pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError),
+          onSetSessionDescriptionError);
+    }, onSetSessionDescriptionError
   );
 }
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc).then(
-    function() {
+    () => {
       trace('Answer from pc2 \n' + desc.sdp);
-      pc1.setRemoteDescription({
-        type: desc.type,
-        sdp: updateBandwidthRestriction(desc.sdp, '500')
-      }).then(
-        function() {
-        },
-        onSetSessionDescriptionError
-      );
+      pc1
+        .setRemoteDescription({
+          type: desc.type,
+          sdp: updateBandwidthRestriction(desc.sdp, '500')
+        })
+        .then(() => {}, onSetSessionDescriptionError);
     },
     onSetSessionDescriptionError
   );
@@ -131,9 +111,7 @@ function gotDescription2(desc) {
 
 function hangup() {
   trace('Ending call');
-  localStream.getTracks().forEach(function(track) {
-    track.stop();
-  });
+  localStream.getTracks().forEach(track => track.stop());
   pc1.close();
   pc2.close();
   pc1 = null;
@@ -160,12 +138,11 @@ function getName(pc) {
 
 function onIceCandidate(event) {
   getOtherPc(this)
-  .addIceCandidate(event.candidate)
-  .then(onAddIceCandidateSuccess)
-  .catch(onAddIceCandidateError);
+    .addIceCandidate(event.candidate)
+    .then(onAddIceCandidateSuccess)
+    .catch(onAddIceCandidateError);
 
-  trace(getName(this) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  trace(`${getName(this)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -181,44 +158,39 @@ function onSetSessionDescriptionError(error) {
 }
 
 // renegotiate bandwidth on the fly.
-bandwidthSelector.onchange = function() {
+bandwidthSelector.onchange = () => {
   bandwidthSelector.disabled = true;
-  var bandwidth = bandwidthSelector.options[bandwidthSelector.selectedIndex]
-      .value;
+  const bandwidth = bandwidthSelector.options[bandwidthSelector.selectedIndex].value;
   pc1.createOffer()
-  .then(function(offer) {
-    return pc1.setLocalDescription(offer);
-  })
-  .then(function() {
-    var desc = {
-      type: pc1.remoteDescription.type,
-      sdp: bandwidth === 'unlimited'
+    .then(offer => pc1.setLocalDescription(offer))
+    .then(() => {
+      const desc = {
+        type: pc1.remoteDescription.type,
+        sdp: bandwidth === 'unlimited'
           ? removeBandwidthRestriction(pc1.remoteDescription.sdp)
           : updateBandwidthRestriction(pc1.remoteDescription.sdp, bandwidth)
-    };
-    trace('Applying bandwidth restriction to setRemoteDescription:\n' +
+      };
+      trace('Applying bandwidth restriction to setRemoteDescription:\n' +
         desc.sdp);
-    return pc1.setRemoteDescription(desc);
-  })
-  .then(function() {
-    bandwidthSelector.disabled = false;
-  })
-  .catch(onSetSessionDescriptionError);
+      return pc1.setRemoteDescription(desc);
+    })
+    .then(() => {
+      bandwidthSelector.disabled = false;
+    })
+    .catch(onSetSessionDescriptionError);
 };
 
 function updateBandwidthRestriction(sdp, bandwidth) {
-  var modifier = 'AS';
+  let modifier = 'AS';
   if (adapter.browserDetails.browser === 'firefox') {
     bandwidth = (bandwidth >>> 0) * 1000;
     modifier = 'TIAS';
   }
   if (sdp.indexOf('b=' + modifier + ':') === -1) {
     // insert b= after c= line.
-    sdp = sdp.replace(/c=IN (.*)\r\n/,
-        'c=IN $1\r\nb=' + modifier + ':' + bandwidth + '\r\n');
+    sdp = sdp.replace(/c=IN (.*)\r\n/, 'c=IN $1\r\nb=' + modifier + ':' + bandwidth + '\r\n');
   } else {
-    sdp = sdp.replace(new RegExp('b=' + modifier + ':.*\r\n'),
-        'b=' + modifier + ':' + bandwidth + '\r\n');
+    sdp = sdp.replace(new RegExp('b=' + modifier + ':.*\r\n'), 'b=' + modifier + ':' + bandwidth + '\r\n');
   }
   return sdp;
 }
@@ -228,23 +200,23 @@ function removeBandwidthRestriction(sdp) {
 }
 
 // query getStats every second
-window.setInterval(function() {
+window.setInterval(() => {
   if (!window.pc1) {
     return;
   }
-  var sender = pc1.getSenders()[0];
-  sender.getStats().then(function(res) {
-    res.forEach(function(report) {
-      var bytes;
-      var packets;
-      var now = report.timestamp;
+  const sender = pc1.getSenders()[0];
+  sender.getStats().then(res => {
+    res.forEach(report => {
+      let bytes;
+      let packets;
+      const now = report.timestamp;
       if (report.type === 'outbound-rtp') {
         bytes = report.bytesSent;
         packets = report.packetsSent;
         if (lastResult && lastResult.get(report.id)) {
           // calculate bitrate
-          var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
-              (now - lastResult.get(report.id).timestamp);
+          const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+            (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -253,7 +225,7 @@ window.setInterval(function() {
 
           // calculate number of packets and append to chart
           packetSeries.addPoint(now, packets -
-              lastResult.get(report.id).packetsSent);
+            lastResult.get(report.id).packetsSent);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }
