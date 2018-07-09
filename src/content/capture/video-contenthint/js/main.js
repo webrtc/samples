@@ -8,15 +8,15 @@
 
 'use strict';
 
-var srcVideo = document.getElementById('srcVideo');
-var motionVideo = document.getElementById('motionVideo');
-var detailVideo = document.getElementById('detailVideo');
+const srcVideo = document.getElementById('srcVideo');
+const motionVideo = document.getElementById('motionVideo');
+const detailVideo = document.getElementById('detailVideo');
 
-var srcStream;
-var motionStream;
-var detailStream;
+let srcStream;
+let motionStream;
+let detailStream;
 
-var offerOptions = {
+const offerOptions = {
   offerToReceiveAudio: 0,
   offerToReceiveVideo: 1
 };
@@ -44,8 +44,8 @@ if (srcVideo.readyState >= 3) {  // HAVE_FUTURE_DATA
 srcVideo.play();
 
 function setVideoTrackContentHints(stream, hint) {
-  var tracks = stream.getVideoTracks();
-  tracks.forEach(function(track) {
+  const tracks = stream.getVideoTracks();
+  tracks.forEach(track => {
     if ('contentHint' in track) {
       track.contentHint = hint;
       if (track.contentHint !== hint) {
@@ -75,39 +75,31 @@ function call() {
 }
 
 function establishPC(videoTag, stream) {
-  var pc1 = new RTCPeerConnection(null);
-  var pc2 = new RTCPeerConnection(null);
-  pc1.onicecandidate = function(e) {
+  const pc1 = new RTCPeerConnection(null);
+  const pc2 = new RTCPeerConnection(null);
+  pc1.onicecandidate = e => {
     onIceCandidate(pc1, pc2, e);
   };
-  pc2.onicecandidate = function(e) {
+  pc2.onicecandidate = e => {
     onIceCandidate(pc2, pc1, e);
   };
-  pc2.ontrack = function(event) {
+  pc2.ontrack = event => {
     if (videoTag.srcObject !== event.streams[0]) {
       videoTag.srcObject = event.streams[0];
     }
   };
 
-  stream.getTracks().forEach(
-    function(track) {
-      pc1.addTrack(
-        track,
-        stream
-      );
-    }
-  );
-  pc1.createOffer(offerOptions).then(function(desc) {
-    pc1.setLocalDescription(desc).then(function() {
-      return pc2.setRemoteDescription(desc);
-    }).then(function() {
-      return pc2.createAnswer();
-    }).then(function(answerDesc) {
-      onCreateAnswerSuccess(pc1, pc2, answerDesc);
-    }).catch(onSetSessionDescriptionError);
-  }).catch(function(e) {
-    trace('Failed to create session description: ' + e.toString());
-  });
+  stream.getTracks().forEach(track => pc1.addTrack(track, stream));
+
+  pc1.createOffer(offerOptions)
+    .then(desc => {
+      pc1.setLocalDescription(desc)
+        .then(() => pc2.setRemoteDescription(desc))
+        .then(() => pc2.createAnswer())
+        .then(answerDesc => onCreateAnswerSuccess(pc1, pc2, answerDesc))
+        .catch(onSetSessionDescriptionError);
+    })
+    .catch(e => trace('Failed to create session description: ' + e.toString()));
 }
 
 function onSetSessionDescriptionError(error) {
@@ -116,11 +108,10 @@ function onSetSessionDescriptionError(error) {
 
 function onCreateAnswerSuccess(pc1, pc2, desc) {
   // Hard-code video bitrate to 50kbps.
-  desc.sdp = desc.sdp.replace(/a=mid:video\r\n/g,
-                              'a=mid:video\r\nb=AS:' + 50 + '\r\n');
-  pc2.setLocalDescription(desc).then(function() {
-    return pc1.setRemoteDescription(desc);
-  }).catch(onSetSessionDescriptionError);
+  desc.sdp = desc.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:' + 50 + '\r\n');
+  pc2.setLocalDescription(desc)
+    .then(() => pc1.setRemoteDescription(desc))
+    .catch(onSetSessionDescriptionError);
 }
 
 function onIceCandidate(pc, otherPc, event) {
