@@ -8,19 +8,19 @@
 
 'use strict';
 
-var localConnection;
-var remoteConnection;
-var sendChannel;
-var receiveChannel;
-var megsToSend = document.querySelector('input#megsToSend');
-var sendButton = document.querySelector('button#sendTheData');
-var orderedCheckbox = document.querySelector('input#ordered');
-var sendProgress = document.querySelector('progress#sendProgress');
-var receiveProgress = document.querySelector('progress#receiveProgress');
-var errorMessage = document.querySelector('div#errorMsg');
+let localConnection;
+let remoteConnection;
+let sendChannel;
+let receiveChannel;
+const megsToSend = document.querySelector('input#megsToSend');
+const sendButton = document.querySelector('button#sendTheData');
+const orderedCheckbox = document.querySelector('input#ordered');
+const sendProgress = document.querySelector('progress#sendProgress');
+const receiveProgress = document.querySelector('progress#receiveProgress');
+const errorMessage = document.querySelector('div#errorMsg');
 
-var receivedSize = 0;
-var bytesToSend = 0;
+let receivedSize = 0;
+let bytesToSend = 0;
 
 sendButton.onclick = createConnection;
 
@@ -38,50 +38,42 @@ megsToSend.addEventListener('change', function(e) {
 function createConnection() {
   sendButton.disabled = true;
   megsToSend.disabled = true;
-  var servers = null;
+  const servers = null;
 
   bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
 
   localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
-  var dataChannelParams = {ordered: false};
+  const dataChannelParams = {ordered: false};
   if (orderedCheckbox.checked) {
     dataChannelParams.ordered = true;
   }
 
-  sendChannel = localConnection.createDataChannel(
-      'sendDataChannel', dataChannelParams);
+  sendChannel = localConnection.createDataChannel('sendDataChannel', dataChannelParams);
   sendChannel.binaryType = 'arraybuffer';
   trace('Created send data channel');
 
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
-  localConnection.onicecandidate = function(e) {
-    onIceCandidate(localConnection, e);
-  };
+  localConnection.onicecandidate = e => onIceCandidate(localConnection, e);
 
-  localConnection.createOffer().then(
-    gotDescription1,
-    onCreateSessionDescriptionError
-  );
+  localConnection.createOffer().then(gotDescription1, onCreateSessionDescriptionError);
 
   remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = function(e) {
-    onIceCandidate(remoteConnection, e);
-  };
+  remoteConnection.onicecandidate = e => onIceCandidate(remoteConnection, e);
   remoteConnection.ondatachannel = receiveChannelCallback;
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function randomAsciiString(length) {
-  var result = '';
-  for (var i = 0; i < length; i++) {
+  let result = '';
+  for (let i = 0; i < length; i++) {
     // Visible ASCII chars are between 33 and 126.
     result += String.fromCharCode(33 + Math.random() * 93);
   }
@@ -89,32 +81,7 @@ function randomAsciiString(length) {
 }
 
 function sendGeneratedData() {
-  sendProgress.max = bytesToSend;
-  receiveProgress.max = sendProgress.max;
-  sendProgress.value = 0;
-  receiveProgress.value = 0;
-
-  var chunkSize = 16384;
-  var stringToSendRepeatedly = randomAsciiString(chunkSize);
-  var bufferFullThreshold = 5 * chunkSize;
-  var usePolling = true;
-  if (typeof sendChannel.bufferedAmountLowThreshold === 'number') {
-    trace('Using the bufferedamountlow event for flow control');
-    usePolling = false;
-
-    // Reduce the buffer fullness threshold, since we now have more efficient
-    // buffer management.
-    bufferFullThreshold = chunkSize / 2;
-
-    // This is "overcontrol": our high and low thresholds are the same.
-    sendChannel.bufferedAmountLowThreshold = bufferFullThreshold;
-  }
-  // Listen for one bufferedamountlow event.
-  var listener = function() {
-    sendChannel.removeEventListener('bufferedamountlow', listener);
-    sendAllData();
-  };
-  var sendAllData = function() {
+  const sendAllData = () => {
     // Try to queue up a bunch of data and back off when the channel starts to
     // fill up. We don't setTimeout after each send since this lowers our
     // throughput quite a bit (setTimeout(fn, 0) can take hundreds of milli-
@@ -132,15 +99,40 @@ function sendGeneratedData() {
       sendChannel.send(stringToSendRepeatedly);
     }
   };
+  sendProgress.max = bytesToSend;
+  receiveProgress.max = sendProgress.max;
+  sendProgress.value = 0;
+  receiveProgress.value = 0;
+
+  const chunkSize = 16384;
+  const stringToSendRepeatedly = randomAsciiString(chunkSize);
+  let bufferFullThreshold = 5 * chunkSize;
+  let usePolling = true;
+  if (typeof sendChannel.bufferedAmountLowThreshold === 'number') {
+    trace('Using the bufferedamountlow event for flow control');
+    usePolling = false;
+
+    // Reduce the buffer fullness threshold, since we now have more efficient
+    // buffer management.
+    bufferFullThreshold = chunkSize / 2;
+
+    // This is "overcontrol": our high and low thresholds are the same.
+    sendChannel.bufferedAmountLowThreshold = bufferFullThreshold;
+  }
+  // Listen for one bufferedamountlow event.
+  const listener = () => {
+    sendChannel.removeEventListener('bufferedamountlow', listener);
+    sendAllData();
+  };
   setTimeout(sendAllData, 0);
 }
 
 function closeDataChannels() {
   trace('Closing data channels');
   sendChannel.close();
-  trace('Closed data channel with label: ' + sendChannel.label);
+  trace(`Closed data channel with label: ${sendChannel.label}`);
   receiveChannel.close();
-  trace('Closed data channel with label: ' + receiveChannel.label);
+  trace(`Closed data channel with label: ${receiveChannel.label}`);
   localConnection.close();
   remoteConnection.close();
   localConnection = null;
@@ -150,7 +142,8 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace('Offer from localConnection \n' + desc.sdp);
+  trace(`Offer from localConnection 
+${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -160,7 +153,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace('Answer from remoteConnection \n' + desc.sdp);
+  trace(`Answer from remoteConnection\n${desc.sdp}`);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -169,22 +162,18 @@ function getOtherPc(pc) {
 }
 
 function getName(pc) {
-  return (pc === localConnection) ? 'localPeerConnection' :
-      'remotePeerConnection';
+  return (pc === localConnection) ? 'localPeerConnection' : 'remotePeerConnection';
 }
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+    .then(
+      () => onAddIceCandidateSuccess(pc),
+      err => onAddIceCandidateError(pc, err)
+    );
+  trace(`${getName(pc)} ICE candidate: 
+${event.candidate ?
+    event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -192,7 +181,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function receiveChannelCallback(event) {
@@ -216,8 +205,8 @@ function onReceiveMessageCallback(event) {
 }
 
 function onSendChannelStateChange() {
-  var readyState = sendChannel.readyState;
-  trace('Send channel state is: ' + readyState);
+  const readyState = sendChannel.readyState;
+  trace(`Send channel state is: ${readyState}`);
   if (readyState === 'open') {
     sendGeneratedData();
   }
