@@ -19,12 +19,12 @@ function SoundMeter(context) {
   this.slow = 0.0;
   this.clip = 0.0;
   this.script = context.createScriptProcessor(2048, 1, 1);
-  var that = this;
+  const that = this;
   this.script.onaudioprocess = function(event) {
-    var input = event.inputBuffer.getChannelData(0);
-    var i;
-    var sum = 0.0;
-    var clipcount = 0;
+    const input = event.inputBuffer.getChannelData(0);
+    let i;
+    let sum = 0.0;
+    let clipcount = 0;
     for (i = 0; i < input.length; ++i) {
       sum += input[i] * input[i];
       if (Math.abs(input[i]) > 0.99) {
@@ -54,6 +54,7 @@ SoundMeter.prototype.connectToSource = function(stream, callback) {
     }
   }
 };
+
 SoundMeter.prototype.stop = function() {
   this.mic.disconnect();
   this.script.disconnect();
