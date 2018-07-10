@@ -8,28 +8,27 @@
 
 'use strict';
 
-var gumAudio = document.querySelector('audio.gum');
-gumAudio.addEventListener('play', function() {
+const gumAudio = document.querySelector('audio.gum');
+gumAudio.addEventListener('play', () => {
   gumAudio.volume = 0.1;
   console.log('Audio lowered to reduce feedback from local gUM stream');
 });
-var gumVideo = document.querySelector('video.gum');
-gumVideo.addEventListener('play', function() {
+const gumVideo = document.querySelector('video.gum');
+gumVideo.addEventListener('play', () => {
   gumVideo.volume = 0.1;
   console.log('Audio lowered to reduce feedback from local gUM stream');
 });
 
 function gotDevices(deviceInfos) {
-  var masterOutputSelector = document.createElement('select');
+  const masterOutputSelector = document.createElement('select');
 
-  for (var i = 0; i !== deviceInfos.length; ++i) {
-    var deviceInfo = deviceInfos[i];
-    var option = document.createElement('option');
+  for (let i = 0; i !== deviceInfos.length; ++i) {
+    const deviceInfo = deviceInfos[i];
+    const option = document.createElement('option');
     option.value = deviceInfo.deviceId;
     if (deviceInfo.kind === 'audiooutput') {
       console.info('Found audio output device: ', deviceInfo.label);
-      option.text = deviceInfo.label || 'speaker ' +
-          (masterOutputSelector.length + 1);
+      option.text = deviceInfo.label || `speaker ${masterOutputSelector.length + 1}`;
       masterOutputSelector.appendChild(option);
     } else {
       console.log('Found non audio output device: ', deviceInfo.label);
@@ -37,12 +36,12 @@ function gotDevices(deviceInfos) {
   }
 
   // Clone the master outputSelector and replace outputSelector placeholders.
-  var allOutputSelectors = document.querySelectorAll('select');
-  for (var selector = 0; selector < allOutputSelectors.length; selector++) {
-    var newOutputSelector = masterOutputSelector.cloneNode(true);
+  const allOutputSelectors = document.querySelectorAll('select');
+  for (let selector = 0; selector < allOutputSelectors.length; selector++) {
+    const newOutputSelector = masterOutputSelector.cloneNode(true);
     newOutputSelector.addEventListener('change', changeAudioDestination);
     allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector,
-        allOutputSelectors[selector]);
+      allOutputSelectors[selector]);
   }
 }
 
@@ -52,30 +51,28 @@ navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 function attachSinkId(element, sinkId, outputSelector) {
   if (typeof element.sinkId !== 'undefined') {
     element.setSinkId(sinkId)
-    .then(function() {
-      console.log('Success, audio output device attached: ' + sinkId + ' to ' +
-          'element with ' + element.title + ' as source.');
-    })
-    .catch(function(error) {
-      var errorMessage = error;
-      if (error.name === 'SecurityError') {
-        errorMessage = 'You need to use HTTPS for selecting audio output ' +
-            'device: ' + error;
-      }
-      console.error(errorMessage);
-      // Jump back to first output device in the list as it's the default.
-      outputSelector.selectedIndex = 0;
-    });
+      .then(() => {
+        console.log(`Success, audio output device attached: ${sinkId} to element with ${element.title} as source.`);
+      })
+      .catch(error => {
+        let errorMessage = error;
+        if (error.name === 'SecurityError') {
+          errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+        }
+        console.error(errorMessage);
+        // Jump back to first output device in the list as it's the default.
+        outputSelector.selectedIndex = 0;
+      });
   } else {
     console.warn('Browser does not support output device selection.');
   }
 }
 
 function changeAudioDestination(event) {
-  var deviceId = event.target.value;
-  var outputSelector = event.target;
+  const deviceId = event.target.value;
+  const outputSelector = event.target;
   // FIXME: Make the media element lookup dynamic.
-  var element = event.path[2].childNodes[1];
+  const element = event.path[2].childNodes[1];
   attachSinkId(element, deviceId, outputSelector);
 }
 
@@ -87,16 +84,15 @@ function gotStream(stream) {
 
 function start() {
   if (window.stream) {
-    window.stream.getTracks().forEach(function(track) {
+    window.stream.getTracks().forEach(track => {
       track.stop();
     });
   }
-  var constraints = {
+  const constraints = {
     audio: true,
     video: true
   };
-  navigator.mediaDevices.getUserMedia(constraints).
-      then(gotStream).catch(handleError);
+  navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(handleError);
 }
 
 start();
