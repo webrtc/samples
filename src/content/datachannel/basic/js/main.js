@@ -8,16 +8,16 @@
 
 'use strict';
 
-var localConnection;
-var remoteConnection;
-var sendChannel;
-var receiveChannel;
-var dataConstraint;
-var dataChannelSend = document.querySelector('textarea#dataChannelSend');
-var dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
-var startButton = document.querySelector('button#startButton');
-var sendButton = document.querySelector('button#sendButton');
-var closeButton = document.querySelector('button#closeButton');
+let localConnection;
+let remoteConnection;
+let sendChannel;
+let receiveChannel;
+let dataConstraint;
+const dataChannelSend = document.querySelector('textarea#dataChannelSend');
+const dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
+const startButton = document.querySelector('button#startButton');
+const sendButton = document.querySelector('button#sendButton');
+const closeButton = document.querySelector('button#closeButton');
 
 startButton.onclick = createConnection;
 sendButton.onclick = sendData;
@@ -33,7 +33,7 @@ function disableSendButton() {
 
 function createConnection() {
   dataChannelSend.placeholder = '';
-  var servers = null;
+  const servers = null;
   dataConstraint = null;
   trace('Using SCTP based data channels');
   // SCTP is supported from Chrome 31 and is supported in FF.
@@ -42,14 +42,13 @@ function createConnection() {
   // Add localConnection to global scope to make it visible
   // from the browser console.
   window.localConnection = localConnection =
-      new RTCPeerConnection(servers);
+    new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
-  sendChannel = localConnection.createDataChannel('sendDataChannel',
-      dataConstraint);
+  sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
   trace('Created send data channel');
 
-  localConnection.onicecandidate = function(e) {
+  localConnection.onicecandidate = e => {
     onIceCandidate(localConnection, e);
   };
   sendChannel.onopen = onSendChannelStateChange;
@@ -57,11 +56,10 @@ function createConnection() {
 
   // Add remoteConnection to global scope to make it visible
   // from the browser console.
-  window.remoteConnection = remoteConnection =
-      new RTCPeerConnection(servers);
+  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = function(e) {
+  remoteConnection.onicecandidate = e => {
     onIceCandidate(remoteConnection, e);
   };
   remoteConnection.ondatachannel = receiveChannelCallback;
@@ -79,7 +77,7 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function sendData() {
-  var data = dataChannelSend.value;
+  const data = dataChannelSend.value;
   sendChannel.send(data);
   trace('Sent Data: ' + data);
 }
@@ -107,7 +105,7 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace('Offer from localConnection \n' + desc.sdp);
+  trace(`Offer from localConnection\n${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -117,7 +115,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace('Answer from remoteConnection \n' + desc.sdp);
+  trace(`Answer from remoteConnection\n${desc.sdp}`);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -126,22 +124,17 @@ function getOtherPc(pc) {
 }
 
 function getName(pc) {
-  return (pc === localConnection) ? 'localPeerConnection' :
-      'remotePeerConnection';
+  return (pc === localConnection) ? 'localPeerConnection' : 'remotePeerConnection';
 }
 
 function onIceCandidate(pc, event) {
-  getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  getOtherPc(pc)
+    .addIceCandidate(event.candidate)
+    .then(
+      () => onAddIceCandidateSuccess(pc),
+      err => onAddIceCandidateError(pc, err)
+    );
+  trace(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -149,7 +142,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function receiveChannelCallback(event) {
@@ -166,7 +159,7 @@ function onReceiveMessageCallback(event) {
 }
 
 function onSendChannelStateChange() {
-  var readyState = sendChannel.readyState;
+  const readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
   if (readyState === 'open') {
     dataChannelSend.disabled = false;
@@ -181,6 +174,6 @@ function onSendChannelStateChange() {
 }
 
 function onReceiveChannelStateChange() {
-  var readyState = receiveChannel.readyState;
-  trace('Receive channel state is: ' + readyState);
+  const readyState = receiveChannel.readyState;
+  trace(`Receive channel state is: ${readyState}`);
 }

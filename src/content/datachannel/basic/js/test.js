@@ -5,64 +5,45 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
- /* eslint-env node */
+/* eslint-env node */
 
 'use strict';
 
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
-var test = require('tape');
-
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
+const test = require('tape');
 
 // Disabling on firefox until sendKeys is fixed.
 // https://github.com/mozilla/geckodriver/issues/683
 test('Basic datachannel sample', {skip: process.env.BROWSER === 'firefox'},
-  function(t) {
-    var driver = seleniumHelpers.buildDriver();
+  t => {
+    const webdriver = require('selenium-webdriver');
+    const seleniumHelpers = require('webrtc-utilities').seleniumLib;
+    const driver = seleniumHelpers.buildDriver();
+    const path = '/src/content/datachannel/basic/index.html';
+    const url = (process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())) + path;
 
-    driver.get((process.env.BASEURL ? process.env.BASEURL :
-        ('file://' + process.cwd())) +
-        '/src/content/datachannel/basic/index.html')
-    .then(function() {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.id('startButton')).click();
-    })
-    .then(function() {
-      return driver.wait(function() {
-        return driver.executeScript(
-            'return remoteConnection && ' +
-            'remoteConnection.iceConnectionState === \'connected\';');
+    driver.get(url)
+      .then(() => {
+        t.pass('page loaded');
+        return driver.findElement(webdriver.By.id('startButton')).click();
+      })
+      .then(() => driver.wait(() => driver.executeScript(
+        'return remoteConnection && ' +
+        'remoteConnection.iceConnectionState === \'connected\';')))
+      .then(() => {
+        t.pass('remoteConnection ICE connected');
+        return driver.findElement(webdriver.By.id('dataChannelSend')).sendKeys('hello world');
+      })
+      .then(() => driver.findElement(webdriver.By.id('sendButton')).click())
+      .then(() => driver.wait(() => {
+        return driver.executeScript('return document.getElementById(\'dataChannelReceive\').value !== \'\'');
+      }))
+      .then(() => driver.findElement(webdriver.By.id('dataChannelReceive')).getAttribute('value'))
+      .then(value => t.ok(value === 'hello world', 'Text was received'))
+      .then(() => t.end())
+      .then(null, err => {
+        t.fail(err);
+        t.end();
       });
-    })
-    .then(function() {
-      t.pass('remoteConnection ICE connected');
-      return driver.findElement(webdriver.By.id('dataChannelSend'))
-          .sendKeys('hello world');
-    })
-    .then(function() {
-      return driver.findElement(webdriver.By.id('sendButton')).click();
-    })
-    .then(function() {
-      return driver.wait(function() {
-        return driver.executeScript(
-            'return document.getElementById(\'dataChannelReceive\').value ' +
-            '!== \'\'');
-      });
-    })
-    .then(function() {
-      return driver.findElement(webdriver.By.id('dataChannelReceive'))
-          .getAttribute('value');
-    })
-    .then(function(value) {
-      t.ok(value === 'hello world', 'Text was received');
-    })
-    .then(function() {
-      t.end();
-    })
-    .then(null, function(err) {
-      t.fail(err);
-      t.end();
-    });
   });
