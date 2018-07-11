@@ -1,4 +1,4 @@
-import GumPage from './gum.page'
+import GumPage from './gum.page';
 
 describe('getUserMedia basic', () => {
   it('should stream camera to to video element', () => {

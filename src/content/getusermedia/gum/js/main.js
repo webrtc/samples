@@ -16,7 +16,7 @@ const constraints = window.constraints = {
 function handleSuccess(stream) {
   const video = document.querySelector('video');
   video.addEventListener('loadeddata', (e) => {
-    document.querySelector('#successMsg').innerHTML = '<p>Video stream from camera loaded!</p>'
+    document.querySelector('#successMsg').innerHTML = '<p>Video stream from camera loaded!</p>';
   }, {once: true});
   const videoTracks = stream.getVideoTracks();
   console.log('Got stream with constraints:', constraints);

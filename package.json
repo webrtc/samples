@@ -20,7 +20,7 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "grunt && start-tests"
+    "test": "grunt && ./node_modules/.bin/wdio wdio.conf.js"
   },
   "devDependencies": {
     "assert": "^1.4.1",
