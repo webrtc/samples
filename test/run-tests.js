@@ -5,7 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
- /* eslint-env node */
+/* eslint-env node */
 
 'use strict';
 var test = require('tape');
@@ -19,25 +19,25 @@ require('../src/content/getusermedia/gum/js/test');
 require('../src/content/getusermedia/resolution/js/test');
 
 // Tests basic functionality of the pc1 demo.
-//require('../src/content/peerconnection/pc1/js/test');
+// require('../src/content/peerconnection/pc1/js/test');
 
 // Tests basic functionality of the upgrade demo.
-//require('../src/content/peerconnection/upgrade/js/test');
+// require('../src/content/peerconnection/upgrade/js/test');
 
 // Tests basic functionality of the peerconnection audio demo.
 require('../src/content/peerconnection/audio/js/test');
 
 // Tests basic functionality of the peerconnection dtmf demo.
-//require('../src/content/peerconnection/dtmf/js/test');
+// require('../src/content/peerconnection/dtmf/js/test');
 
 // Tests basic functionality of the peerconnection multiple demo.
-//require('../src/content/peerconnection/multiple/js/test');
+// require('../src/content/peerconnection/multiple/js/test');
 
 // Tests basic functionality of the munge-sdp demo.
 require('../src/content/peerconnection/munge-sdp/js/test');
 
 // Tests basic functionality of the trickle-ice demo.
-//require('../src/content/peerconnection/trickle-ice/js/test');
+// require('../src/content/peerconnection/trickle-ice/js/test');
 
 // Tests basic functionality of the ice restart demo.
 require('../src/content/peerconnection/restart-ice/js/test.js');
@@ -58,15 +58,15 @@ require('../src/content/devices/input-output/js/test.js');
 // have completed.
 test('Shutdown', function(t) {
   require('webrtc-utilities').seleniumLib.buildDriver()
-  .then(function(driver) {
-    driver.getCapabilities().then(function(caps) {
-      // Newer geckodriver do not like close() for some reason.
-      if (caps.get('browserName') !== 'firefox') {
-        driver.close();
-      }
+    .then(function(driver) {
+      driver.getCapabilities().then(function(caps) {
+        // Newer geckodriver do not like close() for some reason.
+        if (caps.get('browserName') !== 'firefox') {
+          driver.close();
+        }
+      });
+      driver.quit().then(function() {
+        t.end();
+      });
     });
-    driver.quit().then(function() {
-      t.end();
-    });
-  });
 });
