@@ -23,6 +23,10 @@
     "test": "grunt && start-tests"
   },
   "devDependencies": {
+    "assert": "^1.4.1",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.26.0",
+    "chai": "^4.1.2",
     "express": "^4.14.1",
     "faucet": "0.0.1",
     "geckodriver": "^1.10.0",
@@ -33,7 +37,17 @@
     "grunt-eslint": "^18.1.0",
     "grunt-githooks": "^0.3.1",
     "grunt-htmlhint": ">=0.9.12",
+    "mocha": "^5.2.0",
     "pem": "^1.9.4",
+    "wdio-dot-reporter": "0.0.10",
+    "wdio-mocha-framework": "^0.6.2",
+    "wdio-selenium-standalone-service": "0.0.10",
+    "webdriverio": "^4.13.1",
     "webrtc-utilities": "^1.0.8"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
   }
 }
