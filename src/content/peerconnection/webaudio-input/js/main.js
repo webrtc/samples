@@ -10,38 +10,40 @@
 
 /* global WebAudioExtended, webkitRTCPeerConnection */
 
-var audioElement = document.querySelector('audio');
-var statusDiv = document.querySelector('div#status');
+const audioElement = document.querySelector('audio');
+const statusDiv = document.querySelector('div#status');
 
-var startButton = document.querySelector('button#start');
-var stopButton = document.querySelector('button#stop');
+const startButton = document.querySelector('button#start');
+const stopButton = document.querySelector('button#stop');
 startButton.onclick = start;
 stopButton.onclick = stop;
 
-var renderLocallyCheckbox = document.querySelector('input#renderLocally');
+const renderLocallyCheckbox = document.querySelector('input#renderLocally');
 renderLocallyCheckbox.onclick = toggleRenderLocally;
 
 document.addEventListener('keydown', handleKeyDown, false);
 
-var localStream;
-var pc1;
-var pc2;
+let localStream;
+let pc1;
+let pc2;
 
-var webAudio = new WebAudioExtended();
+const webAudio = new WebAudioExtended();
 webAudio.loadSound('audio/Shamisen-C4.wav');
 
 function trace(txt) {
-  statusDiv.innerHTML += '<p>' + txt + '</p>';
+  statusDiv.innerHTML += `<p>${txt}</p>`;
 }
 
 function start() {
   webAudio.start();
-  var constraints = {
+  const constraints = {
     audio: true,
     video: false
   };
-  navigator.mediaDevices.getUserMedia(constraints).
-      then(handleSuccess).catch(handleFailure);
+  navigator.mediaDevices
+    .getUserMedia(constraints)
+    .then(handleSuccess)
+    .catch(handleFailure);
   startButton.disabled = true;
   stopButton.disabled = false;
 }
@@ -55,44 +57,27 @@ function stop() {
   startButton.enabled = true;
   stopButton.enabled = false;
   renderLocallyCheckbox.disabled = true;
-  localStream.getTracks().forEach(function(track) {
-    track.stop();
-  });
+  localStream.getTracks().forEach(track => track.stop());
 }
 
 function handleSuccess(stream) {
   renderLocallyCheckbox.disabled = false;
-  var audioTracks = stream.getAudioTracks();
+  const audioTracks = stream.getAudioTracks();
   if (audioTracks.length === 1) {
     console.log('Got one audio track:', audioTracks);
-    var filteredStream = webAudio.applyFilter(stream);
-    var servers = null;
+    const filteredStream = webAudio.applyFilter(stream);
+    const servers = null;
     pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
-    pc1.onicecandidate = function(e) {
-      onIceCandidate(pc1, e);
-    };
+    pc1.onicecandidate = e => onIceCandidate(pc1, e);
     pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
-    pc2.onicecandidate = function(e) {
-      onIceCandidate(pc2, e);
-    };
+    pc2.onicecandidate = e => onIceCandidate(pc2, e);
     pc2.ontrack = gotRemoteStream;
-    filteredStream.getTracks().forEach(
-      function(track) {
-        pc1.addTrack(
-          track,
-          filteredStream
-        );
-      }
-    );
-    pc1.createOffer().
-        then(gotDescription1).
-        catch(function(error) {
-          console.log('createOffer failed: ' + error);
-        });
+    filteredStream.getTracks().forEach(track => pc1.addTrack(track, filteredStream));
+    pc1.createOffer().then(gotDescription1).catch(error => console.log(`createOffer failed: ${error}`));
 
-    stream.oninactive = function() {
+    stream.oninactive = () => {
       console.log('Stream inactive:', stream);
       startButton.disabled = false;
       stopButton.disabled = true;
@@ -101,47 +86,41 @@ function handleSuccess(stream) {
     localStream = stream;
   } else {
     alert('The media stream contains an invalid number of audio tracks.');
-    stream.getTracks().forEach(function(track) {
-      track.stop();
-    });
+    stream.getTracks().forEach(track => track.stop());
   }
 }
 
 function handleFailure(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
-  alert('Failed to get access to local media. Error: ' +
-    error.name);
+  alert(`Failed to get access to local media. Error: ${error.name}`);
 }
 
 function forceOpus(sdp) {
   // Remove all other codecs (not the video codecs though).
-  sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
-      'm=audio $1 RTP/SAVPF 111\r\n');
+  sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g, 'm=audio $1 RTP/SAVPF 111\r\n');
   sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
   return sdp;
 }
 
 function gotDescription1(desc) {
-  console.log('Offer from pc1 \n' + desc.sdp);
-  var modifiedOffer = {
+  console.log(`Offer from pc1\n${desc.sdp}`);
+  const modifiedOffer = {
     type: 'offer',
     sdp: forceOpus(desc.sdp)
   };
 
   pc1.setLocalDescription(modifiedOffer);
-  console.log('Offer from pc1 \n' + modifiedOffer.sdp);
+  console.log(`Offer from pc1\n${modifiedOffer.sdp}`);
   pc2.setRemoteDescription(modifiedOffer);
   pc2.createAnswer()
-  .then(gotDescription2)
-  .catch(function(error) {
-    console.log('createAnswer failed: ' + error);
-  });
+    .then(gotDescription2)
+    .catch(error => console.log(`createAnswer failed: ${error}`));
 }
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc);
-  console.log('Answer from pc2 \n' + desc.sdp);
+  console.log(`Answer from pc2\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
@@ -160,17 +139,10 @@ function getName(pc) {
 }
 
 function onIceCandidate(pc, event) {
-  getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  getOtherPc(pc)
+    .addIceCandidate(event.candidate)
+    .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+  trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -178,7 +150,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function handleKeyDown() {

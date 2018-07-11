@@ -9,27 +9,27 @@
 
 'use strict';
 
-var audio2 = document.querySelector('audio#audio2');
-var callButton = document.querySelector('button#callButton');
-var hangupButton = document.querySelector('button#hangupButton');
-var codecSelector = document.querySelector('select#codec');
+const audio2 = document.querySelector('audio#audio2');
+const callButton = document.querySelector('button#callButton');
+const hangupButton = document.querySelector('button#hangupButton');
+const codecSelector = document.querySelector('select#codec');
 hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-var pc1;
-var pc2;
-var localStream;
+let pc1;
+let pc2;
+let localStream;
 
-var bitrateGraph;
-var bitrateSeries;
+let bitrateGraph;
+let bitrateSeries;
 
-var packetGraph;
-var packetSeries;
+let packetGraph;
+let packetSeries;
 
-var lastResult;
+let lastResult;
 
-var offerOptions = {
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0,
   voiceActivityDetection: false
@@ -39,26 +39,15 @@ function gotStream(stream) {
   hangupButton.disabled = false;
   trace('Received local stream');
   localStream = stream;
-  var audioTracks = localStream.getAudioTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace('Using Audio device: ' + audioTracks[0].label);
+    trace(`Using Audio device: ${audioTracks[0].label}`);
   }
-  localStream.getTracks().forEach(
-    function(track) {
-      pc1.addTrack(
-        track,
-        localStream
-      );
-    }
-  );
+  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   trace('Adding Local Stream to peer connection');
 
-  pc1.createOffer(
-    offerOptions
-  ).then(
-    gotDescription1,
-    onCreateSessionDescriptionError
-  );
+  pc1.createOffer(offerOptions)
+    .then(gotDescription1, onCreateSessionDescriptionError);
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
@@ -70,75 +59,55 @@ function gotStream(stream) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function call() {
   callButton.disabled = true;
   codecSelector.disabled = true;
   trace('Starting call');
-  var servers = null;
+  const servers = null;
   pc1 = new RTCPeerConnection(servers);
   trace('Created local peer connection object pc1');
-  pc1.onicecandidate = function(e) {
-    onIceCandidate(pc1, e);
-  };
+  pc1.onicecandidate = e => onIceCandidate(pc1, e);
   pc2 = new RTCPeerConnection(servers);
   trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = function(e) {
-    onIceCandidate(pc2, e);
-  };
+  pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
   trace('Requesting local stream');
-  navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: false
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
-  });
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: true,
+      video: false
+    })
+    .then(gotStream)
+    .catch(e => {
+      alert(`getUserMedia() error: ${e.name}`);
+    });
 }
 
 function gotDescription1(desc) {
-  trace('Offer from pc1 \n' + desc.sdp);
-  pc1.setLocalDescription(desc).then(
-    function() {
+  trace(`Offer from pc1\n${desc.sdp}`);
+  pc1.setLocalDescription(desc)
+    .then(() => {
       desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc2.setRemoteDescription(desc).then(
-        function() {
-          pc2.createAnswer().then(
-            gotDescription2,
-            onCreateSessionDescriptionError
-          );
-        },
-        onSetSessionDescriptionError
-      );
-    },
-    onSetSessionDescriptionError
-  );
+      pc2.setRemoteDescription(desc).then(() => {
+        return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
+      }, onSetSessionDescriptionError);
+    }, onSetSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
-  trace('Answer from pc2 \n' + desc.sdp);
-  pc2.setLocalDescription(desc).then(
-    function() {
-      desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc1.setRemoteDescription(desc).then(
-        function() {
-        },
-        onSetSessionDescriptionError
-      );
-    },
-    onSetSessionDescriptionError
-  );
+  trace(`Answer from pc2\n${desc.sdp}`);
+  pc2.setLocalDescription(desc).then(() => {
+    desc.sdp = forceChosenAudioCodec(desc.sdp);
+    pc1.setRemoteDescription(desc).then(() => {}, onSetSessionDescriptionError);
+  }, onSetSessionDescriptionError);
 }
 
 function hangup() {
   trace('Ending call');
-  localStream.getTracks().forEach(function(track) {
-    track.stop();
-  });
+  localStream.getTracks().forEach(track => track.stop());
   pc1.close();
   pc2.close();
   pc1 = null;
@@ -165,16 +134,11 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+    .then(
+      () => onAddIceCandidateSuccess(pc),
+      err => onAddIceCandidateError(pc, err)
+    );
+  trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -182,11 +146,11 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add ICE Candidate: ' + error.toString());
+  trace(`Failed to add ICE Candidate: ${error.toString()}`);
 }
 
 function onSetSessionDescriptionError(error) {
-  trace('Failed to set session description: ' + error.toString());
+  trace(`Failed to set session description: ${error.toString()}`);
 }
 
 function forceChosenAudioCodec(sdp) {
@@ -198,27 +162,27 @@ function forceChosenAudioCodec(sdp) {
 // Sets |codec| as the default |type| codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function maybePreferCodec(sdp, type, dir, codec) {
-  var str = type + ' ' + dir + ' codec';
+  const str = `${type} ${dir} codec`;
   if (codec === '') {
-    trace('No preference on ' + str + '.');
+    trace(`No preference on ${str}.`);
     return sdp;
   }
 
-  trace('Prefer ' + str + ': ' + codec);
+  trace(`Prefer ${str}: ${codec}`);
 
-  var sdpLines = sdp.split('\r\n');
+  const sdpLines = sdp.split('\r\n');
 
   // Search for m line.
-  var mLineIndex = findLine(sdpLines, 'm=', type);
+  const mLineIndex = findLine(sdpLines, 'm=', type);
   if (mLineIndex === null) {
     return sdp;
   }
 
   // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
+  const codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
   console.log('codecIndex', codecIndex);
   if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
+    const payload = getCodecPayloadType(sdpLines[codecIndex]);
     if (payload) {
       sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
     }
@@ -237,11 +201,11 @@ function findLine(sdpLines, prefix, substr) {
 // Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
 // and, if specified, contains |substr| (case-insensitive search).
 function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
-  var realEndLine = endLine !== -1 ? endLine : sdpLines.length;
-  for (var i = startLine; i < realEndLine; ++i) {
+  const realEndLine = endLine !== -1 ? endLine : sdpLines.length;
+  for (let i = startLine; i < realEndLine; ++i) {
     if (sdpLines[i].indexOf(prefix) === 0) {
       if (!substr ||
-          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+        sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
         return i;
       }
     }
@@ -251,21 +215,21 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 
 // Gets the codec payload type from an a=rtpmap:X line.
 function getCodecPayloadType(sdpLine) {
-  var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
-  var result = sdpLine.match(pattern);
+  const pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
+  const result = sdpLine.match(pattern);
   return (result && result.length === 2) ? result[1] : null;
 }
 
 // Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
-  var elements = mLine.split(' ');
+  const elements = mLine.split(' ');
 
   // Just copy the first three parameters; codec order starts on fourth.
-  var newLine = elements.slice(0, 3);
+  const newLine = elements.slice(0, 3);
 
   // Put target payload first and copy in the rest.
   newLine.push(payload);
-  for (var i = 3; i < elements.length; i++) {
+  for (let i = 3; i < elements.length; i++) {
     if (elements[i] !== payload) {
       newLine.push(elements[i]);
     }
@@ -274,23 +238,23 @@ function setDefaultCodec(mLine, payload) {
 }
 
 // query getStats every second
-window.setInterval(function() {
+window.setInterval(() => {
   if (!window.pc1) {
     return;
   }
-  var sender = pc1.getSenders()[0];
-  sender.getStats().then(function(res) {
-    res.forEach(function(report) {
-      var bytes;
-      var packets;
-      var now = report.timestamp;
+  const sender = pc1.getSenders()[0];
+  sender.getStats().then(res => {
+    res.forEach(report => {
+      let bytes;
+      let packets;
+      const now = report.timestamp;
       if (report.type === 'outbound-rtp') {
         bytes = report.bytesSent;
         packets = report.packetsSent;
-        if (lastResult && lastResult.get(report.id)) {
+        const reportId = lastResult.get(report.id);
+        if (lastResult && reportId) {
           // calculate bitrate
-          var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
-              (now - lastResult.get(report.id).timestamp);
+          const bitrate = 8 * (bytes - reportId.bytesSent) / (now - reportId.timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -298,8 +262,7 @@ window.setInterval(function() {
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
-          packetSeries.addPoint(now, packets -
-              lastResult.get(report.id).packetsSent);
+          packetSeries.addPoint(now, packets - reportId.packetsSent);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }
