@@ -239,7 +239,7 @@ function setDefaultCodec(mLine, payload) {
 
 // query getStats every second
 window.setInterval(() => {
-  if (!window.pc1) {
+  if (!pc1) {
     return;
   }
   const sender = pc1.getSenders()[0];
