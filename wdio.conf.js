@@ -46,7 +46,12 @@ exports.config = {
     //
     browserName: 'chrome',
     chromeOptions: {
-      args: ['--allow-file-access-from-files','--disable-gesture-requirement-for-media-playback','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']
+      args: [
+        '--allow-file-access-from-files',
+        '--disable-gesture-requirement-for-media-playback',
+        '--use-fake-ui-for-media-stream',
+        '--use-fake-device-for-media-stream'
+      ]
     }
   }],
   //
