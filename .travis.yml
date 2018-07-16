@@ -1,4 +1,5 @@
-dist: trusty
+#dist: trusty
+os: osx
 language: node_js
 cache:
  - node_modules
@@ -11,18 +12,19 @@ branches:
 
 addons:
   chrome: stable
-  apt:
-    packages:
-      - gcc
-      - g++
-      - libstdc++6
-      - pulseaudio
+  firefox: latest
+#  apt:
+#    packages:
+#      - gcc
+#      - g++
+#      - libstdc++6
+#      - pulseaudio
 
-env:
-  global:
-    - DISPLAY=:99.0
-  matrix:
-    - BROWSER=chrome  BVER=stable
+#env:
+#  global:
+#    - DISPLAY=:99.0
+#  matrix:
+#    - BROWSER=chrome  BVER=stable
 #    - BROWSER=chrome  BVER=beta
 #    - BROWSER=chrome  BVER=unstable
 #    - BROWSER=firefox BVER=stable
@@ -36,11 +38,11 @@ matrix:
 #    - env: BROWSER=chrome  BVER=unstable
 #    - env: BROWSER=firefox BVER=nightly
 
-before_install:
-  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1400x16
-
-before_script:
-  - pulseaudio --start
+#before_install:
+#  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1400x16
+#
+#before_script:
+#  - pulseaudio --start
 
 script:
   - npm test

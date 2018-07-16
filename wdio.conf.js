@@ -38,22 +38,39 @@ exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://docs.saucelabs.com/reference/platforms-configurator
   //
-  capabilities: [{
-    // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-    // grid with only 5 firefox instances available you can make sure that not more than
-    // 5 instances get started at a time.
-    maxInstances: 5,
-    //
-    browserName: 'chrome',
-    chromeOptions: {
-      args: [
-        '--allow-file-access-from-files',
-        '--disable-gesture-requirement-for-media-playback',
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream'
-      ]
+  capabilities: [
+    {
+      browserName: 'chrome',
+      chromeOptions: {
+        args: [
+          '--headless',
+          '--allow-file-access-from-files',
+          '--disable-gesture-requirement-for-media-playback',
+          '--use-fake-ui-for-media-stream',
+          '--use-fake-device-for-media-stream'
+        ]
+      }
+    },
+    {
+      browserName: 'firefox',
+      'moz:firefoxOptions': {
+        args: ['-no-remote', '-headless', '-CreateProfile integrationtest'],
+        prefs: {
+          'browser.cache.disk.capacity': 0,
+          'browser.cache.disk.smart_size.enabled': false,
+          'browser.cache.disk.smart_size.first_run': false,
+          'browser.sessionstore.resume_from_crash': false,
+          'media.navigator.streams.fake': true,
+          'media.navigator.permission.disabled': true,
+          'media.gstreamer.enabled': false,
+          'extensions.update.enabled': false,
+          'app.update.enabled': false,
+          'browser.startup.page': 0,
+          'browser.shell.checkDefaultBrowser': false
+        }
+      }
     }
-  }],
+  ],
   //
   // ===================
   // Test Configurations
@@ -119,7 +136,7 @@ exports.config = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: ['selenium-standalone'],
+  services: ['selenium-standalone', 'firefox-profile'],
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
