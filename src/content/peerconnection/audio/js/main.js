@@ -251,10 +251,10 @@ window.setInterval(() => {
       if (report.type === 'outbound-rtp') {
         bytes = report.bytesSent;
         packets = report.packetsSent;
-        const reportId = lastResult.get(report.id);
-        if (lastResult && reportId) {
+        if (lastResult && lastResult.has(report.id)) {
           // calculate bitrate
-          const bitrate = 8 * (bytes - reportId.bytesSent) / (now - reportId.timestamp);
+          const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+            (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -262,7 +262,8 @@ window.setInterval(() => {
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
-          packetSeries.addPoint(now, packets - reportId.packetsSent);
+          packetSeries.addPoint(now, packets -
+            lastResult.get(report.id).packetsSent);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }
