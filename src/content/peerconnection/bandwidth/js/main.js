@@ -213,7 +213,7 @@ window.setInterval(() => {
       if (report.type === 'outbound-rtp') {
         bytes = report.bytesSent;
         packets = report.packetsSent;
-        if (lastResult && lastResult.get(report.id)) {
+        if (lastResult && lastResult.has(report.id)) {
           // calculate bitrate
           const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
             (now - lastResult.get(report.id).timestamp);
