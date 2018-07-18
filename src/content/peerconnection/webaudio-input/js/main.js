@@ -67,10 +67,10 @@ function handleSuccess(stream) {
     console.log('Got one audio track:', audioTracks);
     const filteredStream = webAudio.applyFilter(stream);
     const servers = null;
-    pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
+    pc1 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created local peer connection object pc1');
     pc1.onicecandidate = e => onIceCandidate(pc1, e);
-    pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
+    pc2 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
     console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = e => onIceCandidate(pc2, e);
     pc2.ontrack = gotRemoteStream;
@@ -85,7 +85,7 @@ function handleSuccess(stream) {
 
     localStream = stream;
   } else {
-    alert('The media stream contains an invalid number of audio tracks.');
+    console.log('The media stream contains an invalid number of audio tracks.');
     stream.getTracks().forEach(track => track.stop());
   }
 }
@@ -93,7 +93,7 @@ function handleSuccess(stream) {
 function handleFailure(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
-  alert(`Failed to get access to local media. Error: ${error.name}`);
+  console.log(`Failed to get access to local media. Error: ${error.name}`);
 }
 
 function forceOpus(sdp) {
