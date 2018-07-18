@@ -13,6 +13,7 @@ const candidateTBody = document.querySelector('tbody#candidatesBody');
 const gatherButton = document.querySelector('button#gather');
 const passwordInput = document.querySelector('input#password');
 const removeButton = document.querySelector('button#remove');
+const resetButton = document.querySelector('button#reset');
 const servers = document.querySelector('select#servers');
 const urlInput = document.querySelector('input#url');
 const usernameInput = document.querySelector('input#username');
@@ -21,7 +22,15 @@ const iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
 addButton.onclick = addServer;
 gatherButton.onclick = start;
 removeButton.onclick = removeServer;
-
+resetButton.onclick = (e) => {
+  window.localStorage.clear();
+  document.querySelectorAll('select#servers option').forEach(option => option.remove());
+  const serversSelect = document.querySelector('select#servers');
+  const o = document.createElement('option');
+  o.value = '{"urls":["stun:stun.l.google.com:19302"]}';
+  o.text = 'stun:stun.l.google.com:19302';
+  serversSelect.add(o);
+};
 
 iceCandidatePoolInput.onchange = function(e) {
   const span = e.target.parentElement.querySelector('span');
@@ -31,6 +40,35 @@ iceCandidatePoolInput.onchange = function(e) {
 let begin;
 let pc;
 let candidates;
+
+const allServersKey = 'servers';
+
+function writeServersToLocalStorage() {
+  const serversSelect = document.querySelector('select#servers');
+  const allServers = JSON.stringify(Object.values(serversSelect.options).map(o => JSON.parse(o.value)));
+  window.localStorage.setItem(allServersKey, allServers);
+}
+
+function readServersFromLocalStorage() {
+  document.querySelectorAll('select#servers option').forEach(option => option.remove());
+  const serversSelect = document.querySelector('select#servers');
+  const storedServers = window.localStorage.getItem(allServersKey);
+
+  if (storedServers === null || storedServers === '') {
+    const o = document.createElement('option');
+    o.value = '{"urls":["stun:stun.l.google.com:19302"]}';
+    o.text = 'stun:stun.l.google.com:19302';
+    serversSelect.add(o);
+  } else {
+    JSON.parse(storedServers).forEach((server, key) => {
+      const o = document.createElement('option');
+      o.value = JSON.stringify(server);
+      o.text = server.urls[0];
+      o.ondblclick = selectServer;
+      serversSelect.add(o);
+    });
+  }
+}
 
 function selectServer(event) {
   const option = event.target;
@@ -64,6 +102,7 @@ function addServer() {
   option.ondblclick = selectServer;
   servers.add(option);
   urlInput.value = usernameInput.value = passwordInput.value = '';
+  writeServersToLocalStorage();
 }
 
 function removeServer() {
@@ -72,6 +111,7 @@ function removeServer() {
       servers.remove(i);
     }
   }
+  writeServersToLocalStorage();
 }
 
 function start() {
@@ -243,6 +283,8 @@ function gatheringStateChange() {
   gatherButton.disabled = false;
   candidateTBody.appendChild(row);
 }
+
+readServersFromLocalStorage();
 
 // check if we have getUserMedia permissions.
 navigator.mediaDevices
