@@ -113,7 +113,7 @@ function call() {
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc1.oniceconnectionstatechange = e => {
     onIceStateChange(pc1, e);
-    if (pc1 && pc1.iceConnectionState === 'connected') {
+    if (pc1 && pc1.iceConnectionState === 'completed') {
       restartButton.disabled = false;
     }
   };
@@ -189,7 +189,7 @@ function onAddIceCandidateError(pc, error) {
 
 function onIceStateChange(pc, event) {
   if (pc) {
-    trace(`${getName(pc)} ICE state: ${pc.iceConnectionState}`);
+    console.log(`${getName(pc)} ICE state: ${pc.iceConnectionState}`);
     console.log('ICE state change event: ', event);
     // TODO: get rid of this in favor of http://w3c.github.io/webrtc-pc/#widl-RTCIceTransport-onselectedcandidatepairchange
     if (pc.iceConnectionState === 'connected' ||
