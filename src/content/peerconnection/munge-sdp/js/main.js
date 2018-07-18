@@ -8,15 +8,15 @@
 
 'use strict';
 
-var getMediaButton = document.querySelector('button#getMedia');
-var createPeerConnectionButton =
-    document.querySelector('button#createPeerConnection');
-var createOfferButton = document.querySelector('button#createOffer');
-var setOfferButton = document.querySelector('button#setOffer');
-var createAnswerButton = document.querySelector('button#createAnswer');
-var setAnswerButton = document.querySelector('button#setAnswer');
-var hangupButton = document.querySelector('button#hangup');
-var dataChannelDataReceived;
+const getMediaButton = document.querySelector('button#getMedia');
+const createPeerConnectionButton =
+  document.querySelector('button#createPeerConnection');
+const createOfferButton = document.querySelector('button#createOffer');
+const setOfferButton = document.querySelector('button#setOffer');
+const createAnswerButton = document.querySelector('button#createAnswer');
+const setAnswerButton = document.querySelector('button#setAnswer');
+const hangupButton = document.querySelector('button#hangup');
+let dataChannelDataReceived;
 
 getMediaButton.onclick = getMedia;
 createPeerConnectionButton.onclick = createPeerConnection;
@@ -26,30 +26,30 @@ createAnswerButton.onclick = createAnswer;
 setAnswerButton.onclick = setAnswer;
 hangupButton.onclick = hangup;
 
-var offerSdpTextarea = document.querySelector('div#local textarea');
-var answerSdpTextarea = document.querySelector('div#remote textarea');
+const offerSdpTextarea = document.querySelector('div#local textarea');
+const answerSdpTextarea = document.querySelector('div#remote textarea');
 
-var audioSelect = document.querySelector('select#audioSrc');
-var videoSelect = document.querySelector('select#videoSrc');
+const audioSelect = document.querySelector('select#audioSrc');
+const videoSelect = document.querySelector('select#videoSrc');
 
 audioSelect.onchange = videoSelect.onchange = getMedia;
 
-var localVideo = document.querySelector('div#local video');
-var remoteVideo = document.querySelector('div#remote video');
+const localVideo = document.querySelector('div#local video');
+const remoteVideo = document.querySelector('div#remote video');
 
-var selectSourceDiv = document.querySelector('div#selectSource');
+const selectSourceDiv = document.querySelector('div#selectSource');
 
-var localPeerConnection;
-var remotePeerConnection;
-var localStream;
-var sendChannel;
-var receiveChannel;
-var dataChannelOptions = {
+let localPeerConnection;
+let remotePeerConnection;
+let localStream;
+let sendChannel;
+let receiveChannel;
+const dataChannelOptions = {
   ordered: true
 };
-var dataChannelCounter = 0;
-var sendDataLoop;
-var offerOptions = {
+let dataChannelCounter = 0;
+let sendDataLoop;
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
@@ -58,8 +58,7 @@ getSources();
 
 function getSources() {
   if (typeof MediaStreamTrack === 'undefined') {
-    alert(
-      'This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
+    alert('This browser does not support MediaStreamTrack.\n\nTry Chrome Canary.');
   } else {
     navigator.mediaDevices.enumerateDevices().then(gotSources);
   }
@@ -67,22 +66,22 @@ function getSources() {
 
 function gotSources(sourceInfos) {
   selectSourceDiv.classList.remove('hidden');
-  var audioCount = 0;
-  var videoCount = 0;
-  for (var i = 0; i < sourceInfos.length; i++) {
-    var option = document.createElement('option');
+  let audioCount = 0;
+  let videoCount = 0;
+  for (let i = 0; i < sourceInfos.length; i++) {
+    const option = document.createElement('option');
     option.value = sourceInfos[i].deviceId;
     option.text = sourceInfos[i].label;
     if (sourceInfos[i].kind === 'audioinput') {
       audioCount++;
       if (option.text === '') {
-        option.text = 'Audio ' + audioCount;
+        option.text = `Audio ${audioCount}`;
       }
       audioSelect.appendChild(option);
     } else if (sourceInfos[i].kind === 'videoinput') {
       videoCount++;
       if (option.text === '') {
-        option.text = 'Video ' + videoCount;
+        option.text = `Video ${videoCount}`;
       }
       videoSelect.appendChild(option);
     } else {
@@ -97,16 +96,14 @@ function getMedia() {
 
   if (localStream) {
     localVideo.srcObject = null;
-    localStream.getTracks().forEach(function(track) {
-      track.stop();
-    });
+    localStream.getTracks().forEach(track => track.stop());
   }
-  var audioSource = audioSelect.value;
-  trace('Selected audio source: ' + audioSource);
-  var videoSource = videoSelect.value;
-  trace('Selected video source: ' + videoSource);
+  const audioSource = audioSelect.value;
+  trace(`Selected audio source: ${audioSource}`);
+  const videoSource = videoSelect.value;
+  trace(`Selected video source: ${videoSource}`);
 
-  var constraints = {
+  const constraints = {
     audio: {
       optional: [{
         sourceId: audioSource
@@ -119,11 +116,10 @@ function getMedia() {
     }
   };
   trace('Requested local stream');
-  navigator.mediaDevices.getUserMedia(constraints)
-  .then(gotStream)
-  .catch(function(e) {
-    console.log('navigator.getUserMedia error: ', e);
-  });
+  navigator.mediaDevices
+    .getUserMedia(constraints)
+    .then(gotStream)
+    .catch(e => console.log('navigator.getUserMedia error: ', e));
 }
 
 function gotStream(stream) {
@@ -140,24 +136,21 @@ function createPeerConnection() {
   setAnswerButton.disabled = false;
   hangupButton.disabled = false;
   trace('Starting call');
-  var videoTracks = localStream.getVideoTracks();
-  var audioTracks = localStream.getAudioTracks();
+  const videoTracks = localStream.getVideoTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (videoTracks.length > 0) {
-    trace('Using video device: ' + videoTracks[0].label);
+    trace(`Using video device: ${videoTracks[0].label}`);
   }
   if (audioTracks.length > 0) {
-    trace('Using audio device: ' + audioTracks[0].label);
+    trace(`Using audio device: ${audioTracks[0].label}`);
   }
-  var servers = null;
+  const servers = null;
 
   localPeerConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localPeerConnection');
-  localPeerConnection.onicecandidate = function(e) {
-    onIceCandidate(localPeerConnection, e);
-  };
+  localPeerConnection.onicecandidate = e => onIceCandidate(localPeerConnection, e);
   if (RTCPeerConnection.prototype.createDataChannel) {
-    sendChannel = localPeerConnection.createDataChannel('sendDataChannel',
-        dataChannelOptions);
+    sendChannel = localPeerConnection.createDataChannel('sendDataChannel', dataChannelOptions);
     sendChannel.onopen = onSendChannelStateChange;
     sendChannel.onclose = onSendChannelStateChange;
     sendChannel.onerror = onSendChannelStateChange;
@@ -165,20 +158,13 @@ function createPeerConnection() {
 
   remotePeerConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remotePeerConnection');
-  remotePeerConnection.onicecandidate = function(e) {
-    onIceCandidate(remotePeerConnection, e);
-  };
+  remotePeerConnection.onicecandidate = e => onIceCandidate(remotePeerConnection, e);
   remotePeerConnection.ontrack = gotRemoteStream;
   remotePeerConnection.ondatachannel = receiveChannelCallback;
 
-  localStream.getTracks().forEach(
-    function(track) {
-      localPeerConnection.addTrack(
-        track,
-        localStream
-      );
-    }
-  );
+  localStream
+    .getTracks()
+    .forEach(track => localPeerConnection.addTrack(track, localStream));
   trace('Adding Local Stream to peer connection');
 }
 
@@ -187,48 +173,44 @@ function onSetSessionDescriptionSuccess() {
 }
 
 function onSetSessionDescriptionError(error) {
-  trace('Failed to set session description: ' + error.toString());
+  trace(`Failed to set session description: ${error.toString()}`);
 }
 
 // Workaround for crbug/322756.
 function maybeAddLineBreakToEnd(sdp) {
-  var endWithLineBreak = new RegExp(/\n$/);
+  const endWithLineBreak = new RegExp(/\n$/);
   if (!endWithLineBreak.test(sdp)) {
-    return sdp + '\n';
+    return `${sdp}
+`;
   }
   return sdp;
 }
 
 function createOffer() {
-  localPeerConnection.createOffer(
-    offerOptions
-  ).then(
-    gotDescription1,
-    onCreateSessionDescriptionError
-  );
+  localPeerConnection
+    .createOffer(offerOptions)
+    .then(gotDescription1, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function setOffer() {
-  var sdp = offerSdpTextarea.value;
+  let sdp = offerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
-  var offer = {
+  const offer = {
     type: 'offer',
     sdp: sdp
   };
-  localPeerConnection.setLocalDescription(offer).then(
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError
-  );
-  trace('Modified Offer from localPeerConnection \n' + sdp);
-  remotePeerConnection.setRemoteDescription(offer).then(
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError
-  );
+  localPeerConnection
+    .setLocalDescription(offer)
+    .then(onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+  trace(`Modified Offer from localPeerConnection\n${sdp}`);
+  remotePeerConnection
+    .setRemoteDescription(offer)
+    .then(onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
 }
 
 function gotDescription1(description) {
@@ -240,29 +222,26 @@ function createAnswer() {
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  remotePeerConnection.createAnswer().then(
-    gotDescription2,
-    onCreateSessionDescriptionError
-  );
+  remotePeerConnection
+    .createAnswer()
+    .then(gotDescription2, onCreateSessionDescriptionError);
 }
 
 function setAnswer() {
-  var sdp = answerSdpTextarea.value;
+  let sdp = answerSdpTextarea.value;
   sdp = maybeAddLineBreakToEnd(sdp);
   sdp = sdp.replace(/\n/g, '\r\n');
-  var answer = {
+  const answer = {
     type: 'answer',
     sdp: sdp
   };
-  remotePeerConnection.setLocalDescription(answer).then(
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError
-  );
-  trace('Modified Answer from remotePeerConnection \n' + sdp);
-  localPeerConnection.setRemoteDescription(answer).then(
-    onSetSessionDescriptionSuccess,
-    onSetSessionDescriptionError
-  );
+  remotePeerConnection
+    .setLocalDescription(answer)
+    .then(onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
+  trace(`Modified Answer from remotePeerConnection\n${sdp}`);
+  localPeerConnection
+    .setRemoteDescription(answer)
+    .then(onSetSessionDescriptionSuccess, onSetSessionDescriptionError);
 }
 
 function gotDescription2(description) {
@@ -272,16 +251,14 @@ function gotDescription2(description) {
 
 function sendData() {
   sendChannel.send(dataChannelCounter);
-  trace('DataChannel send counter: ' + dataChannelCounter);
+  trace(`DataChannel send counter: ${dataChannelCounter}`);
   dataChannelCounter++;
 }
 
 function hangup() {
   remoteVideo.srcObject = null;
   trace('Ending call');
-  localStream.getTracks().forEach(function(track) {
-    track.stop();
-  });
+  localStream.getTracks().forEach(track => track.stop());
   sendChannel.close();
   if (receiveChannel) {
     receiveChannel.close();
@@ -310,26 +287,21 @@ function gotRemoteStream(e) {
 
 function getOtherPc(pc) {
   return (pc === localPeerConnection) ? remotePeerConnection :
-      localPeerConnection;
+    localPeerConnection;
 }
 
 function getName(pc) {
-  return (pc === localPeerConnection) ? 'localPeerConnection' :
-      'remotePeerConnection';
+  return (pc === localPeerConnection) ? 'localPeerConnection' : 'remotePeerConnection';
 }
 
 function onIceCandidate(pc, event) {
-  getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+  getOtherPc(pc)
+    .addIceCandidate(event.candidate)
+    .then(
+      () => onAddIceCandidateSuccess(pc),
+      err => onAddIceCandidateError(pc, err)
+    );
+  trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -337,7 +309,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function receiveChannelCallback(event) {
@@ -350,12 +322,12 @@ function receiveChannelCallback(event) {
 
 function onReceiveMessageCallback(event) {
   dataChannelDataReceived = event.data;
-  trace('DataChannel receive counter: ' + dataChannelDataReceived);
+  trace(`DataChannel receive counter: ${dataChannelDataReceived}`);
 }
 
 function onSendChannelStateChange() {
-  var readyState = sendChannel.readyState;
-  trace('Send channel state is: ' + readyState);
+  const readyState = sendChannel.readyState;
+  trace(`Send channel state is: ${readyState}`);
   if (readyState === 'open') {
     sendDataLoop = setInterval(sendData, 1000);
   } else {
@@ -364,6 +336,6 @@ function onSendChannelStateChange() {
 }
 
 function onReceiveChannelStateChange() {
-  var readyState = receiveChannel.readyState;
-  trace('Receive channel state is: ' + readyState);
+  const readyState = receiveChannel.readyState;
+  trace(`Receive channel state is: ${readyState}`);
 }
