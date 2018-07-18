@@ -20,7 +20,7 @@ const emptyFilePath =
 function sendFile(t, testFilePath) {
   const driver = seleniumHelpers.buildDriver();
 
-  const path = '/src/content/datachannel/datatransfer/index.html';
+  const path = '/src/content/datachannel/filetransfer/index.html';
   const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
   return driver
@@ -28,8 +28,7 @@ function sendFile(t, testFilePath) {
     .then(() => {
       t.pass('page loaded');
       // Based on https://saucelabs.com/resources/articles/selenium-file-upload
-      return driver.findElement(webdriver.By.id('fileInput'))
-        .sendKeys(testFilePath);
+      return driver.findElement(webdriver.By.id('fileInput')).sendKeys(testFilePath);
     })
     .then(() => {
       if (testFilePath === emptyFilePath) {
