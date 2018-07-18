@@ -26,10 +26,7 @@ resetButton.onclick = (e) => {
   window.localStorage.clear();
   document.querySelectorAll('select#servers option').forEach(option => option.remove());
   const serversSelect = document.querySelector('select#servers');
-  const o = document.createElement('option');
-  o.value = '{"urls":["stun:stun.l.google.com:19302"]}';
-  o.text = 'stun:stun.l.google.com:19302';
-  serversSelect.add(o);
+  setDefaultServer(serversSelect);
 };
 
 iceCandidatePoolInput.onchange = function(e) {
@@ -43,6 +40,13 @@ let candidates;
 
 const allServersKey = 'servers';
 
+function setDefaultServer(serversSelect) {
+  const o = document.createElement('option');
+  o.value = '{"urls":["stun:stun.l.google.com:19302"]}';
+  o.text = 'stun:stun.l.google.com:19302';
+  serversSelect.add(o);
+}
+
 function writeServersToLocalStorage() {
   const serversSelect = document.querySelector('select#servers');
   const allServers = JSON.stringify(Object.values(serversSelect.options).map(o => JSON.parse(o.value)));
@@ -55,10 +59,7 @@ function readServersFromLocalStorage() {
   const storedServers = window.localStorage.getItem(allServersKey);
 
   if (storedServers === null || storedServers === '') {
-    const o = document.createElement('option');
-    o.value = '{"urls":["stun:stun.l.google.com:19302"]}';
-    o.text = 'stun:stun.l.google.com:19302';
-    serversSelect.add(o);
+    setDefaultServer(serversSelect);
   } else {
     JSON.parse(storedServers).forEach((server, key) => {
       const o = document.createElement('option');
