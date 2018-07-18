@@ -7,30 +7,30 @@
  */
 'use strict';
 
-var localConnection;
-var remoteConnection;
-var sendChannel;
-var receiveChannel;
-var bitrateDiv = document.querySelector('div#bitrate');
-var fileInput = document.querySelector('input#fileInput');
-var downloadAnchor = document.querySelector('a#download');
-var sendProgress = document.querySelector('progress#sendProgress');
-var receiveProgress = document.querySelector('progress#receiveProgress');
-var statusMessage = document.querySelector('span#status');
+let localConnection;
+let remoteConnection;
+let sendChannel;
+let receiveChannel;
+const bitrateDiv = document.querySelector('div#bitrate');
+const fileInput = document.querySelector('input#fileInput');
+const downloadAnchor = document.querySelector('a#download');
+const sendProgress = document.querySelector('progress#sendProgress');
+const receiveProgress = document.querySelector('progress#receiveProgress');
+const statusMessage = document.querySelector('span#status');
 
-var receiveBuffer = [];
-var receivedSize = 0;
+let receiveBuffer = [];
+let receivedSize = 0;
 
-var bytesPrev = 0;
-var timestampPrev = 0;
-var timestampStart;
-var statsInterval = null;
-var bitrateMax = 0;
+let bytesPrev = 0;
+let timestampPrev = 0;
+let timestampStart;
+let statsInterval = null;
+let bitrateMax = 0;
 
 fileInput.addEventListener('change', handleFileInputChange, false);
 
 function handleFileInputChange() {
-  var file = fileInput.files[0];
+  let file = fileInput.files[0];
   if (!file) {
     trace('No file chosen');
   } else {
@@ -39,7 +39,7 @@ function handleFileInputChange() {
 }
 
 function createConnection() {
-  var servers = null;
+  const servers = null;
 
   localConnection = localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
@@ -50,7 +50,7 @@ function createConnection() {
 
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
-  localConnection.onicecandidate = function(e) {
+  localConnection.onicecandidate = e => {
     onIceCandidate(localConnection, e);
   };
 
@@ -61,7 +61,7 @@ function createConnection() {
   remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = function(e) {
+  remoteConnection.onicecandidate = e => {
     onIceCandidate(remoteConnection, e);
   };
   remoteConnection.ondatachannel = receiveChannelCallback;
@@ -70,14 +70,12 @@ function createConnection() {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function sendData() {
-  var file = fileInput.files[0];
-  trace('File is ' + [file.name, file.size, file.type,
-      file.lastModifiedDate
-  ].join(' '));
+  const file = fileInput.files[0];
+  trace(`File is ${[file.name, file.size, file.type, file.lastModified].join(' ')}`);
 
   // Handle 0 size files.
   statusMessage.textContent = '';
@@ -90,19 +88,20 @@ function sendData() {
   }
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
-  var chunkSize = 16384;
-  var sliceFile = function(offset) {
-    var reader = new window.FileReader();
-    reader.onload = (function() {
-      return function(e) {
-        sendChannel.send(e.target.result);
-        if (file.size > offset + e.target.result.byteLength) {
-          window.setTimeout(sliceFile, 0, offset + chunkSize);
-        }
-        sendProgress.value = offset + e.target.result.byteLength;
-      };
+  const chunkSize = 16384;
+  const sliceFile = offset => {
+    const reader = new window.FileReader();
+    reader.onerror = (error => {
+      trace(`Error reading file: ${error}`);
+    });
+    reader.onload = (() => e => {
+      sendChannel.send(e.target.result);
+      if (file.size > offset + e.target.result.byteLength) {
+        window.setTimeout(sliceFile, 0, offset + chunkSize);
+      }
+      sendProgress.value = offset + e.target.result.byteLength;
     })(file);
-    var slice = file.slice(offset, offset + chunkSize);
+    const slice = file.slice(offset, offset + chunkSize);
     reader.readAsArrayBuffer(slice);
   };
   sliceFile(0);
@@ -111,10 +110,10 @@ function sendData() {
 function closeDataChannels() {
   trace('Closing data channels');
   sendChannel.close();
-  trace('Closed data channel with label: ' + sendChannel.label);
+  trace(`Closed data channel with label: ${sendChannel.label}`);
   if (receiveChannel) {
     receiveChannel.close();
-    trace('Closed data channel with label: ' + receiveChannel.label);
+    trace(`Closed data channel with label: ${receiveChannel.label}`);
   }
   localConnection.close();
   remoteConnection.close();
@@ -128,7 +127,8 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace('Offer from localConnection \n' + desc.sdp);
+  trace(`Offer from localConnection 
+${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -138,7 +138,8 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace('Answer from remoteConnection \n' + desc.sdp);
+  trace(`Answer from remoteConnection 
+${desc.sdp}`);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -148,21 +149,22 @@ function getOtherPc(pc) {
 
 function getName(pc) {
   return (pc === localConnection) ? 'localPeerConnection' :
-      'remotePeerConnection';
+    'remotePeerConnection';
 }
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+    .then(
+      () => {
+        onAddIceCandidateSuccess(pc);
+      },
+      err => {
+        onAddIceCandidateError(pc, err);
+      }
+    );
+  trace(`${getName(pc)} ICE candidate: 
+${event.candidate ?
+    event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -170,7 +172,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  trace(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function receiveChannelCallback(event) {
@@ -200,21 +202,20 @@ function onReceiveMessageCallback(event) {
 
   // we are assuming that our signaling protocol told
   // about the expected file size (and name, hash, etc).
-  var file = fileInput.files[0];
+  const file = fileInput.files[0];
   if (receivedSize === file.size) {
-    var received = new window.Blob(receiveBuffer);
+    const received = new window.Blob(receiveBuffer);
     receiveBuffer = [];
 
     downloadAnchor.href = URL.createObjectURL(received);
     downloadAnchor.download = file.name;
     downloadAnchor.textContent =
-      'Click to download \'' + file.name + '\' (' + file.size + ' bytes)';
+      `Click to download '${file.name}' (${file.size} bytes)`;
     downloadAnchor.style.display = 'block';
 
-    var bitrate = Math.round(receivedSize * 8 /
-        ((new Date()).getTime() - timestampStart));
-    bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
-        bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
+    const bitrate = Math.round(receivedSize * 8 /
+      ((new Date()).getTime() - timestampStart));
+    bitrateDiv.innerHTML = `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -226,16 +227,16 @@ function onReceiveMessageCallback(event) {
 }
 
 function onSendChannelStateChange() {
-  var readyState = sendChannel.readyState;
-  trace('Send channel state is: ' + readyState);
+  const readyState = sendChannel.readyState;
+  trace(`Send channel state is: ${readyState}`);
   if (readyState === 'open') {
     sendData();
   }
 }
 
 function onReceiveChannelStateChange() {
-  var readyState = receiveChannel.readyState;
-  trace('Receive channel state is: ' + readyState);
+  const readyState = receiveChannel.readyState;
+  trace(`Receive channel state is: ${readyState}`);
   if (readyState === 'open') {
     timestampStart = (new Date()).getTime();
     timestampPrev = timestampStart;
@@ -247,19 +248,18 @@ function onReceiveChannelStateChange() {
 
 // display bitrate statistics.
 function displayStats() {
-  var display = function(bitrate) {
-    bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
-        bitrate + ' kbits/sec';
+  const display = bitrate => {
+    bitrateDiv.innerHTML = `<strong>Current Bitrate:</strong> ${bitrate} kbits/sec`;
   };
 
   if (remoteConnection && remoteConnection.iceConnectionState === 'connected') {
     if (adapter.browserDetails.browser === 'chrome') {
       // TODO: once https://code.google.com/p/webrtc/issues/detail?id=4321
       // lands those stats should be preferrred over the connection stats.
-      remoteConnection.getStats().then(function(stats) {
+      remoteConnection.getStats().then(stats => {
         // Search for the active candidate pair.
         let activeCandidatePair;
-        stats.forEach(function(report) {
+        stats.forEach(report => {
           if (report.type === 'transport') {
             activeCandidatePair = stats.get(report.selectedCandidatePairId);
           }
@@ -269,9 +269,9 @@ function displayStats() {
             return;
           }
           // calculate current bitrate
-          var bytesNow = activeCandidatePair.bytesReceived;
-          var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-              (activeCandidatePair.timestamp - timestampPrev));
+          const bytesNow = activeCandidatePair.bytesReceived;
+          const bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+            (activeCandidatePair.timestamp - timestampPrev));
           display(bitrate);
           timestampPrev = activeCandidatePair.timestamp;
           bytesPrev = bytesNow;
@@ -286,9 +286,9 @@ function displayStats() {
       // Instead, the bitrate is calculated based on the number of
       // bytes received.
       var bytesNow = receivedSize;
-      var now = (new Date()).getTime();
+      const now = (new Date()).getTime();
       var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
-          (now - timestampPrev));
+        (now - timestampPrev));
       display(bitrate);
       timestampPrev = now;
       bytesPrev = bytesNow;
