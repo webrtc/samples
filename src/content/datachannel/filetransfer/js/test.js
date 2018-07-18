@@ -17,7 +17,7 @@ const seleniumHelpers = require('webrtc-utilities').seleniumLib;
 const emptyFilePath =
   `${process.cwd()}/src/content/datachannel/filetransfer/emptyFile`;
 
-function sendFile(t, path) {
+function sendFile(t, testFilePath) {
   const driver = seleniumHelpers.buildDriver();
 
   const path = '/src/content/datachannel/datatransfer/index.html';
@@ -29,10 +29,10 @@ function sendFile(t, path) {
       t.pass('page loaded');
       // Based on https://saucelabs.com/resources/articles/selenium-file-upload
       return driver.findElement(webdriver.By.id('fileInput'))
-        .sendKeys(path);
+        .sendKeys(testFilePath);
     })
     .then(() => {
-      if (path === emptyFilePath) {
+      if (testFilePath === emptyFilePath) {
         return driver.wait(() => driver.findElement(webdriver.By.id('status'))
           .getText().then(text => (text === 'File is empty, please select a non-empty file')), 2000);
       }
@@ -41,7 +41,7 @@ function sendFile(t, path) {
         driver.findElement(webdriver.By.id('download'))), 90 * 1000);
     })
     .then(() => {
-      if (path === emptyFilePath) {
+      if (testFilePath === emptyFilePath) {
         t.pass('Empty file error displayed');
       } else {
         t.pass('download element found');
