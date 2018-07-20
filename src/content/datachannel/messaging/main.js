@@ -59,7 +59,7 @@ class MessagingSample extends LitElement {
       const result = await connection.addIceCandidate(e.candidate);
       console.log('addIceCandidate successful!');
     } catch (e) {
-      console.log(`error on addIceCandidate: ${JSON.stringify(er)}`);
+      console.log(`error on addIceCandidate: ${JSON.stringify(e)}`);
     }
   }
 
