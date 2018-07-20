@@ -50,7 +50,9 @@ exports.config = {
           '--use-fake-device-for-media-stream'
         ]
       }
-    },
+    }
+/*
+    ,
     {
       browserName: 'firefox',
       'moz:firefoxOptions': {
@@ -70,6 +72,7 @@ exports.config = {
         }
       }
     }
+*/
   ],
   //
   // ===================
