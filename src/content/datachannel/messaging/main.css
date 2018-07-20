@@ -6,19 +6,19 @@
  *  tree.
  */
 div.messageBox {
-  width: 100%;
+    width: 100%;
 }
 
 textarea.message {
-  width: 100%;
-  height: 5em;
-  resize: none;
-  display: block;
-  box-sizing: border-box;
-  margin: 1em;
+    width: 100%;
+    height: 5em;
+    resize: none;
+    display: block;
+    box-sizing: border-box;
+    margin: 1em;
 }
 
 label {
-  font-weight: 400;
+    font-weight: 400;
 }
 

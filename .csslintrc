@@ -1,7 +1,9 @@
 {
   "box-model": false,
+  "box-sizing": false,
   "ids": false,
   "known-properties": false,
   "overqualified-elements": false,
-  "unique-headings": false
+  "unique-headings": false,
+  "order-alphabetical": false
 }
