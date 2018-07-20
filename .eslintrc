@@ -52,7 +52,6 @@
         "max": 2
       }
     ],
-    "no-shadow": 2,
     "no-trailing-spaces": 2,
     "no-unused-expressions": 2,
     "no-unused-vars": [
