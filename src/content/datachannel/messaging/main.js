@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2018 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -24,17 +24,18 @@ class MessagingSample extends LitElement {
   async connect(e) {
     try {
       this._root.querySelector('#connectButton').disabled = true;
-      const dataChannelParams = {ordered: false};
-      let lpc = this._localConnection = new RTCPeerConnection(null);
+      const dataChannelParams = {ordered: true};
+      let lpc = this._localConnection = new RTCPeerConnection();
       lpc.addEventListener('icecandidate', (e) => this._onIceCandidate(e, this._remoteConnection));
-      let rpc = this._remoteConnection = new RTCPeerConnection(null);
+      let rpc = this._remoteConnection = new RTCPeerConnection();
       rpc.addEventListener('icecandidate', (e) => this._onIceCandidate(e, this._localConnection));
 
       let lc = this._localChannel = this._localConnection
         .createDataChannel('messaging-channel', dataChannelParams);
       lc.binaryType = 'arraybuffer';
       lc.addEventListener('open', (e) => this._localChannelOpen(e));
-      lc.addEventListener('close', (e) => this._localChannelClosed(e));
+      lc.addEventListener('close', (e) => this._channelClosed(e));
+      rc.addEventListener('close', (e) => this._channelClosed(e));
       lc.addEventListener('message', (e) => this._onLocalMessageReceived(e));
 
       rpc.addEventListener('datachannel', (e) => this._onRemoteDataChannel(e));
@@ -70,8 +71,8 @@ class MessagingSample extends LitElement {
     this._root.querySelector('#disconnectButton').disabled = false;
   }
 
-  _localChannelClosed(event) {
-    console.log(`Local channel closed: ${JSON.stringify(event)}`);
+  _channelClosed(event) {
+    console.log(`Channel closed: ${JSON.stringify(event)}`);
     this._root.querySelector('#sendLocal').disabled = true;
     this._root.querySelector('#sendRemote').disabled = true;
     this._root.querySelector('#connectButton').disabled = false;
