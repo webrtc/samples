@@ -54,8 +54,7 @@ function getPolicyFromBooleans(callback) {
       callback(convertToPolicy(allowMultiRoute.value, true));
     } else {
       pn.webRTCNonProxiedUdpEnabled.get({}, function(allowUdp) {
-        callback(convertToPolicy(allowMultiRoute.value,
-          allowUdp.value));
+        callback(convertToPolicy(allowMultiRoute.value, allowUdp.value));
       });
     }
   });
