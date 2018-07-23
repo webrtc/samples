@@ -1,4 +1,4 @@
- /* exported trace */
+/* exported trace */
 
 // Logging utility function.
 function trace(arg) {

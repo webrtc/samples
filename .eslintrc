@@ -90,6 +90,10 @@
     "browser": true,
     "node": false
   },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 6
+  },
   "extends": "eslint:recommended",
   "globals": {
     "adapter": true,
@@ -99,6 +103,9 @@
     "chrome": true,
     "ga": true,
     "getPolicyFromBooleans": true,
-    "trace": true
+    "trace": true,
+    "browser": true,
+    "describe": true,
+    "it": true
   }
 }
