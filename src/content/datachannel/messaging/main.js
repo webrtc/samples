@@ -35,7 +35,6 @@ class MessagingSample extends LitElement {
       lc.binaryType = 'arraybuffer';
       lc.addEventListener('open', (e) => this._localChannelOpen(e));
       lc.addEventListener('close', (e) => this._channelClosed(e));
-      rc.addEventListener('close', (e) => this._channelClosed(e));
       lc.addEventListener('message', (e) => this._onLocalMessageReceived(e));
 
       rpc.addEventListener('datachannel', (e) => this._onRemoteDataChannel(e));
@@ -88,6 +87,7 @@ class MessagingSample extends LitElement {
     this._remoteChannel = event.channel;
     this._remoteChannel.binaryType = 'arraybuffer';
     this._remoteChannel.addEventListener('message', (e) => this._onRemoteMessageReceived(e));
+    this._remoteChannel.addEventListener('close', (e) => this._channelClosed(e));
   }
 
   _onRemoteMessageReceived(event) {
@@ -141,6 +141,7 @@ class MessagingSample extends LitElement {
     this._root.querySelector('#sendRemote').addEventListener('click', (e) => this._sendRemoteMessage(e));
   }
 
+  // noinspection JSUnusedLocalSymbols
   _sendLocalMessage(e) {
     const message = this._root.querySelector('#localOutgoing').value;
     if (message === '') {
@@ -152,6 +153,7 @@ class MessagingSample extends LitElement {
     this._root.querySelector('#localOutgoing').value = '';
   }
 
+  // noinspection JSUnusedLocalSymbols
   _sendRemoteMessage(e) {
     const message = this._root.querySelector('#remoteOutgoing').value;
     if (message === '') {
@@ -162,8 +164,6 @@ class MessagingSample extends LitElement {
     this._remoteChannel.send(message);
     this._root.querySelector('#remoteOutgoing').value = '';
   }
-
-
 }
 
 customElements.define('messaging-sample', MessagingSample);
