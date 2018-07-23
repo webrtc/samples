@@ -96,23 +96,12 @@ function handleFailure(error) {
   alert(`Failed to get access to local media. Error: ${error.name}`);
 }
 
-function forceOpus(sdp) {
-  // Remove all other codecs (not the video codecs though).
-  sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g, 'm=audio $1 RTP/SAVPF 111\r\n');
-  sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
-  return sdp;
-}
-
 function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
-  const modifiedOffer = {
-    type: 'offer',
-    sdp: forceOpus(desc.sdp)
-  };
 
-  pc1.setLocalDescription(modifiedOffer);
-  console.log(`Offer from pc1\n${modifiedOffer.sdp}`);
-  pc2.setRemoteDescription(modifiedOffer);
+  pc1.setLocalDescription(desc);
+  console.log(`Offer from pc1\n${desc.sdp}`);
+  pc2.setRemoteDescription(desc);
   pc2.createAnswer()
     .then(gotDescription2)
     .catch(error => console.log(`createAnswer failed: ${error}`));
