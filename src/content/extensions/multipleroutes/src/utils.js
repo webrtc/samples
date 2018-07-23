@@ -1,4 +1,3 @@
-/* eslint-disable */
 /*
  *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
@@ -11,8 +10,8 @@
 
 'use strict';
 
-var pn = chrome.privacy.network;
-var pi = null;
+const pn = chrome.privacy.network;
+const pi = chrome.privacy.IPHandlingPolicy;
 
 function browserSupportsIPHandlingPolicy() {
   return pn.webRTCIPHandlingPolicy !== undefined;
@@ -30,8 +29,6 @@ if (!browserSupportsIPHandlingPolicy()) {
   chrome.privacy.IPHandlingPolicy.DEFAULT_PUBLIC_INTERFACE_ONLY = 2;
   chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP = 3;
 }
-
-pi = chrome.privacy.IPHandlingPolicy;
 
 // Helper function to convert the parameters to policy synchronously.
 function convertToPolicy(allowMultiRoute, allowUdp) {
