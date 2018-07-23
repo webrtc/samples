@@ -31,15 +31,7 @@ recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
 
-// Call main() in demo.js to init teapot
-main();
-
-// window.isSecureContext could be used for Chrome
-let isSecureOrigin = location.protocol === 'https:' || location.hostname === 'localhost';
-if (!isSecureOrigin) {
-  alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.\n\nChanging protocol to HTTPS');
-  location.protocol = 'HTTPS';
-}
+document.addEventListener('DOMContentLoaded', main);
 
 const stream = canvas.captureStream(); // frames per second
 console.log('Started stream capture from canvas element: ', stream);
@@ -58,6 +50,8 @@ function handleDataAvailable(event) {
 
 function handleStop(event) {
   console.log('Recorder stopped: ', event);
+  const superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
+  video.src = window.URL.createObjectURL(superBuffer);
 }
 
 function toggleRecording() {
@@ -113,8 +107,7 @@ function stopRecording() {
 }
 
 function play() {
-  const superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
-  video.src = window.URL.createObjectURL(superBuffer);
+  video.play();
 }
 
 function download() {
