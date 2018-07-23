@@ -12,7 +12,6 @@ let localConnection;
 let remoteConnection;
 let sendChannel;
 let receiveChannel;
-let dataConstraint;
 const dataChannelSend = document.querySelector('textarea#dataChannelSend');
 const dataChannelReceive = document.querySelector('textarea#dataChannelReceive');
 const startButton = document.querySelector('button#startButton');
@@ -34,18 +33,10 @@ function disableSendButton() {
 function createConnection() {
   dataChannelSend.placeholder = '';
   const servers = null;
-  dataConstraint = null;
-  trace('Using SCTP based data channels');
-  // SCTP is supported from Chrome 31 and is supported in FF.
-  // No need to pass DTLS constraint as it is on by default in Chrome 31.
-  // For SCTP, reliable and ordered is true by default.
-  // Add localConnection to global scope to make it visible
-  // from the browser console.
-  window.localConnection = localConnection =
-    new RTCPeerConnection(servers);
+  window.localConnection = localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
 
-  sendChannel = localConnection.createDataChannel('sendDataChannel', dataConstraint);
+  sendChannel = localConnection.createDataChannel('sendDataChannel');
   trace('Created send data channel');
 
   localConnection.onicecandidate = e => {
@@ -54,8 +45,6 @@ function createConnection() {
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
-  // Add remoteConnection to global scope to make it visible
-  // from the browser console.
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers);
   trace('Created remote peer connection object remoteConnection');
 
