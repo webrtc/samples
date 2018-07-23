@@ -8,24 +8,24 @@
 
 'use strict';
 
-var startButton = document.getElementById('startButton');
-var callButton = document.getElementById('callButton');
-var hangupButton = document.getElementById('hangupButton');
+const startButton = document.getElementById('startButton');
+const callButton = document.getElementById('callButton');
+const hangupButton = document.getElementById('hangupButton');
 callButton.disabled = true;
 hangupButton.disabled = true;
 startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-var video1 = document.querySelector('video#video1');
-var video2 = document.querySelector('video#video2');
-var video3 = document.querySelector('video#video3');
+const video1 = document.querySelector('video#video1');
+const video2 = document.querySelector('video#video2');
+const video3 = document.querySelector('video#video3');
 
-var pc1Local;
-var pc1Remote;
-var pc2Local;
-var pc2Remote;
-var offerOptions = {
+let pc1Local;
+let pc1Remote;
+let pc2Local;
+let pc2Remote;
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
@@ -40,30 +40,29 @@ function gotStream(stream) {
 function start() {
   trace('Requesting local stream');
   startButton.disabled = true;
-  navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: true
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    console.log('getUserMedia() error: ', e);
-  });
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: true,
+      video: true
+    })
+    .then(gotStream)
+    .catch(e => console.log('getUserMedia() error: ', e));
 }
 
 function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   trace('Starting calls');
-  var audioTracks = window.localStream.getAudioTracks();
-  var videoTracks = window.localStream.getVideoTracks();
+  const audioTracks = window.localStream.getAudioTracks();
+  const videoTracks = window.localStream.getVideoTracks();
   if (audioTracks.length > 0) {
-    trace('Using audio device: ' + audioTracks[0].label);
+    trace(`Using audio device: ${audioTracks[0].label}`);
   }
   if (videoTracks.length > 0) {
-    trace('Using video device: ' + videoTracks[0].label);
+    trace(`Using video device: ${videoTracks[0].label}`);
   }
   // Create an RTCPeerConnection via the polyfill.
-  var servers = null;
+  const servers = null;
   pc1Local = new RTCPeerConnection(servers);
   pc1Remote = new RTCPeerConnection(servers);
   pc1Remote.ontrack = gotRemoteStream1;
@@ -78,78 +77,51 @@ function call() {
   pc2Remote.onicecandidate = iceCallback2Remote;
   trace('pc2: created local and remote peer connection objects');
 
-  window.localStream.getTracks().forEach(
-    function(track) {
-      pc1Local.addTrack(
-        track,
-        window.localStream
-      );
-    }
-  );
+  window.localStream.getTracks().forEach(track => pc1Local.addTrack(track, window.localStream));
   trace('Adding local stream to pc1Local');
-  pc1Local.createOffer(
-    offerOptions
-  ).then(
-    gotDescription1Local,
-    onCreateSessionDescriptionError
-  );
+  pc1Local
+    .createOffer(offerOptions)
+    .then(gotDescription1Local, onCreateSessionDescriptionError);
 
-  window.localStream.getTracks().forEach(
-    function(track) {
-      pc2Local.addTrack(
-        track,
-        window.localStream
-      );
-    }
-  );
+  window.localStream.getTracks().forEach(track => pc2Local.addTrack(track, window.localStream));
   trace('Adding local stream to pc2Local');
-  pc2Local.createOffer(
-    offerOptions
-  ).then(
-    gotDescription2Local,
-    onCreateSessionDescriptionError
-  );
+  pc2Local.createOffer(offerOptions)
+    .then(gotDescription2Local, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  trace(`Failed to create session description: ${error.toString()}`);
 }
 
 function gotDescription1Local(desc) {
   pc1Local.setLocalDescription(desc);
-  trace('Offer from pc1Local \n' + desc.sdp);
+  trace(`Offer from pc1Local\n${desc.sdp}`);
   pc1Remote.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc1Remote.createAnswer().then(
-    gotDescription1Remote,
-    onCreateSessionDescriptionError
-  );
+  pc1Remote.createAnswer().then(gotDescription1Remote, onCreateSessionDescriptionError);
 }
 
 function gotDescription1Remote(desc) {
   pc1Remote.setLocalDescription(desc);
-  trace('Answer from pc1Remote \n' + desc.sdp);
+  trace(`Answer from pc1Remote\n${desc.sdp}`);
   pc1Local.setRemoteDescription(desc);
 }
 
 function gotDescription2Local(desc) {
   pc2Local.setLocalDescription(desc);
-  trace('Offer from pc2Local \n' + desc.sdp);
+  trace(`Offer from pc2Local\n${desc.sdp}`);
   pc2Remote.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2Remote.createAnswer().then(
-    gotDescription2Remote,
-    onCreateSessionDescriptionError
-  );
+  pc2Remote.createAnswer().then(gotDescription2Remote, onCreateSessionDescriptionError);
 }
 
 function gotDescription2Remote(desc) {
   pc2Remote.setLocalDescription(desc);
-  trace('Answer from pc2Remote \n' + desc.sdp);
+  trace(`Answer from pc2Remote\n${desc.sdp}`);
   pc2Local.setRemoteDescription(desc);
 }
 
@@ -197,12 +169,8 @@ function iceCallback2Remote(event) {
 
 function handleCandidate(candidate, dest, prefix, type) {
   dest.addIceCandidate(candidate)
-  .then(
-    onAddIceCandidateSuccess,
-    onAddIceCandidateError
-  );
-  trace(prefix + 'New ' + type + ' ICE candidate: ' +
-      (candidate ? candidate.candidate : '(null)'));
+    .then(onAddIceCandidateSuccess, onAddIceCandidateError);
+  trace(`${prefix}New ${type} ICE candidate: ${candidate ? candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -210,5 +178,5 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add ICE candidate: ' + error.toString());
+  trace(`Failed to add ICE candidate: ${error.toString()}`);
 }

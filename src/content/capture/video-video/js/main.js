@@ -5,13 +5,12 @@
 *  that can be found in the LICENSE file in the root of the source
 *  tree.
 */
-
 'use strict';
 
-var leftVideo = document.getElementById('leftVideo');
-var rightVideo = document.getElementById('rightVideo');
+const leftVideo = document.getElementById('leftVideo');
+const rightVideo = document.getElementById('rightVideo');
 
-var stream;
+let stream;
 
 function maybeCreateStream() {
   if (stream) {
@@ -20,13 +19,11 @@ function maybeCreateStream() {
   if (leftVideo.captureStream) {
     stream = leftVideo.captureStream();
     rightVideo.srcObject = stream;
-    console.log('Captured stream from leftVideo with captureStream',
-      stream);
+    console.log('Captured stream from leftVideo with captureStream', stream);
   } else if (leftVideo.mozCaptureStream) {
     stream = leftVideo.mozCaptureStream();
     rightVideo.srcObject = stream;
-    console.log('Captured stream from leftVideo with mozCaptureStream()',
-      stream);
+    console.log('Captured stream from leftVideo with mozCaptureStream()', stream);
   } else {
     console.log('captureStream() not supported');
   }
