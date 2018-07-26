@@ -22,6 +22,10 @@ let pc1;
 let pc2;
 let localStream;
 
+// Can be set in the console before making a call to test this keeps
+// within the envelope set by the SDP. In kbps.
+let maxBandwidth = 0;
+
 let bitrateGraph;
 let bitrateSeries;
 
@@ -98,12 +102,16 @@ function gotDescription2(desc) {
   pc2.setLocalDescription(desc).then(
     () => {
       trace('Answer from pc2 \n' + desc.sdp);
-      pc1
-        .setRemoteDescription({
+      let p;
+      if (maxBandwidth) {
+        p = pc1.setRemoteDescription({
           type: desc.type,
-          sdp: updateBandwidthRestriction(desc.sdp, '500')
-        })
-        .then(() => {}, onSetSessionDescriptionError);
+          sdp: updateBandwidthRestriction(desc.sdp, maxBandwidth)
+        });
+      } else {
+        p = pc1.setRemoteDescription(desc);
+      }
+      p.then(() => {}, onSetSessionDescriptionError);
     },
     onSetSessionDescriptionError
   );
@@ -161,6 +169,29 @@ function onSetSessionDescriptionError(error) {
 bandwidthSelector.onchange = () => {
   bandwidthSelector.disabled = true;
   const bandwidth = bandwidthSelector.options[bandwidthSelector.selectedIndex].value;
+
+  // In Chrome, use RTCRtpSender.setParameters to change bandwidth without
+  // (local) renegotiation. Note that this will be within the envelope of
+  // the initial maximum bandwidth negotiated via SDP.
+  if (adapter.browserDetails.browser === 'chrome' &&
+      'RTCRtpSender' in window &&
+      'setParameters' in window.RTCRtpSender.prototype) {
+    const sender = pc1.getSenders()[0];
+    const parameters = sender.getParameters();
+    if (bandwidth === 'unlimited') {
+      delete parameters.encodings[0].maxBitrate;
+    } else {
+      parameters.encodings[0].maxBitrate = bandwidth * 1000;
+    }
+    sender.setParameters(parameters)
+    .then(() => {
+      bandwidthSelector.disabled = false;
+    })
+    .catch(e => console.error(e));
+    return;
+  }
+  // Fallback to the SDP munging with local renegotiation way of limiting
+  // the bandwidth.
   pc1.createOffer()
     .then(offer => pc1.setLocalDescription(offer))
     .then(() => {
@@ -205,6 +236,9 @@ window.setInterval(() => {
     return;
   }
   const sender = pc1.getSenders()[0];
+  if (!sender) {
+    return;
+  }
   sender.getStats().then(res => {
     res.forEach(report => {
       let bytes;
