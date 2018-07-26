@@ -26,9 +26,15 @@ sendButton.onclick = createConnection;
 
 // Prevent data sent to be set to 0.
 megsToSend.addEventListener('change', function(e) {
-  if (this.value <= 0) {
+  const number = this.value;
+  if (Number.isNaN(number)) {
+    errorMessage.innerHTML = `Invalid value for MB to send: ${number}`;
+  } else if (number <= 0) {
     sendButton.disabled = true;
     errorMessage.innerHTML = '<p>Please enter a number greater than zero.</p>';
+  } else if (number > 64) {
+    sendButton.disabled = true;
+    errorMessage.innerHTML = '<p>Please enter a number lower or equal than 64.</p>';
   } else {
     errorMessage.innerHTML = '';
     sendButton.disabled = false;
@@ -40,7 +46,8 @@ function createConnection() {
   megsToSend.disabled = true;
   const servers = null;
 
-  bytesToSend = Math.round(megsToSend.value) * 1024 * 1024;
+  const number = Number.parseInt(megsToSend.value);
+  bytesToSend = number * 1024 * 1024;
 
   localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
@@ -93,10 +100,10 @@ function sendGeneratedData() {
         } else {
           sendChannel.addEventListener('bufferedamountlow', listener);
         }
-        return;
+      } else {
+        sendProgress.value += chunkSize;
+        sendChannel.send(stringToSendRepeatedly);
       }
-      sendProgress.value += chunkSize;
-      sendChannel.send(stringToSendRepeatedly);
     }
   };
   sendProgress.max = bytesToSend;
