@@ -85,6 +85,10 @@
     "spaced-comment": 2,
     "valid-typeof": 2
   },
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module"
+  },
   "env": {
     "es6": true,
     "browser": true,
