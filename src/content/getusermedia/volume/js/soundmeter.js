@@ -37,22 +37,22 @@ function SoundMeter(context) {
   };
 }
 
-SoundMeter.prototype.connectToSource = function(stream, callback) {
-  console.log('SoundMeter connecting');
-  try {
-    this.mic = this.context.createMediaStreamSource(stream);
-    this.mic.connect(this.script);
-    // necessary to make sample run, but should not be.
-    this.script.connect(this.context.destination);
-    if (typeof callback !== 'undefined') {
-      callback(null);
+SoundMeter.prototype.connectToSource = function(stream) {
+  return new Promise((resolve, reject) => {
+    console.log('SoundMeter connecting');
+    try {
+      this.mic = this.context.createMediaStreamSource(stream);
+      this.mic.connect(this.script);
+      // necessary to make sample run, but should not be.
+      this.script.connect(this.context.destination);
+      resolve();
+    } catch (e) {
+      console.error(e);
+      if (typeof callback !== 'undefined') {
+        reject(e);
+      }
     }
-  } catch (e) {
-    console.error(e);
-    if (typeof callback !== 'undefined') {
-      callback(e);
-    }
-  }
+  });
 };
 
 SoundMeter.prototype.stop = function() {

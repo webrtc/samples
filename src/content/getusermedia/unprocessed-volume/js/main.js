@@ -10,14 +10,14 @@
 
 'use strict';
 
-const instantMeter = document.querySelector('#instant meter')
-const slowMeter = document.querySelector('#slow meter')
-const unprocessedMeter = document.querySelector('#unprocessed meter')
+const instantMeter = document.querySelector('#instant meter');
+const slowMeter = document.querySelector('#slow meter');
+const unprocessedMeter = document.querySelector('#unprocessed meter');
 
-const instantValueDisplay = document.querySelector('#instant .value')
-const slowValueDisplay = document.querySelector('#slow .value')
-const unprocessedValueDisplay = document.querySelector('#unprocessed .value')
-const errorMsg = document.querySelector('#errorMsg')
+const instantValueDisplay = document.querySelector('#instant .value');
+const slowValueDisplay = document.querySelector('#slow .value');
+const unprocessedValueDisplay = document.querySelector('#unprocessed .value');
+const errorMsg = document.querySelector('#errorMsg');
 
 try {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -30,59 +30,76 @@ try {
 let constraints = window.constraints = {
   audio: {echoCancellation: true},
   video: false
-}
+};
 
-function handleSuccess(stream) {
+async function handleSuccess(stream) {
   // Put variables in global scope to make them available to the
   // browser console.
   window.stream = stream;
-  const soundMeter = window.soundMeter = new SoundMeter(window.audioContext)
-  errorMsg.innerText = ''
-  soundMeter.connectToSource(stream, function(error) {
-    if (error) {
-      handleError(error)
-      return;
-    }
+  const soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
+  errorMsg.innerText = '';
+
+  try {
+    // eslint-disable-next-line no-unused-vars
+    const ignored = await soundMeter.connectToSource(stream);
     setInterval(function() {
       instantMeter.value = instantValueDisplay.innerText =
-          soundMeter.instant.toFixed(2);
+        soundMeter.instant.toFixed(2);
       slowMeter.value = slowValueDisplay.innerText =
-          soundMeter.slow.toFixed(2);
+        soundMeter.slow.toFixed(2);
     }, 200);
-  });
-  console.log('First track settings:',
-              JSON.stringify(stream.getAudioTracks()[0].getSettings()));
+  } catch (e) {
+    handleError(e);
+  }
+
+  const audioSettings = JSON.stringify(stream.getAudioTracks()[0].getSettings());
+  console.log('First track settings:', audioSettings);
+
   // Set up second track with audio processing disabled
   constraints.audio = {echoCancellation: {exact: false}};
-  trace(`Getting second audio stream`);
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(handleUnprocessedStream).catch(handleError);
+  trace('Getting second audio stream');
+  try {
+    const secondStream = await navigator.mediaDevices.getUserMedia(constraints);
+    // eslint-disable-next-line no-unused-vars
+    const ignore = await handleUnprocessedStream(secondStream);
+  } catch (e) {
+    handleError(e);
+  }
 }
 
-function handleUnprocessedStream(stream) {
+async function handleUnprocessedStream(stream) {
   trace('Got second audio stream');
-  trace(`Second track settings: `,
-              JSON.stringify(stream.getAudioTracks()[0].getSettings()));
-  trace(`Second track constraints: `,
-              JSON.stringify(stream.getAudioTracks()[0].getConstraints()));
+  trace('Second track settings: ',
+    JSON.stringify(stream.getAudioTracks()[0].getSettings()));
+  trace('Second track constraints: ',
+    JSON.stringify(stream.getAudioTracks()[0].getConstraints()));
   const unprocMeter = window.unprocMeter = new SoundMeter(window.audioContext);
-  unprocMeter.connectToSource(stream, function(e) {
-    if (e) {
-      alert(e);
-      return;
-    }
+  try {
+    // eslint-disable-next-line no-unused-vars
+    const ignored = await unprocMeter.connectToSource(stream);
     setInterval(function() {
       unprocessedMeter.value = unprocessedValueDisplay.innerText =
-          unprocMeter.slow.toFixed(2);
+        unprocMeter.slow.toFixed(2);
     }, 200);
-  });
+  } catch (e) {
+    handleError(e);
+  }
 }
 
 function handleError(error) {
-  trace(`navigator.getUserMedia error: `, error);
-  errorMsg.innerText = `navigator.getUserMedia error: ${error}`
+  trace('navigator.getUserMedia error: ', error);
+  errorMsg.innerText = `navigator.getUserMedia error: ${error}`;
 }
 
-navigator.mediaDevices.getUserMedia(constraints).
-    then(handleSuccess).catch(handleError);
+async function init() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    // eslint-disable-next-line no-unused-vars
+    const ignored = await handleSuccess(stream);
+  } catch (e) {
+    handleError(e);
+  }
+}
 
+// noinspection JSIgnoredPromiseFromCall
+init();
