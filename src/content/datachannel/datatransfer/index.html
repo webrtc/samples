@@ -51,8 +51,8 @@
             <button id="sendTheData" type="button">Generate and send data</button>
         </div>
         <div class="input">
-            <input type="number" id="megsToSend" min="1" name="megs" value="128"/>
-            <label for="megsToSend">MB</label>
+            <input type="number" id="megsToSend" min="1" name="megs" value="16"/>
+            <label for="megsToSend">MB <b>(warning: very large values will likely cause problems)</b></label>
             <div id="errorMsg"></div>
         </div>
         <div class="input">
@@ -68,6 +68,7 @@
             <div class="label">Receive progress:</div>
             <progress id="receiveProgress" max="0" value="0"></progress>
         </div>
+
     </section>
 
     <section>

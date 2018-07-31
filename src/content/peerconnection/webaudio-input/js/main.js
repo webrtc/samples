@@ -8,7 +8,7 @@
 
 'use strict';
 
-/* global WebAudioExtended, webkitRTCPeerConnection */
+/* global WebAudioExtended */
 
 const audioElement = document.querySelector('audio');
 const statusDiv = document.querySelector('div#status');
@@ -29,10 +29,6 @@ let pc2;
 
 const webAudio = new WebAudioExtended();
 webAudio.loadSound('audio/Shamisen-C4.wav');
-
-function trace(txt) {
-  statusDiv.innerHTML += `<p>${txt}</p>`;
-}
 
 function start() {
   webAudio.start();
@@ -64,14 +60,14 @@ function handleSuccess(stream) {
   renderLocallyCheckbox.disabled = false;
   const audioTracks = stream.getAudioTracks();
   if (audioTracks.length === 1) {
-    console.log('Got one audio track:', audioTracks);
+    trace('Got one audio track:', audioTracks);
     const filteredStream = webAudio.applyFilter(stream);
     const servers = null;
-    pc1 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
-    console.log('Created local peer connection object pc1');
+    pc1 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
+    trace('Created local peer connection object pc1');
     pc1.onicecandidate = e => onIceCandidate(pc1, e);
-    pc2 = new webkitRTCPeerConnection(servers); // eslint-disable-line new-cap
-    console.log('Created remote peer connection object pc2');
+    pc2 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
+    trace('Created remote peer connection object pc2');
     pc2.onicecandidate = e => onIceCandidate(pc2, e);
     pc2.ontrack = gotRemoteStream;
     filteredStream.getTracks().forEach(track => pc1.addTrack(track, filteredStream));
@@ -85,7 +81,7 @@ function handleSuccess(stream) {
 
     localStream = stream;
   } else {
-    alert('The media stream contains an invalid number of audio tracks.');
+    logError('The media stream contains an invalid number of audio tracks.');
     stream.getTracks().forEach(track => track.stop());
   }
 }
@@ -93,34 +89,23 @@ function handleSuccess(stream) {
 function handleFailure(error) {
   startButton.disabled = false;
   stopButton.disabled = true;
-  alert(`Failed to get access to local media. Error: ${error.name}`);
-}
-
-function forceOpus(sdp) {
-  // Remove all other codecs (not the video codecs though).
-  sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g, 'm=audio $1 RTP/SAVPF 111\r\n');
-  sdp = sdp.replace(/a=rtpmap:(?!111)\d{1,3} (?!VP8|red|ulpfec).*\r\n/g, '');
-  return sdp;
+  logError(`Failed to get access to local media. Error: ${error.name}`);
 }
 
 function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
-  const modifiedOffer = {
-    type: 'offer',
-    sdp: forceOpus(desc.sdp)
-  };
 
-  pc1.setLocalDescription(modifiedOffer);
-  console.log(`Offer from pc1\n${modifiedOffer.sdp}`);
-  pc2.setRemoteDescription(modifiedOffer);
+  pc1.setLocalDescription(desc);
+  console.log(`Offer from pc1\n${desc.sdp}`);
+  pc2.setRemoteDescription(desc);
   pc2.createAnswer()
     .then(gotDescription2)
-    .catch(error => console.log(`createAnswer failed: ${error}`));
+    .catch(error => logError(`createAnswer failed: ${error}`));
 }
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc);
-  console.log(`Answer from pc2\n${desc.sdp}`);
+  trace(`Answer from pc2\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
@@ -150,7 +135,7 @@ function onAddIceCandidateSuccess() {
 }
 
 function onAddIceCandidateError(error) {
-  trace(`Failed to add Ice Candidate: ${error.toString()}`);
+  logError(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function handleKeyDown() {
@@ -158,6 +143,16 @@ function handleKeyDown() {
 }
 
 function toggleRenderLocally() {
-  console.log('Render locally: ', renderLocallyCheckbox.checked);
+  trace('Render locally: ', renderLocallyCheckbox.checked);
   webAudio.renderLocally(renderLocallyCheckbox.checked);
+}
+
+function trace(txt) {
+  statusDiv.innerHTML += `<p>${txt}</p>`;
+  console.log(txt);
+}
+
+function logError(error) {
+  console.log(error);
+  document.querySelector('#errorMsg').innerHTML = error;
 }
