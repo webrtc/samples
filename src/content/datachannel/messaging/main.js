@@ -13,6 +13,7 @@ class MessagingSample extends LitElement {
   constructor() {
     super();
     this._localConnection = this._remoteConnection = this._localChannel = this._remoteChannel = null;
+    this.connected = false;
   }
 
   disconnect() {
@@ -23,7 +24,6 @@ class MessagingSample extends LitElement {
 
   async connect() {
     try {
-      this.shadowRoot.querySelector('#connectButton').disabled = true;
       const dataChannelParams = {ordered: true};
       let lpc = this._localConnection = new RTCPeerConnection();
       lpc.addEventListener('icecandidate', e => this._onIceCandidate(e, this._remoteConnection));
@@ -65,16 +65,18 @@ class MessagingSample extends LitElement {
 
   _localChannelOpen(event) {
     console.log(`Local channel open: ${JSON.stringify(event)}`);
-    this.shadowRoot.querySelector('#sendLocal').disabled = false;
-    this.shadowRoot.querySelector('#sendRemote').disabled = false;
-    this.shadowRoot.querySelector('#disconnectButton').disabled = false;
+    this.connected = true;
+    // this.shadowRoot.querySelector('#sendLocal').disabled = false;
+    // this.shadowRoot.querySelector('#sendRemote').disabled = false;
+    // this.shadowRoot.querySelector('#disconnectButton').disabled = false;
   }
 
   _channelClosed(event) {
     console.log(`Channel closed: ${JSON.stringify(event)}`);
-    this.shadowRoot.querySelector('#sendLocal').disabled = true;
-    this.shadowRoot.querySelector('#sendRemote').disabled = true;
-    this.shadowRoot.querySelector('#connectButton').disabled = false;
+    this.connected = false;
+    // this.shadowRoot.querySelector('#sendLocal').disabled = true;
+    // this.shadowRoot.querySelector('#sendRemote').disabled = true;
+    // this.shadowRoot.querySelector('#connectButton').disabled = false;
   }
 
   _onLocalMessageReceived(event) {
@@ -95,7 +97,17 @@ class MessagingSample extends LitElement {
     this.shadowRoot.querySelector('#remoteIncoming').value += event.data + '\n';
   }
 
-  _render() {
+  static get properties() {
+    return {
+      connected: {
+        type: Boolean,
+        notify: true,
+        reflectToAttribute: true
+      }
+    }
+  }
+
+  _render({connected}) {
     return html`
     <section>
         <style>
@@ -103,15 +115,15 @@ class MessagingSample extends LitElement {
         @import "main.css";
         </style>
         <div>
-            <button id="connectButton">Connect</button>
-            <button disabled id="disconnectButton">Disconnect</button>
+            <button disabled="${connected}" id="connectButton">Connect</button>
+            <button disabled="${!connected}" id="disconnectButton">Disconnect</button>
         </div>
 
         <div class="messageBox">
             <label for="localOutgoing">Local outgoing message:</label>
             <textarea class="message" id="localOutgoing" 
                       placeholder="Local outgoing message goes here."></textarea>
-            <button disabled id="sendLocal">Send message from local</button>
+            <button disabled="${!connected}" id="sendLocal">Send message from local</button>
         </div>
         <div class="messageBox">
             <label for="localIncoming">Local incoming messages:</label>
@@ -123,7 +135,7 @@ class MessagingSample extends LitElement {
             <label for="remoteOutgoing">Remote outgoing message:</label>
             <textarea class="message" id="remoteOutgoing" 
                       placeholder="Remote outgoing message goes here."></textarea>
-            <button disabled id="sendRemote">Send message from remote</button>
+            <button disabled="${!connected}" id="sendRemote">Send message from remote</button>
         </div>
         <div class="messageBox">
             <label for="remoteIncoming">Remote incoming messages:</label>
