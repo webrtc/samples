@@ -104,7 +104,7 @@ class MessagingSample extends LitElement {
         notify: true,
         reflectToAttribute: true
       }
-    }
+    };
   }
 
   _render({connected}) {
