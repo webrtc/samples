@@ -39,9 +39,7 @@ function handleFileInputChange() {
 }
 
 function createConnection() {
-  const servers = null;
-
-  localConnection = localConnection = new RTCPeerConnection(servers);
+  localConnection = localConnection = new RTCPeerConnection();
   trace('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel');
@@ -58,7 +56,7 @@ function createConnection() {
     gotDescription1,
     onCreateSessionDescriptionError
   );
-  remoteConnection = remoteConnection = new RTCPeerConnection(servers);
+  remoteConnection = remoteConnection = new RTCPeerConnection();
   trace('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = e => {
@@ -70,7 +68,7 @@ function createConnection() {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace(`Failed to create session description: ${error.toString()}`);
+  trace('Failed to create session description: ', error);
 }
 
 function sendData() {
@@ -90,14 +88,14 @@ function sendData() {
   receiveProgress.max = file.size;
   const chunkSize = 16384;
   const sliceFile = offset => {
-    const reader = new window.FileReader();
-    reader.onerror = (error => {
+    const reader = new FileReader();
+    reader.addEventListener('error', error => {
       trace(`Error reading file: ${error}`);
     });
     reader.onload = (() => e => {
       sendChannel.send(e.target.result);
       if (file.size > offset + e.target.result.byteLength) {
-        window.setTimeout(sliceFile, 0, offset + chunkSize);
+        setTimeout(sliceFile, 0, offset + chunkSize);
       }
       sendProgress.value = offset + e.target.result.byteLength;
     })(file);
@@ -127,8 +125,7 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace(`Offer from localConnection 
-${desc.sdp}`);
+  trace(`Offer from localConnection\n ${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -138,8 +135,7 @@ ${desc.sdp}`);
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace(`Answer from remoteConnection 
-${desc.sdp}`);
+  trace(`Answer from remoteConnection\n ${desc.sdp}`);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -148,8 +144,7 @@ function getOtherPc(pc) {
 }
 
 function getName(pc) {
-  return (pc === localConnection) ? 'localPeerConnection' :
-    'remotePeerConnection';
+  return (pc === localConnection) ? 'localPeerConnection' : 'remotePeerConnection';
 }
 
 function onIceCandidate(pc, event) {
@@ -162,9 +157,8 @@ function onIceCandidate(pc, event) {
         onAddIceCandidateError(pc, err);
       }
     );
-  trace(`${getName(pc)} ICE candidate: 
-${event.candidate ?
-    event.candidate.candidate : '(null)'}`);
+  const candidateText = event.candidate ? event.candidate.candidate : '(null)';
+  trace(`${getName(pc)} ICE candidate: ${candidateText}`);
 }
 
 function onAddIceCandidateSuccess() {
@@ -215,7 +209,8 @@ function onReceiveMessageCallback(event) {
 
     const bitrate = Math.round(receivedSize * 8 /
       ((new Date()).getTime() - timestampStart));
-    bitrateDiv.innerHTML = `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
+    bitrateDiv.innerHTML
+      = `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
 
     if (statsInterval) {
       window.clearInterval(statsInterval);
@@ -285,9 +280,9 @@ function displayStats() {
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1136832
       // Instead, the bitrate is calculated based on the number of
       // bytes received.
-      var bytesNow = receivedSize;
+      let bytesNow = receivedSize;
       const now = (new Date()).getTime();
-      var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+      let bitrate = Math.round((bytesNow - bytesPrev) * 8 /
         (now - timestampPrev));
       display(bitrate);
       timestampPrev = now;
