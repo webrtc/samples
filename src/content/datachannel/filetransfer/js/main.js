@@ -61,14 +61,14 @@ async function createConnection() {
   };
   remoteConnection.ondatachannel = receiveChannelCallback;
 
-  await generateOffer(localConnection);
+  try {
+    const offer = await localConnection.createOffer();
+    await gotLocalDescription(offer);
+  } catch (e) {
+    onCreateSessionDescriptionError(e);
+  }
 
   fileInput.disabled = true;
-}
-
-async function generateOffer(peerConnect) {
-  const offer = await localConnection.createOffer();
-  await gotLocalDescription(offer);
 }
 
 function onCreateSessionDescriptionError(error) {
