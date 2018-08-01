@@ -1,3 +1,4 @@
+/* eslint no-unused-expressions: 0 */
 /*
  *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
  *
