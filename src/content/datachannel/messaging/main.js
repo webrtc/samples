@@ -17,7 +17,6 @@ class MessagingSample extends LitElement {
   }
 
   disconnect() {
-    this.shadowRoot.querySelector('#disconnectButton').disabled = true;
     this._localConnection.close();
     this._remoteConnection.close();
   }
@@ -66,17 +65,11 @@ class MessagingSample extends LitElement {
   _localChannelOpen(event) {
     console.log(`Local channel open: ${JSON.stringify(event)}`);
     this.connected = true;
-    // this.shadowRoot.querySelector('#sendLocal').disabled = false;
-    // this.shadowRoot.querySelector('#sendRemote').disabled = false;
-    // this.shadowRoot.querySelector('#disconnectButton').disabled = false;
   }
 
   _channelClosed(event) {
     console.log(`Channel closed: ${JSON.stringify(event)}`);
     this.connected = false;
-    // this.shadowRoot.querySelector('#sendLocal').disabled = true;
-    // this.shadowRoot.querySelector('#sendRemote').disabled = true;
-    // this.shadowRoot.querySelector('#connectButton').disabled = false;
   }
 
   _onLocalMessageReceived(event) {
@@ -99,11 +92,7 @@ class MessagingSample extends LitElement {
 
   static get properties() {
     return {
-      connected: {
-        type: Boolean,
-        notify: true,
-        reflectToAttribute: true
-      }
+      connected: Boolean
     };
   }
 
@@ -115,15 +104,16 @@ class MessagingSample extends LitElement {
         @import "main.css";
         </style>
         <div>
-            <button disabled="${connected}" id="connectButton">Connect</button>
-            <button disabled="${!connected}" id="disconnectButton">Disconnect</button>
+            <button disabled="${connected}" on-click="${() => this.connect()}">Connect</button>
+            <button disabled="${!connected}" on-click="${() => this.disconnect()}">Disconnect</button>
         </div>
 
         <div class="messageBox">
             <label for="localOutgoing">Local outgoing message:</label>
             <textarea class="message" id="localOutgoing" 
                       placeholder="Local outgoing message goes here."></textarea>
-            <button disabled="${!connected}" id="sendLocal">Send message from local</button>
+            <button disabled="${!connected}" on-click="${() => this._sendLocalMessage()} 
+            id="sendLocal">Send message from local</button>
         </div>
         <div class="messageBox">
             <label for="localIncoming">Local incoming messages:</label>
@@ -135,7 +125,8 @@ class MessagingSample extends LitElement {
             <label for="remoteOutgoing">Remote outgoing message:</label>
             <textarea class="message" id="remoteOutgoing" 
                       placeholder="Remote outgoing message goes here."></textarea>
-            <button disabled="${!connected}" id="sendRemote">Send message from remote</button>
+            <button disabled="${!connected}" on-click="${() => this._sendRemoteMessage()}" 
+            id="sendRemote">Send message from remote</button>
         </div>
         <div class="messageBox">
             <label for="remoteIncoming">Remote incoming messages:</label>
@@ -145,14 +136,6 @@ class MessagingSample extends LitElement {
 
     </section>`;
   }
-
-  _firstRendered() {
-    this.shadowRoot.querySelector('#connectButton').addEventListener('click', () => this.connect());
-    this.shadowRoot.querySelector('#disconnectButton').addEventListener('click', () => this.disconnect());
-    this.shadowRoot.querySelector('#sendLocal').addEventListener('click', () => this._sendLocalMessage());
-    this.shadowRoot.querySelector('#sendRemote').addEventListener('click', () => this._sendRemoteMessage());
-  }
-
 
   _sendLocalMessage() {
     const message = this.shadowRoot.querySelector('#localOutgoing').value;
