@@ -34,7 +34,7 @@ require('../src/content/peerconnection/audio/js/test');
 // require('../src/content/peerconnection/multiple/js/test');
 
 // Tests basic functionality of the munge-sdp demo.
-require('../src/content/peerconnection/munge-sdp/js/test');
+// require('../src/content/peerconnection/munge-sdp/js/test');
 
 // Tests basic functionality of the trickle-ice demo.
 // require('../src/content/peerconnection/trickle-ice/js/test');
