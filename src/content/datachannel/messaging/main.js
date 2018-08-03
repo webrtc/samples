@@ -55,10 +55,10 @@ class MessagingSample extends LitElement {
       await this._localConnection.setLocalDescription(localOffer);
       await this._remoteConnection.setRemoteDescription(localOffer);
 
-      const remoteOffer = await this._remoteConnection.createAnswer();
-      console.log(`Got remote answer ${JSON.stringify(remoteOffer)}`);
-      await this._remoteConnection.setLocalDescription(remoteOffer);
-      await this._localConnection.setRemoteDescription(remoteOffer);
+      const remoteAnswer = await this._remoteConnection.createAnswer();
+      console.log(`Got remote answer ${JSON.stringify(remoteAnswer)}`);
+      await this._remoteConnection.setLocalDescription(remoteAnswer);
+      await this._localConnection.setRemoteDescription(remoteAnswer);
     } catch (e) {
       console.log(e);
     }
