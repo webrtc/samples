@@ -5,6 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+/* eslint no-unused-expressions: 0 */
 
 'use strict';
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element?module';
