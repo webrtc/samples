@@ -11,7 +11,6 @@
 /* global WebAudioExtended */
 
 const audioElement = document.querySelector('audio');
-const statusDiv = document.querySelector('div#status');
 
 const startButton = document.querySelector('button#start');
 const stopButton = document.querySelector('button#stop');
@@ -147,12 +146,6 @@ function toggleRenderLocally() {
   webAudio.renderLocally(renderLocallyCheckbox.checked);
 }
 
-function console.log(txt) {
-  statusDiv.innerHTML += `<p>${txt}</p>`;
-  console.log(txt);
-}
-
 function logError(error) {
-  console.log(error);
   document.querySelector('#errorMsg').innerHTML = error;
 }

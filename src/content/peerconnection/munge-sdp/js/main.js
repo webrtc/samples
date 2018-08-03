@@ -8,10 +8,6 @@
 
 'use strict';
 
-function console.log(msg, ...args) {
-  console.log(msg, args);
-}
-
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
