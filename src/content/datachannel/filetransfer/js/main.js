@@ -7,30 +7,30 @@
  */
 'use strict';
 
-var localConnection;
-var remoteConnection;
-var sendChannel;
-var receiveChannel;
-var bitrateDiv = document.querySelector('div#bitrate');
-var fileInput = document.querySelector('input#fileInput');
-var downloadAnchor = document.querySelector('a#download');
-var sendProgress = document.querySelector('progress#sendProgress');
-var receiveProgress = document.querySelector('progress#receiveProgress');
-var statusMessage = document.querySelector('span#status');
+let localConnection;
+let remoteConnection;
+let sendChannel;
+let receiveChannel;
+const bitrateDiv = document.querySelector('div#bitrate');
+const fileInput = document.querySelector('input#fileInput');
+const downloadAnchor = document.querySelector('a#download');
+const sendProgress = document.querySelector('progress#sendProgress');
+const receiveProgress = document.querySelector('progress#receiveProgress');
+const statusMessage = document.querySelector('span#status');
 
-var receiveBuffer = [];
-var receivedSize = 0;
+let receiveBuffer = [];
+let receivedSize = 0;
 
-var bytesPrev = 0;
-var timestampPrev = 0;
-var timestampStart;
-var statsInterval = null;
-var bitrateMax = 0;
+let bytesPrev = 0;
+let timestampPrev = 0;
+let timestampStart;
+let statsInterval = null;
+let bitrateMax = 0;
 
 fileInput.addEventListener('change', handleFileInputChange, false);
 
 function handleFileInputChange() {
-  var file = fileInput.files[0];
+  let file = fileInput.files[0];
   if (!file) {
     trace('No file chosen');
   } else {
@@ -39,7 +39,7 @@ function handleFileInputChange() {
 }
 
 function createConnection() {
-  var servers = null;
+  let servers = null;
 
   localConnection = localConnection = new RTCPeerConnection(servers);
   trace('Created local peer connection object localConnection');
@@ -74,7 +74,7 @@ function onCreateSessionDescriptionError(error) {
 }
 
 function sendData() {
-  var file = fileInput.files[0];
+  let file = fileInput.files[0];
   trace('File is ' + [file.name, file.size, file.type,
       file.lastModifiedDate
   ].join(' '));
@@ -90,9 +90,9 @@ function sendData() {
   }
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
-  var chunkSize = 16384;
-  var sliceFile = function(offset) {
-    var reader = new window.FileReader();
+  let chunkSize = 16384;
+  const sliceFile = function(offset) {
+    let reader = new window.FileReader();
     reader.onload = (function() {
       return function(e) {
         sendChannel.send(e.target.result);
@@ -102,7 +102,7 @@ function sendData() {
         sendProgress.value = offset + e.target.result.byteLength;
       };
     })(file);
-    var slice = file.slice(offset, offset + chunkSize);
+    let slice = file.slice(offset, offset + chunkSize);
     reader.readAsArrayBuffer(slice);
   };
   sliceFile(0);
@@ -200,9 +200,9 @@ function onReceiveMessageCallback(event) {
 
   // we are assuming that our signaling protocol told
   // about the expected file size (and name, hash, etc).
-  var file = fileInput.files[0];
+  let file = fileInput.files[0];
   if (receivedSize === file.size) {
-    var received = new window.Blob(receiveBuffer);
+    let received = new window.Blob(receiveBuffer);
     receiveBuffer = [];
 
     downloadAnchor.href = URL.createObjectURL(received);
@@ -211,7 +211,7 @@ function onReceiveMessageCallback(event) {
       'Click to download \'' + file.name + '\' (' + file.size + ' bytes)';
     downloadAnchor.style.display = 'block';
 
-    var bitrate = Math.round(receivedSize * 8 /
+    let bitrate = Math.round(receivedSize * 8 /
         ((new Date()).getTime() - timestampStart));
     bitrateDiv.innerHTML = '<strong>Average Bitrate:</strong> ' +
         bitrate + ' kbits/sec (max: ' + bitrateMax + ' kbits/sec)';
@@ -226,7 +226,7 @@ function onReceiveMessageCallback(event) {
 }
 
 function onSendChannelStateChange() {
-  var readyState = sendChannel.readyState;
+  let readyState = sendChannel.readyState;
   trace('Send channel state is: ' + readyState);
   if (readyState === 'open') {
     sendData();
@@ -234,7 +234,7 @@ function onSendChannelStateChange() {
 }
 
 function onReceiveChannelStateChange() {
-  var readyState = receiveChannel.readyState;
+  let readyState = receiveChannel.readyState;
   trace('Receive channel state is: ' + readyState);
   if (readyState === 'open') {
     timestampStart = (new Date()).getTime();
@@ -247,7 +247,7 @@ function onReceiveChannelStateChange() {
 
 // display bitrate statistics.
 function displayStats() {
-  var display = function(bitrate) {
+  let display = function(bitrate) {
     bitrateDiv.innerHTML = '<strong>Current Bitrate:</strong> ' +
         bitrate + ' kbits/sec';
   };
@@ -269,8 +269,8 @@ function displayStats() {
             return;
           }
           // calculate current bitrate
-          var bytesNow = activeCandidatePair.bytesReceived;
-          var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+          let bytesNow = activeCandidatePair.bytesReceived;
+          let bitrate = Math.round((bytesNow - bytesPrev) * 8 /
               (activeCandidatePair.timestamp - timestampPrev));
           display(bitrate);
           timestampPrev = activeCandidatePair.timestamp;
@@ -285,9 +285,9 @@ function displayStats() {
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1136832
       // Instead, the bitrate is calculated based on the number of
       // bytes received.
-      var bytesNow = receivedSize;
-      var now = (new Date()).getTime();
-      var bitrate = Math.round((bytesNow - bytesPrev) * 8 /
+      let bytesNow = receivedSize;
+      let now = (new Date()).getTime();
+      let bitrate = Math.round((bytesNow - bytesPrev) * 8 /
           (now - timestampPrev));
       display(bitrate);
       timestampPrev = now;

@@ -10,8 +10,8 @@
 
 'use strict';
 
-var pn = chrome.privacy.network;
-var pi = null;
+const pn = chrome.privacy.network;
+let pi = null;
 
 function browserSupportsIPHandlingPolicy() {
   return pn.webRTCIPHandlingPolicy !== undefined;

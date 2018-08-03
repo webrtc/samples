@@ -10,15 +10,15 @@
 'use strict';
 // This is a basic test file for use with testling.
 // The test script language comes from tape.
-var test = require('tape');
+let test = require('tape');
 
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
-var emptyFilePath =
+let webdriver = require('selenium-webdriver');
+let seleniumHelpers = require('webrtc-utilities').seleniumLib;
+let emptyFilePath =
   process.cwd() + '/src/content/datachannel/filetransfer/emptyFile';
 
 function sendFile(t, path) {
-  var driver = seleniumHelpers.buildDriver();
+  let driver = seleniumHelpers.buildDriver();
 
   return driver.get((process.env.BASEURL ? process.env.BASEURL :
       ('file://' + process.cwd())) +
@@ -71,7 +71,7 @@ test('Filetransfer via Datachannels: image',
   });
 
 test('Filetransfer via Datachannels: audio',
-  {skip: process.env.BROWSER === 'firefox'},function(t) {
+  {skip: process.env.BROWSER === 'firefox'}, function(t) {
     sendFile(t, process.cwd() +
         '/src/content/devices/multi/audio/audio.mp3');
   });
@@ -88,7 +88,7 @@ test('Filetransfer via Datachannels: empty file', function(t) {
     t.skip('Empty file selection is not supported on firefox');
     t.end();
   } else {
-    var fs = require('fs');
+    let fs = require('fs');
     // Create empty file.
     fs.writeFileSync(emptyFilePath, '');
     sendFile(t, emptyFilePath)

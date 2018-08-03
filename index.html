@@ -178,9 +178,9 @@
   <script src="src/js/lib/ga.js"></script>
 
   <script type="application/javascript">
-  var isSecureOrigin = location.protocol === 'https:' ||
+    let isSecureOrigin = location.protocol === 'https:' ||
       location.hostname === 'localhost';
-  if (!isSecureOrigin) {
+    if (!isSecureOrigin) {
     console.log('These demos must be run from a secure origin. \n' +
         'Changing protocol to HTTPS');
     location.protocol = 'HTTPS';

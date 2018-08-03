@@ -43,7 +43,7 @@ function maybeCreateStream() {
 
 // Video tag capture must be set up after video tracks are enumerated.
 leftVideo.oncanplay = maybeCreateStream;
-if (leftVideo.readyState >= 3) {  // HAVE_FUTURE_DATA
+if (leftVideo.readyState >= 3) { // HAVE_FUTURE_DATA
   // Video is already ready to play, call maybeCreateStream in case oncanplay
   // fired before we registered the event handler.
   maybeCreateStream();

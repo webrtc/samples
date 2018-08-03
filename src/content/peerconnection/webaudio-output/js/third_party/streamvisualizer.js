@@ -18,12 +18,12 @@
 
 /* globals AudioContext, webkitAudioContext */
 
-var WIDTH = 308;
-var HEIGHT = 231;
+const WIDTH = 308;
+const HEIGHT = 231;
 
 // Interesting parameters to tweak!
-var SMOOTHING = 0.8;
-var FFT_SIZE = 2048;
+const SMOOTHING = 0.8;
+const FFT_SIZE = 2048;
 
 function StreamVisualizer(remoteStream, canvas) {
   console.log('Creating StreamVisualizer with remoteStream and canvas: ',
@@ -62,6 +62,11 @@ StreamVisualizer.prototype.start = function() {
 };
 
 StreamVisualizer.prototype.draw = function() {
+  let barWidth;
+  let offset;
+  let height;
+  let percent;
+  let value;
   this.analyser.smoothingTimeConstant = SMOOTHING;
   this.analyser.fftSize = FFT_SIZE;
 
@@ -73,19 +78,19 @@ StreamVisualizer.prototype.draw = function() {
   this.canvas.width = WIDTH;
   this.canvas.height = HEIGHT;
   // Draw the frequency domain chart.
-  for (var i = 0; i < this.analyser.frequencyBinCount; i++) {
-    var value = this.freqs[i];
-    var percent = value / 256;
-    var height = HEIGHT * percent;
-    var offset = HEIGHT - height - 1;
-    var barWidth = WIDTH/this.analyser.frequencyBinCount;
-    var hue = i/this.analyser.frequencyBinCount * 360;
+  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
+    value = this.freqs[i];
+    percent = value / 256;
+    height = HEIGHT * percent;
+    offset = HEIGHT - height - 1;
+    barWidth = WIDTH / this.analyser.frequencyBinCount;
+    let hue = i/this.analyser.frequencyBinCount * 360;
     this.drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
     this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
   }
 
   // Draw the time domain chart.
-  for (i = 0; i < this.analyser.frequencyBinCount; i++) {
+  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
     value = this.times[i];
     percent = value / 256;
     height = HEIGHT * percent;
@@ -99,7 +104,7 @@ StreamVisualizer.prototype.draw = function() {
 };
 
 StreamVisualizer.prototype.getFrequencyValue = function(freq) {
-  var nyquist = this.context.sampleRate/2;
-  var index = Math.round(freq/nyquist * this.freqs.length);
+  let nyquist = this.context.sampleRate/2;
+  let index = Math.round(freq/nyquist * this.freqs.length);
   return this.freqs[index];
 };
