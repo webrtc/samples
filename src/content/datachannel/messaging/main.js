@@ -13,7 +13,6 @@ import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element?module';
 class MessagingSample extends LitElement {
   constructor() {
     super();
-    this._localConnection = this._remoteConnection = this._localChannel = this._remoteChannel = null;
     this.connected = false;
   }
 
