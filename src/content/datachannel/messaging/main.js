@@ -27,12 +27,12 @@ class MessagingSample extends LitElement {
       this._localConnection = new RTCPeerConnection();
       this._localConnection.addEventListener('icecandidate', async e => {
         console.log('local connection ICE candidate: ', e.candidate);
-        this._remoteConnection.addIceCandidate(e.candidate);
+        await this._remoteConnection.addIceCandidate(e.candidate);
       });
       this._remoteConnection = new RTCPeerConnection();
       this._remoteConnection.addEventListener('icecandidate', async e => {
         console.log('remote connection ICE candidate: ', e.candidate);
-        this._localConnection.addIceCandidate(e.candidate);
+        await this._localConnection.addIceCandidate(e.candidate);
       });
 
       this._localChannel = this._localConnection
@@ -50,15 +50,24 @@ class MessagingSample extends LitElement {
 
       this._remoteConnection.addEventListener('datachannel', e => this._onRemoteDataChannel(e));
 
-      const localOffer = await this._localConnection.createOffer();
-      console.log(`Got local offer ${JSON.stringify(localOffer)}`);
-      await this._localConnection.setLocalDescription(localOffer);
-      await this._remoteConnection.setRemoteDescription(localOffer);
+      const initLocalOffer = async() => {
+        const localOffer = await this._localConnection.createOffer();
+        console.log(`Got local offer ${JSON.stringify(localOffer)}`);
+        const localDesc = this._localConnection.setLocalDescription(localOffer);
+        const remoteDesc = this._remoteConnection.setRemoteDescription(localOffer);
+        return Promise.all([localDesc, remoteDesc]);
+      };
 
-      const remoteAnswer = await this._remoteConnection.createAnswer();
-      console.log(`Got remote answer ${JSON.stringify(remoteAnswer)}`);
-      await this._remoteConnection.setLocalDescription(remoteAnswer);
-      await this._localConnection.setRemoteDescription(remoteAnswer);
+      const initRemoteAnswer = async() => {
+        const remoteAnswer = await this._remoteConnection.createAnswer();
+        console.log(`Got remote answer ${JSON.stringify(remoteAnswer)}`);
+        const localDesc = this._remoteConnection.setLocalDescription(remoteAnswer);
+        const remoteDesc = this._localConnection.setRemoteDescription(remoteAnswer);
+        return Promise.all([localDesc, remoteDesc]);
+      };
+
+      await initLocalOffer();
+      await initRemoteAnswer();
     } catch (e) {
       console.log(e);
     }
@@ -89,19 +98,11 @@ class MessagingSample extends LitElement {
     return {
       connected: Boolean,
       localMessages: String,
-      localOutgoingMessage: {
-        type: String,
-        notify: true
-      },
       remoteMessages: String,
-      remoteOutgoingMessage: {
-        type: String,
-        notify: true
-      }
     };
   }
 
-  _render({connected, localMessages, remoteMessages, remoteOutgoingMessage}) {
+  _render({connected, localMessages, remoteMessages}) {
     return html`<section>
   <style>
   @import "../../../css/main.css";
