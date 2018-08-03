@@ -47,32 +47,31 @@ async function createConnection() {
   sendChannel.binaryType = 'arraybuffer';
   console.log('Created send data channel');
 
-  sendChannel.onopen = onSendChannelStateChange;
-  sendChannel.onclose = onSendChannelStateChange;
-  localConnection.onicecandidate = async e => {
-    await onIceCandidate(localConnection, e);
-  };
+  sendChannel.addEventListener('open', onSendChannelStateChange);
+  sendChannel.addEventListener('close', onSendChannelStateChange);
+
+  localConnection.addEventListener('icecandidate', async event => {
+    console.log('Local ICE candidate: ', event.candidate);
+    await remoteConnection.addIceCandidate(event.candidate);
+  });
 
   remoteConnection = new RTCPeerConnection();
   console.log('Created remote peer connection object remoteConnection');
 
-  remoteConnection.onicecandidate = async e => {
-    await onIceCandidate(remoteConnection, e);
-  };
-  remoteConnection.ondatachannel = receiveChannelCallback;
+  remoteConnection.addEventListener('icecandidate', async event => {
+    console.log('Remote ICE candidate: ', event.candidate);
+    await localConnection.addIceCandidate(event.candidate);
+  });
+  remoteConnection.addEventListener('datachannel', receiveChannelCallback);
 
   try {
     const offer = await localConnection.createOffer();
     await gotLocalDescription(offer);
   } catch (e) {
-    onCreateSessionDescriptionError(e);
+    console.log('Failed to create session description: ', e);
   }
 
   fileInput.disabled = true;
-}
-
-function onCreateSessionDescriptionError(error) {
-  console.log('Failed to create session description: ', error);
 }
 
 function sendData() {
@@ -96,8 +95,7 @@ function sendData() {
   reader.addEventListener('load', e => {
     console.log('FileRead.onload ', e);
     sendChannel.send(e.target.result);
-    const bytesRead = e.target.result.byteLength;
-    offset += bytesRead;
+    offset += e.target.result.byteLength;
     sendProgress.value = offset;
     if (offset < file.size) {
       readSlice(offset);
@@ -137,7 +135,7 @@ async function gotLocalDescription(desc) {
     const answer = await remoteConnection.createAnswer();
     await gotRemoteDescription(answer);
   } catch (e) {
-    onCreateSessionDescriptionError(e);
+    console.log('Failed to create session description: ', e);
   }
 }
 
@@ -145,25 +143,6 @@ async function gotRemoteDescription(desc) {
   await remoteConnection.setLocalDescription(desc);
   console.log(`Answer from remoteConnection\n ${desc.sdp}`);
   await localConnection.setRemoteDescription(desc);
-}
-
-function getOtherPc(pc) {
-  return (pc === localConnection) ? remoteConnection : localConnection;
-}
-
-function getName(pc) {
-  return (pc === localConnection) ? 'localPeerConnection' : 'remotePeerConnection';
-}
-
-async function onIceCandidate(pc, event) {
-  try {
-    const candidateText = event.candidate ? event.candidate.candidate : '(null)';
-    console.log(`${getName(pc)} ICE candidate: ${candidateText}`);
-    await getOtherPc(pc).addIceCandidate(event.candidate);
-    console.log('AddIceCandidate success.');
-  } catch (e) {
-    console.log(`Failed to add Ice Candidate: ${e}`);
-  }
 }
 
 function receiveChannelCallback(event) {
@@ -239,10 +218,6 @@ async function onReceiveChannelStateChange() {
 
 // display bitrate statistics.
 async function displayStats() {
-  const display = bitrate => {
-    bitrateDiv.innerHTML = `<strong>Current Bitrate:</strong> ${bitrate} kbits/sec`;
-  };
-
   if (remoteConnection && remoteConnection.iceConnectionState === 'connected') {
     const stats = await remoteConnection.getStats();
     let activeCandidatePair;
@@ -259,7 +234,7 @@ async function displayStats() {
       const bytesNow = activeCandidatePair.bytesReceived;
       const bitrate = Math.round((bytesNow - bytesPrev) * 8 /
         (activeCandidatePair.timestamp - timestampPrev));
-      display(bitrate);
+      bitrateDiv.innerHTML = `<strong>Current Bitrate:</strong> ${bitrate} kbits/sec`;
       timestampPrev = activeCandidatePair.timestamp;
       bytesPrev = bytesNow;
       if (bitrate > bitrateMax) {
