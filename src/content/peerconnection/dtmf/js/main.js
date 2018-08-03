@@ -56,11 +56,11 @@ function main() {
 }
 
 function gotStream(stream) {
-  trace('Received local stream');
+  console.log('Received local stream');
   localStream = stream;
   const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace(`Using Audio device: ${audioTracks[0].label}`);
+    console.log(`Using Audio device: ${audioTracks[0].label}`);
   }
   if (adapter.browserDetails.browser !== 'chrome' ||
     adapter.browserDetails.version >= 66) {
@@ -70,28 +70,28 @@ function gotStream(stream) {
     // chrome does not yet support addTrack + dtmf until M66.
     pc1.addStream(localStream);
   }
-  trace('Adding Local Stream to peer connection');
+  console.log('Adding Local Stream to peer connection');
   pc1
     .createOffer(offerOptions)
     .then(gotDescription1, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace(`Failed to create session description: ${error.toString()}`);
+  console.log(`Failed to create session description: ${error.toString()}`);
 }
 
 function call() {
-  trace('Starting call');
+  console.log('Starting call');
   const servers = null;
   pc1 = new RTCPeerConnection(servers);
-  trace('Created local peer connection object pc1');
+  console.log('Created local peer connection object pc1');
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
   pc2 = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object pc2');
+  console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
 
-  trace('Requesting local stream');
+  console.log('Requesting local stream');
   navigator.mediaDevices
     .getUserMedia({
       audio: true,
@@ -107,7 +107,7 @@ function call() {
 
 function gotDescription1(desc) {
   pc1.setLocalDescription(desc);
-  trace(`Offer from pc1\n${desc.sdp}`);
+  console.log(`Offer from pc1\n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -117,13 +117,13 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc);
-  trace(`Answer from pc2: 
+  console.log(`Answer from pc2: 
 ${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
 function hangup() {
-  trace('Ending call');
+  console.log('Ending call');
   pc1.close();
   pc2.close();
   pc1 = null;
@@ -139,7 +139,7 @@ function hangup() {
 function gotRemoteStream(e) {
   if (audio.srcObject !== e.streams[0]) {
     audio.srcObject = e.streams[0];
-    trace('Received remote stream');
+    console.log('Received remote stream');
 
     if (!pc1.getSenders) {
       alert('This demo requires the RTCPeerConnection method getSenders() which is not support by this browser.');
@@ -148,7 +148,7 @@ function gotRemoteStream(e) {
     const senders = pc1.getSenders();
     let audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
     if (!audioSender) {
-      trace('No local audio track to send DTMF with\n');
+      console.log('No local audio track to send DTMF with\n');
       return;
     }
     if (!audioSender.dtmf) {
@@ -157,7 +157,7 @@ function gotRemoteStream(e) {
     }
     dtmfSender = audioSender.dtmf;
     dtmfStatusDiv.textContent = 'DTMF available';
-    trace('Got DTMFSender\n');
+    console.log('Got DTMFSender\n');
     dtmfSender.ontonechange = dtmfOnToneChange;
   }
 }
@@ -177,20 +177,20 @@ function onIceCandidate(pc, event) {
       () => onAddIceCandidateSuccess(pc),
       err => onAddIceCandidateError(pc, err)
     );
-  trace(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success');
+  console.log('AddIceCandidate success');
 }
 
 function onAddIceCandidateError(error) {
-  trace(`Failed to add Ice Candidate: ${error.toString()}`);
+  console.log(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function dtmfOnToneChange(tone) {
   if (tone) {
-    trace(`Sent DTMF tone: ${tone.tone}`);
+    console.log(`Sent DTMF tone: ${tone.tone}`);
     sentTonesDiv.textContent += `${tone.tone} `;
   }
 }

@@ -31,7 +31,7 @@ const offerOptions = {
 };
 
 function gotStream(stream) {
-  trace('Received local stream');
+  console.log('Received local stream');
   vid1.srcObject = stream;
   localstream = stream;
   callButton.disabled = false;
@@ -49,48 +49,48 @@ function start() {
   callButton.disabled = true;
   acceptButton.disabled = false;
   hangUpButton.disabled = false;
-  trace('Starting Call');
+  console.log('Starting Call');
   const videoTracks = localstream.getVideoTracks();
   const audioTracks = localstream.getAudioTracks();
   if (videoTracks.length > 0) {
-    trace(`Using Video device: ${videoTracks[0].label}`);
+    console.log(`Using Video device: ${videoTracks[0].label}`);
   }
   if (audioTracks.length > 0) {
-    trace(`Using Audio device: ${audioTracks[0].label}`);
+    console.log(`Using Audio device: ${audioTracks[0].label}`);
   }
 
   const servers = null;
   pc1 = new RTCPeerConnection(servers);
-  trace('Created local peer connection object pc1');
+  console.log('Created local peer connection object pc1');
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
   pc2 = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object pc2');
+  console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
 
   localstream.getTracks().forEach(track => pc1.addTrack(track, localstream));
-  trace('Adding Local Stream to peer connection');
+  console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(offerOptions).then(gotDescription1, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace(`Failed to create session description: ${error.toString()}`);
+  console.log(`Failed to create session description: ${error.toString()}`);
   stop();
 }
 
 function onCreateAnswerError(error) {
-  trace(`Failed to set createAnswer: ${error.toString()}`);
+  console.log(`Failed to set createAnswer: ${error.toString()}`);
   stop();
 }
 
 function onSetLocalDescriptionError(error) {
-  trace(`Failed to set setLocalDescription: ${error.toString()}`);
+  console.log(`Failed to set setLocalDescription: ${error.toString()}`);
   stop();
 }
 
 function onSetLocalDescriptionSuccess() {
-  trace('localDescription success.');
+  console.log('localDescription success.');
 }
 
 function gotDescription1(desc) {
@@ -98,7 +98,7 @@ function gotDescription1(desc) {
     onSetLocalDescriptionSuccess,
     onSetLocalDescriptionError
   );
-  trace(`Offer from pc1\n${desc.sdp}`);
+  console.log(`Offer from pc1\n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
@@ -111,7 +111,7 @@ function gotDescription2(desc) {
   desc.sdp = desc.sdp.replace(/a=recvonly/g, 'a=inactive');
   desc.type = 'pranswer';
   pc2.setLocalDescription(desc).then(onSetLocalDescriptionSuccess, onSetLocalDescriptionError);
-  trace(`Pranswer from pc2\n${desc.sdp}`);
+  console.log(`Pranswer from pc2\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
@@ -120,7 +120,7 @@ function gotDescription3(desc) {
   desc.sdp = desc.sdp.replace(/a=inactive/g, 'a=recvonly');
   desc.type = 'answer';
   pc2.setLocalDescription(desc).then(onSetLocalDescriptionSuccess, onSetLocalDescriptionError);
-  trace(`Answer from pc2\n${desc.sdp}`);
+  console.log(`Answer from pc2\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
@@ -131,7 +131,7 @@ function accept() {
 }
 
 function stop() {
-  trace('Ending Call' + '\n\n');
+  console.log('Ending Call' + '\n\n');
   pc1.close();
   pc2.close();
   pc1 = null;
@@ -144,7 +144,7 @@ function stop() {
 function gotRemoteStream(e) {
   if (vid2.srcObject !== e.streams[0]) {
     vid2.srcObject = e.streams[0];
-    trace('Received remote stream');
+    console.log('Received remote stream');
   }
 }
 
@@ -160,13 +160,13 @@ function onIceCandidate(pc, event) {
   getOtherPc(pc)
     .addIceCandidate(event.candidate)
     .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
-  trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace(`Failed to add Ice Candidate: ${error.toString()}`);
+  console.log(`Failed to add Ice Candidate: ${error.toString()}`);
 }

@@ -33,7 +33,7 @@ let localStream;
 let remoteStream;
 
 function gotStream(stream) {
-  trace('Received local stream');
+  console.log('Received local stream');
   video1.srcObject = stream;
   localStream = stream;
   callButton.disabled = false;
@@ -42,14 +42,14 @@ function gotStream(stream) {
 function gotremoteStream(stream) {
   remoteStream = stream;
   video2.srcObject = stream;
-  trace('Received remote stream');
-  trace(`${pipes.length} element(s) in chain`);
+  console.log('Received remote stream');
+  console.log(`${pipes.length} element(s) in chain`);
   statusDiv.textContent = `${pipes.length} element(s) in chain`;
   insertRelayButton.disabled = false;
 }
 
 function start() {
-  trace('Requesting local stream');
+  console.log('Requesting local stream');
   startButton.disabled = true;
   const options = audioCheckbox.checked ? {audio: true, video: true} : {audio: false, video: true};
   navigator.mediaDevices
@@ -57,7 +57,7 @@ function start() {
     .then(gotStream)
     .catch(function(e) {
       alert('getUserMedia() failed');
-      trace('getUserMedia() error: ', e);
+      console.log('getUserMedia() error: ', e);
     });
 }
 
@@ -65,7 +65,7 @@ function call() {
   callButton.disabled = true;
   insertRelayButton.disabled = false;
   hangupButton.disabled = false;
-  trace('Starting call');
+  console.log('Starting call');
   pipes.push(new VideoPipe(localStream, gotremoteStream));
 }
 
@@ -75,7 +75,7 @@ function insertRelay() {
 }
 
 function hangup() {
-  trace('Ending call');
+  console.log('Ending call');
   while (pipes.length > 0) {
     const pipe = pipes.pop();
     pipe.close();
