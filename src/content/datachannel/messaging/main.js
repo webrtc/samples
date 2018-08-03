@@ -128,7 +128,7 @@ class MessagingSample extends LitElement {
   <div class="messageBox">
       <label for="remoteOutgoing">Remote outgoing message:</label>
       <textarea class="message" id="remoteOutgoing" 
-                placeholder="Remote outgoing message goes here.">${remoteOutgoingMessage}</textarea>
+                placeholder="Remote outgoing message goes here."></textarea>
       <button disabled="${!connected}" on-click="${() => this._sendMessage(this.remoteOutgoing, this._remoteChannel)}" 
       id="sendRemote">Send message from remote</button>
   </div>
