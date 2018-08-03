@@ -98,7 +98,7 @@ class MessagingSample extends LitElement {
     return {
       connected: Boolean,
       localMessages: String,
-      remoteMessages: String,
+      remoteMessages: String
     };
   }
 
