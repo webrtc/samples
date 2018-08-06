@@ -6,253 +6,259 @@
  *  tree.
  */
 .hidden {
-  display: none;
+    display: none;
 }
 
 .highlight {
-  background-color: #eee;
-  font-size: 1.2em;
-  margin: 0 0 30px 0;
-  padding: 0.2em 1.5em;
+    background-color: #eee;
+    font-size: 1.2em;
+    margin: 0 0 30px 0;
+    padding: 0.2em 1.5em;
 }
+
 .warning {
-  color: red;
-  font-weight: 400;
+    color: red;
+    font-weight: 400;
 }
 
 div#errorMsg p {
-  color: #F00;
+    color: #F00;
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
-  font-weight: 300;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
 }
 
 a {
-color: #6fa8dc;
-font-weight: 300;
-text-decoration: none;
+    color: #6fa8dc;
+    font-weight: 300;
+    text-decoration: none;
 }
 
 a:hover {
-color: #3d85c6;
-text-decoration: underline;
+    color: #3d85c6;
+    text-decoration: underline;
 }
 
 a#viewSource {
-display: block;
-margin: 1.3em 0 0 0;
-border-top: 1px solid #999;
-padding: 1em 0 0 0;
+    display: block;
+    margin: 1.3em 0 0 0;
+    border-top: 1px solid #999;
+    padding: 1em 0 0 0;
 }
 
 div#links a {
-display: block;
-line-height: 1.3em;
-margin: 0 0 1.5em 0;
+    display: block;
+    line-height: 1.3em;
+    margin: 0 0 1.5em 0;
 }
 
 div.outputSelector {
-margin: -1.3em 0 2em 0;
+    margin: -1.3em 0 2em 0;
 }
 
 @media screen and (min-width: 1000px) {
-/* hack! to detect non-touch devices */
-  div#links a {
-		line-height: 0.8em;
-  }
+    /* hack! to detect non-touch devices */
+    div#links a {
+        line-height: 0.8em;
+    }
 }
 
 h1 a {
-font-weight: 300;
-margin: 0 10px 0 0;
-white-space: nowrap;
+    font-weight: 300;
+    margin: 0 10px 0 0;
+    white-space: nowrap;
 }
 
 audio {
-max-width: 100%;
+    max-width: 100%;
 }
 
 body {
-font-family: 'Roboto', sans-serif;
-margin: 0;
-padding: 1em;
-word-break: break-word;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 1em;
+    word-break: break-word;
 }
 
 button {
-background-color: #d84a38;
-border: none;
-border-radius: 2px;
-color: white;
-font-family: 'Roboto', sans-serif;
-font-size: 0.8em;
-margin: 0 0 1em 0;
-padding: 0.5em 0.7em 0.6em 0.7em;
+    background-color: #d84a38;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.8em;
+    margin: 0 0 1em 0;
+    padding: 0.5em 0.7em 0.6em 0.7em;
 }
 
 button:active {
-background-color: #cf402f;
+    background-color: #cf402f;
 }
 
 button:hover {
-background-color: #cf402f;
+    background-color: #cf402f;
 }
 
 button[disabled] {
-color: #ccc;
+    color: #ccc;
 }
 
 button[disabled]:hover {
-background-color: #d84a38;
+    background-color: #d84a38;
 }
 
 canvas {
-  background-color: #ccc;
-  max-width: 100%;
-  width: 100%;
+    background-color: #ccc;
+    max-width: 100%;
+    width: 100%;
 }
 
 code {
-font-family: 'Roboto', sans-serif;
-font-weight: 400;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
 }
 
 div#container {
-margin: 0 auto 0 auto;
-max-width: 40em;
-padding: 1em 1.5em 1.3em 1.5em;
+    margin: 0 auto 0 auto;
+    max-width: 60em;
+    padding: 1em 1.5em 1.3em 1.5em;
 }
 
 div#links {
-	padding: 0.5em 0 0 0;
+    padding: 0.5em 0 0 0;
 }
 
 h1 {
-border-bottom: 1px solid #ccc;
-font-family: 'Roboto', sans-serif;
-font-weight: 500;
-margin: 0 0 0.8em 0;
-padding: 0 0 0.2em 0;
+    border-bottom: 1px solid #ccc;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    margin: 0 0 0.8em 0;
+    padding: 0 0 0.2em 0;
 }
 
 h2 {
-color: #444;
-font-size: 1em;
-font-weight: 500;
-line-height: 1.2em;
-margin: 0 0 0.8em 0;
+    color: #444;
+    font-weight: 500;
 }
 
 h3 {
-border-top: 1px solid #eee;
-color: #666;
-font-weight: 500;
-margin: 20px 0 10px 0;
-padding: 10px 0 0 0;
-white-space: nowrap;
+    border-top: 1px solid #eee;
+    color: #666;
+    font-weight: 500;
+    margin: 10px 0 10px 0;
+    white-space: nowrap;
 }
 
-html {
-/* avoid annoying page width change
-when moving from the home page */
-overflow-y: scroll;
-}
-
-img {
-border: none;
-max-width: 100%;
-}
-
-input[type=radio] {
-position: relative;
-top: -1px;
-}
-
-p {
-color: #444;
-font-weight: 300;
-line-height: 1.6em;
-}
-
-p#data {
-border-top: 1px dotted #666;
-font-family: Courier New, monospace;
-line-height: 1.3em;
-max-height: 1000px;
-overflow-y: auto;
-padding: 1em 0 0 0;
-}
-
-p.borderBelow {
-border-bottom: 1px solid #aaa;
-padding: 0 0 20px 0;
-}
-
-section p:last-of-type {
-margin: 0;
-}
-
-section {
-  border-bottom: 1px solid #eee;
-  margin: 0 0 30px 0;
-  padding: 0 0 20px 0;
-}
-
-section:last-of-type {
-  border-bottom: none;
-  padding: 0 0 1em 0;
-}
-
-select {
-  margin: 0 1em 1em 0;
-  position: relative;
-  top: -1px;
-}
-
-h1 span {
-  white-space: nowrap;
-}
-
-strong {
-  font-weight: 500;
+li {
+    padding-top: 0.15em;
 }
 
 textarea {
-  font-family: 'Roboto', sans-serif;
+    resize: none;
+}
+
+html {
+    /* avoid annoying page width change
+    when moving from the home page */
+    overflow-y: scroll;
+}
+
+img {
+    border: none;
+    max-width: 100%;
+}
+
+input[type=radio] {
+    position: relative;
+    top: -1px;
+}
+
+p {
+    color: #444;
+    font-weight: 300;
+}
+
+p#data {
+    border-top: 1px dotted #666;
+    font-family: Courier New, monospace;
+    line-height: 1.3em;
+    max-height: 1000px;
+    overflow-y: auto;
+    padding: 1em 0 0 0;
+}
+
+p.borderBelow {
+    border-bottom: 1px solid #aaa;
+    padding: 0 0 20px 0;
+}
+
+section p:last-of-type {
+    margin: 0;
+}
+
+section {
+    border-bottom: 1px solid #eee;
+    margin: 0 0 30px 0;
+    padding: 0 0 20px 0;
+}
+
+section:last-of-type {
+    border-bottom: none;
+    padding: 0 0 1em 0;
+}
+
+select {
+    margin: 0 1em 1em 0;
+    position: relative;
+    top: -1px;
+}
+
+h1 span {
+    white-space: nowrap;
+}
+
+strong {
+    font-weight: 500;
+}
+
+textarea {
+    font-family: 'Roboto', sans-serif;
 }
 
 video {
-  background: #222;
-  margin: 0 0 20px 0;
-  width: 100%;
+    background: #222;
+    margin: 0 0 20px 0;
+    width: 100%;
 }
 
 @media screen and (max-width: 650px) {
-  .highlight {
-    font-size: 1em;
-    margin: 0 0 20px 0;
-    padding: 0.2em 1em;
-  }
-  h1 {
-    font-size: 24px;
-  }
+    .highlight {
+        font-size: 1em;
+        margin: 0 0 20px 0;
+        padding: 0.2em 1em;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
 }
 
 @media screen and (max-width: 550px) {
-  button:active {
-    background-color: darkRed;
-  }
-  h1 {
-    font-size: 22px;
-  }
+    button:active {
+        background-color: darkRed;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
 }
 
 @media screen and (max-width: 450px) {
-  h1 {
-    font-size: 20px;
-  }
+    h1 {
+        font-size: 20px;
+    }
 }
 
 
