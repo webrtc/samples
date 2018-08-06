@@ -24,7 +24,6 @@
   },
   "devDependencies": {
     "express": "^4.14.1",
-    "faucet": "0.0.1",
     "geckodriver": "^1.10.0",
     "grunt": "^0.4.5",
     "grunt-cli": ">=0.1.9",
