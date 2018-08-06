@@ -152,7 +152,7 @@ h3 {
 }
 
 li {
-    padding-top: 0.15em;
+    margin: 0 0 0.4em 0;
 }
 
 textarea {
@@ -219,6 +219,10 @@ h1 span {
     white-space: nowrap;
 }
 
+p.description {
+    margin: 0 0 0.5em 0;
+}
+
 strong {
     font-weight: 500;
 }
@@ -231,6 +235,10 @@ video {
     background: #222;
     margin: 0 0 20px 0;
     width: 100%;
+}
+
+ul {
+    margin: 0 0 0.5em 0;
 }
 
 @media screen and (max-width: 650px) {
