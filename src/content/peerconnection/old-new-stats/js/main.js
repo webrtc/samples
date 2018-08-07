@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async() => {
   // let timestampPrev;
 
   function hangup() {
-    trace('Ending call');
+    console.log('Ending call');
     localPeerConnection.close();
     remotePeerConnection.close();
     localPeerConnection = null;
@@ -76,14 +76,14 @@ document.addEventListener('DOMContentLoaded', async() => {
     } catch (e) {
       const message = `getUserMedia error: ${e.name}\nPermissionDeniedError may mean invalid constraints.`;
       alert(message);
-      trace(message);
+      console.log(message);
       getMediaButton.disabled = false;
     }
   }
 
   function gotStream(stream) {
     connectButton.disabled = false;
-    trace('GetUserMedia succeeded');
+    console.log('GetUserMedia succeeded');
     localStream = stream;
     localVideo.srcObject = stream;
   }
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
   function displayGetUserMediaConstraints() {
     const constraints = getUserMediaConstraints();
-    trace('getUserMedia constraints', constraints);
+    console.log('getUserMedia constraints', constraints);
     getUserMediaConstraintsDiv.textContent = JSON.stringify(constraints, null, '    ');
   }
 
@@ -135,16 +135,16 @@ document.addEventListener('DOMContentLoaded', async() => {
     localPeerConnection = new RTCPeerConnection(null);
     remotePeerConnection = new RTCPeerConnection(null);
     localStream.getTracks().forEach(track => localPeerConnection.addTrack(track, localStream));
-    trace('localPeerConnection creating offer');
+    console.log('localPeerConnection creating offer');
     localPeerConnection.onnegotiationeeded = () => {
-      trace('Negotiation needed - localPeerConnection');
+      console.log('Negotiation needed - localPeerConnection');
     };
     remotePeerConnection.onnegotiationeeded = () => {
-      trace('Negotiation needed - remotePeerConnection');
+      console.log('Negotiation needed - remotePeerConnection');
     };
 
     localPeerConnection.onicecandidate = async event => {
-      trace('Candidate localPeerConnection');
+      console.log('Candidate localPeerConnection');
       try {
         // eslint-disable-next-line no-unused-vars
         const ignore = await remotePeerConnection.addIceCandidate(event.candidate);
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async() => {
       }
     };
     remotePeerConnection.onicecandidate = async event => {
-      trace('Candidate remotePeerConnection');
+      console.log('Candidate remotePeerConnection');
       try {
         // eslint-disable-next-line no-unused-vars
         const ignore = await localPeerConnection.addIceCandidate(event.candidate);
@@ -165,32 +165,32 @@ document.addEventListener('DOMContentLoaded', async() => {
     };
     remotePeerConnection.ontrack = e => {
       if (remoteVideo.srcObject !== e.streams[0]) {
-        trace('remotePeerConnection got stream');
+        console.log('remotePeerConnection got stream');
         remoteVideo.srcObject = e.streams[0];
       }
     };
 
     try {
       const offer = await localPeerConnection.createOffer();
-      trace('localPeerConnection offering');
+      console.log('localPeerConnection offering');
       localPeerConnection.setLocalDescription(offer);
       remotePeerConnection.setRemoteDescription(offer);
 
       const answer = await remotePeerConnection.createAnswer();
-      trace('remotePeerConnection answering');
+      console.log('remotePeerConnection answering');
       remotePeerConnection.setLocalDescription(answer);
       localPeerConnection.setRemoteDescription(answer);
     } catch (e) {
-      trace(e);
+      console.log(e);
     }
   }
 
   function onAddIceCandidateSuccess() {
-    trace('AddIceCandidate success.');
+    console.log('AddIceCandidate success.');
   }
 
   function onAddIceCandidateError(error) {
-    trace('Failed to add Ice Candidate: ' + error.toString());
+    console.log('Failed to add Ice Candidate: ' + error.toString());
   }
 
   // Display statistics
@@ -211,10 +211,10 @@ document.addEventListener('DOMContentLoaded', async() => {
           const statsString = dumpStats(results);
           senderStatsDiv.innerHTML = '<h2>New stats</h2>' + statsString;
         }, err => {
-          trace(err);
+          console.log(err);
         });
     } else {
-      trace('Not connected yet');
+      console.log('Not connected yet');
     }
     // Collect some stats from the video tags.
     if (localVideo.videoWidth) {
@@ -246,9 +246,9 @@ document.addEventListener('DOMContentLoaded', async() => {
 
   function dumpOldStats(results) {
     let statsString = '';
-    trace(JSON.stringify(results));
+    console.log(JSON.stringify(results));
     results.result().forEach(res => {
-      trace(JSON.stringify(res));
+      console.log(JSON.stringify(res));
       statsString += '<h3>Report type=';
       statsString += res.type;
       statsString += '</h3>\n';

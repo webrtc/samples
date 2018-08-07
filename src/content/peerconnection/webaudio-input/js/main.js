@@ -11,7 +11,6 @@
 /* global WebAudioExtended */
 
 const audioElement = document.querySelector('audio');
-const statusDiv = document.querySelector('div#status');
 
 const startButton = document.querySelector('button#start');
 const stopButton = document.querySelector('button#stop');
@@ -60,14 +59,14 @@ function handleSuccess(stream) {
   renderLocallyCheckbox.disabled = false;
   const audioTracks = stream.getAudioTracks();
   if (audioTracks.length === 1) {
-    trace('Got one audio track:', audioTracks);
+    console.log('Got one audio track:', audioTracks);
     const filteredStream = webAudio.applyFilter(stream);
     const servers = null;
     pc1 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
-    trace('Created local peer connection object pc1');
+    console.log('Created local peer connection object pc1');
     pc1.onicecandidate = e => onIceCandidate(pc1, e);
     pc2 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
-    trace('Created remote peer connection object pc2');
+    console.log('Created remote peer connection object pc2');
     pc2.onicecandidate = e => onIceCandidate(pc2, e);
     pc2.ontrack = gotRemoteStream;
     filteredStream.getTracks().forEach(track => pc1.addTrack(track, filteredStream));
@@ -105,7 +104,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc);
-  trace(`Answer from pc2\n${desc.sdp}`);
+  console.log(`Answer from pc2\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
@@ -127,11 +126,11 @@ function onIceCandidate(pc, event) {
   getOtherPc(pc)
     .addIceCandidate(event.candidate)
     .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
-  trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
@@ -143,16 +142,10 @@ function handleKeyDown() {
 }
 
 function toggleRenderLocally() {
-  trace('Render locally: ', renderLocallyCheckbox.checked);
+  console.log('Render locally: ', renderLocallyCheckbox.checked);
   webAudio.renderLocally(renderLocallyCheckbox.checked);
 }
 
-function trace(txt) {
-  statusDiv.innerHTML += `<p>${txt}</p>`;
-  console.log(txt);
-}
-
 function logError(error) {
-  console.log(error);
   document.querySelector('#errorMsg').innerHTML = error;
 }
