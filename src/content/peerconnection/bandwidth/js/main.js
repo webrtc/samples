@@ -41,11 +41,11 @@ const offerOptions = {
 
 function gotStream(stream) {
   hangupButton.disabled = false;
-  trace('Received local stream');
+  console.log('Received local stream');
   localStream = stream;
   localVideo.srcObject = stream;
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
-  trace('Adding Local Stream to peer connection');
+  console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(
     offerOptions
@@ -64,31 +64,31 @@ function gotStream(stream) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  console.log('Failed to create session description: ' + error.toString());
 }
 
 function call() {
   callButton.disabled = true;
   bandwidthSelector.disabled = false;
-  trace('Starting call');
+  console.log('Starting call');
   const servers = null;
   pc1 = new RTCPeerConnection(servers);
-  trace('Created local peer connection object pc1');
+  console.log('Created local peer connection object pc1');
   pc1.onicecandidate = onIceCandidate.bind(pc1);
 
   pc2 = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object pc2');
+  console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = onIceCandidate.bind(pc2);
   pc2.ontrack = gotRemoteStream;
 
-  trace('Requesting local stream');
+  console.log('Requesting local stream');
   navigator.mediaDevices.getUserMedia({video: true})
     .then(gotStream)
     .catch(e => alert('getUserMedia() error: ' + e.name));
 }
 
 function gotDescription1(desc) {
-  trace('Offer from pc1 \n' + desc.sdp);
+  console.log('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc).then(
     () => {
       pc2.setRemoteDescription(desc)
@@ -101,7 +101,7 @@ function gotDescription1(desc) {
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc).then(
     () => {
-      trace('Answer from pc2 \n' + desc.sdp);
+      console.log('Answer from pc2 \n' + desc.sdp);
       let p;
       if (maxBandwidth) {
         p = pc1.setRemoteDescription({
@@ -118,7 +118,7 @@ function gotDescription2(desc) {
 }
 
 function hangup() {
-  trace('Ending call');
+  console.log('Ending call');
   localStream.getTracks().forEach(track => track.stop());
   pc1.close();
   pc2.close();
@@ -132,7 +132,7 @@ function hangup() {
 function gotRemoteStream(e) {
   if (remoteVideo.srcObject !== e.streams[0]) {
     remoteVideo.srcObject = e.streams[0];
-    trace('Received remote stream');
+    console.log('Received remote stream');
   }
 }
 
@@ -150,19 +150,19 @@ function onIceCandidate(event) {
     .then(onAddIceCandidateSuccess)
     .catch(onAddIceCandidateError);
 
-  trace(`${getName(this)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(this)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add ICE Candidate: ' + error.toString());
+  console.log('Failed to add ICE Candidate: ' + error.toString());
 }
 
 function onSetSessionDescriptionError(error) {
-  trace('Failed to set session description: ' + error.toString());
+  console.log('Failed to set session description: ' + error.toString());
 }
 
 // renegotiate bandwidth on the fly.
@@ -201,7 +201,7 @@ bandwidthSelector.onchange = () => {
           ? removeBandwidthRestriction(pc1.remoteDescription.sdp)
           : updateBandwidthRestriction(pc1.remoteDescription.sdp, bandwidth)
       };
-      trace('Applying bandwidth restriction to setRemoteDescription:\n' +
+      console.log('Applying bandwidth restriction to setRemoteDescription:\n' +
         desc.sdp);
       return pc1.setRemoteDescription(desc);
     })

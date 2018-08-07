@@ -34,10 +34,10 @@ function createConnection() {
   dataChannelSend.placeholder = '';
   const servers = null;
   window.localConnection = localConnection = new RTCPeerConnection(servers);
-  trace('Created local peer connection object localConnection');
+  console.log('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel');
-  trace('Created send data channel');
+  console.log('Created send data channel');
 
   localConnection.onicecandidate = e => {
     onIceCandidate(localConnection, e);
@@ -46,7 +46,7 @@ function createConnection() {
   sendChannel.onclose = onSendChannelStateChange;
 
   window.remoteConnection = remoteConnection = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object remoteConnection');
+  console.log('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = e => {
     onIceCandidate(remoteConnection, e);
@@ -62,26 +62,26 @@ function createConnection() {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  console.log('Failed to create session description: ' + error.toString());
 }
 
 function sendData() {
   const data = dataChannelSend.value;
   sendChannel.send(data);
-  trace('Sent Data: ' + data);
+  console.log('Sent Data: ' + data);
 }
 
 function closeDataChannels() {
-  trace('Closing data channels');
+  console.log('Closing data channels');
   sendChannel.close();
-  trace('Closed data channel with label: ' + sendChannel.label);
+  console.log('Closed data channel with label: ' + sendChannel.label);
   receiveChannel.close();
-  trace('Closed data channel with label: ' + receiveChannel.label);
+  console.log('Closed data channel with label: ' + receiveChannel.label);
   localConnection.close();
   remoteConnection.close();
   localConnection = null;
   remoteConnection = null;
-  trace('Closed peer connections');
+  console.log('Closed peer connections');
   startButton.disabled = false;
   sendButton.disabled = true;
   closeButton.disabled = true;
@@ -94,7 +94,7 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace(`Offer from localConnection\n${desc.sdp}`);
+  console.log(`Offer from localConnection\n${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -104,7 +104,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace(`Answer from remoteConnection\n${desc.sdp}`);
+  console.log(`Answer from remoteConnection\n${desc.sdp}`);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -123,19 +123,19 @@ function onIceCandidate(pc, event) {
       () => onAddIceCandidateSuccess(pc),
       err => onAddIceCandidateError(pc, err)
     );
-  trace(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace(`Failed to add Ice Candidate: ${error.toString()}`);
+  console.log(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function receiveChannelCallback(event) {
-  trace('Receive Channel Callback');
+  console.log('Receive Channel Callback');
   receiveChannel = event.channel;
   receiveChannel.onmessage = onReceiveMessageCallback;
   receiveChannel.onopen = onReceiveChannelStateChange;
@@ -143,13 +143,13 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  trace('Received Message');
+  console.log('Received Message');
   dataChannelReceive.value = event.data;
 }
 
 function onSendChannelStateChange() {
   const readyState = sendChannel.readyState;
-  trace('Send channel state is: ' + readyState);
+  console.log('Send channel state is: ' + readyState);
   if (readyState === 'open') {
     dataChannelSend.disabled = false;
     dataChannelSend.focus();
@@ -164,5 +164,5 @@ function onSendChannelStateChange() {
 
 function onReceiveChannelStateChange() {
   const readyState = receiveChannel.readyState;
-  trace(`Receive channel state is: ${readyState}`);
+  console.log(`Receive channel state is: ${readyState}`);
 }

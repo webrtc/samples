@@ -148,7 +148,7 @@ function start() {
   // Whether we gather IPv6 candidates.
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
-  trace(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
+  console.log(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
   pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
