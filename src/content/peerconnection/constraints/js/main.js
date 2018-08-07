@@ -51,7 +51,7 @@ function main() {
 }
 
 function hangup() {
-  trace('Ending call');
+  console.log('Ending call');
   localPeerConnection.close();
   remotePeerConnection.close();
 
@@ -190,11 +190,11 @@ function createPeerConnection() {
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace(`Failed to add Ice Candidate: ${error.toString()}`);
+  console.log(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function showRemoteStats(results) {

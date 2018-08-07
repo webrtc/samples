@@ -29,7 +29,7 @@ function maybeCreateStream() {
     srcStream = srcVideo.captureStream();
     call();
   } else {
-    trace('captureStream() not supported');
+    console.log('captureStream() not supported');
   }
 }
 
@@ -49,10 +49,10 @@ function setVideoTrackContentHints(stream, hint) {
     if ('contentHint' in track) {
       track.contentHint = hint;
       if (track.contentHint !== hint) {
-        trace('Invalid video track contentHint: \'' + hint + '\'');
+        console.log('Invalid video track contentHint: \'' + hint + '\'');
       }
     } else {
-      trace('MediaStreamTrack contentHint attribute not supported');
+      console.log('MediaStreamTrack contentHint attribute not supported');
     }
   });
 }
@@ -99,11 +99,11 @@ function establishPC(videoTag, stream) {
         .then(answerDesc => onCreateAnswerSuccess(pc1, pc2, answerDesc))
         .catch(onSetSessionDescriptionError);
     })
-    .catch(e => trace('Failed to create session description: ' + e.toString()));
+    .catch(e => console.log('Failed to create session description: ' + e.toString()));
 }
 
 function onSetSessionDescriptionError(error) {
-  trace('Failed to set session description: ' + error.toString());
+  console.log('Failed to set session description: ' + error.toString());
 }
 
 function onCreateAnswerSuccess(pc1, pc2, desc) {
