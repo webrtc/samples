@@ -14,8 +14,8 @@
 
 // If this is installed in a pre-M48 version of Chrome, the only thing to do
 // here is to disable MultipleRoute.
-var pn = chrome.privacy.network;
-var pi = chrome.privacy.IPHandlingPolicy;
+const pn = chrome.privacy.network;
+const pi = chrome.privacy.IPHandlingPolicy;
 
 if (!browserSupportsIPHandlingPolicy()) {
   pn.webRTCMultipleRoutesEnabled.set({

@@ -125,7 +125,7 @@ function start() {
 
   // Read the values from the input boxes.
   const iceServers = [];
-  for (var i = 0; i < servers.length; ++i) {
+  for (let i = 0; i < servers.length; ++i) {
     iceServers.push(JSON.parse(servers[i].value));
   }
   const transports = document.getElementsByName('transports');
@@ -174,7 +174,7 @@ function noDescription(error) {
 function parseCandidate(text) {
   const candidateStr = 'candidate:';
   const pos = text.indexOf(candidateStr) + candidateStr.length;
-  var [foundation, component, protocol, priority, address, port, , type] =
+  let [foundation, component, protocol, priority, address, port, , type] =
     text.substr(pos).split(' ');
   return {
     'component': component,

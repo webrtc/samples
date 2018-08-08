@@ -15,7 +15,7 @@ module.exports = function(grunt) {
     // },
     eslint: {
       options: {
-        configFile: '.eslintrc',
+        configFile: '.eslintrc.js',
         cache: true
       },
       target: ['src/content/**/*.js', 'test/*.js', '!**/third_party/*.js' ]

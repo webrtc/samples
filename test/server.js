@@ -9,17 +9,17 @@
 
 'use strict';
 
-var express = require('express');
-var https = require('https');
-var pem = require('pem');
+const express = require('express');
+const https = require('https');
+const pem = require('pem');
 
 pem.createCertificate({days: 1, selfSigned: true}, function(err, keys) {
-  var options = {
+  const options = {
     key: keys.serviceKey,
     cert: keys.certificate
   };
 
-  var app = express();
+  const app = express();
 
   app.use(express.static('../'));
 

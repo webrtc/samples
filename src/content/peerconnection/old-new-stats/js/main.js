@@ -8,7 +8,7 @@
 
 'use strict';
 
-document.addEventListener('DOMContentLoaded', async() => {
+document.addEventListener('DOMContentLoaded', async () => {
   const getMediaButton = document.querySelector('button#getMedia');
   const connectButton = document.querySelector('button#connect');
   const hangupButton = document.querySelector('button#hangup');

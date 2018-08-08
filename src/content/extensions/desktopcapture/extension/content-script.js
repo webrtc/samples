@@ -11,7 +11,7 @@
 // webkitGetUserMedia|<------ |window.postMessage|<-----| port.postMessage
 //
 
-var port = chrome.runtime.connect(chrome.runtime.id);
+const port = chrome.runtime.connect(chrome.runtime.id);
 
 port.onMessage.addListener(function(msg) {
   window.postMessage(msg, '*');
