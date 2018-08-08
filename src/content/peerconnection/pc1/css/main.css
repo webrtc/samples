@@ -15,10 +15,11 @@ button#hangupButton {
 }
 
 video {
-  height: 225px;
+  --width: 45%;
+  width: var(--width);
+  height: calc(var(--width) * 0.75);
   margin: 0 0 20px 0;
   vertical-align: top;
-  width: calc(50% - 12px);
 }
 
 video#localVideo {

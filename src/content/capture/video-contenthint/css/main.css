@@ -7,8 +7,11 @@
 */
 
 video {
-  height: auto;
-  width: 480px;
+  --width: calc(45%);
+  width: var(--width);
+  height: calc(var(--width) * 9/16);
+  margin: 1em;
+  object-fit: cover;
 }
 
 .video-container {

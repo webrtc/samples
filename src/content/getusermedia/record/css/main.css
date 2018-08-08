@@ -22,12 +22,14 @@ p.borderBelow {
 }
 
 video {
-  height: 232px;
+  /*height: 232px;*/
   margin: 0 12px 20px 0;
   vertical-align: top;
-  width: calc(20em - 10px);
+  /*width: calc(20em - 10px);*/
+  --width: 45%;
+  width: var(--width);
+  height: calc(var(--width) * 0.75);
 }
-
 
 video:last-of-type {
   margin: 0 0 20px 0;
@@ -37,6 +39,7 @@ video#gumVideo {
   margin: 0 20px 20px 0;
 }
 
+/*
 @media screen and (max-width: 500px) {
   button {
     font-size: 0.8em;
@@ -55,3 +58,4 @@ video#gumVideo {
     margin: 0 10px 10px 0;
   }
 }
+*/
