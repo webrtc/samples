@@ -7,12 +7,12 @@ module.exports = function(grunt) {
   grunt.initConfig({
     // make node configurations available
     pkg: grunt.file.readJSON('package.json'),
-    csslint: {
-      options: {
-        csslintrc: '.csslintrc'
-      },
-      src: ['src/content/**/*.css', '!**/third_party/*.css' ]
-    },
+    // csslint: {
+    //   options: {
+    //     csslintrc: '.csslintrc'
+    //   },
+    //   src: ['src/content/**/*.css', '!**/third_party/*.css' ]
+    // },
     eslint: {
       options: {
         configFile: '.eslintrc.js',
@@ -55,13 +55,13 @@ module.exports = function(grunt) {
 
   // enable plugins
   grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.loadNpmTasks('grunt-contrib-csslint');
+  // grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-eslint');
   grunt.loadNpmTasks('grunt-githooks');
   grunt.loadNpmTasks('grunt-htmlhint');
 
   // set default tasks to run when grunt is called without parameters
-  grunt.registerTask('default', ['csslint', 'htmlhint', 'eslint']);
+  grunt.registerTask('default', ['htmlhint', 'eslint']);
   // also possible to call JavaScript directly in registerTask()
   // or to call external tasks with grunt.loadTasks()
 };

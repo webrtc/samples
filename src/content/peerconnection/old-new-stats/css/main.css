@@ -73,7 +73,9 @@ section#video {
   width: calc(100% + 20px);
 }
 video {
-  height: 225px;
+  --width: 100%;
+  width: var(--width);
+  height: calc(var(--width) * 0.75);
   margin: 0 0 10px 0;
 }
 
@@ -89,8 +91,5 @@ video {
   }
   section#statistics div {
     width: calc(50% - 14px);
-  }
-  video {
-    height: 96px;
   }
 }

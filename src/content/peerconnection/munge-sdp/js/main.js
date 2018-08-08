@@ -8,19 +8,15 @@
 
 'use strict';
 
-function trace(msg, ...args) {
-  console.log(msg, args);
-}
-
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
-  trace('DOMContentLoaded');
+  console.log('DOMContentLoaded');
   try {
     const enumerateDevices = await navigator.mediaDevices.enumerateDevices();
     gotSources(enumerateDevices);
   } catch (e) {
-    trace(e);
+    console.log(e);
   }
 
   const getMediaButton = document.querySelector('button#getMedia');
@@ -87,7 +83,7 @@ async function init() {
         }
         videoSelect.appendChild(option);
       } else {
-        trace('unknown', JSON.stringify(sourceInfos[i]));
+        console.log('unknown', JSON.stringify(sourceInfos[i]));
       }
     }
   }
@@ -101,9 +97,9 @@ async function init() {
       localStream.getTracks().forEach(track => track.stop());
     }
     const audioSource = audioSelect.value;
-    trace(`Selected audio source: ${audioSource}`);
+    console.log(`Selected audio source: ${audioSource}`);
     const videoSource = videoSelect.value;
-    trace(`Selected video source: ${videoSource}`);
+    console.log(`Selected video source: ${videoSource}`);
 
     const constraints = {
       audio: {
@@ -117,17 +113,17 @@ async function init() {
         }]
       }
     };
-    trace('Requested local stream');
+    console.log('Requested local stream');
     try {
       const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
       gotStream(userMedia);
     } catch (e) {
-      trace('navigator.getUserMedia error: ', e);
+      console.log('navigator.getUserMedia error: ', e);
     }
   }
 
   function gotStream(stream) {
-    trace('Received local stream');
+    console.log('Received local stream');
     localVideo.srcObject = stream;
     localStream = stream;
   }
@@ -139,21 +135,21 @@ async function init() {
     setOfferButton.disabled = false;
     setAnswerButton.disabled = false;
     hangupButton.disabled = false;
-    trace('Starting call');
+    console.log('Starting call');
     const videoTracks = localStream.getVideoTracks();
     const audioTracks = localStream.getAudioTracks();
 
     if (videoTracks.length > 0) {
-      trace(`Using video device: ${videoTracks[0].label}`);
+      console.log(`Using video device: ${videoTracks[0].label}`);
     }
 
     if (audioTracks.length > 0) {
-      trace(`Using audio device: ${audioTracks[0].label}`);
+      console.log(`Using audio device: ${audioTracks[0].label}`);
     }
     const servers = null;
 
     localPeerConnection = new RTCPeerConnection(servers);
-    trace('Created local peer connection object localPeerConnection');
+    console.log('Created local peer connection object localPeerConnection');
     localPeerConnection.onicecandidate = e => onIceCandidate(localPeerConnection, e);
     sendChannel = localPeerConnection.createDataChannel('sendDataChannel', dataChannelOptions);
     sendChannel.onopen = onSendChannelStateChange;
@@ -161,22 +157,22 @@ async function init() {
     sendChannel.onerror = onSendChannelStateChange;
 
     remotePeerConnection = new RTCPeerConnection(servers);
-    trace('Created remote peer connection object remotePeerConnection');
+    console.log('Created remote peer connection object remotePeerConnection');
     remotePeerConnection.onicecandidate = e => onIceCandidate(remotePeerConnection, e);
     remotePeerConnection.ontrack = gotRemoteStream;
     remotePeerConnection.ondatachannel = receiveChannelCallback;
 
     localStream.getTracks()
       .forEach(track => localPeerConnection.addTrack(track, localStream));
-    trace('Adding Local Stream to peer connection');
+    console.log('Adding Local Stream to peer connection');
   }
 
   function onSetSessionDescriptionSuccess() {
-    trace('Set session description success.');
+    console.log('Set session description success.');
   }
 
   function onSetSessionDescriptionError(error) {
-    trace(`Failed to set session description: ${error.toString()}`);
+    console.log(`Failed to set session description: ${error.toString()}`);
   }
 
   async function createOffer() {
@@ -189,7 +185,7 @@ async function init() {
   }
 
   function onCreateSessionDescriptionError(error) {
-    trace(`Failed to create session description: ${error.toString()}`);
+    console.log(`Failed to create session description: ${error.toString()}`);
   }
 
   async function setOffer() {
@@ -198,7 +194,7 @@ async function init() {
       type: 'offer',
       sdp: sdp
     };
-    trace(`Modified Offer from localPeerConnection\n${sdp}`);
+    console.log(`Modified Offer from localPeerConnection\n${sdp}`);
 
     try {
       // eslint-disable-next-line no-unused-vars
@@ -249,7 +245,7 @@ async function init() {
       onSetSessionDescriptionError(e);
     }
 
-    trace(`Modified Answer from remotePeerConnection\n${sdp}`);
+    console.log(`Modified Answer from remotePeerConnection\n${sdp}`);
     try {
       // eslint-disable-next-line no-unused-vars
       const ignore = await localPeerConnection.setRemoteDescription(answer);
@@ -267,14 +263,14 @@ async function init() {
   function sendData() {
     if (sendChannel.readyState === 'open') {
       sendChannel.send(dataChannelCounter);
-      trace(`DataChannel send counter: ${dataChannelCounter}`);
+      console.log(`DataChannel send counter: ${dataChannelCounter}`);
       dataChannelCounter++;
     }
   }
 
   function hangup() {
     remoteVideo.srcObject = null;
-    trace('Ending call');
+    console.log('Ending call');
     localStream.getTracks().forEach(track => track.stop());
     sendChannel.close();
     if (receiveChannel) {
@@ -298,7 +294,7 @@ async function init() {
   function gotRemoteStream(e) {
     if (remoteVideo.srcObject !== e.streams[0]) {
       remoteVideo.srcObject = e.streams[0];
-      trace('Received remote stream');
+      console.log('Received remote stream');
     }
   }
 
@@ -319,19 +315,19 @@ async function init() {
       onAddIceCandidateError(pc, e);
     }
 
-    trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+    console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
   }
 
   function onAddIceCandidateSuccess() {
-    trace('AddIceCandidate success.');
+    console.log('AddIceCandidate success.');
   }
 
   function onAddIceCandidateError(error) {
-    trace(`Failed to add Ice Candidate: ${error.toString()}`);
+    console.log(`Failed to add Ice Candidate: ${error.toString()}`);
   }
 
   function receiveChannelCallback(event) {
-    trace('Receive Channel Callback');
+    console.log('Receive Channel Callback');
     receiveChannel = event.channel;
     receiveChannel.onmessage = onReceiveMessageCallback;
     receiveChannel.onopen = onReceiveChannelStateChange;
@@ -340,12 +336,12 @@ async function init() {
 
   function onReceiveMessageCallback(event) {
     dataChannelDataReceived = event.data;
-    trace(`DataChannel receive counter: ${dataChannelDataReceived}`);
+    console.log(`DataChannel receive counter: ${dataChannelDataReceived}`);
   }
 
   function onSendChannelStateChange() {
     const readyState = sendChannel.readyState;
-    trace(`Send channel state is: ${readyState}`);
+    console.log(`Send channel state is: ${readyState}`);
     if (readyState === 'open') {
       sendDataLoop = setInterval(sendData, 1000);
     } else {
@@ -355,6 +351,6 @@ async function init() {
 
   function onReceiveChannelStateChange() {
     const readyState = receiveChannel.readyState;
-    trace(`Receive channel state is: ${readyState}`);
+    console.log(`Receive channel state is: ${readyState}`);
   }
 }

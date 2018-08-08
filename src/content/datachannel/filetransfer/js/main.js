@@ -32,7 +32,7 @@ fileInput.addEventListener('change', handleFileInputChange, false);
 function handleFileInputChange() {
   let file = fileInput.files[0];
   if (!file) {
-    trace('No file chosen');
+    console.log('No file chosen');
   } else {
     createConnection();
   }
@@ -42,11 +42,11 @@ function createConnection() {
   let servers = null;
 
   localConnection = localConnection = new RTCPeerConnection(servers);
-  trace('Created local peer connection object localConnection');
+  console.log('Created local peer connection object localConnection');
 
   sendChannel = localConnection.createDataChannel('sendDataChannel');
   sendChannel.binaryType = 'arraybuffer';
-  trace('Created send data channel');
+  console.log('Created send data channel');
 
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
@@ -59,7 +59,7 @@ function createConnection() {
     onCreateSessionDescriptionError
   );
   remoteConnection = remoteConnection = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object remoteConnection');
+  console.log('Created remote peer connection object remoteConnection');
 
   remoteConnection.onicecandidate = function(e) {
     onIceCandidate(remoteConnection, e);
@@ -70,12 +70,12 @@ function createConnection() {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  console.log('Failed to create session description: ' + error.toString());
 }
 
 function sendData() {
   let file = fileInput.files[0];
-  trace('File is ' + [file.name, file.size, file.type,
+  console.log('File is ' + [file.name, file.size, file.type,
       file.lastModifiedDate
   ].join(' '));
 
@@ -109,18 +109,18 @@ function sendData() {
 }
 
 function closeDataChannels() {
-  trace('Closing data channels');
+  console.log('Closing data channels');
   sendChannel.close();
-  trace('Closed data channel with label: ' + sendChannel.label);
+  console.log('Closed data channel with label: ' + sendChannel.label);
   if (receiveChannel) {
     receiveChannel.close();
-    trace('Closed data channel with label: ' + receiveChannel.label);
+    console.log('Closed data channel with label: ' + receiveChannel.label);
   }
   localConnection.close();
   remoteConnection.close();
   localConnection = null;
   remoteConnection = null;
-  trace('Closed peer connections');
+  console.log('Closed peer connections');
 
   // re-enable the file select
   fileInput.disabled = false;
@@ -128,7 +128,7 @@ function closeDataChannels() {
 
 function gotDescription1(desc) {
   localConnection.setLocalDescription(desc);
-  trace('Offer from localConnection \n' + desc.sdp);
+  console.log('Offer from localConnection \n' + desc.sdp);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
     gotDescription2,
@@ -138,7 +138,7 @@ function gotDescription1(desc) {
 
 function gotDescription2(desc) {
   remoteConnection.setLocalDescription(desc);
-  trace('Answer from remoteConnection \n' + desc.sdp);
+  console.log('Answer from remoteConnection \n' + desc.sdp);
   localConnection.setRemoteDescription(desc);
 }
 
@@ -161,20 +161,20 @@ function onIceCandidate(pc, event) {
       onAddIceCandidateError(pc, err);
     }
   );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
+  console.log(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
       event.candidate.candidate : '(null)'));
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+  console.log('Failed to add Ice Candidate: ' + error.toString());
 }
 
 function receiveChannelCallback(event) {
-  trace('Receive Channel Callback');
+  console.log('Receive Channel Callback');
   receiveChannel = event.channel;
   receiveChannel.binaryType = 'arraybuffer';
   receiveChannel.onmessage = onReceiveMessageCallback;
@@ -192,7 +192,7 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveMessageCallback(event) {
-  // trace('Received Message ' + event.data.byteLength);
+  // console.log('Received Message ' + event.data.byteLength);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
 
@@ -227,7 +227,7 @@ function onReceiveMessageCallback(event) {
 
 function onSendChannelStateChange() {
   let readyState = sendChannel.readyState;
-  trace('Send channel state is: ' + readyState);
+  console.log('Send channel state is: ', readyState);
   if (readyState === 'open') {
     sendData();
   }
@@ -235,7 +235,7 @@ function onSendChannelStateChange() {
 
 function onReceiveChannelStateChange() {
   let readyState = receiveChannel.readyState;
-  trace('Receive channel state is: ' + readyState);
+  console.log('Receive channel state is: ', readyState);
   if (readyState === 'open') {
     timestampStart = (new Date()).getTime();
     timestampPrev = timestampStart;

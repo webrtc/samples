@@ -15,7 +15,9 @@ button#hangupButton {
 }
 
 video {
-  height: 225px;
+  --width: 100%;
+  width: var(--width);
+  height: calc(var(--width) * 0.75);
   margin: 0;
 }
 
@@ -33,9 +35,5 @@ div#video > div {
 
   button {
     margin: 0 11px 10px 0;
-  }
-
-  video {
-    height: 96px;
   }
 }

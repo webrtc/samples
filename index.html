@@ -9,183 +9,185 @@
 <html>
 <head>
 
-  <meta charset="utf-8">
-  <meta name="description" content="WebRTC Javascript code samples">
-  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-  <meta itemprop="description" content="Client-side WebRTC code samples">
-  <meta itemprop="image" content="src/images/webrtc-icon-192x192.png">
-  <meta itemprop="name" content="WebRTC code samples">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta id="theme-color" name="theme-color" content="#ffffff">
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC Javascript code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="src/images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
 
-  <base target="_blank">
+    <base target="_blank">
 
-  <title>WebRTC samples</title>
+    <title>WebRTC samples</title>
 
-  <link rel="icon" sizes="192x192" href="src/images/webrtc-icon-192x192.png">
-  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="src/css/main.css" />
+    <link rel="icon" sizes="192x192" href="src/images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="src/css/main.css"/>
 
-  <style>
-    h2 {
-      font-size: 1.5em;
-      font-weight: 500;
-    }
-    h3 {
-      border-top: none;
-    }
-    section {
-      border-bottom: 1px solid #eee;
-      margin: 0 0 1.5em 0;
-      padding: 0 0 1.5em 0;
-    }
-    section:last-child {
-      border-bottom: none;
-      margin: 0;
-      padding: 0;
-    }
-  </style>
+    <style>
+        h2 {
+            font-size: 1.5em;
+            font-weight: 500;
+        }
+
+        h3 {
+            border-top: none;
+        }
+
+        section {
+            border-bottom: 1px solid #eee;
+            margin: 0 0 1.5em 0;
+            padding: 0 0 1.5em 0;
+        }
+
+        section:last-child {
+            border-bottom: none;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
 </head>
 
 <body>
-  <div id="container">
-
-    <div class="highlight">
-      <p>New codelab: <a href="https://codelabs.developers.google.com/codelabs/webrtc-web">Realtime communication with WebRTC</a></p>
-    </div>
+<div id="container">
 
     <h1>WebRTC samples</h1>
 
     <section>
 
-      <p>This is a repository for the WebRTC Javascript code samples. The source for these samples is available at <a href="https://github.com/webrtc/samples" title="View GitHub repository for these files">github.com/webrtc/samples</a>.</p>
+        <p>
+            This is a collection of small samples demonstrating various parts of the <a
+                href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API">WebRTC APIs</a>. The code for all
+            samples are available in the <a href="https://github.com/webrtc/samples">GitHub repository</a>.
+        </p>
 
-      <p>Some of the samples use new browser features. They may only work in <a href="https://www.google.com/chrome/browser/canary.html" title="Download Chrome Canary">Chrome Canary</a>, <a href="http://www.mozilla.org/firefox/beta/" title="Download Firefox Beta">Firefox Beta</a>, Microsoft Edge (available with Windows 10) or Safari (supporting WebRTC since High Sierra) and may require flags to be set.</p>
+        <p>Most of the samples use <a href="https://github.com/webrtc/adapter">adapter.js</a>, a shim to insulate apps
+            from spec changes and prefix differences.</p>
 
-      <p>Most of the samples use <a href="https://github.com/webrtc/adapter">adapter.js</a>, a shim to insulate apps from spec changes and prefix differences. (In fact, the standards and protocols used for WebRTC implementations are highly stable, and there are only a few prefixed names. For full interop information, see <a href="http://www.webrtc.org/web-apis/interop">webrtc.org/web-apis/interop</a>.)</p>
+        <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">https://webrtc.org/testing</a>
+            lists command line flags useful for development and testing with Chrome.</p>
 
-      <p>In Chrome and Opera, all samples that use <code>getUserMedia()</code> must be run from a server. Calling <code>getUserMedia()</code> from a file:// URL will work in Firefox, but fail silently in Chrome and Opera.</p>
+        <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a>
+            for instructions.</p>
 
-      <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">webrtc.org/testing</a> lists command line flags useful for development and testing with Chrome.</p>
-
-      <p>For more information about WebRTC, we maintain a list of resources at <a href="https://g.co/webrtc">g.co/webrtc</a>. If you've never worked with WebRTC, we recommend you start with the 2013 Google I/O <a href="https://www.youtube.com/watch?v=p2HzZkd2A40">WebRTC presentation</a>.</p>
-
-      <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a> for instructions. The <a href="https://bit.ly/webrtcdevguide">Developer's Guide</a> for this repo has more information about code style, structure and validation. Head over to <a href="test/README.md">test/README.md</a> and get started developing.</p>
-
-      <p class="warning"><strong>Warning:</strong> some of these demos will result in loud feedback if used without headphones.</p>
-
+        <p class="warning"><strong>Warning:</strong> It is highly recommended to use headphones when testing these
+            samples, as it will otherwise risk loud audio feedback on your system.</p>
     </section>
 
     <section>
 
-      <h2 id="the-demos">The demos</h2>
+        <h2 id="getusermedia"><a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getUserMedia">getUserMedia():</a>
+        </h2>
+        <p class="description">Access media devices</p>
+        <ul>
+            <li><a href="src/content/getusermedia/gum/">Basic getUserMedia demo</a></li>
 
+            <li><a href="src/content/getusermedia/canvas/">Use getUserMedia with canvas</a></li>
 
-      <h3 id="getusermedia">getUserMedia</h3>
+            <li><a href="src/content/getusermedia/filter/">Use getUserMedia with canvas and CSS filters</a></li>
 
-      <p><a href="src/content/getusermedia/gum/">Basic getUserMedia demo</a></p>
+            <li><a href="src/content/getusermedia/resolution/">Choose camera resolution</a></li>
 
-      <p><a href="src/content/getusermedia/canvas/">Use getUserMedia with canvas</a></p>
+            <li><a href="src/content/getusermedia/audio/">Audio-only getUserMedia() output to local audio element</a>
+            </li>
 
-      <p><a href="src/content/getusermedia/filter/">Use getUserMedia with canvas and CSS filters</a></p>
+            <li><a href="src/content/getusermedia/volume/">Audio-only getUserMedia() displaying volume</a></li>
 
-      <p><a href="src/content/getusermedia/resolution/">Choose camera resolution</a></p>
+            <li><a href="src/content/getusermedia/record/">Record stream</a></li>
+        </ul>
+        <h2 id="devices">Devices:</h2>
+        <p class="description">Query media devices</p>
+        <ul>
+            <li><a href="src/content/devices/input-output/">Choose camera, microphone and speaker</a></li>
 
-      <p><a href="src/content/getusermedia/audio/">Audio-only getUserMedia() output to local audio element</a></p>
+            <li><a href="src/content/devices/multi/">Choose media source and audio output</a></li>
+        </ul>
 
-      <p><a href="src/content/getusermedia/volume/">Audio-only getUserMedia() displaying volume</a></p>
+        <h2 id="capture">Stream capture:</h2>
+        <p class="description">Stream from canvas or video elements</p>
+        <ul>
 
-      <p><a href="src/content/getusermedia/record/">Record stream</a></p>
+            <li><a href="src/content/capture/video-video/">Stream from a video element to a video element</a></li>
 
+            <li><a href="src/content/capture/video-pc/">Stream from a video element to a peer connection</a></li>
 
-      <h3 id="capture">Stream capture</h3>
+            <li><a href="src/content/capture/canvas-video/">Stream from a canvas element to a video element</a></li>
 
-      <p><a href="src/content/capture/video-video/">Stream from a video element to a video element</a></p>
+            <li><a href="src/content/capture/canvas-pc/">Stream from a canvas element to a peer connection</a></li>
 
-      <p><a href="src/content/capture/video-pc/">Stream from a video element to a peer connection</a></p>
+            <li><a href="src/content/capture/canvas-record/">Record a stream from a canvas element</a></li>
 
-      <p><a href="src/content/capture/canvas-video/">Stream from a canvas element to a video element</a></p>
+            <li><a href="src/content/capture/video-contenthint/">Guiding video encoding with content hints</a></li>
+        </ul>
 
-      <p><a href="src/content/capture/canvas-pc/">Stream from a canvas element to a peer connection</a></p>
+        <h2 id="peerconnection"><a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection">RTCPeerConnection:</a>
+        </h2>
+        <p class="description">Controlling peer connectivity</p>
+        <ul>
+            <li><a href="src/content/peerconnection/pc1/">Basic peer connection demo</a></li>
 
-      <p><a href="src/content/capture/canvas-record/">Record a stream from a canvas element</a></p>
+            <li><a href="src/content/peerconnection/audio/">Audio-only peer connection demo</a></li>
 
-      <p><a href="src/content/capture/video-contenthint/">Guiding video encoding with content hints</a></p>
+            <li><a href="src/content/peerconnection/bandwidth/">Change bandwidth on the fly</a></li>
 
-      <h3 id="devices">Devices</h3>
+            <li><a href="src/content/peerconnection/upgrade/">Upgrade a call and turn video on</a></li>
 
-      <p><a href="src/content/devices/input-output/">Choose camera, microphone and speaker</a></p>
+            <li><a href="src/content/peerconnection/multiple/">Multiple peer connections at once</a></li>
 
-      <p><a href="src/content/devices/multi/">Choose media source and audio output</a></p>
+            <li><a href="src/content/peerconnection/multiple-relay/">Forward the output of one PC into another</a></li>
 
+            <li><a href="src/content/peerconnection/munge-sdp/">Munge SDP parameters</a></li>
 
-      <h3 id="peerconnection">RTCPeerConnection</h3>
+            <li><a href="src/content/peerconnection/pr-answer/">Use pranswer when setting up a peer connection</a></li>
 
-      <p><a href="src/content/peerconnection/pc1/">Basic peer connection demo</a></p>
+            <li><a href="src/content/peerconnection/constraints/">Constraints and stats</a></li>
 
-      <p><a href="src/content/peerconnection/audio/">Audio-only peer connection demo</a></p>
+            <li><a href="src/content/peerconnection/old-new-stats/">More constraints and stats</a></li>
 
-      <p><a href="src/content/peerconnection/bandwidth/">Change bandwidth on the fly</a></p>
+            <li><a href="src/content/peerconnection/create-offer/">Display createOffer output for various scenarios</a>
+            </li>
 
-      <p><a href="src/content/peerconnection/upgrade/">Upgrade a call and turn video on</a></p>
+            <li><a href="src/content/peerconnection/dtmf/">Use RTCDTMFSender</a></li>
 
-      <p><a href="src/content/peerconnection/multiple/">Multiple peer connections at once</a></p>
+            <li><a href="src/content/peerconnection/states/">Display peer connection states</a></li>
 
-      <p><a href="src/content/peerconnection/multiple-relay/">Forward the output of one PC into another</a></p>
+            <li><a href="src/content/peerconnection/trickle-ice/">ICE candidate gathering from STUN/TURN servers</a>
+            </li>
 
-      <p><a href="src/content/peerconnection/munge-sdp/">Munge SDP parameters</a></p>
+            <li><a href="src/content/peerconnection/restart-ice/">Do an ICE restart</a></li>
 
-      <p><a href="src/content/peerconnection/pr-answer/">Use pranswer when setting up a peer connection</a></p>
+            <li><a href="src/content/peerconnection/webaudio-input/">Web Audio output as input to peer connection</a>
+            </li>
 
-      <p><a href="src/content/peerconnection/constraints/">Constraints and stats</a></p>
+            <li><a href="src/content/peerconnection/webaudio-output/">Peer connection as input to Web Audio</a></li>
+        </ul>
+        <h2 id="datachannel"><a
+                href="https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel">RTCDataChannel:</a></h2>
+        <p class="description">Send arbitrary data over peer connections</p>
+        <ul>
+            <li><a href="src/content/datachannel/basic/">Transmit text</a></li>
 
-      <p><a href="src/content/peerconnection/old-new-stats/">More constraints and stats</a></p>
+            <li><a href="src/content/datachannel/filetransfer/">Transfer a file</a></li>
 
-      <p><a href="src/content/peerconnection/create-offer/">Display createOffer output for various scenarios</a></p>
+            <li><a href="src/content/datachannel/datatransfer/">Transfer data</a></li>
+        </ul>
 
-      <p><a href="src/content/peerconnection/dtmf/">Use RTCDTMFSender</a></p>
+        <h2 id="videoChat">Video chat:</h2>
+        <p class="description">Full featured WebRTC application</p>
+        <ul>
 
-      <p><a href="src/content/peerconnection/states/">Display peer connection states</a></p>
+            <li><a href="https://apprtc.appspot.com/">AppRTC video chat client</a> powered by Google App Engine</li>
 
-      <p><a href="src/content/peerconnection/trickle-ice/">ICE candidate gathering from STUN/TURN servers</a></p>
+            <li><a href="https://apprtc.appspot.com/params.html">AppRTC URL parameters</a></li>
 
-      <p><a href="src/content/peerconnection/restart-ice/">Do an ICE restart</a></p>
-
-      <p><a href="src/content/peerconnection/webaudio-input/">Web Audio output as input to peer connection</a></p>
-
-      <p><a href="src/content/peerconnection/webaudio-output/">Peer connection as input to Web Audio</a></p>
-
-      <h3 id="datachannel">RTCDataChannel</h3>
-
-      <p><a href="src/content/datachannel/basic/">Transmit text</a></p>
-
-      <p><a href="src/content/datachannel/filetransfer/">Transfer a file</a></p>
-
-      <p><a href="src/content/datachannel/datatransfer/">Transfer data</a></p>
-
-      <h3 id="videoChat">Video chat</h3>
-
-      <p><a href="https://apprtc.appspot.com/">AppRTC video chat client</a> powered by Google App Engine</p>
-
-      <p><a href="https://apprtc.appspot.com/params.html">AppRTC URL parameters</a></p>
-
+        </ul>
     </section>
 
-    <a href="https://github.com/webrtc/samples" title="View the repository" id="viewSource">github.com/webrtc/samples</a>
+</div>
 
-  </div>
-
-  <script src="src/js/lib/ga.js"></script>
-
-  <script type="application/javascript">
-    let isSecureOrigin = location.protocol === 'https:' ||
-      location.hostname === 'localhost';
-    if (!isSecureOrigin) {
-    console.log('These demos must be run from a secure origin. \n' +
-        'Changing protocol to HTTPS');
-    location.protocol = 'HTTPS';
-  }
-  </script>
+<script src="src/js/lib/ga.js"></script>
 
 </body>
 </html>
