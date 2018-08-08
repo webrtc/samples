@@ -130,7 +130,7 @@ function start() {
   }
   const transports = document.getElementsByName('transports');
   let iceTransports;
-  for (i = 0; i < transports.length; ++i) {
+  for (let i = 0; i < transports.length; ++i) {
     if (transports[i].checked) {
       iceTransports = transports[i].value;
       break;
