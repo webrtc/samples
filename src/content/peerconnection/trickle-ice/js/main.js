@@ -125,7 +125,8 @@ function start() {
 
   // Read the values from the input boxes.
   const iceServers = [];
-  for (let i = 0; i < servers.length; ++i) {
+  let i = 0;
+  for (i = 0; i < servers.length; ++i) {
     iceServers.push(JSON.parse(servers[i].value));
   }
   const transports = document.getElementsByName('transports');
