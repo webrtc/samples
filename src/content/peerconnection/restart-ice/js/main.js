@@ -105,10 +105,10 @@ function call() {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
   const servers = null;
-  pc1 = new RTCPeerConnection(servers);
+  pc1 = window.pc1 = new RTCPeerConnection(servers);
   console.log('Created local peer connection object pc1');
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
-  pc2 = new RTCPeerConnection(servers);
+  pc2 = window.pc2 = new RTCPeerConnection(servers);
   console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc1.oniceconnectionstatechange = e => {
