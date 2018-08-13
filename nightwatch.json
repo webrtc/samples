@@ -4,7 +4,10 @@
     "src/content/getusermedia/resolution/js",
     "src/content/devices/input-output/js",
     "src/content/datachannel/filetransfer/js",
-    "src/content/datachannel/datatransfer/js"
+    "src/content/datachannel/datatransfer/js",
+    "src/content/datachannel/basic/js",
+    "src/content/peerconnection/audio/js",
+    "src/content/peerconnection/dtmf/js"
   ],
   "output_folder": false,
   "custom_commands_path": "customCommands",
@@ -17,7 +20,7 @@
     "log_path": false,
     "port": 4444,
     "cli_args": {
-      "webdriver.chrome.driver": "./bin/chromedriver"
+      "webdriver.chrome.driver": "./node_modules/.bin/chromedriver"
     }
   },
   "test_settings": {

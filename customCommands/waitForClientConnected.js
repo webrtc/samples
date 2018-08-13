@@ -19,10 +19,10 @@ WaitFor.prototype.command = function(element, ms, msg) {
 
   this.check(element, function(result, elapsedMs) {
     if (result) {
-      var successMsg = msg || 'Video stream "%s" was connected in %s ms.';
+      var successMsg = msg || 'Media stream "%s" was connected in %s ms.';
       message = util.format(successMsg, element, elapsedMs - self.startTime);
     } else {
-      message = util.format('Video stream "%s" was not connected in %s ms.', element, ms);
+      message = util.format('Media stream "%s" was not connected in %s ms.', element, ms);
     }
     self.client.assertion(result, null, null, message, true);
     self.emit('complete');
@@ -50,7 +50,8 @@ WaitFor.prototype.check = function(element, cb, maxTime) {
 
   this.api.execute(function(selector) {
     try {
-      return document.querySelector(selector) && (document.querySelector(selector).readyState == 4);
+      const element = document.querySelector(selector);
+      return element && (element.readyState === 4);
     } catch (err) {
       return false;
     }
