@@ -1,0 +1,44 @@
+{
+  "src_folders": [
+    "src/content/getusermedia/gum/js",
+    "src/content/getusermedia/resolution/js",
+    "src/content/devices/input-output/js"
+  ],
+  "output_folder": "reports",
+  "custom_commands_path": "customCommands",
+  "custom_assertions_path": "customAsserts",
+  "page_objects_path": "",
+  "globals_path": "",
+  "selenium": {
+    "start_process": true,
+    "server_path": "./node_modules/selenium/lib/runner/selenium-server-standalone-2.20.0.jar",
+    "log_path": "",
+    "port": 4444,
+    "cli_args": {
+      "webdriver.chrome.driver": "./bin/chromedriver"
+    }
+  },
+  "test_settings": {
+    "default": {
+      "filter": "test.js",
+      "screenshots": {
+        "enabled": false
+      },
+      "desiredCapabilities": {
+        "browserName": "chrome",
+        "chromeOptions": {
+          "args": [
+            "--no-sandbox",
+            "--allow-file-access-from-files",
+            "--use-fake-device-for-media-stream",
+            "--use-fake-ui-for-media-stream",
+            "--disable-translate",
+            "--no-process-singleton-dialog",
+            "--mute-audio"
+          ]
+        },
+        "marionette": true
+      }
+    }
+  }
+}

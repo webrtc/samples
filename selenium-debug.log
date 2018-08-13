@@ -1,0 +1,14 @@
+Aug 13, 2018 2:47:07 PM org.openqa.grid.selenium.GridLauncher main
+INFO: Launching a standalone server
+1 [main] INFO org.openqa.selenium.server.SeleniumServer - Java: Oracle Corporation 25.144-b01
+1 [main] INFO org.openqa.selenium.server.SeleniumServer - OS: Mac OS X 10.13.6 x86_64
+4 [main] INFO org.openqa.selenium.server.SeleniumServer - v2.20.0, with Core v2.20.0. Built from revision 16008
+87 [main] INFO org.openqa.selenium.server.SeleniumServer - RemoteWebDriver instances should connect to: http://127.0.0.1:4444/wd/hub
+88 [main] INFO org.openqa.jetty.http.HttpServer - Version Jetty/5.1.x
+88 [main] INFO org.openqa.jetty.util.Container - Started HttpContext[/selenium-server,/selenium-server]
+107 [main] INFO org.openqa.jetty.util.Container - Started org.openqa.jetty.jetty.servlet.ServletHandler@763d9750
+107 [main] INFO org.openqa.jetty.util.Container - Started HttpContext[/wd,/wd]
+107 [main] INFO org.openqa.jetty.util.Container - Started HttpContext[/selenium-server/driver,/selenium-server/driver]
+107 [main] INFO org.openqa.jetty.util.Container - Started HttpContext[/,/]
+112 [main] INFO org.openqa.jetty.http.SocketListener - Started SocketListener on 0.0.0.0:4444
+112 [main] INFO org.openqa.jetty.util.Container - Started org.openqa.jetty.jetty.Server@3941a79c
