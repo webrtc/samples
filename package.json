@@ -23,6 +23,7 @@
     "test": "grunt && ./node_modules/.bin/nightwatch"
   },
   "devDependencies": {
+    "babel-core": "^6.26.3",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-es2015": "^6.24.1",
     "chromedriver": "^2.41.0",
