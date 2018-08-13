@@ -20,7 +20,7 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "grunt && start-tests"
+    "test": "grunt && ./node_modules/.bin/nightwatch"
   },
   "devDependencies": {
     "babel-plugin-add-module-exports": "^0.2.1",
@@ -38,7 +38,6 @@
     "pem": "^1.9.4",
     "selenium": "^2.20.0",
     "selenium-server": "^3.14.0",
-    "webrtc-utilities": "^1.0.8"
   },
   "dependencies": {
     "nightwatch": "^0.9.21",
