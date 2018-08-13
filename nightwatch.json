@@ -2,9 +2,10 @@
   "src_folders": [
     "src/content/getusermedia/gum/js",
     "src/content/getusermedia/resolution/js",
-    "src/content/devices/input-output/js"
+    "src/content/devices/input-output/js",
+    "src/content/datachannel/filetransfer/js"
   ],
-  "output_folder": "reports",
+  "output_folder": false,
   "custom_commands_path": "customCommands",
   "custom_assertions_path": "customAsserts",
   "page_objects_path": "",
@@ -12,7 +13,7 @@
   "selenium": {
     "start_process": true,
     "server_path": "./node_modules/selenium/lib/runner/selenium-server-standalone-2.20.0.jar",
-    "log_path": "",
+    "log_path": false,
     "port": 4444,
     "cli_args": {
       "webdriver.chrome.driver": "./bin/chromedriver"
