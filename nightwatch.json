@@ -3,7 +3,8 @@
     "src/content/getusermedia/gum/js",
     "src/content/getusermedia/resolution/js",
     "src/content/devices/input-output/js",
-    "src/content/datachannel/filetransfer/js"
+    "src/content/datachannel/filetransfer/js",
+    "src/content/datachannel/datatransfer/js"
   ],
   "output_folder": false,
   "custom_commands_path": "customCommands",
