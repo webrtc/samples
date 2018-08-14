@@ -10,17 +10,17 @@
     "src/content/peerconnection/dtmf/js"
   ],
   "output_folder": false,
-  "custom_commands_path": "customCommands",
-  "custom_assertions_path": "customAsserts",
+  "custom_commands_path": "nightwatch/customCommands",
+  "custom_assertions_path": "nightwatch/customAsserts",
   "page_objects_path": "",
   "globals_path": "",
   "selenium": {
     "start_process": true,
-    "server_path": "./node_modules/selenium/lib/runner/selenium-server-standalone-2.20.0.jar",
+    "server_path": "node_modules/selenium/lib/runner/selenium-server-standalone-2.20.0.jar",
     "log_path": false,
     "port": 4444,
     "cli_args": {
-      "webdriver.chrome.driver": "./node_modules/.bin/chromedriver"
+      "webdriver.chrome.driver": "node_modules/.bin/chromedriver"
     }
   },
   "test_settings": {
