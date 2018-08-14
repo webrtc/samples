@@ -18,17 +18,16 @@
     "start_process": true,
     "server_path": "node_modules/selenium/lib/runner/selenium-server-standalone-2.20.0.jar",
     "log_path": false,
-    "port": 4444,
-    "cli_args": {
-      "webdriver.chrome.driver": "node_modules/.bin/chromedriver"
-    }
+    "port": 4444
   },
   "test_settings": {
     "default": {
       "filter": "test.js",
       "screenshots": {
         "enabled": false
-      },
+      }
+    },
+    "chrome": {
       "desiredCapabilities": {
         "browserName": "chrome",
         "chromeOptions": {
@@ -43,6 +42,13 @@
           ]
         },
         "marionette": true
+      }
+    },
+    "firefox": {
+      "desiredCapabilities" : {
+        "browserName" : "firefox",
+        "javascriptEnabled" : true,
+        "acceptSslCerts" : true
       }
     }
   }

@@ -38,7 +38,8 @@
     "grunt-htmlhint": ">=0.9.12",
     "pem": "^1.9.4",
     "selenium": "^2.20.0",
-    "selenium-server": "^3.14.0"
+    "selenium-server": "^3.14.0",
+    "selenium-webdriver": "^4.0.0-alpha.1"
   },
   "dependencies": {
     "nightwatch": "^0.9.21",
