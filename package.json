@@ -14,13 +14,12 @@
   },
   "license": "BSD-3-Clause",
   "author": "The WebRTC project authors",
-  "main": "Gruntfile.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "grunt && ./node_modules/.bin/nightwatch"
+    "test": "gulp && ./node_modules/.bin/nightwatch"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -29,20 +28,17 @@
     "chromedriver": "^2.41.0",
     "eslint-config-google": "^0.9.1",
     "express": "^4.14.1",
+    "gulp": "^3.9.1",
+    "gulp-csslint": "^1.0.1",
+    "gulp-eslint": "^5.0.0",
+    "gulp-htmlhint": "^2.1.1",
+    "gulp-zip": "^4.2.0",
     "fs": "0.0.1-security",
     "geckodriver": "^1.12.1",
-    "grunt": "^0.4.5",
-    "grunt-cli": ">=0.1.9",
-    "grunt-contrib-compress": "^0.13.0",
-    "grunt-eslint": "^21.0.0",
-    "grunt-githooks": "^0.3.1",
-    "grunt-htmlhint": ">=0.9.12",
     "pem": "^1.9.4",
     "selenium": "^2.20.0",
     "selenium-server": "^3.14.0",
     "selenium-webdriver": "^4.0.0-alpha.1"
-  },
-  "dependencies": {
     "nightwatch": "^0.9.21",
     "tape": "^4.9.1"
   }
