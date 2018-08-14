@@ -13,11 +13,17 @@
   "custom_commands_path": "nightwatch/customCommands",
   "custom_assertions_path": "nightwatch/customAsserts",
   "page_objects_path": "",
-  "globals_path": "",
+  "globals_path": "nightwatch/globals.js",
   "selenium": {
-    "start_process": true,
-    "server_path": "node_modules/selenium/lib/runner/selenium-server-standalone-2.20.0.jar",
-    "log_path": false,
+    "start_process": false,
+    "log_path": false
+  },
+  "webdriver": {
+    "start_process" : true,
+    "server_path": "./node_modules/.bin/geckodriver",
+    "cli_args": [
+      "--log", "debug"
+    ],
     "port": 4444
   },
   "test_settings": {
@@ -27,11 +33,30 @@
         "enabled": false
       }
     },
+    "safari" : {
+      "webdriver": {
+        "port": 4445,
+        "server_path": "/usr/bin/safaridriver"
+      },
+      "selenium_port": 4445,
+      "selenium_host": "localhost",
+      "default_path_prefix": "",
+      "desiredCapabilities" : {
+        "browserName" : "safari"
+      }
+    },
     "chrome": {
+      "selenium_port": 9515,
+      "selenium_host": "localhost",
+      "default_path_prefix": "",
       "desiredCapabilities": {
         "browserName": "chrome",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "marionette": true,
         "chromeOptions": {
           "args": [
+            "--headless",
             "--no-sandbox",
             "--allow-file-access-from-files",
             "--use-fake-device-for-media-stream",
@@ -40,15 +65,45 @@
             "--no-process-singleton-dialog",
             "--mute-audio"
           ]
-        },
-        "marionette": true
+        }
       }
     },
     "firefox": {
-      "desiredCapabilities" : {
-        "browserName" : "firefox",
-        "javascriptEnabled" : true,
-        "acceptSslCerts" : true
+      "selenium_port": 4444,
+      "selenium_host": "localhost",
+      "default_path_prefix": "",
+      "desiredCapabilities": {
+        "browserName": "firefox",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "marionette": true,
+        "moz:firefoxOptions": {
+          "log": {
+            "level": "trace"
+          },
+          "args": [
+            "-headless",
+            "-no-remote"
+          ],
+          "prefs": {
+            "browser.cache.disk.enable": false,
+            "browser.cache.disk.capacity": 0,
+            "browser.cache.disk.smart_size.enabled": false,
+            "browser.cache.disk.smart_size.first_run": false,
+            "browser.sessionstore.resume_from_crash": false,
+            "browser.startup.page": 0,
+            "media.navigator.streams.fake": true,
+            "media.navigator.permission.disabled": true,
+            "device.storage.enabled": false,
+            "media.gstreamer.enabled": false,
+            "browser.startup.homepage": "about:blank",
+            "browser.startup.firstrunSkipsHomepage": false,
+            "extensions.update.enabled": false,
+            "app.update.enabled": false,
+            "network.http.use-cache": false,
+            "browser.shell.checkDefaultBrowser": false
+          }
+        }
       }
     }
   }
