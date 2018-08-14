@@ -3,7 +3,7 @@ language: node_js
 cache:
  - node_modules
 node_js:
-  - lts
+  - lts/*
 addons:
   chrome: stable
   firefox: latest
