@@ -1,3 +1,5 @@
+'use strict';
+
 import gulp from 'gulp';
 import eslint from 'gulp-eslint';
 import zip from 'gulp-zip';
@@ -18,9 +20,8 @@ gulp.task('eslint', function() {
 });
 
 
-gulp.task('lintcss', function() {
-  return gulp
-    .src('src/**/*.css')
+gulp.task('stylelint', function() {
+  return gulp.src('src/**/*.css')
     .pipe(gulpStylelint({
       reporters: [
         {formatter: 'string', console: true}
@@ -36,4 +37,4 @@ gulp.task('nightwatch', function() {
     }));
 });
 
-// gulp.task('default', ['eslint', 'stylelint', 'nightwatch']);
+gulp.task('default', gulp.series('eslint', 'stylelint', 'nightwatch'));
