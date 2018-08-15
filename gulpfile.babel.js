@@ -2,6 +2,7 @@ import gulp from 'gulp';
 import eslint from 'gulp-eslint';
 import htmlhint from 'gulp-htmlhint';
 import zip from 'gulp-zip';
+import gulpStylelint from 'gulp-stylelint';
 
 gulp.task('zip', function() {
   return gulp.src('src/content/extensions/desktopcapture/extension/**')
@@ -23,4 +24,15 @@ gulp.task('htmlhint', function() {
     .pipe(htmlhint.failOnError());
 });
 
-gulp.task('default', ['eslint', 'htmlhint']);
+gulp.task('lintcss', function lintCssTask() {
+
+  return gulp
+    .src('src/**/*.css')
+    .pipe(gulpStylelint({
+      reporters: [
+        {formatter: 'string', console: true}
+      ]
+    }));
+});
+
+gulp.task('default', ['eslint', 'htmlhint', 'lintcss']);
