@@ -24,8 +24,7 @@ gulp.task('htmlhint', function() {
     .pipe(htmlhint.failOnError());
 });
 
-gulp.task('lintcss', function lintCssTask() {
-
+gulp.task('lintcss', function() {
   return gulp
     .src('src/**/*.css')
     .pipe(gulpStylelint({
