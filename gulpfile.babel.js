@@ -18,8 +18,9 @@ gulp.task('eslint', function() {
 });
 
 
-gulp.task('stylelint', function() {
-  return gulp.src('src/**/*.css')
+gulp.task('lintcss', function() {
+  return gulp
+    .src('src/**/*.css')
     .pipe(gulpStylelint({
       reporters: [
         {formatter: 'string', console: true}
