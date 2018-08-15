@@ -31,19 +31,16 @@
     "fs": "0.0.1-security",
     "geckodriver": "^1.12.1",
     "gulp": "^4.0.0",
-    "gulp": "^3.9.1",
     "gulp-eslint": "^5.0.0",
-    "gulp-htmlhint": "^2.1.1",
     "gulp-nightwatch": "^1.0.1",
     "gulp-stylelint": "^7.0.0",
     "gulp-zip": "^4.2.0",
     "lodash": "^4.17.10",
     "minimatch": "^3.0.4",
     "nightwatch": "^1.0.8",
-    "htmllint": "^0.7.2",
     "pem": "^1.9.4",
-    "tape": "^4.9.1"
+    "tape": "^4.9.1",
     "stylelint": "^9.4.0",
-    "stylelint-config-recommended": "^2.1.0",
+    "stylelint-config-recommended": "^2.1.0"
   }
 }

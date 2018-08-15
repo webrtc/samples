@@ -1,6 +1,5 @@
 import gulp from 'gulp';
 import eslint from 'gulp-eslint';
-import htmlhint from 'gulp-htmlhint';
 import zip from 'gulp-zip';
 import gulpStylelint from 'gulp-stylelint';
 import nightwatch from 'gulp-nightwatch';
@@ -18,12 +17,6 @@ gulp.task('eslint', function() {
     .pipe(eslint.failAfterError());
 });
 
-gulp.task('htmlhint', function() {
-  return gulp.src(['src/content/**/*.html', '!**/third_party/*.html'])
-    .pipe(htmlhint())
-    .pipe(htmlhint.reporter())
-    .pipe(htmlhint.failOnError());
-});
 
 gulp.task('lintcss', function lintCssTask() {
   return gulp
@@ -43,4 +36,4 @@ gulp.task('nightwatch', function() {
     }));
 });
 
-gulp.task('default', ['eslint', 'htmlhint', 'lintcss', 'nightwatch']);
+gulp.task('default', ['eslint', 'lintcss', 'nightwatch']);
