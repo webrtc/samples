@@ -7,3 +7,4 @@ validation-report.json
 validation-status.json
 .idea
 firefox_profile/*
+*.log

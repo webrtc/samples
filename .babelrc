@@ -1,5 +1,7 @@
 {
-  "presets": ["env"],
+  "presets": [
+    "env"
+  ],
   "plugins": [
     "add-module-exports"
   ]

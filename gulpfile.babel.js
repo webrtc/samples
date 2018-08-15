@@ -18,9 +18,8 @@ gulp.task('eslint', function() {
 });
 
 
-gulp.task('lintcss', function lintCssTask() {
-  return gulp
-    .src('src/**/*.css')
+gulp.task('stylelint', function() {
+  return gulp.src('src/**/*.css')
     .pipe(gulpStylelint({
       reporters: [
         {formatter: 'string', console: true}
@@ -29,11 +28,11 @@ gulp.task('lintcss', function lintCssTask() {
 });
 
 gulp.task('nightwatch', function() {
-  return gulp.src('gulpfile.js')
+  return gulp.src('gulpfile.babel.js')
     .pipe(nightwatch({
       configFile: 'nightwatch.json',
       cliArgs: ['--env chrome']
     }));
 });
 
-gulp.task('default', ['eslint', 'lintcss', 'nightwatch']);
+// gulp.task('default', ['eslint', 'stylelint', 'nightwatch']);

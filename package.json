@@ -19,12 +19,13 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "gulp && ./node_modules/.bin/nightwatch"
+    "test": "gulp"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
     "chromedriver": "^2.41.0",
     "eslint-config-google": "^0.9.1",
     "express": "^4.14.1",
@@ -39,8 +40,8 @@
     "minimatch": "^3.0.4",
     "nightwatch": "^1.0.8",
     "pem": "^1.9.4",
-    "tape": "^4.9.1",
     "stylelint": "^9.4.0",
-    "stylelint-config-recommended": "^2.1.0"
+    "stylelint-config-recommended": "^2.1.0",
+    "tape": "^4.9.1"
   }
 }
