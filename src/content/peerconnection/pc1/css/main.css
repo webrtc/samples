@@ -29,12 +29,8 @@ video#localVideo {
 @media screen and (max-width: 400px) {
   button {
     width: 83px;
-  }
-
-  button {
     margin: 0 11px 10px 0;
   }
-
 
   video {
     height: 90px;

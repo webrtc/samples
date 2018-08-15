@@ -2,6 +2,7 @@ import gulp from 'gulp';
 import eslint from 'gulp-eslint';
 import htmlhint from 'gulp-htmlhint';
 import zip from 'gulp-zip';
+import gulpStylelint from 'gulp-stylelint';
 import nightwatch from 'gulp-nightwatch';
 
 gulp.task('zip', function() {
@@ -24,6 +25,16 @@ gulp.task('htmlhint', function() {
     .pipe(htmlhint.failOnError());
 });
 
+gulp.task('lintcss', function lintCssTask() {
+  return gulp
+    .src('src/**/*.css')
+    .pipe(gulpStylelint({
+      reporters: [
+        {formatter: 'string', console: true}
+      ]
+    }));
+});
+
 gulp.task('nightwatch', function() {
   return gulp.src('gulpfile.js')
     .pipe(nightwatch({
@@ -32,4 +43,4 @@ gulp.task('nightwatch', function() {
     }));
 });
 
-gulp.task('default', ['eslint', 'htmlhint', 'nightwatch']);
+gulp.task('default', ['eslint', 'htmlhint', 'lintcss', 'nightwatch']);

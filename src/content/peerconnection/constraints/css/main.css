@@ -10,31 +10,23 @@ button {
   vertical-align: top;
   width: 134px;
 }
+
 div#getUserMedia {
   padding: 0 0 8px 0;
 }
-section#statistics div {
-  display: inline-block;
-  font-family: 'Inconsolata', 'Courier New', monospace;
-  vertical-align: top;
-  width: 308px;
-}
-section#statistics div#senderStats {
-  margin: 0 20px 0 0;
-}
-section#constraints > div {
-  margin: 0 0 20px 0;
-}
+
 div.input {
   display: inline-block;
   margin: 0 4px 0 0;
   vertical-align: top;
   width: 310px;
 }
+
 div.input > div {
   margin: 0 0 20px 0;
   vertical-align: top;
 }
+
 div.output {
   background-color: #eee;
   display: inline-block;
@@ -46,24 +38,44 @@ div.output {
   white-space: pre;
   width: 270px;
 }
+
+section#statistics div {
+  display: inline-block;
+  font-family: 'Inconsolata', 'Courier New', monospace;
+  vertical-align: top;
+  width: 308px;
+}
+
+section#statistics div#senderStats {
+  margin: 0 20px 0 0;
+}
+
+section#constraints > div {
+  margin: 0 0 20px 0;
+}
+
 section#video > div {
   display: inline-block;
   margin: 0 20px 0 0;
   vertical-align: top;
   width: calc(50% - 22px);
 }
+
 section#video > div div {
   font-size: 0.9em;
   margin: 0 0 0.5em 0;
-  width:  320px;
+  width: 320px;
 }
+
 h2 {
   margin: 0 0 1em 0;
 }
+
 section#constraints label {
   display: inline-block;
   width: 156px;
 }
+
 section {
   margin: 0 0 20px 0;
   padding: 0 0 15px 0;
@@ -72,6 +84,7 @@ section {
 section#video {
   width: calc(100% + 20px);
 }
+
 video {
   --width: 90%;
   width: var(--width);
@@ -86,12 +99,15 @@ video {
     line-height: 1.3em;
     width: 90px;
   }
+
   div#getUserMedia {
     padding: 0 0 40px 0;
   }
+
   section#statistics div {
     width: calc(50% - 14px);
   }
+
   video {
     height: 96px;
   }
