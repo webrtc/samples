@@ -2,6 +2,7 @@ import gulp from 'gulp';
 import eslint from 'gulp-eslint';
 import htmlhint from 'gulp-htmlhint';
 import zip from 'gulp-zip';
+import nightwatch from 'gulp-nightwatch';
 
 gulp.task('zip', function() {
   return gulp.src('src/content/extensions/desktopcapture/extension/**')
@@ -23,4 +24,12 @@ gulp.task('htmlhint', function() {
     .pipe(htmlhint.failOnError());
 });
 
-gulp.task('default', ['eslint', 'htmlhint']);
+gulp.task('nightwatch', function() {
+  return gulp.src('gulpfile.js')
+    .pipe(nightwatch({
+      configFile: 'nightwatch.json',
+      cliArgs: ['--env chrome']
+    }));
+});
+
+gulp.task('default', ['eslint', 'htmlhint', 'nightwatch']);
