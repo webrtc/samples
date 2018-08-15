@@ -27,14 +27,13 @@
     "eslint-config-google": "^0.9.1",
     "express": "^4.14.1",
     "geckodriver": "^1.10.0",
-    "gulp-csslint": "^1.0.1",
+    "gulp": "^3.9.1",
     "gulp-eslint": "^5.0.0",
     "gulp-htmlhint": "^2.1.1",
     "gulp-zip": "^4.2.0",
     "pem": "^1.9.4",
+    "stylelint": "^9.4.0",
+    "stylelint-config-recommended": "^2.1.0",
     "webrtc-utilities": "^1.0.8"
-  },
-  "dependencies": {
-    "gulp": "^3.9.1"
   }
 }

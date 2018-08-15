@@ -31,9 +31,6 @@ div#video > div {
 @media screen and (max-width: 400px) {
   button {
     width: 83px;
-  }
-
-  button {
     margin: 0 11px 10px 0;
   }
 }

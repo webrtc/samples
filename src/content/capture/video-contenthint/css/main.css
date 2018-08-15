@@ -9,7 +9,7 @@
 video {
   --width: calc(45%);
   width: var(--width);
-  height: calc(var(--width) * 9/16);
+  height: calc(var(--width) * 9 / 16);
   margin: 1em;
   object-fit: cover;
 }
