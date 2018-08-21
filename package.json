@@ -42,7 +42,6 @@
     "nightwatch": "^1.0.8",
     "pem": "^1.9.4",
     "stylelint": "^9.4.0",
-    "stylelint-config-recommended": "^2.1.0",
-    "tape": "^4.9.1"
+    "stylelint-config-recommended": "^2.1.0"
   }
 }

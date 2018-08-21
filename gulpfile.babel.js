@@ -30,10 +30,11 @@ gulp.task('stylelint', function() {
 });
 
 gulp.task('nightwatch', function() {
+  const browser = process.env.BROWSER || 'chrome';
   return gulp.src('gulpfile.babel.js')
     .pipe(nightwatch({
-      configFile: 'nightwatch.json',
-      cliArgs: ['--env chrome']
+      configFile: 'nightwatch.conf.js',
+      cliArgs: [`--env ${browser}`]
     }));
 });
 

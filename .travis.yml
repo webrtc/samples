@@ -15,6 +15,12 @@ branches:
 script:
   - npm test
 
+env:
+  matrix:
+  - BROWSER=chrome
+#  - BROWSER=firefox
+#  - BROWSER=safari
+
 notifications:
   email:
     recipients:

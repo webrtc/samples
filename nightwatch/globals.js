@@ -1,8 +1,7 @@
-const chromedriver = require('chromedriver');
-const geckodriver = require('geckodriver');
-const fs = require('fs');
+import chromedriver from 'chromedriver';
+import geckodriver from 'geckodriver';
 
-module.exports = {
+export default {
   'environment': undefined,
   'chrome': {'environment': 'chrome'},
   'firefox': {'environment': 'firefox'},

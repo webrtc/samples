@@ -1,17 +1,17 @@
 {
   "src_folders": [
-    "src/content/getusermedia/gum/js/",
-    "src/content/getusermedia/resolution/js/",
-    "src/content/devices/input-output/js/",
-    "src/content/datachannel/filetransfer/js/",
-    "src/content/datachannel/datatransfer/js/",
-    "src/content/datachannel/basic/js/",
-    "src/content/peerconnection/audio/js/",
-    "src/content/peerconnection/dtmf/js/"
+    "src/content/getusermedia/gum/test",
+    "src/content/getusermedia/resolution/test",
+    "src/content/devices/input-output/test",
+    "src/content/datachannel/filetransfer/test",
+    "src/content/datachannel/datatransfer/test",
+    "src/content/datachannel/basic/test",
+    "src/content/peerconnection/audio/test",
+    "src/content/peerconnection/dtmf/test"
   ],
   "output_folder": false,
-  "custom_commands_path": "nightwatch/customCommands",
-  "custom_assertions_path": "nightwatch/customAsserts",
+  "custom_commands_path": ["nightwatch/customCommands"],
+  "custom_assertions_path": ["nightwatch/customAsserts"],
   "page_objects_path": "",
   "globals_path": "nightwatch/globals.js",
   "selenium": {
@@ -28,7 +28,6 @@
   },
   "test_settings": {
     "default": {
-      "filter": "test.js",
       "screenshots": {
         "enabled": false
       }
@@ -46,6 +45,10 @@
       }
     },
     "chrome": {
+      "webdriver": {
+        "port": 9515,
+        "server_path": "./node_modules/.bin/chromedriver"
+      },
       "selenium_port": 9515,
       "selenium_host": "localhost",
       "default_path_prefix": "",

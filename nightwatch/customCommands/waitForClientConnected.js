@@ -1,61 +1,39 @@
-var util = require('util');
-var events = require('events');
+import EventEmitter from 'events';
+import assert from 'assert';
 
-function WaitFor() {
-  events.EventEmitter.call(this);
-  this.startTime = null;
-}
+class WaitForClientConnected extends EventEmitter {
+  constructor() {
+    super();
 
-util.inherits(WaitFor, events.EventEmitter);
-
-WaitFor.prototype.command = function(element, ms, msg) {
-  this.startTime = new Date().getTime();
-  var self = this;
-  var message;
-
-  if (typeof ms !== 'number') {
-    ms = 500;
   }
 
-  this.check(element, function(result, elapsedMs) {
-    if (result) {
-      var successMsg = msg || 'Media stream "%s" was connected in %s ms.';
-      message = util.format(successMsg, element, elapsedMs - self.startTime);
-    } else {
-      message = util.format('Media stream "%s" was not connected in %s ms.', element, ms);
-    }
-    self.client.assertion(result, null, null, message, true);
-    self.emit('complete');
-  }, ms);
+  command(selector, timeout, message) {
+    this.startTime = new Date().getTime();
+    this.check(selector, timeout, message);
 
-  return this;
-};
+    return this;
+  }
 
-WaitFor.prototype.check = function(element, cb, maxTime) {
-  var self = this;
-  var executeArgs = [element];
-  var executeCallback = function(result) {
-    var now = new Date().getTime();
-
-    if (result.value) {
-      cb(true, now);
-    } else if (now - self.startTime < maxTime) {
-      setTimeout(function() {
-        self.check(element, cb, maxTime);
-      }, 1000);
-    } else {
-      cb(false);
-    }
-  };
-
-  this.api.execute(function(selector) {
-    try {
+  check(selector, timeout, message) {
+    const self = this;
+    const executeArgs = [selector];
+    this.api.execute(function(selector) {
       const element = document.querySelector(selector);
       return element && (element.readyState === 4);
-    } catch (err) {
-      return false;
-    }
-  }, executeArgs, executeCallback);
-};
+    }, executeArgs, function(result) {
+      const now = new Date().getTime();
+      if (result.value) {
+        assert(true, message);
+        self.emit('complete');
+      } else if (now - self.startTime < timeout) {
+        setTimeout(function() { self.check(selector, timeout, message); }, 100);
+      } else {
+        assert(false, message);
+        self.emit('complete');
+      }
+    });
 
-module.exports = WaitFor;
+  }
+}
+
+export default WaitForClientConnected
