@@ -247,8 +247,11 @@ window.setInterval(() => {
     res.forEach(report => {
       let bytes;
       let packets;
-      const now = report.timestamp;
       if (report.type === 'outbound-rtp') {
+        if (report.isRemote) {
+          return;
+        }
+        const now = report.timestamp;
         bytes = report.bytesSent;
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {
