@@ -4,9 +4,6 @@ cache:
  - node_modules
 node_js:
   - lts/*
-addons:
-  chrome: stable
-  firefox: latest
 
 branches:
   only:
@@ -21,10 +18,22 @@ matrix:
     env: BROWSER=chrome
     addons:
       chrome: stable
+  - name: "Chrome Beta"
+    env: BROWSER=chrome
+    addons:
+      chrome: beta
+  - name: "Firefox ESR"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest-esr
   - name: "Firefox Stable"
     env: BROWSER=firefox
     addons:
       firefox: latest
+  - name: "Firefox Beta"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest-beta
 
 notifications:
   email:
