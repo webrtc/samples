@@ -10,10 +10,13 @@
     "src/content/peerconnection/dtmf/test"
   ],
   "output_folder": false,
-  "custom_commands_path": ["nightwatch/customCommands"],
-  "custom_assertions_path": ["nightwatch/customAsserts"],
+  "custom_commands_path": [
+    "nightwatch/customCommands"
+  ],
+  "custom_assertions_path": [
+    "nightwatch/customAsserts"
+  ],
   "page_objects_path": "",
-  "globals_path": "nightwatch/globals.js",
   "selenium": {
     "start_process": false,
     "log_path": false
@@ -26,18 +29,22 @@
     },
     "safari" : {
       "webdriver": {
+        "start_process": true,
         "port": 4445,
         "server_path": "/usr/bin/safaridriver"
       },
       "selenium_port": 4445,
       "selenium_host": "localhost",
       "default_path_prefix": "",
-      "desiredCapabilities" : {
-        "browserName" : "safari"
+      "desiredCapabilities": {
+        "browserName" : "safari",
+        "javascriptEnabled" : true,
+        "acceptSslCerts" : true
       }
     },
     "chrome": {
       "webdriver": {
+        "start_process": true,
         "port": 9515,
         "server_path": "./node_modules/.bin/chromedriver"
       },
@@ -68,7 +75,7 @@
       "selenium_host": "localhost",
       "default_path_prefix": "",
       "webdriver": {
-        "start_process" : true,
+        "start_process": true,
         "server_path": "./node_modules/.bin/geckodriver",
         "port": 4444
       },
@@ -83,6 +90,7 @@
             "level": "trace"
           },
           "args": [
+            "-headless",
             "-no-remote"
           ],
           "prefs": {

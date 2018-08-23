@@ -1,8 +1,7 @@
-import util from 'util';
-
 exports.assertion = function(selector, videoHeight, msg) {
   this.message = msg || `Testing if element <${selector}> has videoHeight ${videoHeight}`;
   this.expected = videoHeight;
+
   this.pass = function(value) {
     return value === videoHeight;
   };
