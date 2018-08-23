@@ -10,8 +10,8 @@
 
 'use strict';
 
-var pn = chrome.privacy.network;
-var pi = null;
+const pn = chrome.privacy.network;
+let pi = null;
 
 function browserSupportsIPHandlingPolicy() {
   return pn.webRTCIPHandlingPolicy !== undefined;
@@ -54,8 +54,7 @@ function getPolicyFromBooleans(callback) {
       callback(convertToPolicy(allowMultiRoute.value, true));
     } else {
       pn.webRTCNonProxiedUdpEnabled.get({}, function(allowUdp) {
-        callback(convertToPolicy(allowMultiRoute.value,
-          allowUdp.value));
+        callback(convertToPolicy(allowMultiRoute.value, allowUdp.value));
       });
     }
   });
