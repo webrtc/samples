@@ -18,14 +18,6 @@
     "start_process": false,
     "log_path": false
   },
-  "webdriver": {
-    "start_process" : true,
-    "server_path": "./node_modules/.bin/geckodriver",
-    "cli_args": [
-      "--log", "debug"
-    ],
-    "port": 4444
-  },
   "test_settings": {
     "default": {
       "screenshots": {
@@ -75,17 +67,22 @@
       "selenium_port": 4444,
       "selenium_host": "localhost",
       "default_path_prefix": "",
+      "webdriver": {
+        "start_process" : true,
+        "server_path": "./node_modules/.bin/geckodriver",
+        "port": 4444
+      },
       "desiredCapabilities": {
         "browserName": "firefox",
         "javascriptEnabled": true,
         "acceptSslCerts": true,
         "marionette": true,
         "moz:firefoxOptions": {
+          "binary": "/Applications/Firefox.app/Contents/MacOS/firefox",
           "log": {
             "level": "trace"
           },
           "args": [
-            "-headless",
             "-no-remote"
           ],
           "prefs": {

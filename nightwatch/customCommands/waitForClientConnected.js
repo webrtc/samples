@@ -23,12 +23,14 @@ class WaitForClientConnected extends EventEmitter {
     }, executeArgs, function(result) {
       const now = new Date().getTime();
       if (result.value) {
-        assert(true, message);
+        const msg = message || `Media element ${selector} started playing in ${now - self.startTime} ms`;
+        assert(true, msg);
         self.emit('complete');
       } else if (now - self.startTime < timeout) {
         setTimeout(function() { self.check(selector, timeout, message); }, 100);
       } else {
-        assert(false, message);
+        const failMsg = msg || `Media element ${selector} failed to start in ${now - self.startTime} ms`;
+        assert(false, failMsg);
         self.emit('complete');
       }
     });

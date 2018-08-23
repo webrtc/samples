@@ -9,26 +9,24 @@ export default {
     switch (this.environment) {
       case 'chrome':
         chromedriver.start();
-        console.log(`${this.environment} started!`);
         break;
       case 'firefox':
         geckodriver.start();
-        console.log(`${this.environment} started!`);
         break;
     }
+    console.log(`${this.environment} started!`);
     done();
   },
   'after': function(done) {
     switch (this.environment) {
       case 'chrome':
         chromedriver.stop();
-        console.log(`${this.environment} stopped!`);
         break;
       case 'firefox':
         geckodriver.stop();
-        console.log(`${this.environment} stopped!`);
         break;
     }
+    console.log(`${this.environment} stopped!`);
     done();
   }
 };
