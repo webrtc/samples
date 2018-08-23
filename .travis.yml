@@ -15,11 +15,16 @@ branches:
 script:
   - npm test
 
-env:
-  matrix:
-  - BROWSER=chrome
-#  - BROWSER=firefox
-#  - BROWSER=safari
+matrix:
+  include:
+  - name: "Chrome Stable"
+    env: BROWSER=chrome
+    addons:
+      chrome: stable
+  - name: "Firefox Stable"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest
 
 notifications:
   email:
