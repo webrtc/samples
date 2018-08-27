@@ -22,18 +22,18 @@ matrix:
     env: BROWSER=chrome
     addons:
       chrome: beta
-  - name: "Firefox ESR"
-    env: BROWSER=firefox
-    addons:
-      firefox: latest-esr
-  - name: "Firefox Stable"
-    env: BROWSER=firefox
-    addons:
-      firefox: latest
-  - name: "Firefox Beta"
-    env: BROWSER=firefox
-    addons:
-      firefox: latest-beta
+#  - name: "Firefox ESR"
+#    env: BROWSER=firefox
+#    addons:
+#      firefox: latest-esr
+#  - name: "Firefox Stable"
+#    env: BROWSER=firefox
+#    addons:
+#      firefox: latest
+#  - name: "Firefox Beta"
+#    env: BROWSER=firefox
+#    addons:
+#      firefox: latest-beta
 
 notifications:
   email:
