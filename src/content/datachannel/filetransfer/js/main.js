@@ -99,7 +99,7 @@ function sendData() {
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
   const chunkSize = 16384;
-  fileReader  = new FileReader();
+  fileReader = new FileReader();
   let offset = 0;
   fileReader.addEventListener('error', error => console.error('Error reading file:', error));
   fileReader.addEventListener('abort', event => console.log('File reading aborted:', event));
