@@ -84,13 +84,13 @@ function startRecording() {
   recordedBlobs = [];
   let options = {mimeType: 'video/webm;codecs=vp9'};
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.log(options.mimeType, ' is not Supported');
+    console.log(`${options.mimeType} is not Supported`);
     options = {mimeType: 'video/webm;codecs=vp8'};
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      console.log(options.mimeType, ' is not Supported');
+      console.log(`${options.mimeType} is not Supported`);
       options = {mimeType: 'video/webm'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.log(options.mimeType, ' is not Supported');
+        console.log(`${options.mimeType} is not Supported`);
         options = {mimeType: ''};
       }
     }
@@ -138,10 +138,4 @@ async function init() {
 }
 
 // window.isSecureContext could be used for Chrome
-let isSecureOrigin = location.protocol === 'https:' || location.hostname === 'localhost';
-if (!isSecureOrigin) {
-  alert('getUserMedia() must be run from a secure origin: HTTPS or localhost.\n\nChanging protocol to HTTPS');
-  location.protocol = 'HTTPS';
-} else {
-  init();
-}
+init();
