@@ -128,8 +128,8 @@ function init() {
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
     initTeapot();
     initShaders();
-    g_bumpTexture = loadTexture("/src/js/third_party/webgl_teapot/images/bump.jpg");
-    g_envTexture = loadCubeMap("/src/js/third_party/webgl_teapot/images/skybox", "jpg");
+    g_bumpTexture = loadTexture("/samples/src/js/third_party/webgl_teapot/images/bump.jpg");
+    g_envTexture = loadCubeMap("/samples/src/js/third_party/webgl_teapot/images/skybox", "jpg");
     draw();
 }
 
