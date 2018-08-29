@@ -36,17 +36,15 @@
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>captureStream(): video to video</span>
     </h1>
 
-    <video id="leftVideo" playsinline controls muted>
-        <!-- NB CORS: https://bugzilla.mozilla.org/show_bug.cgi?id=1177793 -->
+    <video id="leftVideo" playsinline controls loop muted>
         <source src="../../../video/chrome.webm" type="video/webm"/>
         <source src="../../../video/chrome.mp4" type="video/mp4"/>
         <p>This browser does not support the video element.</p>
     </video>
 
-    <video id="rightVideo" playsinline autoplay controls></video>
+    <video id="rightVideo" playsinline autoplay></video>
 
-    <p>This demo requires Firefox 47, or Chrome 53 with <strong>Experimental Web Platform features</strong> enabled from
-        <tt>chrome://flags</tt>.</p>
+    <p>Press play on the left video to start the demo.</p>
 
     <p>A stream is captured from the video element on the left using its <code>captureStream()</code> method and set as
         the <code>srcObject</code> of the video element on the right.</p>
