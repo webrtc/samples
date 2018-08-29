@@ -22,13 +22,11 @@ p.borderBelow {
 }
 
 video {
-  /*height: 232px;*/
-  margin: 0 12px 20px 0;
+  /*margin: 0 12px 20px 0;*/
   vertical-align: top;
-  /*width: calc(20em - 10px);*/
-  --width: 45%;
+  --width: 25vw;
   width: var(--width);
-  height: calc(var(--width) * 0.75);
+  height: calc(var(--width) * 0.5625);
 }
 
 video:last-of-type {
