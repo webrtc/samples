@@ -87,7 +87,7 @@ function startRecording() {
     console.log(options.mimeType, ' is not Supported');
     options = {mimeType: 'video/webm;codecs=vp8'};
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      console.log(options.mimeType,  ' is not Supported');
+      console.log(options.mimeType, ' is not Supported');
       options = {mimeType: 'video/webm'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
         console.log(options.mimeType, ' is not Supported');
