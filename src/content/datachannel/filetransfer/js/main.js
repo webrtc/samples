@@ -12,8 +12,10 @@ let localConnection;
 let remoteConnection;
 let sendChannel;
 let receiveChannel;
+let fileReader;
 const bitrateDiv = document.querySelector('div#bitrate');
 const fileInput = document.querySelector('input#fileInput');
+const abortButton = document.querySelector('button#abortButton');
 const downloadAnchor = document.querySelector('a#download');
 const sendProgress = document.querySelector('progress#sendProgress');
 const receiveProgress = document.querySelector('progress#receiveProgress');
@@ -29,6 +31,12 @@ let statsInterval = null;
 let bitrateMax = 0;
 
 fileInput.addEventListener('change', handleFileInputChange, false);
+abortButton.addEventListener('click', () => {
+  if (fileReader && fileReader.readyState === 1) {
+    console.log('Abort read!');
+    fileReader.abort();
+  }
+});
 
 async function handleFileInputChange() {
   let file = fileInput.files[0];
@@ -49,6 +57,7 @@ async function createConnection() {
 
   sendChannel.addEventListener('open', onSendChannelStateChange);
   sendChannel.addEventListener('close', onSendChannelStateChange);
+  sendChannel.addEventListener('error', error => console.error('Error in sendChannel:', error));
 
   localConnection.addEventListener('icecandidate', async event => {
     console.log('Local ICE candidate: ', event.candidate);
@@ -90,9 +99,11 @@ function sendData() {
   sendProgress.max = file.size;
   receiveProgress.max = file.size;
   const chunkSize = 16384;
-  const reader = new FileReader();
+  fileReader = new FileReader();
   let offset = 0;
-  reader.addEventListener('load', e => {
+  fileReader.addEventListener('error', error => console.error('Error reading file:', error));
+  fileReader.addEventListener('abort', event => console.log('File reading aborted:', event));
+  fileReader.addEventListener('load', e => {
     console.log('FileRead.onload ', e);
     sendChannel.send(e.target.result);
     offset += e.target.result.byteLength;
@@ -104,7 +115,7 @@ function sendData() {
   const readSlice = o => {
     console.log('readSlice ', o);
     const slice = file.slice(offset, o + chunkSize);
-    reader.readAsArrayBuffer(slice);
+    fileReader.readAsArrayBuffer(slice);
   };
   readSlice(0);
 }
