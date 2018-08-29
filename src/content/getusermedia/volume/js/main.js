@@ -31,16 +31,14 @@ const constraints = window.constraints = {
   video: false
 };
 
-function handleSuccess(stream) {
+async function handleSuccess(stream) {
   // Put variables in global scope to make them available to the
   // browser console.
   window.stream = stream;
   const soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream, function(e) {
-    if (e) {
-      alert(e);
-      return;
-    }
+  try {
+    // eslint-disable-next-line no-unused-vars
+    const ignored = await soundMeter.connectToSource(stream);
     setInterval(() => {
       instantMeter.value = instantValueDisplay.innerText =
         soundMeter.instant.toFixed(2);
@@ -49,11 +47,24 @@ function handleSuccess(stream) {
       clipMeter.value = clipValueDisplay.innerText =
         soundMeter.clip;
     }, 200);
-  });
+  } catch (e) {
+    handleError(e);
+  }
 }
 
 function handleError(error) {
   console.log('navigator.getUserMedia error: ', error);
 }
 
-navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
+async function init() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    // eslint-disable-next-line no-unused-vars
+    const ignored = await handleSuccess(stream);
+  } catch (e) {
+    handleError(e);
+  }
+}
+
+// noinspection JSIgnoredPromiseFromCall
+init();
