@@ -16,6 +16,12 @@ if (adapter.browserDetails.browser == 'firefox') {
 function handleSuccess(stream) {
   const video = document.querySelector('video');
   video.srcObject = stream;
+
+  // demonstrates how to detect that the user has stopped
+  // sharing the screen via the browser UI.
+  stream.getVideoTracks()[0].addEventListener('ended', () => {
+    errorMsg('The user has ended sharing the screen');
+  });
 }
 
 function handleError(error) {
