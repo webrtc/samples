@@ -47,7 +47,7 @@ async function createConnection() {
   sendButton.disabled = true;
   megsToSend.disabled = true;
   // Safari needs to trigger the media permission for RTCDataChannel to work
-  if (navigator.userAgent.indexOf('Safari') !== -1) {
+  if (navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1) {
     try {
       console.log('Call getUserMedia() to trigger media permission request.');
       const stream = await navigator.mediaDevices.getUserMedia({'audio': true, 'video': true});
