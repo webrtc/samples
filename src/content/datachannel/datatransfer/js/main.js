@@ -91,7 +91,6 @@ async function createConnection() {
   } catch (e) {
     console.error('Failed to create session description: ', e);
   }
-
 }
 
 function sendData(e) {
