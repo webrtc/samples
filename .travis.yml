@@ -5,11 +5,11 @@ cache:
 node_js:
   - lts/*
 
-before_install:
-  - sudo safaridriver --enable
 before_script:
+  - sudo safaridriver --enable
   - defaults write com.apple.Safari IncludeDevelopMenu YES
   - defaults write com.apple.Safari AllowRemoteAutomation 1
+  - defaults write com.apple.Safari LocalFileRestrictionsEnabled  0
   - defaults write com.apple.Safari WebKit2ICECandidateFilteringEnabled 0
   - defaults write com.apple.Safari WebKit2MockCaptureDevicesEnabled 1
   - defaults write com.apple.Safari WebKit2MediaCaptureRequiresSecureConnection 0
