@@ -12,20 +12,13 @@
 // The test script language comes from tape.
 const test = require('tape');
 
-/* Firefox TODO once ice restarts are implemented
- * https://bugzilla.mozilla.org/show_bug.cgi?id=906986
- * 1) re-enable test
- * 2) fix getStats, ideally using spec-stats
- *
- * TODO: once onselectedcandidatepairchange is supported this test gets simpler.
- */
-
 function getTransportIds(stats) {
   let localId;
   let remoteId;
+  // TODO: figuring out the currently active candidate pair is tricky cross-browser.
+  // https://github.com/w3c/webrtc-stats/issues/358
   stats.forEach(report => {
-    if (report.googActiveConnection === 'true' ||
-      report.state === 'succeeded') {
+    if (report.type === 'candidate-pair' && report.state === 'succeeded' && report.writable) {
       localId = report.localCandidateId;
       remoteId = report.remoteCandidateId;
     }
@@ -33,9 +26,7 @@ function getTransportIds(stats) {
   return localId + ' ' + remoteId;
 }
 
-// Disabled due to flakiness.
-// TODO(jansson) fix flakiness
-test('PeerConnection restart ICE sample', {skip: true}, t => {
+test('PeerConnection restart ICE sample', t => {
   const webdriver = require('selenium-webdriver');
   const seleniumHelpers = require('webrtc-utilities').seleniumLib;
   const driver = seleniumHelpers.buildDriver();
@@ -52,15 +43,15 @@ test('PeerConnection restart ICE sample', {skip: true}, t => {
       t.pass('got media');
       return driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled(), 30 * 1000);
     })
+    .then(() => driver.findElement(webdriver.By.id('callButton')).click())
     .then(() => {
-      driver.findElement(webdriver.By.id('callButton')).click();
       t.pass('Pressed callButton');
-      return driver.wait(() => {
-        return driver.executeScript('return pc1 && pc1.iceConnectionState === \'completed\' || \'connected\';');
-      }, 30 * 1000);
+      return driver.wait(() => driver.executeScript(() =>
+            window.pc1 && (window.pc1.iceConnectionState === 'completed' ||
+              window.pc1.iceConnectionState === 'connected')), 30 * 1000);
     })
     .then(() => {
-      t.pass('pc2 ICE connected');
+      t.pass('pc1 ICE connected or completed');
       // Query the candidate ID's address. It should change during the
       // ICE restart.
       return driver.wait(() => driver.findElement(webdriver.By.id('restartButton')).isEnabled(), 30 * 1000);
@@ -68,19 +59,25 @@ test('PeerConnection restart ICE sample', {skip: true}, t => {
     .then(() => seleniumHelpers.getStats(driver, 'pc1'))
     .then(stats => {
       firstStats = stats;
-      return driver.findElement(webdriver.By.id('restartButton')).click();
+      // listen for iceconnectionstatechange and store events.
+      return driver.executeScript(() => {
+        window.icestates = [];
+        window.pc1.addEventListener('iceconnectionstatechange', () =>
+          window.icestates.push(window.pc1.iceConnectionState));
+      });
     })
+    .then(() => driver.findElement(webdriver.By.id('restartButton')).click())
     .then(() => {
       t.pass('ICE restart triggered');
-      driver.manage().timeouts().setScriptTimeout(150000);
-      return driver.executeAsyncScript(
-        'var callback = arguments[arguments.length - 1];' +
-        'pc1.addEventListener(\'iceconnectionstatechange\', function() {' +
-        '  if (pc1.iceConnectionState === \'completed\' || \'connected\') {' +
-        '    callback();' +
-        '  }' +
-        '});');
+      return driver.wait(driver.executeScript(() => {
+        // Firefox goes back to checking and then to connected.
+        // Chrome (and presumably Safari) to back to connected and then completed.
+        // Either way we need to wait for two or more state changes.
+        return window.icestates.length >= 2;
+      }), 30 * 1000);
     })
+    // TODO: remove once https://github.com/w3c/webrtc-stats/issues/358 is resolved.
+    .then(() => driver.sleep(5000))
     .then(() => seleniumHelpers.getStats(driver, 'pc1'))
     .then(newStats => {
       const newCandidateIds = getTransportIds(newStats);

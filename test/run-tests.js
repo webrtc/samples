@@ -8,7 +8,7 @@
 /* eslint-env node */
 
 'use strict';
-var test = require('tape');
+const test = require('tape');
 
 // Add all test files here with a short comment.
 

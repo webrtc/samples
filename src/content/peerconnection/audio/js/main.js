@@ -37,14 +37,14 @@ const offerOptions = {
 
 function gotStream(stream) {
   hangupButton.disabled = false;
-  trace('Received local stream');
+  console.log('Received local stream');
   localStream = stream;
   const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace(`Using Audio device: ${audioTracks[0].label}`);
+    console.log(`Using Audio device: ${audioTracks[0].label}`);
   }
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
-  trace('Adding Local Stream to peer connection');
+  console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(offerOptions)
     .then(gotDescription1, onCreateSessionDescriptionError);
@@ -59,22 +59,22 @@ function gotStream(stream) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace(`Failed to create session description: ${error.toString()}`);
+  console.log(`Failed to create session description: ${error.toString()}`);
 }
 
 function call() {
   callButton.disabled = true;
   codecSelector.disabled = true;
-  trace('Starting call');
+  console.log('Starting call');
   const servers = null;
   pc1 = new RTCPeerConnection(servers);
-  trace('Created local peer connection object pc1');
+  console.log('Created local peer connection object pc1');
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
   pc2 = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object pc2');
+  console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
-  trace('Requesting local stream');
+  console.log('Requesting local stream');
   navigator.mediaDevices
     .getUserMedia({
       audio: true,
@@ -87,7 +87,7 @@ function call() {
 }
 
 function gotDescription1(desc) {
-  trace(`Offer from pc1\n${desc.sdp}`);
+  console.log(`Offer from pc1\n${desc.sdp}`);
   pc1.setLocalDescription(desc)
     .then(() => {
       desc.sdp = forceChosenAudioCodec(desc.sdp);
@@ -98,7 +98,7 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  trace(`Answer from pc2\n${desc.sdp}`);
+  console.log(`Answer from pc2\n${desc.sdp}`);
   pc2.setLocalDescription(desc).then(() => {
     desc.sdp = forceChosenAudioCodec(desc.sdp);
     pc1.setRemoteDescription(desc).then(() => {}, onSetSessionDescriptionError);
@@ -106,7 +106,7 @@ function gotDescription2(desc) {
 }
 
 function hangup() {
-  trace('Ending call');
+  console.log('Ending call');
   localStream.getTracks().forEach(track => track.stop());
   pc1.close();
   pc2.close();
@@ -120,7 +120,7 @@ function hangup() {
 function gotRemoteStream(e) {
   if (audio2.srcObject !== e.streams[0]) {
     audio2.srcObject = e.streams[0];
-    trace('Received remote stream');
+    console.log('Received remote stream');
   }
 }
 
@@ -138,19 +138,19 @@ function onIceCandidate(pc, event) {
       () => onAddIceCandidateSuccess(pc),
       err => onAddIceCandidateError(pc, err)
     );
-  trace(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace(`Failed to add ICE Candidate: ${error.toString()}`);
+  console.log(`Failed to add ICE Candidate: ${error.toString()}`);
 }
 
 function onSetSessionDescriptionError(error) {
-  trace(`Failed to set session description: ${error.toString()}`);
+  console.log(`Failed to set session description: ${error.toString()}`);
 }
 
 function forceChosenAudioCodec(sdp) {
@@ -164,11 +164,11 @@ function forceChosenAudioCodec(sdp) {
 function maybePreferCodec(sdp, type, dir, codec) {
   const str = `${type} ${dir} codec`;
   if (codec === '') {
-    trace(`No preference on ${str}.`);
+    console.log(`No preference on ${str}.`);
     return sdp;
   }
 
-  trace(`Prefer ${str}: ${codec}`);
+  console.log(`Prefer ${str}: ${codec}`);
 
   const sdpLines = sdp.split('\r\n');
 
@@ -247,8 +247,11 @@ window.setInterval(() => {
     res.forEach(report => {
       let bytes;
       let packets;
-      const now = report.timestamp;
       if (report.type === 'outbound-rtp') {
+        if (report.isRemote) {
+          return;
+        }
+        const now = report.timestamp;
         bytes = report.bytesSent;
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {

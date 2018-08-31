@@ -125,12 +125,12 @@ function start() {
 
   // Read the values from the input boxes.
   const iceServers = [];
-  for (var i = 0; i < servers.length; ++i) {
+  for (let i = 0; i < servers.length; ++i) {
     iceServers.push(JSON.parse(servers[i].value));
   }
   const transports = document.getElementsByName('transports');
   let iceTransports;
-  for (i = 0; i < transports.length; ++i) {
+  for (let i = 0; i < transports.length; ++i) {
     if (transports[i].checked) {
       iceTransports = transports[i].value;
       break;
@@ -148,7 +148,7 @@ function start() {
   // Whether we gather IPv6 candidates.
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
-  trace(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
+  console.log(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
   pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
@@ -174,7 +174,7 @@ function noDescription(error) {
 function parseCandidate(text) {
   const candidateStr = 'candidate:';
   const pos = text.indexOf(candidateStr) + candidateStr.length;
-  var [foundation, component, protocol, priority, address, port, , type] =
+  let [foundation, component, protocol, priority, address, port, , type] =
     text.substr(pos).split(' ');
   return {
     'component': component,

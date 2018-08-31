@@ -14,26 +14,29 @@
   },
   "license": "BSD-3-Clause",
   "author": "The WebRTC project authors",
-  "main": "Gruntfile.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "grunt && start-tests"
+    "test": "gulp && start-tests"
   },
   "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "eslint-config-google": "^0.9.1",
     "express": "^4.14.1",
-    "faucet": "0.0.1",
     "geckodriver": "^1.10.0",
-    "grunt": "^0.4.5",
-    "grunt-cli": ">=0.1.9",
-    "grunt-contrib-compress": "^0.13.0",
-    "grunt-contrib-csslint": ">=0.3.1",
-    "grunt-eslint": "^18.1.0",
-    "grunt-githooks": "^0.3.1",
-    "grunt-htmlhint": ">=0.9.12",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^5.0.0",
+    "gulp-htmlhint": "^2.1.1",
+    "gulp-stylelint": "^7.0.0",
+    "gulp-zip": "^4.2.0",
+    "htmllint": "^0.7.2",
     "pem": "^1.9.4",
+    "stylelint": "^9.4.0",
+    "stylelint-config-recommended": "^2.1.0",
+    "tape": "^4.9.1",
     "webrtc-utilities": "^1.0.8"
   }
 }

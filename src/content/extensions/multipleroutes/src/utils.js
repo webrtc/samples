@@ -10,12 +10,15 @@
 
 'use strict';
 
+const pn = chrome.privacy.network;
+let pi = null;
+
 function browserSupportsIPHandlingPolicy() {
-  return chrome.privacy.network.webRTCIPHandlingPolicy !== undefined;
+  return pn.webRTCIPHandlingPolicy !== undefined;
 }
 
 function browserSupportsNonProxiedUdpBoolean() {
-  return chrome.privacy.network.webRTCNonProxiedUdpEnabled !== undefined;
+  return pn.webRTCNonProxiedUdpEnabled !== undefined;
 }
 
 // Handle the case when this is installed in pre-M48.
@@ -27,28 +30,30 @@ if (!browserSupportsIPHandlingPolicy()) {
   chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP = 3;
 }
 
+pi = chrome.privacy.IPHandlingPolicy;
+
 // Helper function to convert the parameters to policy synchronously.
 function convertToPolicy(allowMultiRoute, allowUdp) {
   if (!allowUdp) {
-    return chrome.privacy.IPHandlingPolicy.DISABLE_NON_PROXIED_UDP;
+    return pi.DISABLE_NON_PROXIED_UDP;
   }
 
   if (!allowMultiRoute) {
-    return chrome.privacy.IPHandlingPolicy.DEFAULT_PUBLIC_INTERFACE_ONLY;
+    return pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
   }
 
-  return chrome.privacy.IPHandlingPolicy.DEFAULT;
+  return pi.DEFAULT;
 }
 
 // This function just returns the new policy value based on the 2 booleans
 // without changing any preferences.
 // eslint-disable-next-line no-unused-vars
 function getPolicyFromBooleans(callback) {
-  chrome.privacy.network.webRTCMultipleRoutesEnabled.get({}, function(allowMultiRoute) {
+  pn.webRTCMultipleRoutesEnabled.get({}, function(allowMultiRoute) {
     if (!browserSupportsNonProxiedUdpBoolean()) {
       callback(convertToPolicy(allowMultiRoute.value, true));
     } else {
-      chrome.privacy.network.webRTCNonProxiedUdpEnabled.get({}, function(allowUdp) {
+      pn.webRTCNonProxiedUdpEnabled.get({}, function(allowUdp) {
         callback(convertToPolicy(allowMultiRoute.value, allowUdp.value));
       });
     }
