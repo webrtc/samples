@@ -10,9 +10,9 @@ before_install:
 before_script:
   - defaults write com.apple.Safari IncludeDevelopMenu YES
   - defaults write com.apple.Safari AllowRemoteAutomation 1
-  - defaults write com.apple.Safari.ContentPageGroupIdentifier.WebKit2ICECandidateFilteringEnabled 0
-  - defaults write com.apple.Safari.ContentPageGroupIdentifier.WebKit2MockCaptureDevicesEnabled 1
-  - defaults write com.apple.Safari.ContentPageGroupIdentifier.WebKit2MediaCaptureRequiresSecureConnection 0
+  - defaults write com.apple.Safari WebKit2ICECandidateFilteringEnabled 0
+  - defaults write com.apple.Safari WebKit2MockCaptureDevicesEnabled 1
+  - defaults write com.apple.Safari WebKit2MediaCaptureRequiresSecureConnection 0
 
 branches:
   only:
