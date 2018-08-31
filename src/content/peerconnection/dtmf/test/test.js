@@ -10,11 +10,15 @@ export default {
     const path = '/src/content/peerconnection/dtmf/index.html';
     const url = 'file://' + process.cwd() + path;
 
-    // TODO Test all codecs?
+    if(browser.options.desiredCapabilities.browserName === 'safari') {
+      browser.end();
+      return;
+    }
+
     browser
       .url(url)
       .click('#callButton')
-      .waitForClientConnected('audio', 1000, 'Receiving remote audio.')
+      .waitForMediaPlaybackReady('audio', 1000, 'Receiving remote audio.')
       .useXpath()
       .click('/html/body/div/div[@id=\'dialPad\']/div[1]/button[1]') // 1
       .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[1]') // 9

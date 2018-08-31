@@ -1,10 +1,9 @@
 import EventEmitter from 'events';
 import assert from 'assert';
 
-class WaitForClientConnected extends EventEmitter {
+class MediaPlaybackReady extends EventEmitter {
   constructor() {
     super();
-
   }
 
   command(selector, timeout, message) {
@@ -19,6 +18,7 @@ class WaitForClientConnected extends EventEmitter {
     const executeArgs = [selector];
     this.api.execute(function(selector) {
       const element = document.querySelector(selector);
+      // readyState === 4 means that video/audio is ready to play
       return element && (element.readyState === 4);
     }, executeArgs, function(result) {
       const now = new Date().getTime();
@@ -38,4 +38,4 @@ class WaitForClientConnected extends EventEmitter {
   }
 }
 
-export default WaitForClientConnected
+export default MediaPlaybackReady

@@ -13,7 +13,7 @@ export default {
     browser
       .url(url)
       .waitForElementVisible('video', 5000)
-      .waitForClientConnected('video', 5000)
+      .waitForMediaPlaybackReady('video', 5000)
       .end();
   }
 };

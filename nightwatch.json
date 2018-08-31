@@ -6,8 +6,7 @@
     "src/content/datachannel/filetransfer/test",
     "src/content/datachannel/datatransfer/test",
     "src/content/datachannel/basic/test",
-    "src/content/peerconnection/audio/test",
-    "src/content/peerconnection/dtmf/test"
+    "src/content/peerconnection/audio/test"
   ],
   "output_folder": false,
   "custom_commands_path": [

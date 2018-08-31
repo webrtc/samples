@@ -14,7 +14,7 @@ export default {
     browser
       .url(url)
       .click('#callButton')
-      .waitForClientConnected('#audio2', 5000, 'Receiving remote audio.')
+      .waitForMediaPlaybackReady('#audio2', 5000, 'Receiving remote audio.')
       .end();
   }
 };
