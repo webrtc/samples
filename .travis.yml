@@ -22,6 +22,8 @@ matrix:
     env: BROWSER=chrome
     addons:
       chrome: beta
+  - name: "Safari"
+    env: BROWSER=safari
 #  - name: "Firefox ESR"
 #    env: BROWSER=firefox
 #    addons:
