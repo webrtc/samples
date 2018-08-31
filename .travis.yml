@@ -5,6 +5,9 @@ cache:
 node_js:
   - lts/*
 
+before_install:
+  - sudo safaridriver --enable
+
 branches:
   only:
     - gh-pages
