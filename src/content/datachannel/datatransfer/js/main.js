@@ -100,6 +100,7 @@ function sendGeneratedData() {
         } else {
           sendChannel.addEventListener('bufferedamountlow', listener);
         }
+        break;
       } else {
         sendProgress.value += chunkSize;
         sendChannel.send(stringToSendRepeatedly);
