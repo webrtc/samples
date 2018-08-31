@@ -29,7 +29,7 @@ class MediaPlaybackReady extends EventEmitter {
       } else if (now - self.startTime < timeout) {
         setTimeout(function() { self.check(selector, timeout, message); }, 100);
       } else {
-        const failMsg = msg || `Media element ${selector} failed to start in ${now - self.startTime} ms`;
+        const failMsg = message || `Media element ${selector} failed to start in ${now - self.startTime} ms`;
         assert(false, failMsg);
         self.emit('complete');
       }
