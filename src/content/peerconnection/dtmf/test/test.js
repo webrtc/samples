@@ -10,7 +10,7 @@ export default {
     const path = '/src/content/peerconnection/dtmf/index.html';
     const url = 'file://' + process.cwd() + path;
 
-    if(browser.options.desiredCapabilities.browserName === 'safari') {
+    if (browser.options.desiredCapabilities.browserName === 'safari') {
       browser.end();
       return;
     }
