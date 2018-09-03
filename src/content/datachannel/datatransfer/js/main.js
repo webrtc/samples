@@ -94,18 +94,21 @@ async function createConnection() {
 }
 
 function sendData(e) {
+  console.log('BufferedAmountLow event:', e);
   if (sendProgress.value < sendProgress.max) {
-    // console.log('sendChannel.bufferedAmountLowThreshold:', sendChannel.bufferedAmountLowThreshold);
-    // console.log('Buffered amount before sending:', sendChannel.bufferedAmount);
-    sendChannel.send(DATA_STRING);
-    sendProgress.value += CHUNK_SIZE;
-    // console.log('Buffered amount after sending:', sendChannel.bufferedAmount);
-    // console.log(`Sent another ${CHUNK_SIZE} bytes!`);
+    sendChannel.addEventListener('bufferedamountlow', sendData, {once: true});
 
-    // We need to use setTimeout() at the moment due to a bug with bufferedamountlow event.
-    // See https://bugs.chromium.org/p/chromium/issues/detail?id=878682 for details
-    // sendChannel.addEventListener('bufferedamountlow', sendData, {'once': true});
-    setTimeout(sendData, 0);
+    // The following is a workaround due to the problem with bufferedamountlow event not being fired on every
+    // call to send(), despite the amount of data exceeding the bufferedAmountLowThreshold.
+    // If the event would be firing correctly, we could exclude the while loop below.
+    let count = 0;
+    while (sendProgress.value < sendProgress.max && sendChannel.bufferedAmount < CHUNK_SIZE) {
+      sendChannel.send(DATA_STRING);
+      sendProgress.value += CHUNK_SIZE;
+      count++;
+    }
+
+    console.log(`Buffered amount after sending ${count} messages: ${sendChannel.bufferedAmount}`);
   }
 }
 
