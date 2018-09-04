@@ -6,3 +6,6 @@ node_modules
 validation-report.json
 validation-status.json
 .idea
+firefox_profile/*
+tests_output
+*.log

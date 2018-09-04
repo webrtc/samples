@@ -26,7 +26,7 @@ const tonesInput = document.querySelector('input#tones');
 const durationValue = document.querySelector('span#durationValue');
 const gapValue = document.querySelector('span#gapValue');
 
-const sentTonesDiv = document.querySelector('div#sentTones');
+const sentTonesInput = document.querySelector('input#sentTones');
 const dtmfStatusDiv = document.querySelector('div#dtmfStatus');
 
 const audio = document.querySelector('audio');
@@ -191,7 +191,7 @@ function onAddIceCandidateError(error) {
 function dtmfOnToneChange(tone) {
   if (tone) {
     console.log(`Sent DTMF tone: ${tone.tone}`);
-    sentTonesDiv.textContent += `${tone.tone} `;
+    sentTonesInput.value += `${tone.tone} `;
   }
 }
 
