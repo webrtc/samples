@@ -41,12 +41,16 @@
             title="W3C MediaStream Recording API Editor's Draft">Editor's&nbsp;Draft</a>.</p>
 
     <video id="gum" playsinline autoplay muted></video>
-    <video id="recorded" playsinline loop controls></video>
+    <video id="recorded" playsinline loop></video>
 
     <div>
         <button id="record" disabled>Start Recording</button>
         <button id="play" disabled>Play</button>
         <button id="download" disabled>Download</button>
+    </div>
+
+    <div>
+        <span id="errorMsg"></span>
     </div>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record"
