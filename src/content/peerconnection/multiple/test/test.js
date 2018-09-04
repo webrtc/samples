@@ -8,45 +8,24 @@
 /* eslint-env node */
 
 'use strict';
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-const test = require('tape');
+export default {
+  'Video and buttons state change during multiple peer connection setup': (browser) => {
+    const path = '/src/content/peerconnection/multiple/index.html';
+    const url = 'file://' + process.cwd() + path;
 
-const webdriver = require('selenium-webdriver');
-const seleniumHelpers = require('webrtc-utilities').seleniumLib;
-
-test('PeerConnection multiple sample', t => {
-  const driver = seleniumHelpers.buildDriver();
-  const path = '/src/content/peerconnection/multiple/index.html';
-  const url = (process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())) + path;
-
-  driver.get(url)
-    .then(() => {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.id('startButton')).click();
-    })
-    .then(() => {
-      t.pass('got media');
-      return driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled());
-    })
-    .then(() => {
-      driver.findElement(webdriver.By.id('callButton')).click();
-      return driver.wait(() => driver.executeScript(
-        'return pc1Remote && pc1Remote.iceConnectionState === \'connected\'' +
-        ' && pc2Remote && pc2Remote.iceConnectionState === \'connected\';'), 30 * 1000);
-    })
-    .then(() => {
-      t.pass('multiple connections connected');
-      return driver.findElement(webdriver.By.id('hangupButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return pc1Local === null && ' +
-      'pc2Local === null'), 30 * 1000))
-    .then(() => {
-      t.pass('hangup');
-      t.end();
-    })
-    .then(null, err => {
-      t.fail(err);
-      t.end();
-    });
-});
+    browser.url(url).waitForElementVisible('#startButton', 1000, 'Check that the start button is visible');
+    browser.waitForReadyState('#video1', 0, 1000);
+    browser.waitForReadyState('#video2', 0, 1000);
+    browser.waitForReadyState('#video3', 0, 1000);
+    browser.expect.element('#callButton').to.not.be.enabled.before(1000);
+    browser.click('#startButton');
+    browser.waitForReadyState('#video1', 4, 1000);
+    browser.expect.element('#callButton').to.be.enabled.before(1000);
+    browser.expect.element('#hangupButton').to.not.be.enabled.before(1000);
+    browser.click('#callButton');
+    browser.waitForReadyState('#video2', 4, 1000);
+    browser.waitForReadyState('#video3', 4, 1000);
+    browser.expect.element('#hangupButton').to.be.enabled.before(1000);
+    browser.end();
+  }
+};

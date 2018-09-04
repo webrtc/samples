@@ -6,44 +6,40 @@
  *  tree.
  */
 /* eslint-env node */
-
 'use strict';
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-const test = require('tape');
+export default {
+  'Checking that video is enabled when call is upgraded': (browser) => {
+    const path = '/src/content/peerconnection/upgrade/index.html';
+    const url = 'file://' + process.cwd() + path;
 
-test('PeerConnection upgrade sample', t => {
-  const webdriver = require('selenium-webdriver');
-  const seleniumHelpers = require('webrtc-utilities').seleniumLib;
-  const driver = seleniumHelpers.buildDriver();
-
-  const path = '/src/content/peerconnection/upgrade/index.html';
-  const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
-  driver.get(url)
-    .then(() => {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.id('startButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return localStream !== null'), 30 * 1000))
-    .then(() => {
-      t.pass('got media');
-      return driver.findElement(webdriver.By.id('callButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return pc2 && pc2.iceConnectionState === \'connected\';'),
-      30 * 1000))
-    .then(() => {
-      t.pass('pc2 ICE connected');
-      return driver.findElement(webdriver.By.id('upgradeButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return remoteVideo.videoWidth === 640;'), 30 * 1000))
-    .then(() => driver.findElement(webdriver.By.id('hangupButton')).click())
-    .then(() => driver.wait(() => driver.executeScript('return pc1 === null'), 30 * 1000))
-    .then(() => {
-      t.pass('hangup');
-      t.end();
-    })
-    .then(null, err => {
-      t.fail(err);
-      t.end();
-    });
-});
+    browser.url(url).waitForElementVisible('#startButton', 1000, 'Check that the start button is visible');
+    browser.expect.element('#callButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#upgradeButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#hangupButton').to.not.be.enabled.before(1000);
+    browser.waitForReadyState('#localVideo', 0, 1000);
+    browser.waitForReadyState('#remoteVideo', 0, 1000);
+    browser.click('#startButton');
+    browser.expect.element('#startButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#callButton').to.be.enabled.before(1000);
+    browser.expect.element('#upgradeButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#hangupButton').to.not.be.enabled.before(1000);
+    browser.click('#callButton');
+    browser.expect.element('#startButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#callButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#upgradeButton').to.be.enabled.before(1000);
+    browser.expect.element('#hangupButton').to.be.enabled.before(1000);
+    browser.click('#upgradeButton');
+    browser.waitForReadyState('#localVideo', 4, 5000);
+    browser.waitForReadyState('#remoteVideo', 4, 5000);
+    browser.expect.element('#startButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#callButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#upgradeButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#hangupButton').to.be.enabled.before(1000);
+    browser.click('#hangupButton');
+    browser.expect.element('#startButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#callButton').to.be.enabled.before(1000);
+    browser.expect.element('#upgradeButton').to.not.be.enabled.before(1000);
+    browser.expect.element('#hangupButton').to.not.be.enabled.before(1000);
+    browser.end();
+  }
+};
