@@ -23,7 +23,7 @@ export default {
     browser.setValue('#fileInput', process.cwd() + '/src/content/devices/multi/images/poster.jpg');
     browser.expect.element('#sendFile').to.be.enabled.before(1000);
     browser.click('#sendFile');
-    browser.waitForElementVisible('#download', 10000, 'File download link is visible')
+    browser.waitForElementVisible('#download', 10000, 'File download link is visible');
     browser.end();
   }
 };
