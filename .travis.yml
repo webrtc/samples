@@ -1,9 +1,11 @@
-os: osx
+dist: trusty
+sudo: required
 language: node_js
 cache:
  - node_modules
 node_js:
   - lts/*
+jdk: oraclejdk8
 
 #before_script:
 #  - sudo safaridriver --enable
