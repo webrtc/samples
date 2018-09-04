@@ -1,48 +1,53 @@
 dist: trusty
+sudo: required
 language: node_js
 cache:
  - node_modules
 node_js:
-  - 6
+  - lts/*
+jdk: oraclejdk8
+
+#before_script:
+#  - sudo safaridriver --enable
+#  - defaults write com.apple.Safari IncludeDevelopMenu YES
+#  - defaults write com.apple.Safari AllowRemoteAutomation 1
+#  - defaults write com.apple.Safari LocalFileRestrictionsEnabled  0
+#  - defaults write com.apple.Safari WebKit2ICECandidateFilteringEnabled 0
+#  - defaults write com.apple.Safari WebKit2MockCaptureDevicesEnabled 1
+#  - defaults write com.apple.Safari WebKit2MediaCaptureRequiresSecureConnection 0
 
 branches:
   only:
     - gh-pages
 
-addons:
-  apt:
-    packages:
-      - gcc
-      - g++
-      - libstdc++6
-      - pulseaudio
-
-env:
-  global:
-    - DISPLAY=:99.0
-  matrix:
-    - BROWSER=chrome  BVER=stable
-    - BROWSER=chrome  BVER=beta
-    - BROWSER=chrome  BVER=unstable
-    - BROWSER=firefox BVER=stable
-    - BROWSER=firefox BVER=beta
-    - BROWSER=firefox BVER=nightly
-
-matrix:
-  fast_finish: true
-
-  allow_failures:
-    - env: BROWSER=chrome  BVER=unstable
-    - env: BROWSER=firefox BVER=nightly
-
-before_install:
-  - /sbin/start-stop-daemon --start --quiet --pidfile /tmp/cucumber_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1600x1400x16
-
-before_script:
-  - pulseaudio --start
-
 script:
   - npm test
+
+matrix:
+  include:
+  - name: "Chrome Stable"
+    env: BROWSER=chrome
+    addons:
+      chrome: stable
+  - name: "Firefox Stable"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest
+  allow_failures:
+  - name: "Chrome Beta"
+    env: BROWSER=chrome
+    addons:
+      chrome: beta
+  - name: "Firefox Beta"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest-beta
+#  - name: "Safari"
+#    env: BROWSER=safari
+#  - name: "Firefox ESR"
+#    env: BROWSER=firefox
+#    addons:
+#      firefox: latest-esr
 
 notifications:
   email:

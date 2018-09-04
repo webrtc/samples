@@ -1,0 +1,94 @@
+{
+  "src_folders": [
+    "src/content/getusermedia/gum/test",
+    "src/content/getusermedia/resolution/test",
+    "src/content/devices/input-output/test",
+    "src/content/datachannel/filetransfer/test",
+    "src/content/datachannel/datatransfer/test",
+    "src/content/datachannel/basic/test",
+    "src/content/peerconnection/audio/test"
+  ],
+  "output_folder": false,
+  "custom_commands_path": [
+    "nightwatch/customCommands"
+  ],
+  "custom_assertions_path": [
+    "nightwatch/customAsserts"
+  ],
+  "page_objects_path": "",
+  "selenium": {
+    "start_process": true,
+    "server_path": "./node_modules/selenium-server/lib/runner/selenium-server-standalone-3.14.0.jar",
+    "port": 4444,
+    "log_path": "",
+    "cli_args": {
+      "webdriver.firefox.profile": "./node_modules/.bin/geckodriver",
+      "webdriver.chrome.driver":"./node_modules/.bin/chromedriver"
+    }
+  },
+  "test_settings": {
+    "default": {
+      "screenshots": {
+        "enabled": false
+      }
+    },
+    "chrome": {
+      "selenium_port": 4444,
+      "selenium_host": "localhost",
+      "desiredCapabilities": {
+        "browserName": "chrome",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "chromeOptions": {
+          "args": [
+            "--headless",
+            "--no-sandbox",
+            "--allow-file-access-from-files",
+            "--use-fake-device-for-media-stream",
+            "--use-fake-ui-for-media-stream",
+            "--disable-translate",
+            "--no-process-singleton-dialog",
+            "--mute-audio"
+          ]
+        }
+      }
+    },
+    "firefox": {
+      "selenium_port": 4444,
+      "selenium_host": "localhost",
+      "desiredCapabilities": {
+        "browserName": "firefox",
+        "javascriptEnabled": true,
+        "acceptSslCerts": true,
+        "marionette": true,
+        "moz:firefoxOptions": {
+          "log": {
+            "level": "trace"
+          },
+          "args": [
+            "-headless",
+            "-no-remote"
+          ],
+          "prefs": {
+            "browser.cache.disk.enable": false,
+            "browser.cache.disk.capacity": 0,
+            "browser.cache.disk.smart_size.enabled": false,
+            "browser.cache.disk.smart_size.first_run": false,
+            "browser.sessionstore.resume_from_crash": false,
+            "browser.startup.page": 0,
+            "media.navigator.streams.fake": true,
+            "media.navigator.permission.disabled": true,
+            "device.storage.enabled": false,
+            "media.gstreamer.enabled": false,
+            "browser.startup.homepage": "about:blank",
+            "browser.startup.firstrunSkipsHomepage": false,
+            "extensions.update.enabled": false,
+            "app.update.enabled": false,
+            "network.http.use-cache": false,
+            "browser.shell.checkDefaultBrowser": false
+          }
+        }
+      }
+    }
+  }
+}

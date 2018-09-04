@@ -1,8 +1,10 @@
+'use strict';
+
 import gulp from 'gulp';
 import eslint from 'gulp-eslint';
-import htmlhint from 'gulp-htmlhint';
 import zip from 'gulp-zip';
 import gulpStylelint from 'gulp-stylelint';
+import nightwatch from 'gulp-nightwatch';
 
 gulp.task('zip', function() {
   return gulp.src('src/content/extensions/desktopcapture/extension/**')
@@ -17,16 +19,9 @@ gulp.task('eslint', function() {
     .pipe(eslint.failAfterError());
 });
 
-gulp.task('htmlhint', function() {
-  return gulp.src(['src/content/**/*.html', '!**/third_party/*.html'])
-    .pipe(htmlhint())
-    .pipe(htmlhint.reporter())
-    .pipe(htmlhint.failOnError());
-});
 
-gulp.task('lintcss', function() {
-  return gulp
-    .src('src/**/*.css')
+gulp.task('stylelint', function() {
+  return gulp.src('src/**/*.css')
     .pipe(gulpStylelint({
       reporters: [
         {formatter: 'string', console: true}
@@ -34,4 +29,14 @@ gulp.task('lintcss', function() {
     }));
 });
 
-gulp.task('default', ['eslint', 'htmlhint', 'lintcss']);
+gulp.task('nightwatch', function() {
+  const browser = process.env.BROWSER || 'chrome';
+  return gulp.src('gulpfile.babel.js')
+    .pipe(nightwatch({
+      configFile: 'nightwatch.conf.js',
+      cliArgs: [`--env ${browser}`]
+    }));
+});
+
+
+gulp.task('default', gulp.series('eslint', 'stylelint', 'nightwatch'));
