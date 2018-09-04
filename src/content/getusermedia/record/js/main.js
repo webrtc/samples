@@ -25,11 +25,8 @@ let mediaRecorder;
 let recordedBlobs;
 let sourceBuffer;
 
+const errorMsgElement = document.querySelector('span#errorMsg');
 const recordedVideo = document.querySelector('video#recorded');
-recordedVideo.addEventListener('error', function(ev) {
-  console.error('MediaRecording.recordedMedia.error()', ev);
-}, true);
-
 const recordButton = document.querySelector('button#record');
 recordButton.addEventListener('click', () => {
   if (recordButton.textContent === 'Start Recording') {
@@ -84,21 +81,26 @@ function startRecording() {
   recordedBlobs = [];
   let options = {mimeType: 'video/webm;codecs=vp9'};
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.log(`${options.mimeType} is not Supported`);
+    console.error(`${options.mimeType} is not Supported`);
+    errorMsgElement.innerHTML = `${options.mimeType} is not Supported`;
     options = {mimeType: 'video/webm;codecs=vp8'};
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      console.log(`${options.mimeType} is not Supported`);
+      console.error(`${options.mimeType} is not Supported`);
+      errorMsgElement.innerHTML = `${options.mimeType} is not Supported`;
       options = {mimeType: 'video/webm'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.log(`${options.mimeType} is not Supported`);
+        console.error(`${options.mimeType} is not Supported`);
+        errorMsgElement.innerHTML = `${options.mimeType} is not Supported`;
         options = {mimeType: ''};
       }
     }
   }
+
   try {
     mediaRecorder = new MediaRecorder(window.stream, options);
   } catch (e) {
     console.error('Exception while creating MediaRecorder:', e);
+    errorMsgElement.innerHTML = `Exception while creating MediaRecorder: ${JSON.stringify(e)}`;
     return;
   }
 
@@ -134,6 +136,7 @@ async function init() {
     handleSuccess(stream);
   } catch (e) {
     console.error('navigator.getUserMedia error:', e);
+    errorMsgElement.innerHTML = `navigator.getUserMedia error:${e.toString()}`;
   }
 }
 
