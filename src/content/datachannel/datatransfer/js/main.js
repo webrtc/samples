@@ -20,6 +20,7 @@ const orderedCheckbox = document.querySelector('input#ordered');
 const sendProgress = document.querySelector('progress#sendProgress');
 const receiveProgress = document.querySelector('progress#receiveProgress');
 const errorMessage = document.querySelector('div#errorMsg');
+const transferStatus = document.querySelector('span#transferStatus');
 
 let receivedSize = 0;
 let bytesToSend = 0;
@@ -80,11 +81,14 @@ async function createConnection() {
   } catch (e) {
     console.error('Failed to create session description: ', e);
   }
+
+  transferStatus.innerHTML = 'Peer connection setup complete.';
 }
 
 function sendData(e) {
   console.log('BufferedAmountLow event:', e);
   if (sendProgress.value < sendProgress.max) {
+    transferStatus.innerHTML = 'Sending data...';
     sendChannel.addEventListener('bufferedamountlow', sendData, {once: true});
 
     // The following is a workaround due to the problem with bufferedamountlow event not being fired on every
@@ -99,9 +103,14 @@ function sendData(e) {
 
     console.log(`Buffered amount after sending ${count} messages: ${sendChannel.bufferedAmount}`);
   }
+
+  if (sendProgress.value === sendProgress.max) {
+    transferStatus.innerHTML = 'Data transfer completed successfully!';
+  }
 }
 
 function startSendingData() {
+  transferStatus.innerHTML = 'Start sending data.';
   sendProgress.max = bytesToSend;
   receiveProgress.max = sendProgress.max;
   sendProgress.value = 0;
