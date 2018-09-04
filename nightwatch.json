@@ -22,8 +22,8 @@
     "port": 4444,
     "log_path": "",
     "cli_args": {
-      "webdriver.firefox.profile": "./node_modules/.bin/geckodriver",
-      "webdriver.chrome.driver":"./node_modules/.bin/chromedriver"
+      "webdriver.firefox.profile": "./node_modules/selenium-standalone/.selenium/geckodriver/0.20.1-x64-geckodriver",
+      "webdriver.chrome.driver":"./node_modules/selenium-standalone/.selenium/chromedriver/2.40-x64-chromedriver"
     }
   },
   "test_settings": {
@@ -39,7 +39,6 @@
         "browserName": "chrome",
         "javascriptEnabled": true,
         "acceptSslCerts": true,
-        "marionette": true,
         "chromeOptions": {
           "args": [
             "--headless",
