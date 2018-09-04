@@ -2,7 +2,7 @@ module.exports = {
   'extends': 'google',
   'parserOptions': {
     'ecmaVersion': 2017,
-    "sourceType": "module",
+    'sourceType': 'module',
   },
   'rules': {
     'max-len': 'off',

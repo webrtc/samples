@@ -19,24 +19,31 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "gulp && start-tests"
+    "test": "gulp"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "chromedriver": "^2.41.0",
     "eslint-config-google": "^0.9.1",
     "express": "^4.14.1",
-    "geckodriver": "^1.10.0",
-    "gulp": "^3.9.1",
+    "fs": "0.0.1-security",
+    "geckodriver": "^1.12.2",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^7.0.1",
     "gulp-eslint": "^5.0.0",
-    "gulp-htmlhint": "^2.1.1",
+    "gulp-exec": "^3.0.2",
+    "gulp-nightwatch": "^1.0.1",
     "gulp-stylelint": "^7.0.0",
     "gulp-zip": "^4.2.0",
-    "htmllint": "^0.7.2",
+    "lodash": "^4.17.10",
+    "minimatch": "^3.0.4",
+    "nightwatch": "^1.0.10",
     "pem": "^1.9.4",
+    "selenium-server": "^3.14.0",
     "stylelint": "^9.4.0",
-    "stylelint-config-recommended": "^2.1.0",
-    "tape": "^4.9.1",
-    "webrtc-utilities": "^1.0.8"
+    "stylelint-config-recommended": "^2.1.0"
   }
 }
