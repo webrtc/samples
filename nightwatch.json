@@ -35,7 +35,6 @@
     "chrome": {
       "selenium_port": 4444,
       "selenium_host": "localhost",
-      "default_path_prefix": "",
       "desiredCapabilities": {
         "browserName": "chrome",
         "javascriptEnabled": true,

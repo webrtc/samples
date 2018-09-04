@@ -34,6 +34,7 @@
     "gulp": "^4.0.0",
     "gulp-babel": "^7.0.1",
     "gulp-eslint": "^5.0.0",
+    "gulp-exec": "^3.0.2",
     "gulp-nightwatch": "^1.0.1",
     "gulp-stylelint": "^7.0.0",
     "gulp-zip": "^4.2.0",

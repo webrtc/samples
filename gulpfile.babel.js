@@ -5,6 +5,7 @@ import eslint from 'gulp-eslint';
 import zip from 'gulp-zip';
 import gulpStylelint from 'gulp-stylelint';
 import nightwatch from 'gulp-nightwatch';
+import exec from 'gulp-exec';
 
 gulp.task('zip', function() {
   return gulp.src('src/content/extensions/desktopcapture/extension/**')
@@ -32,10 +33,12 @@ gulp.task('stylelint', function() {
 gulp.task('nightwatch', function() {
   const browser = process.env.BROWSER || 'chrome';
   return gulp.src('gulpfile.babel.js')
+    .pipe(exec('./node_modules/.bin/selenium-standalone install'))
     .pipe(nightwatch({
       configFile: 'nightwatch.conf.js',
       cliArgs: [`--env ${browser}`]
     }));
 });
+
 
 gulp.task('default', gulp.series('eslint', 'stylelint', 'nightwatch'));

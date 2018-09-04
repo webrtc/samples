@@ -16,11 +16,17 @@ export default {
       return;
     }
 
+    // Math is hard if you're JavaScript (TODO: will be fixed when datachannel sample is updated)
+    let bytesToReceive = '16777216';
+    if (browser.options.desiredCapabilities.browserName === 'chrome') {
+      bytesToReceive = '16777200';
+    }
+
     browser
       .url(url)
       .click('#sendTheData')
       .pause(1000)
-      .assert.value('#receiveProgress', '16777200')
+      .assert.value('#receiveProgress', bytesToReceive)
       .end();
   }
 };
