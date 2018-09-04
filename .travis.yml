@@ -29,24 +29,25 @@ matrix:
     env: BROWSER=chrome
     addons:
       chrome: stable
+  - name: "Firefox Stable"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest
+  allow_failures:
   - name: "Chrome Beta"
     env: BROWSER=chrome
     addons:
       chrome: beta
+  - name: "Firefox Beta"
+    env: BROWSER=firefox
+    addons:
+      firefox: latest-beta
 #  - name: "Safari"
 #    env: BROWSER=safari
 #  - name: "Firefox ESR"
 #    env: BROWSER=firefox
 #    addons:
 #      firefox: latest-esr
-  - name: "Firefox Stable"
-    env: BROWSER=firefox
-    addons:
-      firefox: latest
-  - name: "Firefox Beta"
-    env: BROWSER=firefox
-    addons:
-      firefox: latest-beta
 
 notifications:
   email:
