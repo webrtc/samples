@@ -18,12 +18,12 @@
   "page_objects_path": "",
   "selenium": {
     "start_process": true,
-    "server_path": "./node_modules/selenium-standalone/.selenium/selenium-server/3.12.0-server.jar",
+    "server_path": "./node_modules/selenium-server/lib/runner/selenium-server-standalone-3.14.0.jar",
     "port": 4444,
     "log_path": "",
     "cli_args": {
-      "webdriver.firefox.profile": "./node_modules/selenium-standalone/.selenium/geckodriver/0.20.1-x64-geckodriver",
-      "webdriver.chrome.driver":"./node_modules/selenium-standalone/.selenium/chromedriver/2.40-x64-chromedriver"
+      "webdriver.firefox.profile": "./node_modules/.bin/geckodriver",
+      "webdriver.chrome.driver":"./node_modules/.bin/chromedriver"
     }
   },
   "test_settings": {
