@@ -8,34 +8,32 @@ class MediaPlaybackReady extends EventEmitter {
 
   command(selector, timeout, message) {
     this.startTime = new Date().getTime();
-    this.check(selector, timeout, message);
+    const self = this;
+
+    const executeArgs = [selector];
+    const checkFunction = (selector, cb) => {
+      console.error('checkFunction');
+      const element = document.querySelector(selector);
+      // readyState === 4 means that video/audio is ready to play
+      cb(element.readyState);
+    };
+    const callback = result => {
+      const now = new Date().getTime();
+      if (result.value === 4) {
+        const msg = message || `Media element ${selector} started playing in ${now - self.startTime} ms`;
+        self.emit('done');
+      } else if (now - self.startTime < timeout) {
+        this.api.executeAsync(checkFunction, executeArgs, callback);
+      } else {
+        const failMsg = message || `Media element ${selector} failed to start in ${now - self.startTime} ms`;
+        assert.equal(result.value, 4, failMsg);
+        self.emit('done');
+      }
+    };
+    this.api.executeAsync(checkFunction, executeArgs, callback);
 
     return this;
   }
-
-  check(selector, timeout, message) {
-    const self = this;
-    const executeArgs = [selector];
-    this.api.execute(function(selector) {
-      const element = document.querySelector(selector);
-      // readyState === 4 means that video/audio is ready to play
-      return element && (element.readyState === 4);
-    }, executeArgs, function(result) {
-      const now = new Date().getTime();
-      if (result.value) {
-        const msg = message || `Media element ${selector} started playing in ${now - self.startTime} ms`;
-        assert(true, msg);
-        self.emit('complete');
-      } else if (now - self.startTime < timeout) {
-        setTimeout(function() { self.check(selector, timeout, message); }, 100);
-      } else {
-        const failMsg = message || `Media element ${selector} failed to start in ${now - self.startTime} ms`;
-        assert(false, failMsg);
-        self.emit('complete');
-      }
-    });
-
-  }
 }
 
-export default MediaPlaybackReady
+export default MediaPlaybackReady;

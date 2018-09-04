@@ -17,8 +17,14 @@
   ],
   "page_objects_path": "",
   "selenium": {
-    "start_process": false,
-    "log_path": false
+    "start_process": true,
+    "server_path": "./node_modules/selenium-standalone/.selenium/selenium-server/3.12.0-server.jar",
+    "port": 4444,
+    "log_path": "",
+    "cli_args": {
+      "webdriver.firefox.profile": "./node_modules/.bin/geckodriver",
+      "webdriver.chrome.driver":"./node_modules/.bin/chromedriver"
+    }
   },
   "test_settings": {
     "default": {
@@ -26,28 +32,8 @@
         "enabled": false
       }
     },
-    "safari" : {
-      "webdriver": {
-        "start_process": true,
-        "port": 4445,
-        "server_path": "/usr/bin/safaridriver"
-      },
-      "selenium_port": 4445,
-      "selenium_host": "localhost",
-      "default_path_prefix": "",
-      "desiredCapabilities": {
-        "browserName" : "safari",
-        "javascriptEnabled" : true,
-        "acceptSslCerts" : true
-      }
-    },
     "chrome": {
-      "webdriver": {
-        "start_process": true,
-        "port": 9515,
-        "server_path": "./node_modules/.bin/chromedriver"
-      },
-      "selenium_port": 9515,
+      "selenium_port": 4444,
       "selenium_host": "localhost",
       "default_path_prefix": "",
       "desiredCapabilities": {
@@ -72,12 +58,6 @@
     "firefox": {
       "selenium_port": 4444,
       "selenium_host": "localhost",
-      "default_path_prefix": "",
-      "webdriver": {
-        "start_process": true,
-        "server_path": "./node_modules/.bin/geckodriver",
-        "port": 4444
-      },
       "desiredCapabilities": {
         "browserName": "firefox",
         "javascriptEnabled": true,

@@ -10,8 +10,9 @@ export default {
     const path = '/src/content/devices/input-output/index.html';
     const url = 'file://' + process.cwd() + path;
 
-    // audio output is't supported on Safari
-    if (browser.options.desiredCapabilities.browserName === 'safari') {
+    // audio output is't supported on Safari or Firefox
+    const browserName = browser.options.desiredCapabilities.browserName;
+    if (browserName === 'firefox' || browserName === 'safari') {
       browser
         .url(url)
         .waitForElementVisible('#audioSource option:nth-of-type(1)', 1000, 'Check that there is at least one audio source')

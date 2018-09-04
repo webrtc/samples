@@ -39,8 +39,9 @@
     "gulp-zip": "^4.2.0",
     "lodash": "^4.17.10",
     "minimatch": "^3.0.4",
-    "nightwatch": "^1.0.9",
+    "nightwatch": "^1.0.10",
     "pem": "^1.9.4",
+    "selenium-standalone": "^6.15.2",
     "stylelint": "^9.4.0",
     "stylelint-config-recommended": "^2.1.0"
   }
