@@ -137,5 +137,4 @@ async function init() {
   }
 }
 
-// window.isSecureContext could be used for Chrome
 init();
