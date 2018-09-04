@@ -63,7 +63,6 @@
         "acceptSslCerts": true,
         "marionette": true,
         "moz:firefoxOptions": {
-          "binary": "/Applications/Firefox.app/Contents/MacOS/firefox",
           "log": {
             "level": "trace"
           },
