@@ -21,7 +21,6 @@ const sendProgress = document.querySelector('progress#sendProgress');
 const receiveProgress = document.querySelector('progress#receiveProgress');
 const statusMessage = document.querySelector('span#status');
 const sendFileButton = document.querySelector('button#sendFile');
-const abortButtonButton = document.querySelector('button#abortButton');
 
 let receiveBuffer = [];
 let receivedSize = 0;
