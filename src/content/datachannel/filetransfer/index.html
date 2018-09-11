@@ -49,10 +49,13 @@
     </section>
 
     <section>
-      <form id="fileInfo">
-        <input type="file" id="fileInput" name="files"/>
-      </form>
-      <button id="abortButton">Abort</button>
+      <div >
+        <form id="fileInfo">
+          <input type="file" id="fileInput" name="files"/>
+        </form>
+        <button disabled id="sendFile">Send</button>
+        <button disabled id="abortButton">Abort</button>
+      </div>
 
       <div class="progress">
         <div class="label">Send progress: </div>

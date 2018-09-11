@@ -7,13 +7,17 @@
  */
 
 'use strict';
-const CHUNK_SIZE = 16384;
-const DATA_STRING = new Array(CHUNK_SIZE).fill('X').join('');
+const MAX_CHUNK_SIZE = 262144;
 
 let localConnection;
 let remoteConnection;
 let sendChannel;
 let receiveChannel;
+let chunkSize;
+let lowWaterMark;
+let highWaterMark;
+let dataString;
+let timeoutHandle = null;
 const megsToSend = document.querySelector('input#megsToSend');
 const sendButton = document.querySelector('button#sendTheData');
 const orderedCheckbox = document.querySelector('input#ordered');
@@ -22,13 +26,12 @@ const receiveProgress = document.querySelector('progress#receiveProgress');
 const errorMessage = document.querySelector('div#errorMsg');
 const transferStatus = document.querySelector('span#transferStatus');
 
-let receivedSize = 0;
 let bytesToSend = 0;
 
 sendButton.addEventListener('click', createConnection);
 
 // Prevent data sent to be set to 0.
-megsToSend.addEventListener('change', function(e) {
+megsToSend.addEventListener('change', function() {
   const number = this.value;
   if (Number.isNaN(number)) {
     errorMessage.innerHTML = `Invalid value for MB to send: ${number}`;
@@ -61,10 +64,8 @@ async function createConnection() {
     dataChannelParams.ordered = true;
   }
   sendChannel = localConnection.createDataChannel('sendDataChannel', dataChannelParams);
-  sendChannel.binaryType = 'arraybuffer';
-  sendChannel.bufferedAmountLowThreshold = CHUNK_SIZE / 2;
-  sendChannel.addEventListener('open', onSendChannelStateChange);
-  sendChannel.addEventListener('close', onSendChannelStateChange);
+  sendChannel.addEventListener('open', onSendChannelOpen);
+  sendChannel.addEventListener('close', onSendChannelClosed);
   console.log('Created send data channel: ', sendChannel);
 
   console.log('Created local peer connection object localConnection: ', localConnection);
@@ -85,23 +86,31 @@ async function createConnection() {
   transferStatus.innerHTML = 'Peer connection setup complete.';
 }
 
-function sendData(e) {
-  console.log('BufferedAmountLow event:', e);
-  if (sendProgress.value < sendProgress.max) {
+function sendData() {
+  // Stop scheduled timer if any (part of the workaround introduced below)
+  if (timeoutHandle !== null) {
+    clearTimeout(timeoutHandle);
+    timeoutHandle = null;
+  }
+
+  let bufferedAmount = sendChannel.bufferedAmount;
+  while (sendProgress.value < sendProgress.max) {
     transferStatus.innerHTML = 'Sending data...';
-    sendChannel.addEventListener('bufferedamountlow', sendData, {once: true});
+    sendChannel.send(dataString);
+    bufferedAmount += chunkSize;
+    sendProgress.value += chunkSize;
+    console.log(`Sent ${sendProgress.value}/${sendProgress.max}`);
 
-    // The following is a workaround due to the problem with bufferedamountlow event not being fired on every
-    // call to send(), despite the amount of data exceeding the bufferedAmountLowThreshold.
-    // If the event would be firing correctly, we could exclude the while loop below.
-    let count = 0;
-    while (sendProgress.value < sendProgress.max && sendChannel.bufferedAmount < CHUNK_SIZE) {
-      sendChannel.send(DATA_STRING);
-      sendProgress.value += CHUNK_SIZE;
-      count++;
+    // Pause sending if we reach the high water mark
+    if (bufferedAmount >= highWaterMark) {
+      // This is a workaround due to the bug that all browsers are incorrectly calculating the
+      // amount of buffered data. Therefore, the 'bufferedamountlow' event would not fire.
+      if (sendChannel.bufferedAmount < lowWaterMark) {
+        timeoutHandle = setTimeout(() => sendData(), 0);
+      }
+      console.log(`Paused sending, buffered amount: ${bufferedAmount} (announced: ${sendChannel.bufferedAmount})`);
+      break;
     }
-
-    console.log(`Buffered amount after sending ${count} messages: ${sendChannel.bufferedAmount}`);
   }
 
   if (sendProgress.value === sendProgress.max) {
@@ -118,17 +127,11 @@ function startSendingData() {
   sendData();
 }
 
-function closeDataChannels() {
-  console.log('Closing data channels');
-  sendChannel.close();
-  console.log(`Closed data channel with label: ${sendChannel.label}`);
-  receiveChannel.close();
-  console.log(`Closed data channel with label: ${receiveChannel.label}`);
-  localConnection.close();
-  remoteConnection.close();
-  localConnection = null;
-  remoteConnection = null;
-  console.log('Closed peer connections');
+function maybeReset() {
+  if (localConnection === null && remoteConnection === null) {
+    sendButton.disabled = false;
+    megsToSend.disabled = false;
+  }
 }
 
 async function handleLocalDescription(desc) {
@@ -170,25 +173,54 @@ function receiveChannelCallback(event) {
   console.log('Receive Channel Callback');
   receiveChannel = event.channel;
   receiveChannel.binaryType = 'arraybuffer';
+  receiveChannel.addEventListener('close', onReceiveChannelClosed);
   receiveChannel.addEventListener('message', onReceiveMessageCallback);
-  receivedSize = 0;
 }
 
 function onReceiveMessageCallback(event) {
-  console.log('Received message!');
-  receivedSize += event.data.length;
-  receiveProgress.value = receivedSize;
+  receiveProgress.value += event.data.length;
+  console.log(`Received ${receiveProgress.value}/${receiveProgress.max}`);
 
-  if (receivedSize === bytesToSend) {
-    closeDataChannels();
-    sendButton.disabled = false;
-    megsToSend.disabled = false;
+  // Workaround for a bug in Chrome which prevents the closing event from being raised by the
+  // remote side. Also a workaround for Firefox which does not send all pending data when closing
+  // the channel.
+  if (receiveProgress.value === receiveProgress.max) {
+    sendChannel.close();
+    receiveChannel.close();
   }
 }
 
-function onSendChannelStateChange() {
-  console.log('Send channel state is: ', sendChannel.readyState);
-  if (sendChannel.readyState === 'open') {
-    startSendingData();
-  }
+function onSendChannelOpen() {
+  console.log('Send channel is open');
+
+  chunkSize = Math.min(localConnection.sctp.maxMessageSize, MAX_CHUNK_SIZE);
+  console.log('Determined chunk size: ', chunkSize);
+  dataString = new Array(chunkSize).fill('X').join('');
+  lowWaterMark = chunkSize; // A single chunk
+  highWaterMark = Math.max(chunkSize * 8, 1048576); // 8 chunks or at least 1 MiB
+  console.log('Send buffer low water threshold: ', lowWaterMark);
+  console.log('Send buffer high water threshold: ', highWaterMark);
+  sendChannel.bufferedAmountLowThreshold = lowWaterMark;
+  sendChannel.addEventListener('bufferedamountlow', (e) => {
+    console.log('BufferedAmountLow event:', e);
+    sendData();
+  });
+
+  startSendingData();
+}
+
+function onSendChannelClosed() {
+  console.log('Send channel is closed');
+  localConnection.close();
+  localConnection = null;
+  console.log('Closed local peer connection');
+  maybeReset();
+}
+
+function onReceiveChannelClosed() {
+  console.log('Receive channel is closed');
+  remoteConnection.close();
+  remoteConnection = null;
+  console.log('Closed remote peer connection');
+  maybeReset();
 }
