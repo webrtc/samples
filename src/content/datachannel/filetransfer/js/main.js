@@ -20,6 +20,7 @@ const downloadAnchor = document.querySelector('a#download');
 const sendProgress = document.querySelector('progress#sendProgress');
 const receiveProgress = document.querySelector('progress#receiveProgress');
 const statusMessage = document.querySelector('span#status');
+const sendFileButton = document.querySelector('button#sendFile');
 
 let receiveBuffer = [];
 let receivedSize = 0;
@@ -30,6 +31,7 @@ let timestampStart;
 let statsInterval = null;
 let bitrateMax = 0;
 
+sendFileButton.addEventListener('click', () => createConnection());
 fileInput.addEventListener('change', handleFileInputChange, false);
 abortButton.addEventListener('click', () => {
   if (fileReader && fileReader.readyState === 1) {
@@ -43,11 +45,13 @@ async function handleFileInputChange() {
   if (!file) {
     console.log('No file chosen');
   } else {
-    await createConnection();
+    sendFileButton.disabled = false;
   }
 }
 
 async function createConnection() {
+  abortButton.disabled = false;
+  sendFileButton.disabled = true;
   localConnection = new RTCPeerConnection();
   console.log('Created local peer connection object localConnection');
 
@@ -136,6 +140,8 @@ function closeDataChannels() {
 
   // re-enable the file select
   fileInput.disabled = false;
+  abortButton.disabled = true;
+  sendFileButton.disabled = false;
 }
 
 async function gotLocalDescription(desc) {
