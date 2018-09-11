@@ -19,7 +19,7 @@ const fullHdButton = document.querySelector('#full-hd');
 const fourKButton = document.querySelector('#fourK');
 const eightKButton = document.querySelector('#eightK');
 
-const videoblock = document.querySelector('#videoblock');
+const videoblock = document.querySelector('#configBlock');
 const messagebox = document.querySelector('#errormessage');
 
 const widthInput = document.querySelector('div#width input');
