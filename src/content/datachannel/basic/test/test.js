@@ -16,21 +16,20 @@ export default {
       return;
     }
 
-    browser
-      .url(url)
-      .click('#startButton')
-      .expect.element('#sendButton').to.be.enabled.before(50);
+    browser.url(url).waitForElementVisible('button#startButton');
+    browser.click('button#startButton');
+    browser.expect.element('button#sendButton').to.be.enabled.before(50);
     browser.expect.element('#dataChannelSend').to.be.enabled.before(50);
 
     browser.setValue('#dataChannelSend', 'HELLO, WORLD!');
     browser
-      .click('#sendButton')
+      .click('button#sendButton')
       .pause(50)
       .assert.value('#dataChannelReceive', 'HELLO, WORLD!');
 
     browser
-      .click('#closeButton')
-      .expect.element('#sendButton').to.not.be.enabled.before(50);
+      .click('button#closeButton')
+      .expect.element('button#sendButton').to.not.be.enabled.before(50);
 
     browser.end();
   }

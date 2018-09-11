@@ -41,7 +41,6 @@
         "acceptSslCerts": true,
         "chromeOptions": {
           "args": [
-            "--headless",
             "--no-sandbox",
             "--allow-file-access-from-files",
             "--use-fake-device-for-media-stream",
