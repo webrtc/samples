@@ -8,7 +8,7 @@ We welcome contributions and bugfixes. Please see [CONTRIBUTING.md](https://gith
 
 ## Testing
 
-Some of the samples have am associated test. These are currently using [Nightwatch.JS](https://nightwatchjs.org) and
+Some of the samples have an associated test. These are currently using [Nightwatch.JS](https://nightwatchjs.org) and
 are only testing the UI of the samples. The purpose of these is to provide examples of how you can write UI tests for
 your WebRTC web application.
 
