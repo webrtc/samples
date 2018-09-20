@@ -31,7 +31,7 @@ async function createOffer() {
   // Fill up the peer connection with numRequestedAudioTracks number of tracks.
   for (let i = 0; i < numRequestedAudioTracks; i++) {
     const track = dst.stream.getTracks()[0];
-    peerConnection.addTrack(track, dst.stream)
+    peerConnection.addTrack(track, dst.stream);
   }
 
   const offerOptions = {
