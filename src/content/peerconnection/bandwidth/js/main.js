@@ -173,11 +173,16 @@ bandwidthSelector.onchange = () => {
   // In Chrome, use RTCRtpSender.setParameters to change bandwidth without
   // (local) renegotiation. Note that this will be within the envelope of
   // the initial maximum bandwidth negotiated via SDP.
-  if (adapter.browserDetails.browser === 'chrome' &&
+  if ((adapter.browserDetails.browser === 'chrome' ||
+       (adapter.browserDetails.browser === 'firefox' &&
+        adapter.browserDetails.version >= 64)) &&
       'RTCRtpSender' in window &&
       'setParameters' in window.RTCRtpSender.prototype) {
     const sender = pc1.getSenders()[0];
     const parameters = sender.getParameters();
+    if (!parameters.encodings) {
+      parameters.encodings = [{}];
+    }
     if (bandwidth === 'unlimited') {
       delete parameters.encodings[0].maxBitrate;
     } else {
