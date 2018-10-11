@@ -51,7 +51,7 @@ class MessagingSample extends LitElement {
 
       this._remoteConnection.addEventListener('datachannel', this._onRemoteDataChannel.bind(this));
 
-      const initLocalOffer = async() => {
+      const initLocalOffer = async () => {
         const localOffer = await this._localConnection.createOffer();
         console.log(`Got local offer ${JSON.stringify(localOffer)}`);
         const localDesc = this._localConnection.setLocalDescription(localOffer);
@@ -59,7 +59,7 @@ class MessagingSample extends LitElement {
         return Promise.all([localDesc, remoteDesc]);
       };
 
-      const initRemoteAnswer = async() => {
+      const initRemoteAnswer = async () => {
         const remoteAnswer = await this._remoteConnection.createAnswer();
         console.log(`Got remote answer ${JSON.stringify(remoteAnswer)}`);
         const localDesc = this._remoteConnection.setLocalDescription(remoteAnswer);
@@ -143,7 +143,7 @@ class MessagingSample extends LitElement {
   }
 
   _sendMessage(selector, channel) {
-    const textarea = this.shadowRoot.querySelector(selector)
+    const textarea = this.shadowRoot.querySelector(selector);
     const value = textarea.value;
     if (value === '') {
       console.log('Not sending empty message!');
