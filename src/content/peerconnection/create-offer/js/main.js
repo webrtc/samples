@@ -19,27 +19,19 @@ const outputTextarea = document.querySelector('textarea#output');
 const createOfferButton = document.querySelector('button#createOffer');
 
 createOfferButton.addEventListener('click', createOffer);
-
-numAudioTracksInput.addEventListener('change', (e) => numAudioTracksDisplay.textContent = e.target.value);
-
-let pc = new RTCPeerConnection();
+numAudioTracksInput.addEventListener('change', e => numAudioTracksDisplay.innerText = e.target.value);
 
 async function createOffer() {
-  if (pc) {
-    pc.close();
-    pc = null;
-    pc = new RTCPeerConnection();
-  }
+  outputTextarea.value = '';
+  const peerConnection = new RTCPeerConnection(null);
+  const numRequestedAudioTracks = parseInt(numAudioTracksInput.value);
 
-  const numRequestedAudioTracks = numAudioTracksInput.value;
-  while (numRequestedAudioTracks < pc.getLocalStreams().length) {
-    pc.removeStream(pc.getLocalStreams()[pc.getLocalStreams().length - 1]);
-  }
-
-  while (numRequestedAudioTracks > pc.getLocalStreams().length) {
-    const acx = new AudioContext();
-    const dst = acx.createMediaStreamDestination();
-    dst.stream.getTracks().forEach(track => pc.addTrack(track, dst.stream));
+  const acx = new AudioContext();
+  const dst = acx.createMediaStreamDestination();
+  // Fill up the peer connection with numRequestedAudioTracks number of tracks.
+  for (let i = 0; i < numRequestedAudioTracks; i++) {
+    const track = dst.stream.getTracks()[0];
+    peerConnection.addTrack(track, dst.stream);
   }
 
   const offerOptions = {
@@ -53,10 +45,10 @@ async function createOffer() {
   };
 
   try {
-    const desc = await pc.createOffer(offerOptions);
-    pc.setLocalDescription(desc);
-    outputTextarea.value = desc.sdp;
+    const offer = await peerConnection.createOffer(offerOptions);
+    peerConnection.setLocalDescription(offer);
+    outputTextarea.value = offer.sdp;
   } catch (e) {
-    outputTextarea.value = `Failed to createOffer: ${e}`;
+    outputTextarea.value = `Failed to create offer: ${e}`;
   }
 }
