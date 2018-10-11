@@ -18,27 +18,26 @@ const numAudioTracksDisplay = document.querySelector('span#numAudioTracksDisplay
 const outputTextarea = document.querySelector('textarea#output');
 const createOfferButton = document.querySelector('button#createOffer');
 
-createOfferButton.onclick = createOffer;
+createOfferButton.addEventListener('click', createOffer);
 
-numAudioTracksInput.onchange = () => numAudioTracksDisplay.textContent = this.value;
+numAudioTracksInput.addEventListener('change', (e) => numAudioTracksDisplay.textContent = e.target.value);
 
-let pc = new RTCPeerConnection(null);
-const acx = new AudioContext();
+let pc = new RTCPeerConnection();
 
-function createOffer() {
+async function createOffer() {
   if (pc) {
     pc.close();
     pc = null;
-    pc = new RTCPeerConnection(null);
+    pc = new RTCPeerConnection();
   }
+
   const numRequestedAudioTracks = numAudioTracksInput.value;
   while (numRequestedAudioTracks < pc.getLocalStreams().length) {
     pc.removeStream(pc.getLocalStreams()[pc.getLocalStreams().length - 1]);
   }
+
   while (numRequestedAudioTracks > pc.getLocalStreams().length) {
-    // Create some dummy audio streams using Web Audio.
-    // Note that this fails if you try to do more than one track in Chrome
-    // right now.
+    const acx = new AudioContext();
     const dst = acx.createMediaStreamDestination();
     dst.stream.getTracks().forEach(track => pc.addTrack(track, dst.stream));
   }
@@ -53,10 +52,11 @@ function createOffer() {
     voiceActivityDetection: vadInput.checked
   };
 
-  pc.createOffer(offerOptions)
-    .then(desc => {
-      pc.setLocalDescription(desc);
-      outputTextarea.value = desc.sdp;
-    })
-    .catch(error => outputTextarea.value = `Failed to createOffer: ${error}`);
+  try {
+    const desc = await pc.createOffer(offerOptions);
+    pc.setLocalDescription(desc);
+    outputTextarea.value = desc.sdp;
+  } catch (e) {
+    outputTextarea.value = `Failed to createOffer: ${e}`;
+  }
 }
