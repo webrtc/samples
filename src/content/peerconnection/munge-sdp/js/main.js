@@ -148,7 +148,7 @@ async function init() {
     }
     const servers = null;
 
-    localPeerConnection = new RTCPeerConnection(servers);
+    window.localPeerConnection = localPeerConnection = new RTCPeerConnection(servers);
     console.log('Created local peer connection object localPeerConnection');
     localPeerConnection.onicecandidate = e => onIceCandidate(localPeerConnection, e);
     sendChannel = localPeerConnection.createDataChannel('sendDataChannel', dataChannelOptions);
@@ -156,7 +156,7 @@ async function init() {
     sendChannel.onclose = onSendChannelStateChange;
     sendChannel.onerror = onSendChannelStateChange;
 
-    remotePeerConnection = new RTCPeerConnection(servers);
+    window.remotePeerConnection = remotePeerConnection = new RTCPeerConnection(servers);
     console.log('Created remote peer connection object remotePeerConnection');
     remotePeerConnection.onicecandidate = e => onIceCandidate(remotePeerConnection, e);
     remotePeerConnection.ontrack = gotRemoteStream;
