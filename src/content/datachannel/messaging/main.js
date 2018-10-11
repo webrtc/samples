@@ -8,7 +8,7 @@
 /* eslint no-unused-expressions: 0 */
 
 'use strict';
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element?module';
+import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@0.6.2?module';
 
 class MessagingSample extends LitElement {
   constructor() {
@@ -22,20 +22,21 @@ class MessagingSample extends LitElement {
   }
 
   async connect() {
+    console.log('connect!');
     try {
       const dataChannelParams = {ordered: true};
-      this._localConnection = new RTCPeerConnection();
+      window.localConnection = this._localConnection = new RTCPeerConnection();
       this._localConnection.addEventListener('icecandidate', async e => {
         console.log('local connection ICE candidate: ', e.candidate);
         await this._remoteConnection.addIceCandidate(e.candidate);
       });
-      this._remoteConnection = new RTCPeerConnection();
+      window.remoteConnection = this._remoteConnection = new RTCPeerConnection();
       this._remoteConnection.addEventListener('icecandidate', async e => {
         console.log('remote connection ICE candidate: ', e.candidate);
         await this._localConnection.addIceCandidate(e.candidate);
       });
 
-      this._localChannel = this._localConnection
+      window.localChannel = this._localChannel = this._localConnection
         .createDataChannel('messaging-channel', dataChannelParams);
       this._localChannel.binaryType = 'arraybuffer';
       this._localChannel.addEventListener('open', () => {
@@ -46,11 +47,11 @@ class MessagingSample extends LitElement {
         console.log('Local channel closed!');
         this.connected = false;
       });
-      this._localChannel.addEventListener('message', e => this._onLocalMessageReceived(e));
+      this._localChannel.addEventListener('message', this._onLocalMessageReceived.bind(this));
 
-      this._remoteConnection.addEventListener('datachannel', e => this._onRemoteDataChannel(e));
+      this._remoteConnection.addEventListener('datachannel', this._onRemoteDataChannel.bind(this));
 
-      const initLocalOffer = async () => {
+      const initLocalOffer = async() => {
         const localOffer = await this._localConnection.createOffer();
         console.log(`Got local offer ${JSON.stringify(localOffer)}`);
         const localDesc = this._localConnection.setLocalDescription(localOffer);
@@ -58,7 +59,7 @@ class MessagingSample extends LitElement {
         return Promise.all([localDesc, remoteDesc]);
       };
 
-      const initRemoteAnswer = async () => {
+      const initRemoteAnswer = async() => {
         const remoteAnswer = await this._remoteConnection.createAnswer();
         console.log(`Got remote answer ${JSON.stringify(remoteAnswer)}`);
         const localDesc = this._remoteConnection.setLocalDescription(remoteAnswer);
@@ -80,9 +81,9 @@ class MessagingSample extends LitElement {
 
   _onRemoteDataChannel(event) {
     console.log(`onRemoteDataChannel: ${JSON.stringify(event)}`);
-    this._remoteChannel = event.channel;
+    window.remoteChannel = this._remoteChannel = event.channel;
     this._remoteChannel.binaryType = 'arraybuffer';
-    this._remoteChannel.addEventListener('message', e => this._onRemoteMessageReceived(e));
+    this._remoteChannel.addEventListener('message', this._onRemoteMessageReceived.bind(this));
     this._remoteChannel.addEventListener('close', () => {
       console.log('Remote channel closed!');
       this.connected = false;
@@ -96,60 +97,53 @@ class MessagingSample extends LitElement {
 
   static get properties() {
     return {
-      connected: Boolean,
-      localMessages: String,
-      remoteMessages: String
+      connected: {type: Boolean},
+      localMessages: {type: String},
+      remoteMessages: {type: String}
     };
   }
 
-  _render({connected, localMessages, remoteMessages}) {
+  render() {
     return html`<section>
   <style>
   @import "../../../css/main.css";
   @import "main.css";
   </style>
   <div>
-      <button disabled="${connected}" on-click="${() => this.connect()}">Connect</button>
-      <button disabled="${!connected}" on-click="${() => this.disconnect()}">Disconnect</button>
+      <button ?disabled="${this.connected}" @click="${this.connect.bind(this)}">Connect</button>
+      <button ?disabled="${!this.connected}" @click="${this.disconnect.bind(this)}">Disconnect</button>
   </div>
 
   <div class="messageBox">
       <label for="localOutgoing">Local outgoing message:</label>
       <textarea class="message" id="localOutgoing" 
                 placeholder="Local outgoing message goes here."></textarea>
-      <button disabled="${!connected}" on-click="${() => this._sendMessage(this.localOutgoing, this._localChannel)} 
+      <button ?disabled="${!this.connected}" @click="${e => this._sendMessage('#localOutgoing', this._localChannel)} 
       id="sendLocal">Send message from local</button>
   </div>
   <div class="messageBox">
       <label for="localIncoming">Local incoming messages:</label>
       <textarea class="message" id="localIncoming" disabled 
-                placeholder="Local incoming messages arrive here.">${localMessages}</textarea>
+                placeholder="Local incoming messages arrive here.">${this.localMessages}</textarea>
   </div>
 
   <div class="messageBox">
       <label for="remoteOutgoing">Remote outgoing message:</label>
       <textarea class="message" id="remoteOutgoing" 
                 placeholder="Remote outgoing message goes here."></textarea>
-      <button disabled="${!connected}" on-click="${() => this._sendMessage(this.remoteOutgoing, this._remoteChannel)}" 
+      <button ?disabled="${!this.connected}" @click="${e => this._sendMessage('#remoteOutgoing', this._remoteChannel)}" 
       id="sendRemote">Send message from remote</button>
   </div>
   <div class="messageBox">
       <label for="remoteIncoming">Remote incoming messages:</label>
       <textarea class="message" id="remoteIncoming" disabled
-                placeholder="Remote incoming messages arrive here.">${remoteMessages}</textarea>
+                placeholder="Remote incoming messages arrive here.">${this.remoteMessages}</textarea>
   </div>
 </section>`;
   }
 
-  get remoteOutgoing() {
-    return this.shadowRoot.querySelector('#remoteOutgoing');
-  }
-
-  get localOutgoing() {
-    return this.shadowRoot.querySelector('#localOutgoing');
-  }
-
-  _sendMessage(textarea, channel) {
+  _sendMessage(selector, channel) {
+    const textarea = this.shadowRoot.querySelector(selector)
     const value = textarea.value;
     if (value === '') {
       console.log('Not sending empty message!');
