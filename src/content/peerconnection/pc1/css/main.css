@@ -26,6 +26,10 @@ video#localVideo {
   margin: 0 20px 20px 0;
 }
 
+div.box {
+  margin: 1em;
+}
+
 @media screen and (max-width: 400px) {
   button {
     width: 83px;

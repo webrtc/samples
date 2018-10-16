@@ -13,9 +13,9 @@ const callButton = document.getElementById('callButton');
 const hangupButton = document.getElementById('hangupButton');
 callButton.disabled = true;
 hangupButton.disabled = true;
-startButton.onclick = start;
-callButton.onclick = call;
-hangupButton.onclick = hangup;
+startButton.addEventListener('click', start);
+callButton.addEventListener('click', call);
+hangupButton.addEventListener('click', hangup);
 
 let startTime;
 const localVideo = document.getElementById('localVideo');
@@ -29,7 +29,7 @@ remoteVideo.addEventListener('loadedmetadata', function() {
   console.log(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
 
-remoteVideo.onresize = () => {
+remoteVideo.addEventListener('resize', () => {
   console.log(`Remote video size changed to ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
   // We'll use the first onsize callback as an indication that video has started
   // playing out.
@@ -38,7 +38,7 @@ remoteVideo.onresize = () => {
     console.log('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
     startTime = null;
   }
-};
+});
 
 let localStream;
 let pc1;
@@ -56,26 +56,27 @@ function getOtherPc(pc) {
   return (pc === pc1) ? pc2 : pc1;
 }
 
-function gotStream(stream) {
-  console.log('Received local stream');
-  localVideo.srcObject = stream;
-  localStream = stream;
-  callButton.disabled = false;
-}
-
-function start() {
+async function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: true
-    })
-    .then(gotStream)
-    .catch(e => alert(`getUserMedia() error: ${e.name}`));
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+    console.log('Received local stream');
+    localVideo.srcObject = stream;
+    localStream = stream;
+    callButton.disabled = false;
+  } catch (e) {
+    alert(`getUserMedia() error: ${e.name}`);
+  }
 }
 
-function call() {
+function getSelectedSdpSemantics() {
+  const sdpSemanticsSelect = document.querySelector('#sdpSemantics');
+  const option = sdpSemanticsSelect.options[sdpSemanticsSelect.selectedIndex];
+  return option.value === 'default' ? {} : {sdpSemantics: option.value};
+}
+
+async function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   console.log('Starting call');
@@ -88,40 +89,62 @@ function call() {
   if (audioTracks.length > 0) {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
-  const servers = null;
-  pc1 = new RTCPeerConnection(servers);
+  const configuration = getSelectedSdpSemantics();
+  console.log('RTCPeerConnection configuration:', configuration);
+  pc1 = new RTCPeerConnection(configuration);
   console.log('Created local peer connection object pc1');
-  pc1.onicecandidate = e => onIceCandidate(pc1, e);
-  pc2 = new RTCPeerConnection(servers);
+  pc1.addEventListener('icecandidate', e => onIceCandidate(pc1, e));
+  pc2 = new RTCPeerConnection(configuration);
   console.log('Created remote peer connection object pc2');
-  pc2.onicecandidate = e => onIceCandidate(pc2, e);
-  pc1.oniceconnectionstatechange = e => onIceStateChange(pc1, e);
-  pc2.oniceconnectionstatechange = e => onIceStateChange(pc2, e);
-  pc2.ontrack = gotRemoteStream;
+  pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
+  pc1.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc1, e));
+  pc2.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc2, e));
+  pc2.addEventListener('track', gotRemoteStream);
 
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Added local stream to pc1');
 
-  console.log('pc1 createOffer start');
-  pc1.createOffer(offerOptions).then(onCreateOfferSuccess, onCreateSessionDescriptionError);
+  try {
+    console.log('pc1 createOffer start');
+    const offer = await pc1.createOffer(offerOptions);
+    await onCreateOfferSuccess(offer);
+  } catch (e) {
+    onCreateSessionDescriptionError(e);
+  }
 }
 
 function onCreateSessionDescriptionError(error) {
   console.log(`Failed to create session description: ${error.toString()}`);
 }
 
-function onCreateOfferSuccess(desc) {
-  console.log(`Offer from pc1
-${desc.sdp}`);
+async function onCreateOfferSuccess(desc) {
+  console.log(`Offer from pc1\n${desc.sdp}`);
   console.log('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc).then(() => onSetLocalSuccess(pc1), onSetSessionDescriptionError);
+  try {
+    await pc1.setLocalDescription(desc);
+    onSetLocalSuccess(pc1);
+  } catch (e) {
+    onSetSessionDescriptionError();
+  }
+
   console.log('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc).then(() => onSetRemoteSuccess(pc2), onSetSessionDescriptionError);
+  try {
+    await pc2.setRemoteDescription(desc);
+    onSetRemoteSuccess(pc2);
+  } catch (e) {
+    onSetSessionDescriptionError();
+  }
+
   console.log('pc2 createAnswer start');
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
-  pc2.createAnswer().then(onCreateAnswerSuccess, onCreateSessionDescriptionError);
+  try {
+    const answer = await pc2.createAnswer();
+    await onCreateAnswerSuccess(answer);
+  } catch (e) {
+    onCreateSessionDescriptionError(e);
+  }
 }
 
 function onSetLocalSuccess(pc) {
@@ -143,17 +166,31 @@ function gotRemoteStream(e) {
   }
 }
 
-function onCreateAnswerSuccess(desc) {
+async function onCreateAnswerSuccess(desc) {
   console.log(`Answer from pc2:\n${desc.sdp}`);
   console.log('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc).then(() => onSetLocalSuccess(pc2), onSetSessionDescriptionError);
+  try {
+    await pc2.setLocalDescription(desc);
+    onSetLocalSuccess(pc2);
+  } catch (e) {
+    onSetSessionDescriptionError(e);
+  }
   console.log('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc).then(() => onSetRemoteSuccess(pc1), onSetSessionDescriptionError);
+  try {
+    await pc1.setRemoteDescription(desc);
+    onSetRemoteSuccess(pc1);
+  } catch (e) {
+    onSetSessionDescriptionError(e);
+  }
 }
 
-function onIceCandidate(pc, event) {
-  getOtherPc(pc).addIceCandidate(event.candidate)
-    .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+async function onIceCandidate(pc, event) {
+  try {
+    await (getOtherPc(pc).addIceCandidate(event.candidate));
+    onAddIceCandidateSuccess(pc);
+  } catch (e) {
+    onAddIceCandidateError(pc, e);
+  }
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
