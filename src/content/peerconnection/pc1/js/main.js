@@ -73,7 +73,7 @@ async function start() {
 function getSelectedSdpSemantics() {
   const sdpSemanticsSelect = document.querySelector('#sdpSemantics');
   const option = sdpSemanticsSelect.options[sdpSemanticsSelect.selectedIndex];
-  return option.value === 'default' ? {} : {sdpSemantics: option.value};
+  return option.value === '' ? {} : {sdpSemantics: option.value};
 }
 
 async function call() {
