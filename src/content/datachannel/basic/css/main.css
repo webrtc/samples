@@ -7,32 +7,30 @@
  */
 button {
   margin: 0 1em 1em 0;
-  width: 90px;
+  width: 5em;
 }
+
 div#buttons {
-  margin: 0 0 1em 0;
+  margin: 0;
 }
+
 div#send {
-  margin: 0 20px 1em 0;
+  margin: 0 2em 1em 0;
 }
+
 div#sendReceive {
+  display: flex;
+  justify-content: space-evenly;
   border-bottom: 1px solid #eee;
   margin: 0;
   padding: 0 0 10px 0;
 }
+
 div#sendReceive > div {
   display: inline-block;
   width: calc(50% - 20px);
 }
-form {
-  margin: 0 0 1em 0;
-  white-space: nowrap;
-}
-form span {
-  font-weight: 300;
-  margin: 0 1em 0 0;
-  white-space: normal;
-}
+
 textarea {
   color: #444;
   font-size: 0.9em;

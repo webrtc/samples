@@ -40,16 +40,12 @@
             margin: 0 0 1em 0;
         }
 
-        div#container {
-            max-width: 100%;
-        }
-
         #errormessage {
             display: none;
             font-size: 300%;
         }
 
-        #videoblock {
+        #configBlock {
             display: none;
         }
 
@@ -58,10 +54,15 @@
             margin: 0 0 1.5em 0;
         }
 
+        div#videoContainer {
+            display: flex;
+            align-content: center;
+            justify-content: center;
+        }
+
         video {
-            background: none;
-            height: auto;
             width: auto;
+            height: auto;
         }
     </style>
 
@@ -89,10 +90,9 @@
         <button id="eightK">8K</button>
     </div>
 
-    <div id="videoblock">
+    <div id="configBlock">
         <p id="dimensions"></p>
 
-        <video id="gum-res-local" playsinline autoplay></video>
         <div id="width">
             <label>Width <span></span>px:</label>
             <input type="range" min="0" max="7680" value="0">
@@ -109,6 +109,9 @@
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/resolution"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 </div>
+<div id="videoContainer"><video id="gum-res-local" playsinline autoplay></video></div>
+
+<a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/resolution"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png" alt="Fork me on GitHub"></a>
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="js/main.js" async></script>
