@@ -23,13 +23,14 @@ numAudioTracksInput.addEventListener('change', e => numAudioTracksDisplay.innerT
 
 async function createOffer() {
   outputTextarea.value = '';
-  const peerConnection = new RTCPeerConnection(null);
+  const peerConnection = window.peerConnection = new RTCPeerConnection(null);
   const numRequestedAudioTracks = parseInt(numAudioTracksInput.value);
 
-  const acx = new AudioContext();
-  const dst = acx.createMediaStreamDestination();
-  // Fill up the peer connection with numRequestedAudioTracks number of tracks.
   for (let i = 0; i < numRequestedAudioTracks; i++) {
+    const acx = new AudioContext();
+    const dst = acx.createMediaStreamDestination();
+
+    // Fill up the peer connection with numRequestedAudioTracks number of tracks.
     const track = dst.stream.getTracks()[0];
     peerConnection.addTrack(track, dst.stream);
   }
@@ -46,7 +47,7 @@ async function createOffer() {
 
   try {
     const offer = await peerConnection.createOffer(offerOptions);
-    peerConnection.setLocalDescription(offer);
+    await peerConnection.setLocalDescription(offer);
     outputTextarea.value = offer.sdp;
   } catch (e) {
     outputTextarea.value = `Failed to create offer: ${e}`;
