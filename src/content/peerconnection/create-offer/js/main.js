@@ -18,29 +18,21 @@ const numAudioTracksDisplay = document.querySelector('span#numAudioTracksDisplay
 const outputTextarea = document.querySelector('textarea#output');
 const createOfferButton = document.querySelector('button#createOffer');
 
-createOfferButton.onclick = createOffer;
+createOfferButton.addEventListener('click', createOffer);
+numAudioTracksInput.addEventListener('change', e => numAudioTracksDisplay.innerText = e.target.value);
 
-numAudioTracksInput.onchange = () => numAudioTracksDisplay.textContent = this.value;
+async function createOffer() {
+  outputTextarea.value = '';
+  const peerConnection = window.peerConnection = new RTCPeerConnection(null);
+  const numRequestedAudioTracks = parseInt(numAudioTracksInput.value);
 
-let pc = new RTCPeerConnection(null);
-const acx = new AudioContext();
-
-function createOffer() {
-  if (pc) {
-    pc.close();
-    pc = null;
-    pc = new RTCPeerConnection(null);
-  }
-  const numRequestedAudioTracks = numAudioTracksInput.value;
-  while (numRequestedAudioTracks < pc.getLocalStreams().length) {
-    pc.removeStream(pc.getLocalStreams()[pc.getLocalStreams().length - 1]);
-  }
-  while (numRequestedAudioTracks > pc.getLocalStreams().length) {
-    // Create some dummy audio streams using Web Audio.
-    // Note that this fails if you try to do more than one track in Chrome
-    // right now.
+  for (let i = 0; i < numRequestedAudioTracks; i++) {
+    const acx = new AudioContext();
     const dst = acx.createMediaStreamDestination();
-    dst.stream.getTracks().forEach(track => pc.addTrack(track, dst.stream));
+
+    // Fill up the peer connection with numRequestedAudioTracks number of tracks.
+    const track = dst.stream.getTracks()[0];
+    peerConnection.addTrack(track, dst.stream);
   }
 
   const offerOptions = {
@@ -53,10 +45,11 @@ function createOffer() {
     voiceActivityDetection: vadInput.checked
   };
 
-  pc.createOffer(offerOptions)
-    .then(desc => {
-      pc.setLocalDescription(desc);
-      outputTextarea.value = desc.sdp;
-    })
-    .catch(error => outputTextarea.value = `Failed to createOffer: ${error}`);
+  try {
+    const offer = await peerConnection.createOffer(offerOptions);
+    await peerConnection.setLocalDescription(offer);
+    outputTextarea.value = offer.sdp;
+  } catch (e) {
+    outputTextarea.value = `Failed to create offer: ${e}`;
+  }
 }
