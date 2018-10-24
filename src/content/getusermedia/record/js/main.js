@@ -13,12 +13,6 @@
 
 /* globals MediaRecorder */
 
-const constraints = {
-  audio: true,
-  video: {
-    width: 1280, height: 720
-  }
-};
 const mediaSource = new MediaSource();
 mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
 let mediaRecorder;
@@ -130,7 +124,7 @@ function handleSuccess(stream) {
   gumVideo.srcObject = stream;
 }
 
-async function init() {
+async function init(constraints) {
   try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     handleSuccess(stream);
@@ -140,4 +134,16 @@ async function init() {
   }
 }
 
-init();
+document.querySelector('button#start').addEventListener('click', async() => {
+  const hasEchoCancellation = document.querySelector('#echoCancellation').checked;
+  const constraints = {
+    audio: {
+      echoCancellation: {exact: hasEchoCancellation}
+    },
+    video: {
+      width: 1280, height: 720
+    }
+  };
+  console.log('Using media constraints:', constraints);
+  await init(constraints);
+});
