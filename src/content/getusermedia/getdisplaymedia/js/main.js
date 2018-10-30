@@ -58,8 +58,8 @@ video {
 </div>`;
   }
 
-  _startScreenCapture() {
-    if (navigator.getUserMedia) {
+  static _startScreenCapture() {
+    if (navigator.getDisplayMedia) {
       return navigator.getDisplayMedia({video: true});
     } else {
       return navigator.mediaDevices.getUserMedia({video: {mediaSource: 'screen'}});
@@ -78,7 +78,7 @@ video {
     }
 
     this.recording = [];
-    this.stream = await this._startScreenCapture();
+    this.stream = await ScreenSharing._startScreenCapture();
     this.stream.addEventListener('inactive', e => {
       console.log('Capture stream inactive - stop recording!');
       this.buttons.startCapturing = true;
