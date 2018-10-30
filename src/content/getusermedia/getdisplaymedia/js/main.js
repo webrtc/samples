@@ -6,40 +6,123 @@
  *  tree.
  */
 'use strict';
+import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@0.6.2?module';
 
-// Polyfill in Firefox.
-// See https://blog.mozilla.org/webrtc/getdisplaymedia-now-available-in-adapter-js/
-if (adapter.browserDetails.browser == 'firefox') {
-  adapter.browserShim.shimGetDisplayMedia(window, 'screen');
+class ScreenSharing extends LitElement {
+  constructor() {
+    super();
+    this.downloadUrl = null;
+    this.enableStartCapture = true;
+    this.enableStopCapture = false;
+    this.enableDownloadRecording = false;
+    this.stream = null;
+    this.recording = [];
+    this.mediaRecorder = null;
+  }
+
+  static get properties() {
+    return {
+      enableStartCapture: Boolean,
+      enableStopCapture: Boolean,
+      enableDownloadRecording: Boolean,
+      stream: {
+        type: {
+          fromAttribute: input => input
+        }
+      }
+    };
+  }
+
+  render() {
+    return html`<style>
+@import "../../../css/main.css";
+:host {
+  display: block;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
 }
-
-function handleSuccess(stream) {
-  const video = document.querySelector('video');
-  video.srcObject = stream;
-
-  // demonstrates how to detect that the user has stopped
-  // sharing the screen via the browser UI.
-  stream.getVideoTracks()[0].addEventListener('ended', () => {
-    errorMsg('The user has ended sharing the screen');
-  });
+video {
+    --video-width: 100%;
+    width: var(--video-width);
+    height: calc(var(--video-width) * (16 / 9));
 }
+</style>
+<video playsinline autoplay muted .srcObject="${this.stream}"></video>
+<div>
+<button ?disabled="${!this.enableStartCapture}" @click="${e => this._startCapturing(e)}">Start screen capture</button>
+<button ?disabled="${!this.enableStopCapture}" @click="${e => this._stopCapturing(e)}">Stop screen capture</button>
+<button ?disabled="${!this.enableDownloadRecording}" @click="${e => this._downloadRecording(e)}">Download recording</button>
+<a id="downloadLink" type="video/webm" style="display: none"></a>
+</div>`;
+  }
 
-function handleError(error) {
-  errorMsg(`getDisplayMedia error: ${error.name}`, error);
-}
+  static _startScreenCapture() {
+    if (navigator.getDisplayMedia) {
+      return navigator.getDisplayMedia({video: true});
+    } else {
+      return navigator.mediaDevices.getUserMedia({video: {mediaSource: 'screen'}});
+    }
+  }
 
-function errorMsg(msg, error) {
-  const errorElement = document.querySelector('#errorMsg');
-  errorElement.innerHTML += `<p>${msg}</p>`;
-  if (typeof error !== 'undefined') {
-    console.error(error);
+  async _startCapturing(e) {
+    console.log('Start capturing.');
+    this.enableStartCapture = false;
+    this.enableStopCapture = true;
+    this.enableDownloadRecording = false;
+    this.requestUpdate('buttons');
+
+    if (this.downloadUrl) {
+      window.URL.revokeObjectURL(this.downloadUrl);
+    }
+
+    this.recording = [];
+    this.stream = await ScreenSharing._startScreenCapture();
+    this.stream.addEventListener('inactive', e => {
+      console.log('Capture stream inactive - stop recording!');
+      this.enableStartCapture = false;
+      this.enableStopCapture = false;
+      this.enableDownloadRecording = true;
+
+      this.mediaRecorder.stop();
+      this.mediaRecorder = null;
+      this.stream.getTracks().forEach(track => track.stop());
+      this.stream = null;
+    });
+    this.mediaRecorder = new MediaRecorder(this.stream, {mimeType: 'video/webm'});
+    this.mediaRecorder.addEventListener('dataavailable', event => {
+      if (event.data && event.data.size > 0) {
+        this.recording.push(event.data);
+      }
+    });
+    this.mediaRecorder.start(10);
+  }
+
+  _stopCapturing(e) {
+    console.log('Stop capturing.');
+    this.enableStartCapture = false;
+    this.enableStopCapture = false;
+    this.enableDownloadRecording = true;
+
+    this.mediaRecorder.stop();
+    this.mediaRecorder = null;
+    this.stream.getTracks().forEach(track => track.stop());
+    this.stream = null;
+  }
+
+  _downloadRecording(e) {
+    console.log('Download recording.');
+    this.enableStartCapture = true;
+    this.enableStopCapture = false;
+    this.enableDownloadRecording = false;
+
+    const blob = new Blob(this.recording, {type: 'video/webm'});
+    this.downloadUrl = window.URL.createObjectURL(blob);
+    const downloadLink = this.shadowRoot.querySelector('a#downloadLink');
+    downloadLink.href = this.downloadUrl;
+    downloadLink.download = 'screen-recording.webm';
+    downloadLink.click();
   }
 }
 
-if ('getDisplayMedia' in navigator) {
-  navigator.getDisplayMedia({video: true})
-    .then(handleSuccess)
-    .catch(handleError);
-} else {
-  errorMsg('getDisplayMedia is not supported');
-}
+customElements.define('screen-sharing', ScreenSharing);

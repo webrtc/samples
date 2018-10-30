@@ -25,25 +25,26 @@
   <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
   <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
 
 </head>
 
 <body>
 
   <div id="container">
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getDisplayMedia</span></h1>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Demo of getDisplayMedia and screen recording</span></h1>
 
-    <video id="gum-local" autoplay playsinline></video>
+    <h4>Screen capturing is currently an experimental feature which is onyl supported by latest Chrome and Firefox!</h4>
 
-    <div id="errorMsg"></div>
+    <screen-sharing></screen-sharing>
 
-    <p>Display the screensharing stream from <code>getDisplayMedia()</code> in a video element.</p>
+    <p>Display the screensharing stream from <code>getDisplayMedia()</code> in a video element and record the stream.</p>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/getdisplaymedia" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
   </div>
 
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/main.js" type="module"></script>
 
   <script src="../../../js/lib/ga.js"></script>
 
