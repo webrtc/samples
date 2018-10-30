@@ -43,9 +43,9 @@ class ScreenSharing extends LitElement {
   height: 100%;
 }
 video {
-    --videoWidth: 100%;
-    width: var(--videoWidth);
-    height: calc(var(--videoWidth) * (16 / 9));
+    --video-width: 100%;
+    width: var(--video-width);
+    height: calc(var(--video-width) * (16 / 9));
 }
 </style>
 <video playsinline autoplay muted .srcObject="${this.stream}"></video>
