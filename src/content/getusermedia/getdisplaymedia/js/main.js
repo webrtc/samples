@@ -67,9 +67,9 @@ video {
 
   async _startCapturing(e) {
     console.log('Start capturing.');
-    this.enableStartCapture= false;
+    this.enableStartCapture = false;
     this.enableStopCapture = true;
-    this.enableDownloadRecording= false;
+    this.enableDownloadRecording = false;
     this.requestUpdate('buttons');
 
     if (this.downloadUrl) {
@@ -80,9 +80,9 @@ video {
     this.stream = await ScreenSharing._startScreenCapture();
     this.stream.addEventListener('inactive', e => {
       console.log('Capture stream inactive - stop recording!');
-      this.enableStartCapture= false;
+      this.enableStartCapture = false;
       this.enableStopCapture = false;
-      this.enableDownloadRecording= true;
+      this.enableDownloadRecording = true;
 
       this.mediaRecorder.stop();
       this.mediaRecorder = null;
@@ -100,9 +100,9 @@ video {
 
   _stopCapturing(e) {
     console.log('Stop capturing.');
-    this.enableStartCapture= false;
+    this.enableStartCapture = false;
     this.enableStopCapture = false;
-    this.enableDownloadRecording= true;
+    this.enableDownloadRecording = true;
 
     this.mediaRecorder.stop();
     this.mediaRecorder = null;
@@ -112,9 +112,9 @@ video {
 
   _downloadRecording(e) {
     console.log('Download recording.');
-    this.enableStartCapture= true;
+    this.enableStartCapture = true;
     this.enableStopCapture = false;
-    this.enableDownloadRecording= false;
+    this.enableDownloadRecording = false;
 
     const blob = new Blob(this.recording, {type: 'video/webm'});
     this.downloadUrl = window.URL.createObjectURL(blob);
