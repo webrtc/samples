@@ -12,11 +12,9 @@ class ScreenSharing extends LitElement {
   constructor() {
     super();
     this.downloadUrl = null;
-    this.buttons = {
-      startCapturing: true,
-      stopCapturing: false,
-      downloadRecording: false,
-    };
+    this.enableStartCapture = true;
+    this.enableStopCapture = false;
+    this.enableDownloadRecording = false;
     this.stream = null;
     this.recording = [];
     this.mediaRecorder = null;
@@ -24,6 +22,9 @@ class ScreenSharing extends LitElement {
 
   static get properties() {
     return {
+      enableStartCapture: Boolean,
+      enableStopCapture: Boolean,
+      enableDownloadRecording: Boolean,
       buttons: Object,
       stream: {
         type: {
@@ -43,17 +44,16 @@ class ScreenSharing extends LitElement {
   height: 100%;
 }
 video {
-    --width: 100%;
-    width: var(--width);
-    height: calc(var(--width) * (16 / 9));
+    --videoWidth: 100%;
+    width: var(--videoWidth);
+    height: calc(var(--videoWidth) * (16 / 9));
 }
-
 </style>
 <video playsinline autoplay muted .srcObject="${this.stream}"></video>
 <div>
-<button ?disabled="${!this.buttons.startCapturing}" @click="${async e => this._startCapturing(e)}">Start screen capture</button>
-<button ?disabled="${!this.buttons.stopCapturing}" @click="${e => this._stopCapturing(e)}">Stop screen capture</button>
-<button ?disabled="${!this.buttons.downloadRecording}" @click="${e => this._downloadRecording(e)}">Download recording</button>
+<button ?disabled="${!this.enableStartCapture}" @click="${e => this._startCapturing(e)}">Start screen capture</button>
+<button ?disabled="${!this.enableStopCapture}" @click="${e => this._stopCapturing(e)}">Stop screen capture</button>
+<button ?disabled="${!this.enableDownloadRecording}" @click="${e => this._downloadRecording(e)}">Download recording</button>
 <a id="downloadLink" type="video/webm" style="display: none"></a>
 </div>`;
   }
@@ -68,9 +68,9 @@ video {
 
   async _startCapturing(e) {
     console.log('Start capturing.');
-    this.buttons.startCapturing = false;
-    this.buttons.stopCapturing = true;
-    this.buttons.downloadRecording = false;
+    this.enableStartCapture= false;
+    this.enableStopCapture = true;
+    this.enableDownloadRecording= false;
     this.requestUpdate('buttons');
 
     if (this.downloadUrl) {
@@ -81,10 +81,9 @@ video {
     this.stream = await ScreenSharing._startScreenCapture();
     this.stream.addEventListener('inactive', e => {
       console.log('Capture stream inactive - stop recording!');
-      this.buttons.startCapturing = true;
-      this.buttons.stopCapturing = false;
-      this.buttons.downloadRecording = true;
-      this.requestUpdate('buttons');
+      this.enableStartCapture= false;
+      this.enableStopCapture = false;
+      this.enableDownloadRecording= true;
 
       this.mediaRecorder.stop();
       this.mediaRecorder = null;
@@ -102,10 +101,9 @@ video {
 
   _stopCapturing(e) {
     console.log('Stop capturing.');
-    this.buttons.startCapturing = true;
-    this.buttons.stopCapturing = false;
-    this.buttons.downloadRecording = true;
-    this.requestUpdate('buttons');
+    this.enableStartCapture= false;
+    this.enableStopCapture = false;
+    this.enableDownloadRecording= true;
 
     this.mediaRecorder.stop();
     this.mediaRecorder = null;
@@ -115,10 +113,9 @@ video {
 
   _downloadRecording(e) {
     console.log('Download recording.');
-    this.buttons.startCapturing = true;
-    this.buttons.stopCapturing = false;
-    this.buttons.downloadRecording = false;
-    this.requestUpdate('buttons');
+    this.enableStartCapture= true;
+    this.enableStopCapture = false;
+    this.enableDownloadRecording= false;
 
     const blob = new Blob(this.recording, {type: 'video/webm'});
     this.downloadUrl = window.URL.createObjectURL(blob);
