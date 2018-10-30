@@ -25,7 +25,6 @@ class ScreenSharing extends LitElement {
       enableStartCapture: Boolean,
       enableStopCapture: Boolean,
       enableDownloadRecording: Boolean,
-      buttons: Object,
       stream: {
         type: {
           fromAttribute: input => input
