@@ -11,21 +11,23 @@ import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@0.6.2?mod
 class ScreenSharing extends LitElement {
   constructor() {
     super();
-    this.downloadUrl = null;
     this.enableStartCapture = true;
     this.enableStopCapture = false;
     this.enableDownloadRecording = false;
     this.stream = null;
-    this.recording = [];
+    this.chunks = [];
     this.mediaRecorder = null;
+    this.status = 'Inactive';
+    this.recording = null;
   }
 
   static get properties() {
     return {
+      status: String,
       enableStartCapture: Boolean,
       enableStopCapture: Boolean,
       enableDownloadRecording: Boolean,
-      stream: {
+      recording: {
         type: {
           fromAttribute: input => input
         }
@@ -48,8 +50,9 @@ video {
     height: calc(var(--video-width) * (16 / 9));
 }
 </style>
-<video playsinline autoplay muted .srcObject="${this.stream}"></video>
+<video ?controls="${this.recording !== null}" playsinline autoplay loop muted .src="${this.recording}"></video>
 <div>
+<p>Status: ${this.status}</p>
 <button ?disabled="${!this.enableStartCapture}" @click="${e => this._startCapturing(e)}">Start screen capture</button>
 <button ?disabled="${!this.enableStopCapture}" @click="${e => this._stopCapturing(e)}">Stop screen capture</button>
 <button ?disabled="${!this.enableDownloadRecording}" @click="${e => this._downloadRecording(e)}">Download recording</button>
@@ -67,32 +70,27 @@ video {
 
   async _startCapturing(e) {
     console.log('Start capturing.');
+    this.status = 'Screen recording started.';
     this.enableStartCapture = false;
     this.enableStopCapture = true;
     this.enableDownloadRecording = false;
     this.requestUpdate('buttons');
 
-    if (this.downloadUrl) {
-      window.URL.revokeObjectURL(this.downloadUrl);
+    if (this.recording) {
+      window.URL.revokeObjectURL(this.recording);
     }
 
-    this.recording = [];
+    this.chunks = [];
+    this.recording = null;
     this.stream = await ScreenSharing._startScreenCapture();
     this.stream.addEventListener('inactive', e => {
       console.log('Capture stream inactive - stop recording!');
-      this.enableStartCapture = false;
-      this.enableStopCapture = false;
-      this.enableDownloadRecording = true;
-
-      this.mediaRecorder.stop();
-      this.mediaRecorder = null;
-      this.stream.getTracks().forEach(track => track.stop());
-      this.stream = null;
+      this._stopCapturing(e);
     });
     this.mediaRecorder = new MediaRecorder(this.stream, {mimeType: 'video/webm'});
     this.mediaRecorder.addEventListener('dataavailable', event => {
       if (event.data && event.data.size > 0) {
-        this.recording.push(event.data);
+        this.chunks.push(event.data);
       }
     });
     this.mediaRecorder.start(10);
@@ -100,7 +98,8 @@ video {
 
   _stopCapturing(e) {
     console.log('Stop capturing.');
-    this.enableStartCapture = false;
+    this.status = 'Screen recorded completed.';
+    this.enableStartCapture = true;
     this.enableStopCapture = false;
     this.enableDownloadRecording = true;
 
@@ -108,6 +107,8 @@ video {
     this.mediaRecorder = null;
     this.stream.getTracks().forEach(track => track.stop());
     this.stream = null;
+
+    this.recording = window.URL.createObjectURL(new Blob(this.chunks, {type: 'video/webm'}));
   }
 
   _downloadRecording(e) {
@@ -116,10 +117,9 @@ video {
     this.enableStopCapture = false;
     this.enableDownloadRecording = false;
 
-    const blob = new Blob(this.recording, {type: 'video/webm'});
-    this.downloadUrl = window.URL.createObjectURL(blob);
     const downloadLink = this.shadowRoot.querySelector('a#downloadLink');
-    downloadLink.href = this.downloadUrl;
+    downloadLink.addEventListener('progress', e => console.log(e));
+    downloadLink.href = this.recording;
     downloadLink.download = 'screen-recording.webm';
     downloadLink.click();
   }
