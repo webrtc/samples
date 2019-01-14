@@ -6,7 +6,7 @@
  *  tree.
  */
 'use strict';
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@0.6.2?module';
+import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@0.6.2/lit-element.js?module';
 
 class ScreenSharing extends LitElement {
   constructor() {
