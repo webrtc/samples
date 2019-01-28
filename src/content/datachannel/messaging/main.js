@@ -14,6 +14,8 @@ class MessagingSample extends LitElement {
   constructor() {
     super();
     this.connected = false;
+    this.localMessages = '';
+    this.remoteMessages = '';
   }
 
   disconnect() {
