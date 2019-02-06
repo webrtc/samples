@@ -32,7 +32,7 @@ function handleSuccess(stream) {
 }
 
 function handleError(error) {
-  console.log('navigator.getUserMedia error: ', error);
+  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
 }
 
 navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
