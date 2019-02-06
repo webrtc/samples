@@ -84,7 +84,7 @@ function gotStream(stream) {
 }
 
 function handleError(error) {
-  console.log('navigator.getUserMedia error: ', error);
+  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
 }
 
 function start() {
