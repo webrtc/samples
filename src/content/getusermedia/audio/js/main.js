@@ -20,7 +20,7 @@ function handleSuccess(stream) {
   const audioTracks = stream.getAudioTracks();
   console.log('Got stream with constraints:', constraints);
   console.log('Using audio device: ' + audioTracks[0].label);
-  stream.oninactive = function() {
+  stream.oninactive = function () {
     console.log('Stream ended');
   };
   window.stream = stream; // make variable available to browser console
@@ -28,8 +28,8 @@ function handleSuccess(stream) {
 }
 
 function handleError(error) {
-  const errorMessage = 'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' + error.name
-  errorMsgElement.innerHTML = errorMessage
+  const errorMessage = 'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' + error.name;
+  errorMsgElement.innerHTML = errorMessage;
   console.log(errorMessage);
 }
 
