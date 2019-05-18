@@ -108,7 +108,7 @@ function onSetSessionDescriptionError(error) {
 
 function onCreateAnswerSuccess(pc1, pc2, desc) {
   // Hard-code video bitrate to 50kbps.
-  desc.sdp = desc.sdp.replace(/a=mid:video\r\n/g, 'a=mid:video\r\nb=AS:' + 50 + '\r\n');
+  desc.sdp = desc.sdp.replace(/a=mid:(.*)\r\n/g, 'a=mid:$1\r\nb=AS:' + 50 + '\r\n');
   pc2.setLocalDescription(desc)
     .then(() => pc1.setRemoteDescription(desc))
     .catch(onSetSessionDescriptionError);
