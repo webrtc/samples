@@ -6,8 +6,6 @@
 *  tree.
 */
 
-/* global main */
-
 'use strict';
 
 const source = document.querySelector('#source');
@@ -42,12 +40,10 @@ function loop() {
   window.requestAnimationFrame(loop);
 }
 
-async function main() {
+(async () => {
   inputStream = await navigator.mediaDevices.getUserMedia({video: true});
   source.srcObject = inputStream;
   source.play();
   result.play();
   window.requestAnimationFrame(loop);
-}
-
-main();
+})();
