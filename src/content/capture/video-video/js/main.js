@@ -11,12 +11,12 @@ const leftVideo = document.getElementById('leftVideo');
 const rightVideo = document.getElementById('rightVideo');
 
 leftVideo.addEventListener('canplay', () => {
-  let stream
-  const fps = 0
+  let stream;
+  const fps = 0;
   if (leftVideo.mozCaptureStream) {
-    stream = leftVideo.mozCaptureStream(fps)
+    stream = leftVideo.mozCaptureStream(fps);
   } else {
-    stream = leftVideo.captureStream(fps)
+    stream = leftVideo.captureStream(fps);
   }
   rightVideo.srcObject = stream;
 });
