@@ -20,7 +20,7 @@
 
     <base target="_blank">
 
-    <title>Video to Canvas to video</title>
+    <title>Video processing in a Worker</title>
 
     <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
@@ -42,20 +42,18 @@
 
     <video id="result" autoplay></video>
 
-    <p>The camera is captured to a video element, which is mapped onto a
-      canvas, and a red square is added.</p>
-    <p>The canvas is then captured to an ImageData object, and painted
-      onto a second canvas.</p>
-    <p>A stream is captured from the second canvas element using its
-        <code>captureStream()</code> method and set as the <code>srcObject</code> of the video element.</p>
+    <p>The camera is captured to a MediaStreamTrack, which is turned into a
+      WHATWG Stream of ImageData objects by means of a canvas, and a red
+      square is added.</p>
+    <p>The stream is sent to a Worker, which returns a new stream containing
+      the same video data.</p>
+    <p>This is then mapped back to a MediaStream using another canvas.</p>
 
-    <p>The <code>inputStream</code>, <code>source</code>,
-      <code>canvasIn</code>, <code>canvasOut</code>,
-      <code>result</code>, and <code>stream</code> variables are in global
-      scope, so you can
-      inspect them from the browser console.</p>
-
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/canvas-filter"
+    <p>The chief purpose of the demo is to demonstrate that this is doable,
+      but that performance can be improved significantly.</p>
+    <p>NOTE: This works only on Chrome 76 and above with experimental Web
+      features enabled, since it depends on transferable Streams.</p>
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/worker-process"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
 </div>
