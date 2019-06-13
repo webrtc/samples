@@ -9,7 +9,6 @@
 'use strict;'
 
 onmessage = function(e) {
-  console.log('got a message');
   let command = e.data[0];
   let inputStream = e.data[1];
   const transformStream = new TransformStream();
