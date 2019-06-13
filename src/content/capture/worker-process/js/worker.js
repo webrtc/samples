@@ -12,7 +12,6 @@ onmessage = function(e) {
   console.log('got a message');
   let command = e.data[0];
   let inputStream = e.data[1];
-  console.log('command is ' + command);
   const transformStream = new TransformStream();
   inputStream.pipeTo(transformStream.writable);
   postMessage(['response', transformStream.readable], [transformStream.readable]);

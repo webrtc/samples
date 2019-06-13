@@ -64,8 +64,6 @@ const readData = async () => {
 
   const myWorker = new Worker('js/worker.js');
   myWorker.onmessage = function(e) {
-    console.log('Message from worker: ' + e.data[0]);
-    console.log(e.data[1]);
     reader = e.data[1].getReader();
     // Start the flow of data.
     readData();
@@ -73,8 +71,6 @@ const readData = async () => {
   }
   myWorker.postMessage(['stream', transformStream.readable],
 		       [ transformStream.readable ]);
-
   source.play();
   result.play();
-
 })();
