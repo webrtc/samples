@@ -20,15 +20,11 @@ let imageData = null;
 let transformStream = null;
 let writer = null;
 let reader = null;
-let captureTime = 0.0;
-let framesInFlight = 0;
 
 result.srcObject = stream;
 
 function loop() {
-  captureTime = performance.now();
   if (source.videoWidth > 0 && source.videoHeight > 0) {
-    framesInFlight += 1;
     canvasIn.width = source.videoWidth;
     canvasIn.height = source.videoHeight;
     let ctx = canvasIn.getContext('2d');
@@ -51,7 +47,6 @@ const readData = async () => {
     canvasOut.height = source.videoHeight;
     let outCtx = canvasOut.getContext('2d');
     outCtx.putImageData(result.value, 0, 0);
-    const renderTime = performance.now() - captureTime;
     readData();
   }
 };
@@ -68,9 +63,9 @@ const readData = async () => {
     // Start the flow of data.
     readData();
     window.requestAnimationFrame(loop);
-  }
+  };
   myWorker.postMessage(['stream', transformStream.readable],
-		       [ transformStream.readable ]);
+                       [transformStream.readable]);
   source.play();
   result.play();
 })();
