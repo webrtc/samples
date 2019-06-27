@@ -13,10 +13,13 @@ const rightVideo = document.getElementById('rightVideo');
 leftVideo.addEventListener('canplay', () => {
   let stream;
   const fps = 0;
-  if (leftVideo.mozCaptureStream) {
+  if (leftVideo.captureStream) {
+    stream = leftVideo.captureStream(fps);
+  } else if (leftVideo.mozCaptureStream) {
     stream = leftVideo.mozCaptureStream(fps);
   } else {
-    stream = leftVideo.captureStream(fps);
+    console.error("Stream capture is not supported");
+    stream = null;
   }
   rightVideo.srcObject = stream;
 });
