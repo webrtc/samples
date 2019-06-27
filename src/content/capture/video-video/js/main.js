@@ -18,7 +18,7 @@ leftVideo.addEventListener('canplay', () => {
   } else if (leftVideo.mozCaptureStream) {
     stream = leftVideo.mozCaptureStream(fps);
   } else {
-    console.error("Stream capture is not supported");
+    console.error('Stream capture is not supported');
     stream = null;
   }
   rightVideo.srcObject = stream;
