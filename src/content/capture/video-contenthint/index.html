@@ -61,7 +61,7 @@
         and transmitted via two separate PeerConnections using 50kbps of video bandwidth. This is insufficient to
         generate good quality in the encoded bitstream, so trade-offs have to be made.</p>
 
-    <p>The transmitted stream tracks are using <a href="https://wicg.github.io/mst-content-hint/">MediaStreamTrack
+    <p>The transmitted stream tracks are using <a href="https://www.w3.org/TR/mst-content-hint/">MediaStreamTrack
         Content Hints</a> to indicate characteristics in the video stream, which informs PeerConnection on how to encode
         the track (to prefer motion or individual frame detail).</p>
 
@@ -74,7 +74,7 @@
         encoding parameters for the stream without additional extensions to the MediaStreamRecorder specification, but
         this is currently not implemented in Chromium.</p>
 
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/video-pc"
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/capture/video-contenthint"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
 </div>
