@@ -149,9 +149,11 @@ function start() {
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
   console.log(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
+  document.getElementById('error').innerText = '';
   pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
+  pc.onicecandidateerror = iceCandidateError;
   pc.createOffer(
     offerOptions
   ).then(
@@ -283,6 +285,15 @@ function gatheringStateChange() {
   pc = null;
   gatherButton.disabled = false;
   candidateTBody.appendChild(row);
+}
+
+function iceCandidateError(e) {
+  // The interesting attributes of the error are
+  // * the url (which allows looking up the server)
+  // * the errorCode and errorText
+  document.getElementById('error').innerText += 'The server ' + e.url +
+    ' returned an error with code=' + e.errorCode + ':\n' +
+    e.errorText + '\n';
 }
 
 readServersFromLocalStorage();
