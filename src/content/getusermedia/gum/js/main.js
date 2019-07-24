@@ -9,7 +9,7 @@
 
 // Put variables in global scope to make them available to the browser console.
 const constraints = window.constraints = {
-  audio: false,
+  audio: true,
   video: true
 };
 
