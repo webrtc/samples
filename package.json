@@ -39,12 +39,12 @@
     "gulp-nightwatch": "^1.0.1",
     "gulp-stylelint": "^7.0.0",
     "gulp-zip": "^4.2.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "minimatch": "^3.0.4",
     "nightwatch": "^1.0.10",
     "pem": "^1.14.2",
     "selenium-server": "^3.14.0",
-    "stylelint": "^10.0.1",
+    "stylelint": "^9.0.0",
     "stylelint-config-recommended": "^2.1.0"
   },
   "dependencies": {}
