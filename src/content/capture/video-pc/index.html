@@ -36,12 +36,37 @@
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Stream from a video to a peer connection</span>
     </h1>
 
-    <video id="leftVideo" playsinline controls muted>
-        <!-- NB CORS: https://bugzilla.mozilla.org/show_bug.cgi?id=1177793 -->
-        <source src="../../../video/chrome.webm" type="video/webm"/>
+    <video id="myVideo" id="leftVideo" playsinline controls muted>
+          <source src="../../../video/chrome.webm" type="video/webm"/>
         <source src="../../../video/chrome.mp4" type="video/mp4"/>
         <p>This browser does not support the video element.</p>
-    </video>
+          
+</video>
+      <br><label for="speedlist">Bit Rate Scale:</label>
+
+    <input id="speedlist" type ="range" min ="0" max="5" step ="0.5" value ="1" >
+    <p>Bit Rate: <span id="demo"></span></p>
+
+<script>
+    var speed = document.getElementById("speedlist"); 
+
+    var vid = document.getElementById("myVideo");
+    var speedlist = document.getElementById("speedlist");
+    speedlist.addEventListener("change",changeSpeed);
+    function changeSpeed(event){
+        vid.playbackRate = event.target.value;
+    }
+    var output = document.getElementById("demo"); 
+output.innerHTML = speedlist.value; 
+speed.oninput = function() { 
+  output.innerHTML = this.value; 
+} 
+    function reset(event){
+        vid.playbackRate = 1;
+        event.target.value=1;
+    }
+
+</script>
 
     <video id="rightVideo" playsinline autoplay controls></video>
 
