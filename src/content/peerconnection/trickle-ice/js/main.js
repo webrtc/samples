@@ -172,23 +172,6 @@ function noDescription(error) {
   console.log('Error creating offer: ', error);
 }
 
-// Parse a candidate:foo string into an object, for easier use by other methods.
-function parseCandidate(text) {
-  const candidateStr = 'candidate:';
-  const pos = text.indexOf(candidateStr) + candidateStr.length;
-  let [foundation, component, protocol, priority, address, port, , type] =
-    text.substr(pos).split(' ');
-  return {
-    'component': component,
-    'type': type,
-    'foundation': foundation,
-    'protocol': protocol,
-    'address': address,
-    'port': port,
-    'priority': priority
-  };
-}
-
 // Parse the uint32 PRIORITY field into its constituent parts from RFC 5245,
 // type preference, local preference, and (256 - component ID).
 // ex: 126 | 32252 | 255 (126 is host preference, 255 is component ID 1)
@@ -254,15 +237,18 @@ function iceCallback(event) {
   const row = document.createElement('tr');
   appendCell(row, elapsed);
   if (event.candidate) {
-    const c = parseCandidate(event.candidate.candidate);
-    appendCell(row, c.component);
-    appendCell(row, c.type);
-    appendCell(row, c.foundation);
-    appendCell(row, c.protocol);
-    appendCell(row, c.address);
-    appendCell(row, c.port);
-    appendCell(row, formatPriority(c.priority));
-    candidates.push(c);
+    if (event.candidate.candidate === '') {
+      return;
+    }
+    const {candidate} = event;
+    appendCell(row, candidate.component);
+    appendCell(row, candidate.type);
+    appendCell(row, candidate.foundation);
+    appendCell(row, candidate.protocol);
+    appendCell(row, candidate.address);
+    appendCell(row, candidate.port);
+    appendCell(row, formatPriority(candidate.priority));
+    candidates.push(candidate);
   } else if (!('onicegatheringstatechange' in RTCPeerConnection.prototype)) {
     // should not be done if its done in the icegatheringstatechange callback.
     appendCell(row, getFinalResult(), 7);
