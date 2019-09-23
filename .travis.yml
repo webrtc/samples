@@ -19,6 +19,7 @@ jdk: oraclejdk8
 branches:
   only:
     - gh-pages
+    - video-bitrate-control
 
 script:
   - npm test
