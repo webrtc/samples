@@ -1,0 +1,29 @@
+{
+  "name": "audio-room",
+  "version": "1.0.0",
+  "description": "Ian Sweeney RTC audio room demo",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "watch": "npx watchify ./public/main.js -o ./public/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sweeneyian/samples/tree/gh-pages/src/content/peerconnection/audio-room"
+  },
+  "keywords": [
+    "WebRT",
+    "audio"
+  ],
+  "author": "sweeneyian",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^1.19.4",
+    "simple-peer": "^9.6.1",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "watchify": "^3.11.1"
+  }
+}
