@@ -16,17 +16,17 @@ export default {
     }
 
     browser
-      .url(url)
-      .click('#callButton')
-      .waitForMediaPlaybackReady('audio', 1000, 'Receiving remote audio.')
-      .useXpath()
-      .click('/html/body/div/div[@id=\'dialPad\']/div[1]/button[1]') // 1
-      .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[1]') // 9
-      .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[4]') // #
-      .click('/html/body/div/div[@id=\'dialPad\']/div[4]/button[1]') // A
-      .useCss()
-      .assert.value('input#sentTones', '1 9 # A ')
-      .click('#hangupButton')
-      .end();
+        .url(url)
+        .click('#callButton')
+        .waitForMediaPlaybackReady('audio', 1000, 'Receiving remote audio.')
+        .useXpath()
+        .click('/html/body/div/div[@id=\'dialPad\']/div[1]/button[1]') // 1
+        .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[1]') // 9
+        .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[4]') // #
+        .click('/html/body/div/div[@id=\'dialPad\']/div[4]/button[1]') // A
+        .useCss()
+        .assert.value('input#sentTones', '1 9 # A ')
+        .click('#hangupButton')
+        .end();
   }
 };

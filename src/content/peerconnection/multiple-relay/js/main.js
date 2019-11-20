@@ -53,12 +53,12 @@ function start() {
   startButton.disabled = true;
   const options = audioCheckbox.checked ? {audio: true, video: true} : {audio: false, video: true};
   navigator.mediaDevices
-    .getUserMedia(options)
-    .then(gotStream)
-    .catch(function(e) {
-      alert('getUserMedia() failed');
-      console.log('getUserMedia() error: ', e);
-    });
+      .getUserMedia(options)
+      .then(gotStream)
+      .catch(function(e) {
+        alert('getUserMedia() failed');
+        console.log('getUserMedia() error: ', e);
+      });
 }
 
 function call() {

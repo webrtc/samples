@@ -41,7 +41,7 @@ abortButton.addEventListener('click', () => {
 });
 
 async function handleFileInputChange() {
-  let file = fileInput.files[0];
+  const file = fileInput.files[0];
   if (!file) {
     console.log('No file chosen');
   } else {
@@ -202,8 +202,8 @@ function onReceiveMessageCallback(event) {
 
     const bitrate = Math.round(receivedSize * 8 /
       ((new Date()).getTime() - timestampStart));
-    bitrateDiv.innerHTML
-      = `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
+    bitrateDiv.innerHTML =
+      `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
 
     if (statsInterval) {
       clearInterval(statsInterval);

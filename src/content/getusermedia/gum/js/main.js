@@ -24,7 +24,7 @@ function handleSuccess(stream) {
 
 function handleError(error) {
   if (error.name === 'ConstraintNotSatisfiedError') {
-    let v = constraints.video;
+    const v = constraints.video;
     errorMsg(`The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`);
   } else if (error.name === 'PermissionDeniedError') {
     errorMsg('Permissions have not been granted to use your camera and ' +

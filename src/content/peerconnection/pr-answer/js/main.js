@@ -38,12 +38,12 @@ function gotStream(stream) {
 }
 
 navigator.mediaDevices
-  .getUserMedia({
-    audio: true,
-    video: true
-  })
-  .then(gotStream)
-  .catch(e => alert(`getUserMedia() error: ${e}`));
+    .getUserMedia({
+      audio: true,
+      video: true
+    })
+    .then(gotStream)
+    .catch(e => alert(`getUserMedia() error: ${e}`));
 
 function start() {
   callButton.disabled = true;
@@ -95,8 +95,8 @@ function onSetLocalDescriptionSuccess() {
 
 function gotDescription1(desc) {
   pc1.setLocalDescription(desc).then(
-    onSetLocalDescriptionSuccess,
-    onSetLocalDescriptionError
+      onSetLocalDescriptionSuccess,
+      onSetLocalDescriptionError
   );
   console.log(`Offer from pc1\n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
@@ -158,8 +158,8 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc)
-    .addIceCandidate(event.candidate)
-    .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+      .addIceCandidate(event.candidate)
+      .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 

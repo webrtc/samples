@@ -7,7 +7,7 @@ let extensionInstalled = false;
 document.getElementById('start').addEventListener('click', function() {
   // send screen-sharer request to content-script
   if (!extensionInstalled) {
-    let message = 'Please install the extension:\n' +
+    const message = 'Please install the extension:\n' +
         '1. Go to chrome://extensions\n' +
         '2. Check: "Enable Developer mode"\n' +
         '3. Click: "Load the unpacked extension..."\n' +
@@ -50,7 +50,7 @@ function handleError(error) {
 }
 
 function startScreenStreamFrom(streamId) {
-  let constraints = {
+  const constraints = {
     audio: false,
     video: {
       mandatory: {

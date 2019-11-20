@@ -68,12 +68,12 @@ function call() {
   pc2.ontrack = gotRemoteStream;
 
   stream.getTracks().forEach(
-    track => {
-      pc1.addTrack(
-        track,
-        stream
-      );
-    }
+      track => {
+        pc1.addTrack(
+            track,
+            stream
+        );
+      }
   );
   console.log('Added local stream to pc1');
 
@@ -127,10 +127,10 @@ function onCreateAnswerSuccess(desc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-    .then(
-      () => onAddIceCandidateSuccess(pc),
-      err => onAddIceCandidateError(pc, err)
-    );
+      .then(
+          () => onAddIceCandidateSuccess(pc),
+          err => onAddIceCandidateError(pc, err)
+      );
   console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 

@@ -57,18 +57,18 @@ function hangup() {
 
   // query stats one last time.
   Promise
-    .all([
-      remotePeerConnection
-        .getStats(null)
-        .then(showRemoteStats, err => console.log(err)),
-      localPeerConnection
-        .getStats(null)
-        .then(showLocalStats, err => console.log(err))
-    ])
-    .then(() => {
-      localPeerConnection = null;
-      remotePeerConnection = null;
-    });
+      .all([
+        remotePeerConnection
+            .getStats(null)
+            .then(showRemoteStats, err => console.log(err)),
+        localPeerConnection
+            .getStats(null)
+            .then(showLocalStats, err => console.log(err))
+      ])
+      .then(() => {
+        localPeerConnection = null;
+        remotePeerConnection = null;
+      });
 
   localStream.getTracks().forEach(track => track.stop());
   localStream = null;
@@ -87,13 +87,13 @@ function getMedia() {
     }
   }
   navigator.mediaDevices.getUserMedia(getUserMediaConstraints())
-    .then(gotStream)
-    .catch(e => {
-      const message = `getUserMedia error: ${e.name}\nPermissionDeniedError may mean invalid constraints.`;
-      alert(message);
-      console.log(message);
-      getMediaButton.disabled = false;
-    });
+      .then(gotStream)
+      .catch(e => {
+        const message = `getUserMedia error: ${e.name}\nPermissionDeniedError may mean invalid constraints.`;
+        alert(message);
+        console.log(message);
+        getMediaButton.disabled = false;
+      });
 }
 
 function gotStream(stream) {
@@ -156,14 +156,14 @@ function createPeerConnection() {
   localPeerConnection.onicecandidate = e => {
     console.log('Candidate localPeerConnection');
     remotePeerConnection
-      .addIceCandidate(e.candidate)
-      .then(onAddIceCandidateSuccess, onAddIceCandidateError);
+        .addIceCandidate(e.candidate)
+        .then(onAddIceCandidateSuccess, onAddIceCandidateError);
   };
   remotePeerConnection.onicecandidate = e => {
     console.log('Candidate remotePeerConnection');
     localPeerConnection
-      .addIceCandidate(e.candidate)
-      .then(onAddIceCandidateSuccess, onAddIceCandidateError);
+        .addIceCandidate(e.candidate)
+        .then(onAddIceCandidateSuccess, onAddIceCandidateError);
   };
   remotePeerConnection.ontrack = e => {
     if (remoteVideo.srcObject !== e.streams[0]) {
@@ -172,20 +172,20 @@ function createPeerConnection() {
     }
   };
   localPeerConnection.createOffer().then(
-    desc => {
-      console.log('localPeerConnection offering');
-      localPeerConnection.setLocalDescription(desc);
-      remotePeerConnection.setRemoteDescription(desc);
-      remotePeerConnection.createAnswer().then(
-        desc2 => {
-          console.log('remotePeerConnection answering');
-          remotePeerConnection.setLocalDescription(desc2);
-          localPeerConnection.setRemoteDescription(desc2);
-        },
-        err => console.log(err)
-      );
-    },
-    err => console.log(err)
+      desc => {
+        console.log('localPeerConnection offering');
+        localPeerConnection.setLocalDescription(desc);
+        remotePeerConnection.setRemoteDescription(desc);
+        remotePeerConnection.createAnswer().then(
+            desc2 => {
+              console.log('remotePeerConnection answering');
+              remotePeerConnection.setLocalDescription(desc2);
+              localPeerConnection.setRemoteDescription(desc2);
+            },
+            err => console.log(err)
+        );
+      },
+      err => console.log(err)
   );
 }
 
@@ -260,11 +260,11 @@ function showLocalStats(results) {
 setInterval(() => {
   if (localPeerConnection && remotePeerConnection) {
     remotePeerConnection
-      .getStats(null)
-      .then(showRemoteStats, err => console.log(err));
+        .getStats(null)
+        .then(showRemoteStats, err => console.log(err));
     localPeerConnection
-      .getStats(null)
-      .then(showLocalStats, err => console.log(err));
+        .getStats(null)
+        .then(showLocalStats, err => console.log(err));
   } else {
     console.log('Not connected yet');
   }

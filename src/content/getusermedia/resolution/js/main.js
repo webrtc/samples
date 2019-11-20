@@ -83,8 +83,8 @@ function gotStream(mediaStream) {
   video.srcObject = mediaStream;
   messagebox.style.display = 'none';
   videoblock.style.display = 'block';
-  let track = mediaStream.getVideoTracks()[0];
-  let constraints = track.getConstraints();
+  const track = mediaStream.getVideoTracks()[0];
+  const constraints = track.getConstraints();
   console.log('Result constraints: ' + JSON.stringify(constraints));
   if (constraints && constraints.width && constraints.width.exact) {
     widthInput.value = constraints.width.exact;
@@ -96,7 +96,7 @@ function gotStream(mediaStream) {
 }
 
 function errorMessage(who, what) {
-  let message = who + ': ' + what;
+  const message = who + ': ' + what;
   messagebox.innerText = message;
   messagebox.style.display = 'block';
   console.log(message);
@@ -110,8 +110,8 @@ function displayVideoDimensions(whereSeen) {
   if (video.videoWidth) {
     dimensions.innerText = 'Actual video dimensions: ' + video.videoWidth +
       'x' + video.videoHeight + 'px.';
-    if (currentWidth !== video.videoWidth
-      || currentHeight !== video.videoHeight) {
+    if (currentWidth !== video.videoWidth ||
+      currentHeight !== video.videoHeight) {
       console.log(whereSeen + ': ' + dimensions.innerText);
       currentWidth = video.videoWidth;
       currentHeight = video.videoHeight;
@@ -131,7 +131,7 @@ video.onresize = () => {
 
 function constraintChange(e) {
   widthOutput.textContent = e.target.value;
-  let track = window.stream.getVideoTracks()[0];
+  const track = window.stream.getVideoTracks()[0];
   let constraints;
   if (aspectLock.checked) {
     constraints = {
@@ -146,13 +146,13 @@ function constraintChange(e) {
   clearErrorMessage();
   console.log('applying ' + JSON.stringify(constraints));
   track.applyConstraints(constraints)
-    .then(() => {
-      console.log('applyConstraint success');
-      displayVideoDimensions('applyConstraints');
-    })
-    .catch(err => {
-      errorMessage('applyConstraints', err.name);
-    });
+      .then(() => {
+        console.log('applyConstraint success');
+        displayVideoDimensions('applyConstraints');
+      })
+      .catch(err => {
+        errorMessage('applyConstraints', err.name);
+      });
 }
 
 widthInput.onchange = constraintChange;
@@ -177,8 +177,8 @@ function getMedia(constraints) {
   clearErrorMessage();
   videoblock.style.display = 'none';
   navigator.mediaDevices.getUserMedia(constraints)
-    .then(gotStream)
-    .catch(e => {
-      errorMessage('getUserMedia', e.message, e.name);
-    });
+      .then(gotStream)
+      .catch(e => {
+        errorMessage('getUserMedia', e.message, e.name);
+      });
 }

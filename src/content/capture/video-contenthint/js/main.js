@@ -92,14 +92,14 @@ function establishPC(videoTag, stream) {
   stream.getTracks().forEach(track => pc1.addTrack(track, stream));
 
   pc1.createOffer(offerOptions)
-    .then(desc => {
-      pc1.setLocalDescription(desc)
-        .then(() => pc2.setRemoteDescription(desc))
-        .then(() => pc2.createAnswer())
-        .then(answerDesc => onCreateAnswerSuccess(pc1, pc2, answerDesc))
-        .catch(onSetSessionDescriptionError);
-    })
-    .catch(e => console.log('Failed to create session description: ' + e.toString()));
+      .then(desc => {
+        pc1.setLocalDescription(desc)
+            .then(() => pc2.setRemoteDescription(desc))
+            .then(() => pc2.createAnswer())
+            .then(answerDesc => onCreateAnswerSuccess(pc1, pc2, answerDesc))
+            .catch(onSetSessionDescriptionError);
+      })
+      .catch(e => console.log('Failed to create session description: ' + e.toString()));
 }
 
 function onSetSessionDescriptionError(error) {
@@ -110,8 +110,8 @@ function onCreateAnswerSuccess(pc1, pc2, desc) {
   // Hard-code video bitrate to 50kbps.
   desc.sdp = desc.sdp.replace(/a=mid:(.*)\r\n/g, 'a=mid:$1\r\nb=AS:' + 50 + '\r\n');
   pc2.setLocalDescription(desc)
-    .then(() => pc1.setRemoteDescription(desc))
-    .catch(onSetSessionDescriptionError);
+      .then(() => pc1.setRemoteDescription(desc))
+      .catch(onSetSessionDescriptionError);
 }
 
 function onIceCandidate(pc, otherPc, event) {

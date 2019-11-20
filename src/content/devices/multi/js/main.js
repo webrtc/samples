@@ -41,7 +41,7 @@ function gotDevices(deviceInfos) {
     const newOutputSelector = masterOutputSelector.cloneNode(true);
     newOutputSelector.addEventListener('change', changeAudioDestination);
     allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector,
-      allOutputSelectors[selector]);
+        allOutputSelectors[selector]);
   }
 }
 
@@ -51,18 +51,18 @@ navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 function attachSinkId(element, sinkId, outputSelector) {
   if (typeof element.sinkId !== 'undefined') {
     element.setSinkId(sinkId)
-      .then(() => {
-        console.log(`Success, audio output device attached: ${sinkId} to element with ${element.title} as source.`);
-      })
-      .catch(error => {
-        let errorMessage = error;
-        if (error.name === 'SecurityError') {
-          errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-        }
-        console.error(errorMessage);
-        // Jump back to first output device in the list as it's the default.
-        outputSelector.selectedIndex = 0;
-      });
+        .then(() => {
+          console.log(`Success, audio output device attached: ${sinkId} to element with ${element.title} as source.`);
+        })
+        .catch(error => {
+          let errorMessage = error;
+          if (error.name === 'SecurityError') {
+            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+          }
+          console.error(errorMessage);
+          // Jump back to first output device in the list as it's the default.
+          outputSelector.selectedIndex = 0;
+        });
   } else {
     console.warn('Browser does not support output device selection.');
   }

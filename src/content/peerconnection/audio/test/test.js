@@ -12,9 +12,9 @@ export default {
 
     // TODO Test all codecs?
     browser
-      .url(url)
-      .click('#callButton')
-      .waitForMediaPlaybackReady('#audio2', 5000, 'Receiving remote audio.')
-      .end();
+        .url(url)
+        .click('#callButton')
+        .waitForMediaPlaybackReady('#audio2', 5000, 'Receiving remote audio.')
+        .end();
   }
 };

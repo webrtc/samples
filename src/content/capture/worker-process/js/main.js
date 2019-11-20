@@ -27,7 +27,7 @@ function loop() {
   if (source.videoWidth > 0 && source.videoHeight > 0) {
     canvasIn.width = source.videoWidth;
     canvasIn.height = source.videoHeight;
-    let ctx = canvasIn.getContext('2d');
+    const ctx = canvasIn.getContext('2d');
     ctx.drawImage(source, 0, 0);
     // Put a red square into the image, to mark it as "processed".
     ctx.fillStyle = '#FF0000';
@@ -45,7 +45,7 @@ const readData = async () => {
   if (!result.done) {
     canvasOut.width = source.videoWidth;
     canvasOut.height = source.videoHeight;
-    let outCtx = canvasOut.getContext('2d');
+    const outCtx = canvasOut.getContext('2d');
     outCtx.putImageData(result.value, 0, 0);
     readData();
   }
@@ -65,7 +65,7 @@ const readData = async () => {
     window.requestAnimationFrame(loop);
   };
   myWorker.postMessage(['stream', transformStream.readable],
-                       [transformStream.readable]);
+      [transformStream.readable]);
   source.play();
   result.play();
 })();

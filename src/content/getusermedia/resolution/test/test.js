@@ -11,22 +11,22 @@ export default {
     const url = 'file://' + process.cwd() + path;
 
     browser
-      .url(url)
-      .click('button#qvga')
-      .pause(500)
-      .waitForElementVisible('video', 5000)
-      .waitForMediaPlaybackReady('video', 10000)
-      .assert.videoWidth('video', 320, 'Video width is 320 wide.')
-      .click('button#vga')
-      .pause(500)
-      .waitForElementVisible('video', 5000)
-      .waitForMediaPlaybackReady('video', 10000)
-      .assert.videoWidth('video', 640, 'Video width is 640 wide.')
-      .click('button#hd')
-      .pause(500)
-      .waitForElementVisible('video', 5000)
-      .waitForMediaPlaybackReady('video', 10000)
-      .assert.videoWidth('video', 1280, 'Video width is 1280 wide.')
-      .end();
+        .url(url)
+        .click('button#qvga')
+        .pause(500)
+        .waitForElementVisible('video', 5000)
+        .waitForMediaPlaybackReady('video', 10000)
+        .assert.videoWidth('video', 320, 'Video width is 320 wide.')
+        .click('button#vga')
+        .pause(500)
+        .waitForElementVisible('video', 5000)
+        .waitForMediaPlaybackReady('video', 10000)
+        .assert.videoWidth('video', 640, 'Video width is 640 wide.')
+        .click('button#hd')
+        .pause(500)
+        .waitForElementVisible('video', 5000)
+        .waitForMediaPlaybackReady('video', 10000)
+        .assert.videoWidth('video', 1280, 'Video width is 1280 wide.')
+        .end();
   }
 };
