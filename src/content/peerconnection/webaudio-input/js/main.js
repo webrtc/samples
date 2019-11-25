@@ -36,9 +36,9 @@ function start() {
     video: false
   };
   navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then(handleSuccess)
-    .catch(handleFailure);
+      .getUserMedia(constraints)
+      .then(handleSuccess)
+      .catch(handleFailure);
   startButton.disabled = true;
   stopButton.disabled = false;
 }
@@ -98,8 +98,8 @@ function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
   pc2.createAnswer()
-    .then(gotDescription2)
-    .catch(error => logError(`createAnswer failed: ${error}`));
+      .then(gotDescription2)
+      .catch(error => logError(`createAnswer failed: ${error}`));
 }
 
 function gotDescription2(desc) {
@@ -124,8 +124,8 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc)
-    .addIceCandidate(event.candidate)
-    .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+      .addIceCandidate(event.candidate)
+      .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 

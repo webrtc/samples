@@ -24,7 +24,7 @@ function loop() {
   if (source.videoWidth > 0 && source.videoHeight > 0) {
     canvasIn.width = source.videoWidth;
     canvasIn.height = source.videoHeight;
-    let ctx = canvasIn.getContext('2d');
+    const ctx = canvasIn.getContext('2d');
     ctx.drawImage(source, 0, 0);
     // Put a red square into the image, to mark it as "processed".
     ctx.fillStyle = '#FF0000';
@@ -34,7 +34,7 @@ function loop() {
     // We paint it on the second canvas.
     canvasOut.width = source.videoWidth;
     canvasOut.height = source.videoHeight;
-    let outCtx = canvasOut.getContext('2d');
+    const outCtx = canvasOut.getContext('2d');
     outCtx.putImageData(imageData, 0, 0);
   }
   window.requestAnimationFrame(loop);

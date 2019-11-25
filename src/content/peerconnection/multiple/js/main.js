@@ -41,12 +41,12 @@ function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
   navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: true
-    })
-    .then(gotStream)
-    .catch(e => console.log('getUserMedia() error: ', e));
+      .getUserMedia({
+        audio: true,
+        video: true
+      })
+      .then(gotStream)
+      .catch(e => console.log('getUserMedia() error: ', e));
 }
 
 function call() {
@@ -80,13 +80,13 @@ function call() {
   window.localStream.getTracks().forEach(track => pc1Local.addTrack(track, window.localStream));
   console.log('Adding local stream to pc1Local');
   pc1Local
-    .createOffer(offerOptions)
-    .then(gotDescription1Local, onCreateSessionDescriptionError);
+      .createOffer(offerOptions)
+      .then(gotDescription1Local, onCreateSessionDescriptionError);
 
   window.localStream.getTracks().forEach(track => pc2Local.addTrack(track, window.localStream));
   console.log('Adding local stream to pc2Local');
   pc2Local.createOffer(offerOptions)
-    .then(gotDescription2Local, onCreateSessionDescriptionError);
+      .then(gotDescription2Local, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -169,7 +169,7 @@ function iceCallback2Remote(event) {
 
 function handleCandidate(candidate, dest, prefix, type) {
   dest.addIceCandidate(candidate)
-    .then(onAddIceCandidateSuccess, onAddIceCandidateError);
+      .then(onAddIceCandidateSuccess, onAddIceCandidateError);
   console.log(`${prefix}New ${type} ICE candidate: ${candidate ? candidate.candidate : '(null)'}`);
 }
 

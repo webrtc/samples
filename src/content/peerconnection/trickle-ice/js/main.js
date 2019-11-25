@@ -155,10 +155,10 @@ function start() {
   pc.onicegatheringstatechange = gatheringStateChange;
   pc.onicecandidateerror = iceCandidateError;
   pc.createOffer(
-    offerOptions
+      offerOptions
   ).then(
-    gotDescription,
-    noDescription
+      gotDescription,
+      noDescription
   );
 }
 
@@ -286,11 +286,11 @@ readServersFromLocalStorage();
 
 // check if we have getUserMedia permissions.
 navigator.mediaDevices
-  .enumerateDevices()
-  .then(function(devices) {
-    devices.forEach(function(device) {
-      if (device.label !== '') {
-        document.getElementById('getUserMediaPermissions').style.display = 'block';
-      }
+    .enumerateDevices()
+    .then(function(devices) {
+      devices.forEach(function(device) {
+        if (device.label !== '') {
+          document.getElementById('getUserMediaPermissions').style.display = 'block';
+        }
+      });
     });
-  });

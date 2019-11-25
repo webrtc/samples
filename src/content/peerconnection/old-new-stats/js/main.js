@@ -207,12 +207,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       // Display new-style getstats to the left
       localPeerConnection.getStats(null)
-        .then(results => {
-          const statsString = dumpStats(results);
-          senderStatsDiv.innerHTML = '<h2>New stats</h2>' + statsString;
-        }, err => {
-          console.log(err);
-        });
+          .then(results => {
+            const statsString = dumpStats(results);
+            senderStatsDiv.innerHTML = '<h2>New stats</h2>' + statsString;
+          }, err => {
+            console.log(err);
+          });
     } else {
       console.log('Not connected yet');
     }
