@@ -29,12 +29,12 @@ function maybeCreateStream() {
   if (leftVideo.captureStream) {
     stream = leftVideo.captureStream();
     console.log('Captured stream from leftVideo with captureStream',
-      stream);
+        stream);
     call();
   } else if (leftVideo.mozCaptureStream) {
     stream = leftVideo.mozCaptureStream();
     console.log('Captured stream from leftVideo with mozCaptureStream()',
-      stream);
+        stream);
     call();
   } else {
     console.log('captureStream() not supported');
@@ -143,10 +143,10 @@ ${desc.sdp}`);
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-    .then(
-      () => onAddIceCandidateSuccess(pc),
-      err => onAddIceCandidateError(pc, err)
-    );
+      .then(
+          () => onAddIceCandidateSuccess(pc),
+          err => onAddIceCandidateError(pc, err)
+      );
   console.log(`${getName(pc)} ICE candidate: 
 ${event.candidate ?
     event.candidate.candidate : '(null)'}`);

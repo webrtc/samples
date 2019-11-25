@@ -163,7 +163,7 @@ async function init() {
     remotePeerConnection.ondatachannel = receiveChannelCallback;
 
     localStream.getTracks()
-      .forEach(track => localPeerConnection.addTrack(track, localStream));
+        .forEach(track => localPeerConnection.addTrack(track, localStream));
     console.log('Adding Local Stream to peer connection');
   }
 
@@ -189,7 +189,7 @@ async function init() {
   }
 
   async function setOffer() {
-    let sdp = offerSdpTextarea.value;
+    const sdp = offerSdpTextarea.value;
     const offer = {
       type: 'offer',
       sdp: sdp
@@ -231,7 +231,7 @@ async function init() {
   }
 
   async function setAnswer() {
-    let sdp = answerSdpTextarea.value;
+    const sdp = answerSdpTextarea.value;
     const answer = {
       type: 'answer',
       sdp: sdp

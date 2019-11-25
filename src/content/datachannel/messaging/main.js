@@ -39,7 +39,7 @@ class MessagingSample extends LitElement {
       });
 
       window.localChannel = this._localChannel = this._localConnection
-        .createDataChannel('messaging-channel', dataChannelParams);
+          .createDataChannel('messaging-channel', dataChannelParams);
       this._localChannel.binaryType = 'arraybuffer';
       this._localChannel.addEventListener('open', () => {
         console.log('Local channel open!');

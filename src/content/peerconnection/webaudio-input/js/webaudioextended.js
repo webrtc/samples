@@ -48,7 +48,7 @@ WebAudioExtended.prototype.stop = function() {
 };
 
 WebAudioExtended.prototype.addEffect = function() {
-  let effect = this.context.createBufferSource();
+  const effect = this.context.createBufferSource();
   effect.buffer = this.soundBuffer;
   if (this.peer) {
     effect.connect(this.peer);

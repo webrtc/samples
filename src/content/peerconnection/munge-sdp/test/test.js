@@ -30,10 +30,10 @@ export default {
     browser.expect.element('#setAnswer').to.be.enabled.before(1000);
     browser.expect.element('#hangup').to.be.enabled.before(1000);
     browser
-      .click('#createOffer')
-      .click('#setOffer')
-      .click('#createAnswer')
-      .click('#setAnswer');
+        .click('#createOffer')
+        .click('#setOffer')
+        .click('#createAnswer')
+        .click('#setAnswer');
     browser.waitForMediaPlaybackReady('div#remote video', 5000);
     browser.click('#hangup');
     browser.expect.element('#createPeerConnection').to.not.be.enabled.before(1000);

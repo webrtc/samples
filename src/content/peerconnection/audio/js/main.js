@@ -47,7 +47,7 @@ function gotStream(stream) {
   console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(offerOptions)
-    .then(gotDescription1, onCreateSessionDescriptionError);
+      .then(gotDescription1, onCreateSessionDescriptionError);
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
@@ -76,25 +76,25 @@ function call() {
   pc2.ontrack = gotRemoteStream;
   console.log('Requesting local stream');
   navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: false
-    })
-    .then(gotStream)
-    .catch(e => {
-      alert(`getUserMedia() error: ${e.name}`);
-    });
+      .getUserMedia({
+        audio: true,
+        video: false
+      })
+      .then(gotStream)
+      .catch(e => {
+        alert(`getUserMedia() error: ${e.name}`);
+      });
 }
 
 function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
   pc1.setLocalDescription(desc)
-    .then(() => {
-      desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc2.setRemoteDescription(desc).then(() => {
-        return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
+      .then(() => {
+        desc.sdp = forceChosenAudioCodec(desc.sdp);
+        pc2.setRemoteDescription(desc).then(() => {
+          return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
+        }, onSetSessionDescriptionError);
       }, onSetSessionDescriptionError);
-    }, onSetSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
@@ -134,10 +134,10 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-    .then(
-      () => onAddIceCandidateSuccess(pc),
-      err => onAddIceCandidateError(pc, err)
-    );
+      .then(
+          () => onAddIceCandidateSuccess(pc),
+          err => onAddIceCandidateError(pc, err)
+      );
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 

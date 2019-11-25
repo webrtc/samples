@@ -9,12 +9,12 @@
 'use strict';
 
 onmessage = function(e) {
-  let command = e.data[0];
+  const command = e.data[0];
   if (command == 'stream') {
-    let inputStream = e.data[1];
+    const inputStream = e.data[1];
     const transformStream = new TransformStream();
     inputStream.pipeTo(transformStream.writable);
     postMessage(['response', transformStream.readable],
-                [transformStream.readable]);
+        [transformStream.readable]);
   }
 };
