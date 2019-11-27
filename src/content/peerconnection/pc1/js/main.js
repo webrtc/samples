@@ -25,8 +25,10 @@ localVideo.addEventListener('loadedmetadata', function() {
   console.log(`Local video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
 
+let connectedTime;
 remoteVideo.addEventListener('loadedmetadata', function() {
   console.log(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
+  console.log(`Time between connectionStatechange(connected) and loadedmetadata: ${performance.now() - connectedTime}`);
 });
 
 remoteVideo.addEventListener('resize', () => {
@@ -99,6 +101,11 @@ async function call() {
   pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
   pc1.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc1, e));
   pc2.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc2, e));
+  pc2.addEventListener('connectionstatechange', e => {
+    if (pc2.connectionState === 'connected') {
+      connectedTime = performance.now();
+    }
+  });
   pc2.addEventListener('track', gotRemoteStream);
 
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
