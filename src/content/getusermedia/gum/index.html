@@ -34,17 +34,24 @@
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
         <span>getUserMedia</span></h1>
 
-    <video id="gum-local" autoplay playsinline></video>
+    <audio id="gum-local-audio" autoplay playsinline></audio>
+    <video id="gum-local-video" autoplay playsinline></video>
+    <button id="showAudio">Open microphone</button>
     <button id="showVideo">Open camera</button>
+    <button id="enumerateDevices">Enumerate Devices</button>
+
+    <div>
+      <input type="checkbox" id="play-local-audio" name="play-local-audio">
+      <label for="play-local-audio">Play Audio From Microphone</label>
+    </div>
+    <p class="warning"><strong>Warning:</strong> if you're not using
+    headphones, pressing play will cause feedback.</p>
+
+    <p>The <code>MediaStream</code> objects <code>audioStream</code> and
+    <code>videoStream</code> passed to the <code>getUserMedia()</code> callback
+    is in global scope, so you can inspect it from the console.</p>
 
     <div id="errorMsg"></div>
-
-    <p class="warning"><strong>Warning:</strong> if you're not using headphones, pressing play will cause feedback.</p>
-
-    <p>Display the video stream from <code>getUserMedia()</code> in a video element.</p>
-
-    <p>The <code>MediaStream</code> object <code>stream</code> passed to the <code>getUserMedia()</code> callback is in
-        global scope, so you can inspect it from the console.</p>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/gum"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
