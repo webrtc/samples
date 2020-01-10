@@ -21,7 +21,7 @@ function handleSuccess(constraints, stream) {
   if (constraints.audio) {
     console.log('Got audio stream with constraints:', constraints);
 
-    window.audioStream = stream;  // make variable available to browser console
+    window.audioStream = stream; // make variable available to browser console
     const audioTracks = stream.getAudioTracks();
     console.log(`Using audio device: ${audioTracks[0].label}`);
 
@@ -34,7 +34,7 @@ function handleSuccess(constraints, stream) {
   if (constraints.video) {
     console.log('Got video stream with constraints:', constraints);
 
-    window.videoStream = stream;  // make variable available to browser console
+    window.videoStream = stream; // make variable available to browser console
     const videoTracks = stream.getVideoTracks();
     console.log(`Using video device: ${videoTracks[0].label}`);
 
@@ -47,12 +47,12 @@ function handleError(constraints, error) {
   if (error.name === 'ConstraintNotSatisfiedError' ||
       error.name === 'OverconstrainedError') {
     errorMsg(`The constraints ${
-        JSON.stringify(constraints)} are not supported by your device.`);
+      JSON.stringify(constraints)} are not supported by your device.`);
   } else if (
-      error.name === 'NotAllowedError' ||
+    error.name === 'NotAllowedError' ||
       error.name === 'PermissionDeniedError') {
     errorMsg(`Permissions have not been granted to use your ${
-        JSON.stringify(constraints)} devices. You need to allow the page access
+      JSON.stringify(constraints)} devices. You need to allow the page access
         to your devices in order for the demo to work.`);
   }
   errorMsg(`getUserMedia error: ${error.name}`, error);
