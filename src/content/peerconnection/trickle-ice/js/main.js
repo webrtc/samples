@@ -277,6 +277,7 @@ function iceCandidateError(e) {
   // The interesting attributes of the error are
   // * the url (which allows looking up the server)
   // * the errorCode and errorText
+  document.getElementById('error-note').style.display = 'block';
   document.getElementById('error').innerText += 'The server ' + e.url +
     ' returned an error with code=' + e.errorCode + ':\n' +
     e.errorText + '\n';
