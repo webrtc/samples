@@ -21,7 +21,7 @@ function handleSuccess(constraints, stream) {
   if (constraints.audio) {
     console.log('Got audio stream with constraints:', constraints);
 
-    window.audioStream = stream;  // make variable available to browser console
+    window.audioStream = stream; // make variable available to browser console
     const audioTracks = stream.getAudioTracks();
     console.log(`Using audio device: ${audioTracks[0].label}`);
 
@@ -34,7 +34,7 @@ function handleSuccess(constraints, stream) {
   if (constraints.video) {
     console.log('Got video stream with constraints:', constraints);
 
-    window.videoStream = stream;  // make variable available to browser console
+    window.videoStream = stream; // make variable available to browser console
     const videoTracks = stream.getVideoTracks();
     console.log(`Using video device: ${videoTracks[0].label}`);
 
