@@ -56,13 +56,12 @@ function handleError(constraints, error) {
   if (error.name === 'ConstraintNotSatisfiedError' ||
       error.name === 'OverconstrainedError') {
     errorMsg(`The constraints ${
-        JSON.stringify(constraints)} are not supported by your device.`);
-  } else if (
-      error.name === 'NotAllowedError' ||
+      JSON.stringify(constraints)} are not supported by your device.`);
+  } else if (error.name === 'NotAllowedError' ||
       error.name === 'PermissionDeniedError') {
     errorMsg(`Permissions have not been granted to use your ${
-        JSON.stringify(constraints)} devices. You need to allow the page access
-        to your devices in order for the demo to work.`);
+      JSON.stringify(constraints)} devices. You need to allow the page access
+      to your devices in order for the demo to work.`);
   }
   errorMsg(`getUserMedia error: ${error.name}`, error);
 }
