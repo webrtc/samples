@@ -24,7 +24,8 @@ let localStream;
 
 // Can be set in the console before making a call to test this keeps
 // within the envelope set by the SDP. In kbps.
-const maxBandwidth = 0;
+// eslint-disable-next-line prefer-const
+let maxBandwidth = 0;
 
 let bitrateGraph;
 let bitrateSeries;
