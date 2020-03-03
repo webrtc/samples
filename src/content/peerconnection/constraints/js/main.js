@@ -242,7 +242,9 @@ function showRemoteStats(results) {
     remoteCandidate = results.get(activeCandidatePair.remoteCandidateId);
   }
   if (remoteCandidate) {
-    if (remoteCandidate.ip && remoteCandidate.port) {
+    if (remoteCandidate.address && remoteCandidate.port) {
+      peerDiv.innerHTML = `<strong>Connected to:</strong>${remoteCandidate.address}:${remoteCandidate.port}`;
+    } else if (remoteCandidate.ip && remoteCandidate.port) {
       peerDiv.innerHTML = `<strong>Connected to:</strong>${remoteCandidate.ip}:${remoteCandidate.port}`;
     } else if (remoteCandidate.ipAddress && remoteCandidate.portNumber) {
       // Fall back to old names.
