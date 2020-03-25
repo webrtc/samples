@@ -179,6 +179,7 @@ bandwidthSelector.onchange = () => {
   // (local) renegotiation. Note that this will be within the envelope of
   // the initial maximum bandwidth negotiated via SDP.
   if ((adapter.browserDetails.browser === 'chrome' ||
+       adapter.browserDetails.browser === 'safari' ||
        (adapter.browserDetails.browser === 'firefox' &&
         adapter.browserDetails.version >= 64)) &&
       'RTCRtpSender' in window &&
