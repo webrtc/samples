@@ -149,14 +149,16 @@ function start() {
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
   console.log(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
+  document.getElementById('error').innerText = '';
   pc = new RTCPeerConnection(config);
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
+  pc.onicecandidateerror = iceCandidateError;
   pc.createOffer(
-    offerOptions
+      offerOptions
   ).then(
-    gotDescription,
-    noDescription
+      gotDescription,
+      noDescription
   );
 }
 
@@ -168,23 +170,6 @@ function gotDescription(desc) {
 
 function noDescription(error) {
   console.log('Error creating offer: ', error);
-}
-
-// Parse a candidate:foo string into an object, for easier use by other methods.
-function parseCandidate(text) {
-  const candidateStr = 'candidate:';
-  const pos = text.indexOf(candidateStr) + candidateStr.length;
-  let [foundation, component, protocol, priority, address, port, , type] =
-    text.substr(pos).split(' ');
-  return {
-    'component': component,
-    'type': type,
-    'foundation': foundation,
-    'protocol': protocol,
-    'address': address,
-    'port': port,
-    'priority': priority
-  };
 }
 
 // Parse the uint32 PRIORITY field into its constituent parts from RFC 5245,
@@ -252,15 +237,18 @@ function iceCallback(event) {
   const row = document.createElement('tr');
   appendCell(row, elapsed);
   if (event.candidate) {
-    const c = parseCandidate(event.candidate.candidate);
-    appendCell(row, c.component);
-    appendCell(row, c.type);
-    appendCell(row, c.foundation);
-    appendCell(row, c.protocol);
-    appendCell(row, c.address);
-    appendCell(row, c.port);
-    appendCell(row, formatPriority(c.priority));
-    candidates.push(c);
+    if (event.candidate.candidate === '') {
+      return;
+    }
+    const {candidate} = event;
+    appendCell(row, candidate.component);
+    appendCell(row, candidate.type);
+    appendCell(row, candidate.foundation);
+    appendCell(row, candidate.protocol);
+    appendCell(row, candidate.address);
+    appendCell(row, candidate.port);
+    appendCell(row, formatPriority(candidate.priority));
+    candidates.push(candidate);
   } else if (!('onicegatheringstatechange' in RTCPeerConnection.prototype)) {
     // should not be done if its done in the icegatheringstatechange callback.
     appendCell(row, getFinalResult(), 7);
@@ -285,15 +273,25 @@ function gatheringStateChange() {
   candidateTBody.appendChild(row);
 }
 
+function iceCandidateError(e) {
+  // The interesting attributes of the error are
+  // * the url (which allows looking up the server)
+  // * the errorCode and errorText
+  document.getElementById('error-note').style.display = 'block';
+  document.getElementById('error').innerText += 'The server ' + e.url +
+    ' returned an error with code=' + e.errorCode + ':\n' +
+    e.errorText + '\n';
+}
+
 readServersFromLocalStorage();
 
 // check if we have getUserMedia permissions.
 navigator.mediaDevices
-  .enumerateDevices()
-  .then(function(devices) {
-    devices.forEach(function(device) {
-      if (device.label !== '') {
-        document.getElementById('getUserMediaPermissions').style.display = 'block';
-      }
+    .enumerateDevices()
+    .then(function(devices) {
+      devices.forEach(function(device) {
+        if (device.label !== '') {
+          document.getElementById('getUserMediaPermissions').style.display = 'block';
+        }
+      });
     });
-  });

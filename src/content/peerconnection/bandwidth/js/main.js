@@ -24,10 +24,12 @@ let localStream;
 
 // Can be set in the console before making a call to test this keeps
 // within the envelope set by the SDP. In kbps.
+// eslint-disable-next-line prefer-const
 let maxBandwidth = 0;
 
 let bitrateGraph;
 let bitrateSeries;
+let headerrateSeries;
 
 let packetGraph;
 let packetSeries;
@@ -48,15 +50,18 @@ function gotStream(stream) {
   console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(
-    offerOptions
+      offerOptions
   ).then(
-    gotDescription1,
-    onCreateSessionDescriptionError
+      gotDescription1,
+      onCreateSessionDescriptionError
   );
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
   bitrateGraph.updateEndDate();
+
+  headerrateSeries = new TimelineDataSeries();
+  headerrateSeries.setColor('green');
 
   packetSeries = new TimelineDataSeries();
   packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
@@ -83,37 +88,37 @@ function call() {
 
   console.log('Requesting local stream');
   navigator.mediaDevices.getUserMedia({video: true})
-    .then(gotStream)
-    .catch(e => alert('getUserMedia() error: ' + e.name));
+      .then(gotStream)
+      .catch(e => alert('getUserMedia() error: ' + e.name));
 }
 
 function gotDescription1(desc) {
   console.log('Offer from pc1 \n' + desc.sdp);
   pc1.setLocalDescription(desc).then(
-    () => {
-      pc2.setRemoteDescription(desc)
-        .then(() => pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError),
-          onSetSessionDescriptionError);
-    }, onSetSessionDescriptionError
+      () => {
+        pc2.setRemoteDescription(desc)
+            .then(() => pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError),
+                onSetSessionDescriptionError);
+      }, onSetSessionDescriptionError
   );
 }
 
 function gotDescription2(desc) {
   pc2.setLocalDescription(desc).then(
-    () => {
-      console.log('Answer from pc2 \n' + desc.sdp);
-      let p;
-      if (maxBandwidth) {
-        p = pc1.setRemoteDescription({
-          type: desc.type,
-          sdp: updateBandwidthRestriction(desc.sdp, maxBandwidth)
-        });
-      } else {
-        p = pc1.setRemoteDescription(desc);
-      }
-      p.then(() => {}, onSetSessionDescriptionError);
-    },
-    onSetSessionDescriptionError
+      () => {
+        console.log('Answer from pc2 \n' + desc.sdp);
+        let p;
+        if (maxBandwidth) {
+          p = pc1.setRemoteDescription({
+            type: desc.type,
+            sdp: updateBandwidthRestriction(desc.sdp, maxBandwidth)
+          });
+        } else {
+          p = pc1.setRemoteDescription(desc);
+        }
+        p.then(() => {}, onSetSessionDescriptionError);
+      },
+      onSetSessionDescriptionError
   );
 }
 
@@ -146,9 +151,9 @@ function getName(pc) {
 
 function onIceCandidate(event) {
   getOtherPc(this)
-    .addIceCandidate(event.candidate)
-    .then(onAddIceCandidateSuccess)
-    .catch(onAddIceCandidateError);
+      .addIceCandidate(event.candidate)
+      .then(onAddIceCandidateSuccess)
+      .catch(onAddIceCandidateError);
 
   console.log(`${getName(this)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
@@ -174,6 +179,7 @@ bandwidthSelector.onchange = () => {
   // (local) renegotiation. Note that this will be within the envelope of
   // the initial maximum bandwidth negotiated via SDP.
   if ((adapter.browserDetails.browser === 'chrome' ||
+       adapter.browserDetails.browser === 'safari' ||
        (adapter.browserDetails.browser === 'firefox' &&
         adapter.browserDetails.version >= 64)) &&
       'RTCRtpSender' in window &&
@@ -189,31 +195,31 @@ bandwidthSelector.onchange = () => {
       parameters.encodings[0].maxBitrate = bandwidth * 1000;
     }
     sender.setParameters(parameters)
-    .then(() => {
-      bandwidthSelector.disabled = false;
-    })
-    .catch(e => console.error(e));
+        .then(() => {
+          bandwidthSelector.disabled = false;
+        })
+        .catch(e => console.error(e));
     return;
   }
   // Fallback to the SDP munging with local renegotiation way of limiting
   // the bandwidth.
   pc1.createOffer()
-    .then(offer => pc1.setLocalDescription(offer))
-    .then(() => {
-      const desc = {
-        type: pc1.remoteDescription.type,
-        sdp: bandwidth === 'unlimited'
-          ? removeBandwidthRestriction(pc1.remoteDescription.sdp)
-          : updateBandwidthRestriction(pc1.remoteDescription.sdp, bandwidth)
-      };
-      console.log('Applying bandwidth restriction to setRemoteDescription:\n' +
+      .then(offer => pc1.setLocalDescription(offer))
+      .then(() => {
+        const desc = {
+          type: pc1.remoteDescription.type,
+          sdp: bandwidth === 'unlimited' ?
+          removeBandwidthRestriction(pc1.remoteDescription.sdp) :
+          updateBandwidthRestriction(pc1.remoteDescription.sdp, bandwidth)
+        };
+        console.log('Applying bandwidth restriction to setRemoteDescription:\n' +
         desc.sdp);
-      return pc1.setRemoteDescription(desc);
-    })
-    .then(() => {
-      bandwidthSelector.disabled = false;
-    })
-    .catch(onSetSessionDescriptionError);
+        return pc1.setRemoteDescription(desc);
+      })
+      .then(() => {
+        bandwidthSelector.disabled = false;
+      })
+      .catch(onSetSessionDescriptionError);
 };
 
 function updateBandwidthRestriction(sdp, bandwidth) {
@@ -247,6 +253,7 @@ window.setInterval(() => {
   sender.getStats().then(res => {
     res.forEach(report => {
       let bytes;
+      let headerBytes;
       let packets;
       if (report.type === 'outbound-rtp') {
         if (report.isRemote) {
@@ -254,15 +261,20 @@ window.setInterval(() => {
         }
         const now = report.timestamp;
         bytes = report.bytesSent;
+        headerBytes = report.headerBytesSent;
+
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {
           // calculate bitrate
           const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
             (now - lastResult.get(report.id).timestamp);
+          const headerrate = 8 * (headerBytes - lastResult.get(report.id).headerBytesSent) /
+            (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
-          bitrateGraph.setDataSeries([bitrateSeries]);
+          headerrateSeries.addPoint(now, headerrate);
+          bitrateGraph.setDataSeries([bitrateSeries, headerrateSeries]);
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart

@@ -23,8 +23,10 @@ hangupButton.onclick = hangup;
 
 const pc1StateDiv = document.querySelector('div#pc1State');
 const pc1IceStateDiv = document.querySelector('div#pc1IceState');
+const pc1ConnStateDiv = document.querySelector('div#pc1ConnState');
 const pc2StateDiv = document.querySelector('div#pc2State');
 const pc2IceStateDiv = document.querySelector('div#pc2IceState');
+const pc2ConnStateDiv = document.querySelector('div#pc2ConnState');
 
 let localstream;
 let pc1;
@@ -46,12 +48,12 @@ function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
   navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: true
-    })
-    .then(gotStream)
-    .catch(e => alert('getUserMedia() error: ', e.name));
+      .getUserMedia({
+        audio: true,
+        video: true
+      })
+      .then(gotStream)
+      .catch(e => alert('getUserMedia() error: ', e.name));
 }
 
 function call() {
@@ -75,6 +77,7 @@ function call() {
 
   pc1IceStateDiv.textContent = pc1.iceConnectionState;
   pc1.oniceconnectionstatechange = iceStateCallback1;
+  pc1.onconnectionstatechange = connStateCallback1;
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
 
   pc2 = new RTCPeerConnection(servers);
@@ -84,6 +87,7 @@ function call() {
 
   pc2IceStateDiv.textContent = pc2.iceConnectionState;
   pc2.oniceconnectionstatechange = iceStateCallback2;
+  pc2.onconnectionstatechange = connStateCallback2;
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
   localstream.getTracks().forEach(track => pc1.addTrack(track, localstream));
@@ -165,6 +169,21 @@ function iceStateCallback2() {
   }
 }
 
+function connStateCallback1() {
+  if (pc1) {
+    const {connectionState} = pc1;
+    console.log(`pc1 connection state change callback, state: ${connectionState}`);
+    pc1ConnStateDiv.textContent += ` => ${connectionState}`;
+  }
+}
+
+function connStateCallback2() {
+  if (pc2) {
+    const {connectionState} = pc2;
+    console.log(`pc2 connection state change callback, state: ${connectionState}`);
+    pc2ConnStateDiv.textContent += ` => ${connectionState}`;
+  }
+}
 function getOtherPc(pc) {
   return (pc === pc1) ? pc2 : pc1;
 }
@@ -175,8 +194,8 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc)
-    .addIceCandidate(event.candidate)
-    .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+      .addIceCandidate(event.candidate)
+      .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 

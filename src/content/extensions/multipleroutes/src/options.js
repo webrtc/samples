@@ -33,7 +33,7 @@ if (!browserSupportsIPHandlingPolicy()) {
 
 // Saves options.
 function saveOptions() {
-  let radios = document.getElementsByName('ip_policy_selection');
+  const radios = document.getElementsByName('ip_policy_selection');
   for (let i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
       break;
@@ -45,7 +45,7 @@ function saveOptions() {
       value: mapRadioIdToPolicy[i]
     });
   } else {
-    let oldBools = mapRadioIdToPolicy[i];
+    const oldBools = mapRadioIdToPolicy[i];
     pn.webRTCMultipleRoutesEnabled.set({
       value: oldBools.allowMultipleRoutes
     }, function() {
@@ -59,7 +59,7 @@ function saveOptions() {
 }
 
 function restoreRadios(policy) {
-  let radios = document.getElementsByName('ip_policy_selection');
+  const radios = document.getElementsByName('ip_policy_selection');
   radios[mapPolicyToRadioId[policy]].checked = true;
 }
 
@@ -88,13 +88,13 @@ const supportedIPPolicyModes = {
 
 document.addEventListener('DOMContentLoaded', restoreOption);
 document.getElementById('default').
-  addEventListener('click', saveOptions);
+    addEventListener('click', saveOptions);
 document.getElementById('default_public_and_private_interfaces').
-  addEventListener('click', saveOptions);
+    addEventListener('click', saveOptions);
 document.getElementById('default_public_interface_only').
-  addEventListener('click', saveOptions);
+    addEventListener('click', saveOptions);
 document.getElementById('disable_non_proxied_udp').
-  addEventListener('click', saveOptions);
+    addEventListener('click', saveOptions);
 
 document.title = chrome.i18n.getMessage('netli_options');
 const i18nElements = document.querySelectorAll('*[i18n-content]');

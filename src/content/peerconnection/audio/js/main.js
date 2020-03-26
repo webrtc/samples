@@ -23,6 +23,7 @@ let localStream;
 
 let bitrateGraph;
 let bitrateSeries;
+let headerrateSeries;
 
 let packetGraph;
 let packetSeries;
@@ -47,11 +48,14 @@ function gotStream(stream) {
   console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(offerOptions)
-    .then(gotDescription1, onCreateSessionDescriptionError);
+      .then(gotDescription1, onCreateSessionDescriptionError);
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
   bitrateGraph.updateEndDate();
+
+  headerrateSeries = new TimelineDataSeries();
+  headerrateSeries.setColor('green');
 
   packetSeries = new TimelineDataSeries();
   packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
@@ -76,25 +80,25 @@ function call() {
   pc2.ontrack = gotRemoteStream;
   console.log('Requesting local stream');
   navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: false
-    })
-    .then(gotStream)
-    .catch(e => {
-      alert(`getUserMedia() error: ${e.name}`);
-    });
+      .getUserMedia({
+        audio: true,
+        video: false
+      })
+      .then(gotStream)
+      .catch(e => {
+        alert(`getUserMedia() error: ${e.name}`);
+      });
 }
 
 function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
   pc1.setLocalDescription(desc)
-    .then(() => {
-      desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc2.setRemoteDescription(desc).then(() => {
-        return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
+      .then(() => {
+        desc.sdp = forceChosenAudioCodec(desc.sdp);
+        pc2.setRemoteDescription(desc).then(() => {
+          return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
+        }, onSetSessionDescriptionError);
       }, onSetSessionDescriptionError);
-    }, onSetSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
@@ -134,10 +138,10 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-    .then(
-      () => onAddIceCandidateSuccess(pc),
-      err => onAddIceCandidateError(pc, err)
-    );
+      .then(
+          () => onAddIceCandidateSuccess(pc),
+          err => onAddIceCandidateError(pc, err)
+      );
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
@@ -246,6 +250,7 @@ window.setInterval(() => {
   sender.getStats().then(res => {
     res.forEach(report => {
       let bytes;
+      let headerBytes;
       let packets;
       if (report.type === 'outbound-rtp') {
         if (report.isRemote) {
@@ -253,15 +258,20 @@ window.setInterval(() => {
         }
         const now = report.timestamp;
         bytes = report.bytesSent;
+        headerBytes = report.headerBytesSent;
+
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {
           // calculate bitrate
           const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
             (now - lastResult.get(report.id).timestamp);
+          const headerrate = 8 * (headerBytes - lastResult.get(report.id).headerBytesSent) /
+            (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
-          bitrateGraph.setDataSeries([bitrateSeries]);
+          headerrateSeries.addPoint(now, headerrate);
+          bitrateGraph.setDataSeries([bitrateSeries, headerrateSeries]);
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart

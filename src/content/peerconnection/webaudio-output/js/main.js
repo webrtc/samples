@@ -71,12 +71,12 @@ function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
   navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: true
-    })
-    .then(gotStream)
-    .catch(e => alert(`getUserMedia() error: ${e.name}`));
+      .getUserMedia({
+        audio: true,
+        video: true
+      })
+      .then(gotStream)
+      .catch(e => alert(`getUserMedia() error: ${e.name}`));
 }
 
 function call() {
@@ -159,8 +159,8 @@ function onCreateAnswerSuccess(desc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc)
-    .addIceCandidate(event.candidate)
-    .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+      .addIceCandidate(event.candidate)
+      .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 

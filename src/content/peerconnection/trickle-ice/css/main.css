@@ -65,3 +65,7 @@ th:nth-child(6),td:nth-child(6) {
 #getUserMediaPermissions {
   display: none;
 }
+
+#error-note {
+  display: none;
+}

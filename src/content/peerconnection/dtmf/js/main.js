@@ -132,7 +132,7 @@ function gotRemoteStream(e) {
       return;
     }
     const senders = pc1.getSenders();
-    let audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
+    const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
     if (!audioSender) {
       console.log('No local audio track to send DTMF with\n');
       return;

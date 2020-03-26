@@ -53,7 +53,7 @@ function convertBooleansToPolicy(isInstall, callback) {
     if (details.value !== chrome.privacy.IPHandlingPolicy.DEFAULT) {
       if (callback) {
         callback(
-          'webRTCIPHandlingPolicy has a non-default value, stop now.'
+            'webRTCIPHandlingPolicy has a non-default value, stop now.'
         );
       }
       return;
@@ -77,10 +77,10 @@ function onInstall(details) {
     details.reason === 'update' /* extension is upgraded */ ||
     details.reason === 'chrome_update' /* chrome is upgraded */ ) {
     convertBooleansToPolicy(
-      details.reason === 'install',
-      function(status) {
-        console.log(status);
-      });
+        details.reason === 'install',
+        function(status) {
+          console.log(status);
+        });
   }
 }
 

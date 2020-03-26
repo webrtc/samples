@@ -9,3 +9,5 @@ validation-status.json
 firefox_profile/*
 tests_output
 *.log
+*~
+\#*#

@@ -66,6 +66,7 @@ function handleSourceOpen(event) {
 }
 
 function handleDataAvailable(event) {
+  console.log('handleDataAvailable', event);
   if (event.data && event.data.size > 0) {
     recordedBlobs.push(event.data);
   }
@@ -104,6 +105,7 @@ function startRecording() {
   downloadButton.disabled = true;
   mediaRecorder.onstop = (event) => {
     console.log('Recorder stopped: ', event);
+    console.log('Recorded Blobs: ', recordedBlobs);
   };
   mediaRecorder.ondataavailable = handleDataAvailable;
   mediaRecorder.start(10); // collect 10ms of data
@@ -112,7 +114,6 @@ function startRecording() {
 
 function stopRecording() {
   mediaRecorder.stop();
-  console.log('Recorded Blobs: ', recordedBlobs);
 }
 
 function handleSuccess(stream) {

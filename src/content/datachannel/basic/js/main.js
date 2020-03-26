@@ -54,8 +54,8 @@ function createConnection() {
   remoteConnection.ondatachannel = receiveChannelCallback;
 
   localConnection.createOffer().then(
-    gotDescription1,
-    onCreateSessionDescriptionError
+      gotDescription1,
+      onCreateSessionDescriptionError
   );
   startButton.disabled = true;
   closeButton.disabled = false;
@@ -97,8 +97,8 @@ function gotDescription1(desc) {
   console.log(`Offer from localConnection\n${desc.sdp}`);
   remoteConnection.setRemoteDescription(desc);
   remoteConnection.createAnswer().then(
-    gotDescription2,
-    onCreateSessionDescriptionError
+      gotDescription2,
+      onCreateSessionDescriptionError
   );
 }
 
@@ -118,11 +118,11 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc)
-    .addIceCandidate(event.candidate)
-    .then(
-      () => onAddIceCandidateSuccess(pc),
-      err => onAddIceCandidateError(pc, err)
-    );
+      .addIceCandidate(event.candidate)
+      .then(
+          () => onAddIceCandidateSuccess(pc),
+          err => onAddIceCandidateError(pc, err)
+      );
   console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
