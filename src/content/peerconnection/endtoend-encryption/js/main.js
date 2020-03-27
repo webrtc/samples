@@ -32,6 +32,8 @@ let startToEnd;
 let currentCryptoKey;
 
 let localStream;
+// eslint-disable-next-line no-unused-vars
+let remoteStream;
 
 const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedVideoStreams;
