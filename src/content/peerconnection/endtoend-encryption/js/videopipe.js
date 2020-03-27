@@ -55,8 +55,8 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
       transform: sendTransform
     });
     senderStreams.readableStream
-	.pipeThrough(senderTransformStream)
-	.pipeTo(senderStreams.writableStream);
+        .pipeThrough(senderTransformStream)
+        .pipeTo(senderStreams.writableStream);
   }
   pc1.onicecandidate = function(event) {
     if (event.candidate) {
@@ -73,14 +73,14 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
   pc2.ontrack = function(e) {
     if (receiveTransform) {
       let transform = new TransformStream({
-	start() {},
-	flush() {},
-	transform: receiveTransform
+        start() {},
+        flush() {},
+        transform: receiveTransform
       });
       let receiverStreams = pc2.getReceivers()[0].createEncodedVideoStreams();
       receiverStreams.readableStream
-	  .pipeThrough(transform)
-	  .pipeTo(receiverStreams.writableStream);
+          .pipeThrough(transform)
+          .pipeTo(receiverStreams.writableStream);
     }
     handler(new MediaStream(e.streams[0]));
   };

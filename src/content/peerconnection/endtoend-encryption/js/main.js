@@ -14,9 +14,6 @@ const video1 = document.querySelector('video#video1');
 const video2 = document.querySelector('video#video2');
 const videoMonitor = document.querySelector('#video-monitor');
 
-const statusDiv = document.querySelector('div#status');
-
-
 const startButton = document.querySelector('button#start');
 const callButton = document.querySelector('button#call');
 const hangupButton = document.querySelector('button#hangup');
@@ -28,14 +25,13 @@ startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-cryptoKey.addEventListener('change', setCryptoKey)
+cryptoKey.addEventListener('change', setCryptoKey);
 
 let startToMiddle;
 let startToEnd;
 let currentCryptoKey;
 
 let localStream;
-let remoteStream;
 
 const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedVideoStreams;
@@ -84,7 +80,7 @@ function call() {
     videoMonitor.srcObject = stream;
   });
   startToEnd = new VideoPipe(localStream, encodeFunction, decodeFunction,
-			     gotremoteStream);
+                             gotremoteStream);
   console.log('Video pipes created');
 }
 
@@ -96,8 +92,6 @@ function hangup() {
   callButton.disabled = false;
 }
 
-let lastEvent;
-
 function encodeFunction(chunk, controller) {
   if (currentCryptoKey) {
     let view = new DataView(chunk.data);
@@ -105,8 +99,9 @@ function encodeFunction(chunk, controller) {
     let newData = new ArrayBuffer(chunk.data.byteLength + 4);
     let newView = new DataView(newData);
 
-    for (let i = 0; i < chunk.data.byteLength; ++i)
-    newView.setInt8(i, ~view.getInt8(i));
+    for (let i = 0; i < chunk.data.byteLength; ++i) {
+      newView.setInt8(i, ~view.getInt8(i));
+    }
     // Append checksum
     newView.setUint32(chunk.data.byteLength, 0xDEADBEEF);
 
@@ -125,9 +120,9 @@ function decodeFunction(chunk, controller) {
     }
     let newData = new ArrayBuffer(chunk.data.byteLength - 4);
     let newView = new DataView(newData);
-    for (let i = 0; i < chunk.data.byteLength - 4; ++i)
+    for (let i = 0; i < chunk.data.byteLength - 4; ++i) {
       newView.setInt8(i, ~view.getInt8(i));
-
+    }
     chunk.data = newData;
   }
   controller.enqueue(chunk);
