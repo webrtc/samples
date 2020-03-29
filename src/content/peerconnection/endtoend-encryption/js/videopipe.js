@@ -39,17 +39,17 @@ function noAction() {
 
 
 function VideoPipe(stream, sendTransform, receiveTransform, handler) {
-  let pc1 = new RTCPeerConnection({
+  const pc1 = new RTCPeerConnection({
     forceEncodedVideoInsertableStreams: !!sendTransform
   });
-  let pc2 = new RTCPeerConnection({
+  const pc2 = new RTCPeerConnection({
     forceEncodedVideoInsertableStreams: !!receiveTransform
   });
 
   const sender = pc1.addTrack(stream.getVideoTracks()[0], stream);
   if (sendTransform) {
-    let senderStreams = sender.createEncodedVideoStreams();
-    let senderTransformStream = new TransformStream({
+    const senderStreams = sender.createEncodedVideoStreams();
+    const senderTransformStream = new TransformStream({
       start() {},
       flush() {},
       transform: sendTransform
@@ -61,23 +61,23 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
   pc1.onicecandidate = function(event) {
     if (event.candidate) {
       pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-                          noAction, errorHandler('AddIceCandidate'));
+          noAction, errorHandler('AddIceCandidate'));
     }
   };
   pc2.onicecandidate = function(event) {
     if (event.candidate) {
       pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-                          noAction, errorHandler('AddIceCandidate'));
+          noAction, errorHandler('AddIceCandidate'));
     }
   };
   pc2.ontrack = function(e) {
     if (receiveTransform) {
-      let transform = new TransformStream({
+      const transform = new TransformStream({
         start() {},
         flush() {},
         transform: receiveTransform
       });
-      let receiverStreams = pc2.getReceivers()[0].createEncodedVideoStreams();
+      const receiverStreams = pc2.getReceivers()[0].createEncodedVideoStreams();
       receiverStreams.readableStream
           .pipeThrough(transform)
           .pipeTo(receiverStreams.writableStream);

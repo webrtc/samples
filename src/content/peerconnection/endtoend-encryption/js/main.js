@@ -39,8 +39,8 @@ const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedVideoStreams;
 
 if (!supportsInsertableStreams) {
-  banner.innerText = 'Your browser does not support Insertable Streams. '
-  + 'This sample will not work.';
+  banner.innerText = 'Your browser does not support Insertable Streams. ' +
+  'This sample will not work.';
   cryptoKey.hidden = true;
 }
 
@@ -82,7 +82,7 @@ function call() {
     videoMonitor.srcObject = stream;
   });
   startToEnd = new VideoPipe(localStream, encodeFunction, decodeFunction,
-                             gotremoteStream);
+      gotremoteStream);
   console.log('Video pipes created');
 }
 
@@ -96,10 +96,10 @@ function hangup() {
 
 function encodeFunction(chunk, controller) {
   if (currentCryptoKey) {
-    let view = new DataView(chunk.data);
+    const view = new DataView(chunk.data);
     // Any length that is needed can be used for the new buffer.
-    let newData = new ArrayBuffer(chunk.data.byteLength + 4);
-    let newView = new DataView(newData);
+    const newData = new ArrayBuffer(chunk.data.byteLength + 4);
+    const newView = new DataView(newData);
 
     for (let i = 0; i < chunk.data.byteLength; ++i) {
       newView.setInt8(i, ~view.getInt8(i));
@@ -114,14 +114,14 @@ function encodeFunction(chunk, controller) {
 
 function decodeFunction(chunk, controller) {
   if (currentCryptoKey) {
-    let view = new DataView(chunk.data);
-    let checksum = view.getUint32(chunk.data.byteLength - 4);
+    const view = new DataView(chunk.data);
+    const checksum = view.getUint32(chunk.data.byteLength - 4);
     if (checksum != 0xDEADBEEF) {
       console.log('Corrupted frame received');
       console.log(checksum.toString(16));
     }
-    let newData = new ArrayBuffer(chunk.data.byteLength - 4);
-    let newView = new DataView(newData);
+    const newData = new ArrayBuffer(chunk.data.byteLength - 4);
+    const newView = new DataView(newData);
     for (let i = 0; i < chunk.data.byteLength - 4; ++i) {
       newView.setInt8(i, ~view.getInt8(i));
     }
