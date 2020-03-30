@@ -77,7 +77,7 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
         flush() {},
         transform: receiveTransform
       });
-      const receiverStreams = pc2.getReceivers()[0].createEncodedVideoStreams();
+      const receiverStreams = e.receiver.createEncodedVideoStreams();
       receiverStreams.readableStream
           .pipeThrough(transform)
           .pipeTo(receiverStreams.writableStream);

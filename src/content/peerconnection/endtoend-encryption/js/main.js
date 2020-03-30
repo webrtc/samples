@@ -102,7 +102,8 @@ function encodeFunction(chunk, controller) {
     const newView = new DataView(newData);
 
     for (let i = 0; i < chunk.data.byteLength; ++i) {
-      newView.setInt8(i, ~view.getInt8(i));
+      const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
+      newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
     // Append checksum
     newView.setUint32(chunk.data.byteLength, 0xDEADBEEF);
@@ -123,7 +124,8 @@ function decodeFunction(chunk, controller) {
     const newData = new ArrayBuffer(chunk.data.byteLength - 4);
     const newView = new DataView(newData);
     for (let i = 0; i < chunk.data.byteLength - 4; ++i) {
-      newView.setInt8(i, ~view.getInt8(i));
+      const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
+      newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
     chunk.data = newData;
   }
@@ -133,4 +135,9 @@ function decodeFunction(chunk, controller) {
 function setCryptoKey(event) {
   console.log('Setting crypto key to ' + event.target.value);
   currentCryptoKey = event.target.value;
+  if (currentCryptoKey) {
+    banner.innerText = 'Encryption is ON';
+  } else {
+    banner.innerText = 'Encryption is OFF';
+  }
 }
