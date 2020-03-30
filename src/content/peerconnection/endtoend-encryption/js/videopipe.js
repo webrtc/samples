@@ -29,7 +29,8 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
     forceEncodedVideoInsertableStreams: !!receiveTransform
   });
 
-  const sender = this.pc1.addTrack(stream.getVideoTracks()[0], stream);
+  stream.getTracks().forEach(track => this.pc1.addTrack(track, stream));
+  const sender = this.pc1.getSenders().find(s => s.track && s.track.kind === 'video');
   if (sendTransform) {
     const senderStreams = sender.createEncodedVideoStreams();
     const senderTransformStream = new TransformStream({
