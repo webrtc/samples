@@ -21,32 +21,15 @@
 //
 'use strict';
 
-function errorHandler(context) {
-  return function(error) {
-    trace('Failure in ' + context + ': ' + error.toString);
-  };
-}
-
-// eslint-disable-next-line no-unused-vars
-function successHandler(context) {
-  return function() {
-    trace('Success in ' + context);
-  };
-}
-
-function noAction() {
-}
-
-
 function VideoPipe(stream, sendTransform, receiveTransform, handler) {
-  const pc1 = new RTCPeerConnection({
+  this.pc1 = new RTCPeerConnection({
     forceEncodedVideoInsertableStreams: !!sendTransform
   });
-  const pc2 = new RTCPeerConnection({
+  this.pc2 = new RTCPeerConnection({
     forceEncodedVideoInsertableStreams: !!receiveTransform
   });
 
-  const sender = pc1.addTrack(stream.getVideoTracks()[0], stream);
+  const sender = this.pc1.addTrack(stream.getVideoTracks()[0], stream);
   if (sendTransform) {
     const senderStreams = sender.createEncodedVideoStreams();
     const senderTransformStream = new TransformStream({
@@ -58,19 +41,7 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
         .pipeThrough(senderTransformStream)
         .pipeTo(senderStreams.writableStream);
   }
-  pc1.onicecandidate = function(event) {
-    if (event.candidate) {
-      pc2.addIceCandidate(new RTCIceCandidate(event.candidate),
-          noAction, errorHandler('AddIceCandidate'));
-    }
-  };
-  pc2.onicecandidate = function(event) {
-    if (event.candidate) {
-      pc1.addIceCandidate(new RTCIceCandidate(event.candidate),
-          noAction, errorHandler('AddIceCandidate'));
-    }
-  };
-  pc2.ontrack = function(e) {
+  this.pc2.ontrack = e => {
     if (receiveTransform) {
       const transform = new TransformStream({
         start() {},
@@ -82,19 +53,24 @@ function VideoPipe(stream, sendTransform, receiveTransform, handler) {
           .pipeThrough(transform)
           .pipeTo(receiverStreams.writableStream);
     }
-    handler(new MediaStream(e.streams[0]));
+    handler(e.streams[0]);
   };
-  pc1.createOffer(function(desc) {
-    pc1.setLocalDescription(desc);
-    pc2.setRemoteDescription(desc);
-    pc2.createAnswer(function(desc2) {
-      pc2.setLocalDescription(desc2);
-      pc1.setRemoteDescription(desc2);
-    }, errorHandler('pc2.createAnswer'));
-  }, errorHandler('pc1.createOffer'));
-  this.pc1 = pc1;
-  this.pc2 = pc2;
+
+  this.negotiate();
 }
+
+VideoPipe.prototype.negotiate = async function() {
+  this.pc1.onicecandidate = e => this.pc2.addIceCandidate(e.candidate);
+  this.pc2.onicecandidate = e => this.pc1.addIceCandidate(e.candidate);
+
+  const offer = await this.pc1.createOffer();
+  await this.pc2.setRemoteDescription(offer);
+  await this.pc1.setLocalDescription(offer);
+
+  const answer = await this.pc2.createAnswer();
+  await this.pc1.setRemoteDescription(answer);
+  await this.pc2.setLocalDescription(answer);
+};
 
 VideoPipe.prototype.close = function() {
   this.pc1.close();
