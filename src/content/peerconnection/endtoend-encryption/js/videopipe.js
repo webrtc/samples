@@ -65,7 +65,7 @@ VideoPipe.prototype.negotiate = async function() {
   this.pc2.onicecandidate = e => this.pc1.addIceCandidate(e.candidate);
 
   const offer = await this.pc1.createOffer();
-  await this.pc2.setRemoteDescription(offer);
+  await this.pc2.setRemoteDescription({type: 'offer', sdp: offer.sdp.replace('red/90000', 'green/90000')});
   await this.pc1.setLocalDescription(offer);
 
   const answer = await this.pc2.createAnswer();
