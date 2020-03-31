@@ -30,6 +30,7 @@ cryptoKey.addEventListener('change', setCryptoKey);
 let startToMiddle;
 let startToEnd;
 let currentCryptoKey;
+let currentKeyIdentifier = 0;
 
 let localStream;
 // eslint-disable-next-line no-unused-vars
@@ -98,7 +99,7 @@ function encodeFunction(chunk, controller) {
   if (currentCryptoKey) {
     const view = new DataView(chunk.data);
     // Any length that is needed can be used for the new buffer.
-    const newData = new ArrayBuffer(chunk.data.byteLength + 4);
+    const newData = new ArrayBuffer(chunk.data.byteLength + 5);
     const newView = new DataView(newData);
 
     // Do not encrypt the first 10 bytes of the payload. For VP8
@@ -111,8 +112,10 @@ function encodeFunction(chunk, controller) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
+    // Append keyIdentifier.
+    newView.setUint8(chunk.data.byteLength, currentKeyIdentifier % 0xff);
     // Append checksum
-    newView.setUint32(chunk.data.byteLength, 0xDEADBEEF);
+    newView.setUint32(chunk.data.byteLength + 1, 0xDEADBEEF);
 
     chunk.data = newData;
   }
@@ -128,12 +131,18 @@ function decodeFunction(chunk, controller) {
       console.log(checksum.toString(16));
       return; // This can happen when the key is set and there is an unencrypted frame in-flight.
     }
-    const newData = new ArrayBuffer(chunk.data.byteLength - 4);
+    const keyIdentifier = view.getUint8(chunk.data.byteLength - 5);
+    if (keyIdentifier !== currentKeyIdentifier) {
+      console.log(`Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`);
+      return;
+    }
+
+    const newData = new ArrayBuffer(chunk.data.byteLength - 5);
     const newView = new DataView(newData);
     for (let i = 0; i < 10; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
-    for (let i = 10; i < chunk.data.byteLength - 4; ++i) {
+    for (let i = 10; i < chunk.data.byteLength - 5; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
@@ -147,6 +156,7 @@ function decodeFunction(chunk, controller) {
 function setCryptoKey(event) {
   console.log('Setting crypto key to ' + event.target.value);
   currentCryptoKey = event.target.value;
+  currentKeyIdentifier++;
   if (currentCryptoKey) {
     banner.innerText = 'Encryption is ON';
   } else {
