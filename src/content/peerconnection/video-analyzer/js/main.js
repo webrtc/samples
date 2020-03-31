@@ -70,12 +70,6 @@ async function start() {
   }
 }
 
-function getSelectedSdpSemantics() {
-  const sdpSemanticsSelect = document.querySelector('#sdpSemantics');
-  const option = sdpSemanticsSelect.options[sdpSemanticsSelect.selectedIndex];
-  return option.value === '' ? {} : {sdpSemantics: option.value};
-}
-
 async function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
@@ -151,13 +145,13 @@ function onSetSessionDescriptionError(error) {
 }
 
 function gotRemoteTrack(e) {
-    console.log('pc2 received remote stream');
-    const frameStreams = e.receiver.createEncodedVideoStreams();
-    frameStreams.readableStream.pipeThrough(new TransformStream({
-      transform: videoAnalyzer
-    }))
-	.pipeTo(frameStreams.writableStream);
-    remoteVideo.srcObject = e.streams[0];
+  console.log('pc2 received remote stream');
+  const frameStreams = e.receiver.createEncodedVideoStreams();
+  frameStreams.readableStream.pipeThrough(new TransformStream({
+    transform: videoAnalyzer
+  }))
+      .pipeTo(frameStreams.writableStream);
+  remoteVideo.srcObject = e.streams[0];
 }
 
 async function onCreateAnswerSuccess(desc) {
@@ -215,24 +209,24 @@ function hangup() {
 
 const keyFrameCountDisplay = document.querySelector('#keyframe-count');
 const keyFrameSizeDisplay = document.querySelector('#keyframe-size');
-const iFrameCountDisplay = document.querySelector('#iframe-count');
-const iFrameSizeDisplay = document.querySelector('#iframe-size');
+const interFrameCountDisplay = document.querySelector('#interframe-count');
+const interFrameSizeDisplay = document.querySelector('#interframe-size');
 let keyFrameCount = 0;
-let iFrameCount = 0;
+let interFrameCount = 0;
 
 function videoAnalyzer(chunk, controller) {
   const view = new DataView(chunk.data);
-  // The keyframe detector isn't right.
-  const keyframe = view.getUint8(0) & 0x80;
+  // The lowest value bit in the first byte is the keyframe indicator.
+  const keyframeBit = view.getUint8(0) & 0x01;
   // console.log(view.getUint8(0).toString(16));
-  if (keyframe) {
+  if (keyframeBit === 0) {
     keyFrameCount++;
     keyFrameCountDisplay.innerText = keyFrameCount;
     keyFrameSizeDisplay.innerText = chunk.data.byteLength;
   } else {
-    iFrameCount++;
-    iFrameCountDisplay.innerText = iFrameCount;
-    iFrameSizeDisplay.innerText = chunk.data.byteLength;
+    interFrameCount++;
+    interFrameCountDisplay.innerText = interFrameCount;
+    interFrameSizeDisplay.innerText = chunk.data.byteLength;
   }
   controller.enqueue(chunk);
 }
