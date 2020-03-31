@@ -17,6 +17,17 @@ startButton.addEventListener('click', start);
 callButton.addEventListener('click', call);
 hangupButton.addEventListener('click', hangup);
 
+const banner = document.querySelector('#banner');
+
+const supportsInsertableStreams =
+      !!RTCRtpSender.prototype.createEncodedVideoStreams;
+
+if (!supportsInsertableStreams) {
+  banner.innerText = 'Your browser does not support Insertable Streams. ' +
+  'This sample will not work.';
+  startButton.disabled = true;
+}
+
 let startTime;
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
