@@ -101,7 +101,13 @@ function encodeFunction(chunk, controller) {
     const newData = new ArrayBuffer(chunk.data.byteLength + 4);
     const newView = new DataView(newData);
 
-    for (let i = 0; i < chunk.data.byteLength; ++i) {
+    // Do not encrypt the first 10 bytes of the payload. For VP8
+    // this is the content described in
+    //   https://tools.ietf.org/html/rfc6386#section-9.1
+    for (let i = 0; i < 10; ++i) {
+      newView.setInt8(i, view.getInt8(i));
+    }
+    for (let i = 10; i < chunk.data.byteLength; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
@@ -123,7 +129,10 @@ function decodeFunction(chunk, controller) {
     }
     const newData = new ArrayBuffer(chunk.data.byteLength - 4);
     const newView = new DataView(newData);
-    for (let i = 0; i < chunk.data.byteLength - 4; ++i) {
+    for (let i = 0; i < 10; ++i) {
+      newView.setInt8(i, view.getInt8(i));
+    }
+    for (let i = 10; i < chunk.data.byteLength - 4; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
