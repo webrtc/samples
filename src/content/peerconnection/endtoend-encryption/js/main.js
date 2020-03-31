@@ -120,12 +120,13 @@ function encodeFunction(chunk, controller) {
 }
 
 function decodeFunction(chunk, controller) {
+  const view = new DataView(chunk.data);
+  const checksum = view.getUint32(chunk.data.byteLength - 4);
   if (currentCryptoKey) {
-    const view = new DataView(chunk.data);
-    const checksum = view.getUint32(chunk.data.byteLength - 4);
-    if (checksum != 0xDEADBEEF) {
+    if (checksum !== 0xDEADBEEF) {
       console.log('Corrupted frame received');
       console.log(checksum.toString(16));
+      return; // This can happen when the key is set and there is an unencrypted frame in-flight.
     }
     const newData = new ArrayBuffer(chunk.data.byteLength - 4);
     const newView = new DataView(newData);
@@ -137,6 +138,8 @@ function decodeFunction(chunk, controller) {
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
     chunk.data = newData;
+  } else if (checksum === 0xDEADBEEF) {
+    return; // encrypted in-flight frame but we already forgot about the key.
   }
   controller.enqueue(chunk);
 }
