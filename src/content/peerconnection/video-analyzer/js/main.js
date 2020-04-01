@@ -37,13 +37,6 @@ localVideo.addEventListener('loadedmetadata', function() {
 });
 
 remoteVideo.addEventListener('loadedmetadata', function() {
-  console.log(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
-});
-
-remoteVideo.addEventListener('resize', () => {
-  console.log(`Remote video size changed to ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
-  // We'll use the first onsize callback as an indication that video has started
-  // playing out.
   if (startTime) {
     const elapsedTime = window.performance.now() - startTime;
     console.log('Setup time: ' + elapsedTime.toFixed(3) + 'ms');
@@ -222,22 +215,41 @@ const keyFrameCountDisplay = document.querySelector('#keyframe-count');
 const keyFrameSizeDisplay = document.querySelector('#keyframe-size');
 const interFrameCountDisplay = document.querySelector('#interframe-count');
 const interFrameSizeDisplay = document.querySelector('#interframe-size');
+const videoSizeDisplay = document.querySelector('#video-size');
 let keyFrameCount = 0;
 let interFrameCount = 0;
+let keyFrameLastSize = 0;
+let interFrameLastSize = 0;
 
 function videoAnalyzer(chunk, controller) {
   const view = new DataView(chunk.data);
+  // We assume that the video is VP8.
+  // TODO: Check the codec to see that it is.
   // The lowest value bit in the first byte is the keyframe indicator.
+  // https://tools.ietf.org/html/rfc6386#section-9.1
   const keyframeBit = view.getUint8(0) & 0x01;
   // console.log(view.getUint8(0).toString(16));
   if (keyframeBit === 0) {
     keyFrameCount++;
-    keyFrameCountDisplay.innerText = keyFrameCount;
-    keyFrameSizeDisplay.innerText = chunk.data.byteLength;
+    keyFrameLastSize = chunk.data.byteLength;
   } else {
     interFrameCount++;
-    interFrameCountDisplay.innerText = interFrameCount;
-    interFrameSizeDisplay.innerText = chunk.data.byteLength;
+    interFrameLastSize = chunk.data.byteLength;
   }
   controller.enqueue(chunk);
 }
+
+// Update the display of the counters once a second.
+setInterval(() => {
+  keyFrameCountDisplay.innerText = keyFrameCount;
+  keyFrameSizeDisplay.innerText = keyFrameLastSize;
+  interFrameCountDisplay.innerText = interFrameCount;
+  interFrameSizeDisplay.innerText = interFrameLastSize;
+}, 500);
+
+remoteVideo.addEventListener('resize', () => {
+  console.log(`Remote video size changed to ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
+  // We'll use the first onsize callback as an indication that video has started
+  // playing out.
+  videoSizeDisplay.innerText = `${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`;
+});
