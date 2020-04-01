@@ -20,11 +20,12 @@
 
     <base target="_blank">
 
-    <title>gUM audio</title>
+    <title>Peer connection end to end encryption</title>
 
     <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
 
 </head>
 
@@ -32,28 +33,41 @@
 
 <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia, audio only</span>
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection end to end encryption</span>
     </h1>
+    <span id="banner"></span>
+    <p>
+      <h2>Sender and receiver</h2>
+      <div id="videos">
+        Sender and receiver<br>
+        <video id="video1" playsinline autoplay muted></video>
+        <video id="video2" playsinline autoplay></video>
+      </div>
+      <br>
+      Crypto key: <input type="text" id="crypto-key">
+    </p>
+    <p>
+      <h2>Middlebox</h2>
+      <div id="monitor">
+        <video id="video-monitor" playsinline autoplay></video>
+      </div>
+    </p>
 
-    <audio id="gum-local" controls autoplay></audio>
-
-    <p class="warning">Warning: if you're not using headphones, pressing play will cause feedback.</p>
-
-    <p>Render the audio stream from an audio-only <code>getUserMedia()</code> call with an audio element.</p>
-
-    <p>The <code>MediaStream</code> object <code><em>stream</em></code> passed to the <code>getUserMedia()</code>
-        callback is in global scope, so you can inspect it from the console.</p>
-    <div>
-        <span id="errorMsg"></span>
+    <div id="buttons">
+        <button id="start">Start</button>
+        <button id="call" disabled>Call</button>
+        <button id="hangup" disabled>Hang Up</button>
     </div>
-    
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/audio"
+    <div id="status"></div>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/multiple-relay"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
 </div>
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-<script src="js/main.js"></script>
+<script src="js/videopipe.js"></script>
+<script src="js/main.js" async></script>
 
 <script src="../../../js/lib/ga.js"></script>
 
