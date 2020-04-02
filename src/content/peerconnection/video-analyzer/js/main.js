@@ -17,6 +17,20 @@ startButton.addEventListener('click', start);
 callButton.addEventListener('click', call);
 hangupButton.addEventListener('click', hangup);
 
+const smallButton = document.getElementById('size-small');
+smallButton.addEventListener('click', () => {
+  localStream.getVideoTracks()[0].applyConstraints({width: {exact:180}});
+});
+const vgaButton = document.getElementById('size-vga');
+vgaButton.addEventListener('click', () => {
+  localStream.getVideoTracks()[0].applyConstraints({width: {exact:640}});
+});
+const hdButton = document.getElementById('size-hd');
+hdButton.addEventListener('click', () => {
+  localStream.getVideoTracks()[0].applyConstraints({width: {exact:1024}});
+});
+
+
 const banner = document.querySelector('#banner');
 
 const supportsInsertableStreams =
