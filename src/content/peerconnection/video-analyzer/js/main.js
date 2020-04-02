@@ -83,6 +83,9 @@ async function start() {
     localVideo.srcObject = stream;
     localStream = stream;
     callButton.disabled = false;
+    smallButton.disabled = false;
+    vgaButton.disabled = false;
+    hdButton.disabled = false;
   } catch (e) {
     alert(`getUserMedia() error: ${e.name}`);
   }
