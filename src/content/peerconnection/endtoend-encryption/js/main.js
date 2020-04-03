@@ -146,7 +146,6 @@ function decodeFunction(chunk, controller) {
     const newView = new DataView(newData);
     const cryptoOffset = useCryptoOffset? 10 : 0;
 
-    console.log('Crypto offset is ' + cryptoOffset);
     for (let i = 0; i < cryptoOffset; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
