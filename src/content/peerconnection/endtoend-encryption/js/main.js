@@ -133,7 +133,7 @@ function decodeFunction(chunk, controller) {
   if (currentCryptoKey) {
     if (checksum !== 0xDEADBEEF) {
       console.log('Corrupted frame received, checksum ' +
-		  checksum.toString(16));
+                  checksum.toString(16));
       return; // This can happen when the key is set and there is an unencrypted frame in-flight.
     }
     const keyIdentifier = view.getUint8(chunk.data.byteLength - 5);
