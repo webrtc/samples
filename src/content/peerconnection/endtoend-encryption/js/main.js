@@ -69,7 +69,7 @@ function gotremoteStream(stream) {
 function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
-  const options = {audio: false, video: true};
+  const options = {audio: true, video: true};
   navigator.mediaDevices
       .getUserMedia(options)
       .then(gotStream)
@@ -112,6 +112,23 @@ function dump(chunk, direction, max = 16) {
   console.log(performance.now().toFixed(2), direction, bytes.trim(), chunk.data.byteLength, (data[0] & 0x1) === 0);
 }
 
+// If using crypto offset (controlled by a checkbox):
+// Do not encrypt the first couple of bytes of the payload. This allows
+// a middle to determine video keyframes or the opus mode being used.
+// For VP8 this is the content described in
+//   https://tools.ietf.org/html/rfc6386#section-9.1
+// which is 10 bytes for key frames and 3 bytes for delta frames.
+// For opus (where chunk.type is not set) this is the TOC byte from
+//   https://tools.ietf.org/html/rfc6716#section-3.1
+//
+// It makes the (encrypted) video and audio much more fun to watch and listen to
+// as the decoder does not immediately throw a fatal error.
+const frameTypeToCryptoOffset = {
+  key: 10,
+  delta: 3,
+  undefined: 1,
+};
+
 let scount = 0;
 function encodeFunction(chunk, controller) {
   if (scount++ < 30) { // dump the first 30 packets.
@@ -123,12 +140,8 @@ function encodeFunction(chunk, controller) {
     const newData = new ArrayBuffer(chunk.data.byteLength + 5);
     const newView = new DataView(newData);
 
-    const cryptoOffset = useCryptoOffset? 10 : 0;
-    // If using crypto offset:
-    // Do not encrypt the first 10 bytes of the payload. For VP8
-    // this is the content described in
-    //   https://tools.ietf.org/html/rfc6386#section-9.1
-    for (let i = 0; i < cryptoOffset; ++i) {
+    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[chunk.type] : 0;
+    for (let i = 0; i < cryptoOffset && i < chunk.data.byteLength; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
     for (let i = cryptoOffset; i < chunk.data.byteLength; ++i) {
@@ -166,9 +179,9 @@ function decodeFunction(chunk, controller) {
 
     const newData = new ArrayBuffer(chunk.data.byteLength - 5);
     const newView = new DataView(newData);
-    const cryptoOffset = useCryptoOffset? 10 : 0;
+    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[chunk.type] : 0;
 
-    for (let i = 0; i < cryptoOffset; ++i) {
+    for (let i = 0; i < cryptoOffset && i < chunk.data.byteLength - 5; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
     for (let i = cryptoOffset; i < chunk.data.byteLength - 5; ++i) {
