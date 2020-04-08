@@ -60,7 +60,7 @@ function gotStream(stream) {
   callButton.disabled = false;
 }
 
-function gotremoteStream(stream) {
+function gotRemoteStream(stream) {
   console.log('Received remote stream');
   remoteStream = stream;
   video2.srcObject = stream;
@@ -79,6 +79,34 @@ function start() {
       });
 }
 
+function setupSenderTransform(sender) {
+  const senderTransformStream = new TransformStream({
+    start() {},
+    flush() {},
+    transform: encodeFunction
+  });
+  const senderStreams = sender.track.kind === 'video' ?
+    sender.createEncodedVideoStreams() :
+    sender.createEncodedAudioStreams();
+  senderStreams.readableStream
+      .pipeThrough(senderTransformStream)
+      .pipeTo(senderStreams.writableStream);
+}
+
+function setupReceiverTransform(receiver) {
+  const transform = new TransformStream({
+    start() {},
+    flush() {},
+    transform: decodeFunction
+  });
+  const receiverStreams = receiver.track.kind === 'video' ?
+    receiver.createEncodedVideoStreams() :
+    receiver.createEncodedAudioStreams();
+  receiverStreams.readableStream
+      .pipeThrough(transform)
+      .pipeTo(receiverStreams.writableStream);
+}
+
 function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
@@ -87,11 +115,20 @@ function call() {
   // packets and listens in, but since we don't have
   // access to raw packets, we just send the same video
   // to both places.
-  startToMiddle = new VideoPipe(localStream, encodeFunction, null, stream => {
-    videoMonitor.srcObject = stream;
+  startToMiddle = new VideoPipe(localStream, encodeFunction, null, e => {
+    // Do not setup the receiver transform.
+    videoMonitor.srcObject = e.streams[0];
   });
-  startToEnd = new VideoPipe(localStream, encodeFunction, decodeFunction,
-      gotremoteStream);
+  startToMiddle.pc1.getSenders().forEach(setupSenderTransform);
+  startToMiddle.negotiate();
+
+  startToEnd = new VideoPipe(localStream, encodeFunction, decodeFunction, e => {
+    setupReceiverTransform(e.receiver);
+    gotRemoteStream(e.streams[0]);
+  });
+  startToEnd.pc1.getSenders().forEach(setupSenderTransform);
+  startToEnd.negotiate();
+
   console.log('Video pipes created');
 }
 
