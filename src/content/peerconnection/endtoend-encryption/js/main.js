@@ -45,6 +45,9 @@ const supportsInsertableStreams =
 if (!supportsInsertableStreams) {
   banner.innerText = 'Your browser does not support Insertable Streams. ' +
   'This sample will not work.';
+  if (adapter.browserDetails.browser === 'chrome') {
+    banner.innerText += ' Try with Enable experimental Web Platform features enabled from chrome://flags.';
+  }
   cryptoKey.hidden = true;
 }
 
