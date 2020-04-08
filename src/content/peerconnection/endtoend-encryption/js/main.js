@@ -19,6 +19,7 @@ const callButton = document.querySelector('button#call');
 const hangupButton = document.querySelector('button#hangup');
 
 const cryptoKey = document.querySelector('#crypto-key');
+const cryptoOffsetBox = document.querySelector('#crypto-offset');
 const banner = document.querySelector('#banner');
 
 startButton.onclick = start;
@@ -26,10 +27,12 @@ callButton.onclick = call;
 hangupButton.onclick = hangup;
 
 cryptoKey.addEventListener('change', setCryptoKey);
+cryptoOffsetBox.addEventListener('change', setCryptoKey);
 
 let startToMiddle;
 let startToEnd;
 let currentCryptoKey;
+let useCryptoOffset;
 let currentKeyIdentifier = 0;
 
 let localStream;
@@ -102,13 +105,15 @@ function encodeFunction(chunk, controller) {
     const newData = new ArrayBuffer(chunk.data.byteLength + 5);
     const newView = new DataView(newData);
 
+    const cryptoOffset = useCryptoOffset? 10 : 0;
+    // If using crypto offset:
     // Do not encrypt the first 10 bytes of the payload. For VP8
     // this is the content described in
     //   https://tools.ietf.org/html/rfc6386#section-9.1
-    for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < cryptoOffset; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
-    for (let i = 10; i < chunk.data.byteLength; ++i) {
+    for (let i = cryptoOffset; i < chunk.data.byteLength; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
@@ -127,8 +132,8 @@ function decodeFunction(chunk, controller) {
   const checksum = view.getUint32(chunk.data.byteLength - 4);
   if (currentCryptoKey) {
     if (checksum !== 0xDEADBEEF) {
-      console.log('Corrupted frame received');
-      console.log(checksum.toString(16));
+      console.log('Corrupted frame received, checksum ' +
+                  checksum.toString(16));
       return; // This can happen when the key is set and there is an unencrypted frame in-flight.
     }
     const keyIdentifier = view.getUint8(chunk.data.byteLength - 5);
@@ -139,10 +144,12 @@ function decodeFunction(chunk, controller) {
 
     const newData = new ArrayBuffer(chunk.data.byteLength - 5);
     const newView = new DataView(newData);
-    for (let i = 0; i < 10; ++i) {
+    const cryptoOffset = useCryptoOffset? 10 : 0;
+
+    for (let i = 0; i < cryptoOffset; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
-    for (let i = 10; i < chunk.data.byteLength - 5; ++i) {
+    for (let i = cryptoOffset; i < chunk.data.byteLength - 5; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
@@ -154,8 +161,9 @@ function decodeFunction(chunk, controller) {
 }
 
 function setCryptoKey(event) {
-  console.log('Setting crypto key to ' + event.target.value);
-  currentCryptoKey = event.target.value;
+  console.log('Setting crypto key to ' + cryptoKey.value);
+  currentCryptoKey = cryptoKey.value;
+  useCryptoOffset = !cryptoOffsetBox.checked;
   currentKeyIdentifier++;
   if (currentCryptoKey) {
     banner.innerText = 'Encryption is ON';
