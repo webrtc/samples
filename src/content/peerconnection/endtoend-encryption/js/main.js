@@ -21,6 +21,7 @@ const hangupButton = document.querySelector('button#hangup');
 const cryptoKey = document.querySelector('#crypto-key');
 const cryptoOffsetBox = document.querySelector('#crypto-offset');
 const banner = document.querySelector('#banner');
+const muteMiddleBox = document.querySelector('#mute-middlebox');
 
 startButton.onclick = start;
 callButton.onclick = call;
@@ -28,6 +29,7 @@ hangupButton.onclick = hangup;
 
 cryptoKey.addEventListener('change', setCryptoKey);
 cryptoOffsetBox.addEventListener('change', setCryptoKey);
+muteMiddleBox.addEventListener('change', toggleMute);
 
 let startToMiddle;
 let startToEnd;
@@ -190,4 +192,9 @@ function setCryptoKey(event) {
   } else {
     banner.innerText = 'Encryption is OFF';
   }
+}
+
+function toggleMute(event) {
+  video2.muted = muteMiddleBox.checked;
+  videoMonitor.muted = !muteMiddleBox.checked;
 }
