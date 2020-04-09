@@ -164,7 +164,7 @@ function decodeFunction(chunk, controller) {
     dump(chunk, 'recv');
   }
   const view = new DataView(chunk.data);
-  const checksum = view.getUint32(chunk.data.byteLength - 4);
+  const checksum = chunk.data.byteLength > 4 ? view.getUint32(chunk.data.byteLength - 4) : false;
   if (currentCryptoKey) {
     if (checksum !== 0xDEADBEEF) {
       console.log('Corrupted frame received, checksum ' +
