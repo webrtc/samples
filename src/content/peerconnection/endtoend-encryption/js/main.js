@@ -107,7 +107,12 @@ function dump(chunk, direction, max = 16) {
   for (let j = 0; j < data.length && j < max; j++) {
     bytes += (data[j] < 16 ? '0' : '') + data[j].toString(16) + ' ';
   }
-  console.log(performance.now().toFixed(2), direction, bytes.trim(), chunk.data.byteLength, (data[0] & 0x1) === 0);
+  console.log(performance.now().toFixed(2), direction, bytes.trim(),
+      'len=' + chunk.data.byteLength,
+      'type=' + (chunk.type || 'audio'),
+      'ts=' + chunk.timestamp,
+      'ssrc=' + chunk.synchronizationSource
+  );
 }
 
 let scount = 0;
