@@ -33,9 +33,6 @@ muteMiddleBox.addEventListener('change', toggleMute);
 
 let startToMiddle;
 let startToEnd;
-let currentCryptoKey;
-let useCryptoOffset;
-let currentKeyIdentifier = 0;
 
 let localStream;
 // eslint-disable-next-line no-unused-vars
@@ -60,7 +57,7 @@ function gotStream(stream) {
   callButton.disabled = false;
 }
 
-function gotremoteStream(stream) {
+function gotRemoteStream(stream) {
   console.log('Received remote stream');
   remoteStream = stream;
   video2.srcObject = stream;
@@ -79,6 +76,42 @@ function start() {
       });
 }
 
+// We use a Worker to do the encryption and decryption.
+// See
+//   https://developer.mozilla.org/en-US/docs/Web/API/Worker
+// for basic concepts.
+const worker = new Worker('./js/worker.js');
+function setupSenderTransform(sender) {
+  const senderStreams = sender.track.kind === 'video' ? sender.createEncodedVideoStreams() : sender.createEncodedAudioStreams();
+  // Instead of creating the transform stream here, we do a postMessage to the worker. The first
+  // argument is an object defined by us, the sceond a list of variables that will be transferred to
+  // the worker. See
+  //   https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
+  // If you want to do the operations on the main thread instead, comment out the code below.
+  /*
+  const transformStream = new TransformStream({
+    transform: encodeFunction,
+  });
+  senderStreams.readableStream
+      .pipeThrough(transformStream)
+      .pipeTo(senderStreams.writableStream);
+  */
+  worker.postMessage({
+    operation: 'encode',
+    readableStream: senderStreams.readableStream,
+    writableStream: senderStreams.writableStream,
+  }, [senderStreams.readableStream, senderStreams.writableStream]);
+}
+
+function setupReceiverTransform(receiver) {
+  const receiverStreams = receiver.track.kind === 'video' ? receiver.createEncodedVideoStreams() : receiver.createEncodedAudioStreams();
+  worker.postMessage({
+    operation: 'decode',
+    readableStream: receiverStreams.readableStream,
+    writableStream: receiverStreams.writableStream,
+  }, [receiverStreams.readableStream, receiverStreams.writableStream]);
+}
+
 function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
@@ -87,11 +120,20 @@ function call() {
   // packets and listens in, but since we don't have
   // access to raw packets, we just send the same video
   // to both places.
-  startToMiddle = new VideoPipe(localStream, encodeFunction, null, stream => {
-    videoMonitor.srcObject = stream;
+  startToMiddle = new VideoPipe(localStream, true, false, e => {
+    // Do not setup the receiver transform.
+    videoMonitor.srcObject = e.streams[0];
   });
-  startToEnd = new VideoPipe(localStream, encodeFunction, decodeFunction,
-      gotremoteStream);
+  startToMiddle.pc1.getSenders().forEach(setupSenderTransform);
+  startToMiddle.negotiate();
+
+  startToEnd = new VideoPipe(localStream, true, true, e => {
+    setupReceiverTransform(e.receiver);
+    gotRemoteStream(e.streams[0]);
+  });
+  startToEnd.pc1.getSenders().forEach(setupSenderTransform);
+  startToEnd.negotiate();
+
   console.log('Video pipes created');
 }
 
@@ -103,113 +145,20 @@ function hangup() {
   callButton.disabled = false;
 }
 
-function dump(chunk, direction, max = 16) {
-  const data = new Uint8Array(chunk.data);
-  let bytes = '';
-  for (let j = 0; j < data.length && j < max; j++) {
-    bytes += (data[j] < 16 ? '0' : '') + data[j].toString(16) + ' ';
-  }
-  console.log(performance.now().toFixed(2), direction, bytes.trim(),
-      'len=' + chunk.data.byteLength,
-      'type=' + (chunk.type || 'audio'),
-      'ts=' + chunk.timestamp,
-      'ssrc=' + chunk.synchronizationSource
-  );
-}
-
-// If using crypto offset (controlled by a checkbox):
-// Do not encrypt the first couple of bytes of the payload. This allows
-// a middle to determine video keyframes or the opus mode being used.
-// For VP8 this is the content described in
-//   https://tools.ietf.org/html/rfc6386#section-9.1
-// which is 10 bytes for key frames and 3 bytes for delta frames.
-// For opus (where chunk.type is not set) this is the TOC byte from
-//   https://tools.ietf.org/html/rfc6716#section-3.1
-//
-// It makes the (encrypted) video and audio much more fun to watch and listen to
-// as the decoder does not immediately throw a fatal error.
-const frameTypeToCryptoOffset = {
-  key: 10,
-  delta: 3,
-  undefined: 1,
-};
-
-let scount = 0;
-function encodeFunction(chunk, controller) {
-  if (scount++ < 30) { // dump the first 30 packets.
-    dump(chunk, 'send');
-  }
-  if (currentCryptoKey) {
-    const view = new DataView(chunk.data);
-    // Any length that is needed can be used for the new buffer.
-    const newData = new ArrayBuffer(chunk.data.byteLength + 5);
-    const newView = new DataView(newData);
-
-    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[chunk.type] : 0;
-    for (let i = 0; i < cryptoOffset && i < chunk.data.byteLength; ++i) {
-      newView.setInt8(i, view.getInt8(i));
-    }
-    for (let i = cryptoOffset; i < chunk.data.byteLength; ++i) {
-      const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
-      newView.setInt8(i, view.getInt8(i) ^ keyByte);
-    }
-    // Append keyIdentifier.
-    newView.setUint8(chunk.data.byteLength, currentKeyIdentifier % 0xff);
-    // Append checksum
-    newView.setUint32(chunk.data.byteLength + 1, 0xDEADBEEF);
-
-    chunk.data = newData;
-  }
-  controller.enqueue(chunk);
-}
-
-let rcount = 0;
-function decodeFunction(chunk, controller) {
-  if (rcount++ < 30) { // dump the first 30 packets
-    dump(chunk, 'recv');
-  }
-  const view = new DataView(chunk.data);
-  const checksum = chunk.data.byteLength > 4 ? view.getUint32(chunk.data.byteLength - 4) : false;
-  if (currentCryptoKey) {
-    if (checksum !== 0xDEADBEEF) {
-      console.log('Corrupted frame received, checksum ' +
-                  checksum.toString(16));
-      return; // This can happen when the key is set and there is an unencrypted frame in-flight.
-    }
-    const keyIdentifier = view.getUint8(chunk.data.byteLength - 5);
-    if (keyIdentifier !== currentKeyIdentifier) {
-      console.log(`Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`);
-      return;
-    }
-
-    const newData = new ArrayBuffer(chunk.data.byteLength - 5);
-    const newView = new DataView(newData);
-    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[chunk.type] : 0;
-
-    for (let i = 0; i < cryptoOffset && i < chunk.data.byteLength - 5; ++i) {
-      newView.setInt8(i, view.getInt8(i));
-    }
-    for (let i = cryptoOffset; i < chunk.data.byteLength - 5; ++i) {
-      const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
-      newView.setInt8(i, view.getInt8(i) ^ keyByte);
-    }
-    chunk.data = newData;
-  } else if (checksum === 0xDEADBEEF) {
-    return; // encrypted in-flight frame but we already forgot about the key.
-  }
-  controller.enqueue(chunk);
-}
-
 function setCryptoKey(event) {
   console.log('Setting crypto key to ' + cryptoKey.value);
-  currentCryptoKey = cryptoKey.value;
-  useCryptoOffset = !cryptoOffsetBox.checked;
-  currentKeyIdentifier++;
+  const currentCryptoKey = cryptoKey.value;
+  const useCryptoOffset = !cryptoOffsetBox.checked;
   if (currentCryptoKey) {
     banner.innerText = 'Encryption is ON';
   } else {
     banner.innerText = 'Encryption is OFF';
   }
+  worker.postMessage({
+    operation: 'setCryptoKey',
+    currentCryptoKey,
+    useCryptoOffset,
+  });
 }
 
 function toggleMute(event) {

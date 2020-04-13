@@ -21,51 +21,18 @@
 //
 'use strict';
 
-function VideoPipe(stream, sendTransform, receiveTransform, handler) {
+function VideoPipe(stream, forceSend, forceReceive, handler) {
   this.pc1 = new RTCPeerConnection({
-    forceEncodedVideoInsertableStreams: !!sendTransform,
-    forceEncodedAudioInsertableStreams: !!sendTransform,
+    forceEncodedVideoInsertableStreams: forceSend,
+    forceEncodedAudioInsertableStreams: forceSend,
   });
   this.pc2 = new RTCPeerConnection({
-    forceEncodedVideoInsertableStreams: !!receiveTransform,
-    forceEncodedAudioInsertableStreams: !!receiveTransform,
+    forceEncodedVideoInsertableStreams: forceReceive,
+    forceEncodedAudioInsertableStreams: forceReceive,
   });
 
-  stream.getTracks().forEach((track) => {
-    const sender = this.pc1.addTrack(track, stream);
-    if (sendTransform) {
-      const senderStreams = track.kind === 'video' ?
-        sender.createEncodedVideoStreams() :
-        sender.createEncodedAudioStreams();
-      const senderTransformStream = new TransformStream({
-        start() {},
-        flush() {},
-        transform: sendTransform
-      });
-      senderStreams.readableStream
-          .pipeThrough(senderTransformStream)
-          .pipeTo(senderStreams.writableStream);
-    }
-  });
-
-  this.pc2.ontrack = e => {
-    if (receiveTransform) {
-      const transform = new TransformStream({
-        start() {},
-        flush() {},
-        transform: receiveTransform
-      });
-      const receiverStreams = e.track.kind === 'video' ?
-        e.receiver.createEncodedVideoStreams() :
-        e.receiver.createEncodedAudioStreams();
-      receiverStreams.readableStream
-          .pipeThrough(transform)
-          .pipeTo(receiverStreams.writableStream);
-    }
-    handler(e.streams[0]);
-  };
-
-  this.negotiate();
+  stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
+  this.pc2.ontrack = handler;
 }
 
 VideoPipe.prototype.negotiate = async function() {
