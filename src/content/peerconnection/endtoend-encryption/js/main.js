@@ -47,7 +47,9 @@ if (!supportsInsertableStreams) {
   if (adapter.browserDetails.browser === 'chrome') {
     banner.innerText += ' Try with Enable experimental Web Platform features enabled from chrome://flags.';
   }
-  cryptoKey.hidden = true;
+  startButton.disabled = true;
+  cryptoKey.disabled = true;
+  cryptoOffsetBox.disabled = true;
 }
 
 function gotStream(stream) {
