@@ -13,7 +13,7 @@
 
 'use strict';
 let currentCryptoKey;
-let useCryptoOffset;
+let useCryptoOffset = true;
 let currentKeyIdentifier = 0;
 
 // If using crypto offset (controlled by a checkbox):
