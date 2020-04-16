@@ -62,6 +62,7 @@ function encodeFunction(chunk, controller) {
     for (let i = 0; i < cryptoOffset && i < chunk.data.byteLength; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
+    // This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
     for (let i = cryptoOffset; i < chunk.data.byteLength; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
