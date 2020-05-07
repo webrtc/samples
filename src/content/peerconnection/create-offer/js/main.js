@@ -27,7 +27,9 @@ async function createOffer() {
   const numRequestedAudioTracks = parseInt(numAudioTracksInput.value);
 
   for (let i = 0; i < numRequestedAudioTracks; i++) {
-    const acx = new AudioContext();
+    // Fall back to webkitAudioContext in browsers that haven't yet unprefixed.
+    const acx = window.hasOwnProperty('AudioContext') ?
+        new window.AudioContext() : new window.webkitAudioContext();
     const dst = acx.createMediaStreamDestination();
 
     // Fill up the peer connection with numRequestedAudioTracks number of tracks.
