@@ -229,7 +229,7 @@ function onSendChannelClosed() {
   console.log('Closed local peer connection');
   maybeReset();
   console.log('Average time spent in send() (ms): ' +
-	      totalTimeUsedInSend / numberOfSendCalls);
+              totalTimeUsedInSend / numberOfSendCalls);
   console.log('Max time spent in send() (ms): ' + maxTimeUsedInSend);
   const spentTime = performance.now() - sendStartTime;
   console.log('Total time spent: ' + spentTime);
