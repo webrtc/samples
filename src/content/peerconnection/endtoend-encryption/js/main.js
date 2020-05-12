@@ -82,7 +82,7 @@ function start() {
 // See
 //   https://developer.mozilla.org/en-US/docs/Web/API/Worker
 // for basic concepts.
-const worker = new Worker('./js/worker.js');
+const worker = new Worker('./js/worker.js', {name: 'E2EE worker'});
 function setupSenderTransform(sender) {
   const senderStreams = sender.track.kind === 'video' ? sender.createEncodedVideoStreams() : sender.createEncodedAudioStreams();
   // Instead of creating the transform stream here, we do a postMessage to the worker. The first
