@@ -27,6 +27,10 @@ const errorMessage = document.querySelector('div#errorMsg');
 const transferStatus = document.querySelector('span#transferStatus');
 
 let bytesToSend = 0;
+let totalTimeUsedInSend = 0;
+let numberOfSendCalls = 0;
+let maxTimeUsedInSend = 0;
+let sendStartTime = 0;
 
 sendButton.addEventListener('click', createConnection);
 
@@ -95,11 +99,17 @@ function sendData() {
 
   let bufferedAmount = sendChannel.bufferedAmount;
   while (sendProgress.value < sendProgress.max) {
-    transferStatus.innerHTML = 'Sending data...';
+    transferStatus.innerText = 'Sending data...';
+    const timeBefore = performance.now();
     sendChannel.send(dataString);
+    const timeUsed = performance.now() - timeBefore;
+    if (timeUsed > maxTimeUsedInSend) {
+      maxTimeUsedInSend = timeUsed;
+      totalTimeUsedInSend += timeUsed;
+      numberOfSendCalls += 1;
+    }
     bufferedAmount += chunkSize;
     sendProgress.value += chunkSize;
-    console.log(`Sent ${sendProgress.value}/${sendProgress.max}`);
 
     // Pause sending if we reach the high water mark
     if (bufferedAmount >= highWaterMark) {
@@ -124,6 +134,10 @@ function startSendingData() {
   receiveProgress.max = sendProgress.max;
   sendProgress.value = 0;
   receiveProgress.value = 0;
+  sendStartTime = performance.now();
+  maxTimeUsedInSend = 0;
+  totalTimeUsedInSend = 0;
+  numberOfSendCalls = 0;
   sendData();
 }
 
@@ -179,7 +193,6 @@ function receiveChannelCallback(event) {
 
 function onReceiveMessageCallback(event) {
   receiveProgress.value += event.data.length;
-  console.log(`Received ${receiveProgress.value}/${receiveProgress.max}`);
 
   // Workaround for a bug in Chrome which prevents the closing event from being raised by the
   // remote side. Also a workaround for Firefox which does not send all pending data when closing
@@ -215,6 +228,12 @@ function onSendChannelClosed() {
   localConnection = null;
   console.log('Closed local peer connection');
   maybeReset();
+  console.log('Average time spent in send() (ms): ' +
+              totalTimeUsedInSend / numberOfSendCalls);
+  console.log('Max time spent in send() (ms): ' + maxTimeUsedInSend);
+  const spentTime = performance.now() - sendStartTime;
+  console.log('Total time spent: ' + spentTime);
+  console.log('MBytes/Sec: ' + (bytesToSend / 1000) / spentTime);
 }
 
 function onReceiveChannelClosed() {
