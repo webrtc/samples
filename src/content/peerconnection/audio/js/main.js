@@ -262,11 +262,12 @@ window.setInterval(() => {
 
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {
+          const deltaT = now - lastResult.get(report.id).timestamp;
           // calculate bitrate
           const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
-            (now - lastResult.get(report.id).timestamp);
+            deltaT;
           const headerrate = 8 * (headerBytes - lastResult.get(report.id).headerBytesSent) /
-            (now - lastResult.get(report.id).timestamp);
+            deltaT;
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
@@ -275,8 +276,8 @@ window.setInterval(() => {
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
-          packetSeries.addPoint(now, packets -
-            lastResult.get(report.id).packetsSent);
+          packetSeries.addPoint(now, 1000 * (packets -
+            lastResult.get(report.id).packetsSent) / deltaT);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }
