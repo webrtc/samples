@@ -22,7 +22,7 @@ let currentKeyIdentifier = 0;
 // For VP8 this is the content described in
 //   https://tools.ietf.org/html/rfc6386#section-9.1
 // which is 10 bytes for key frames and 3 bytes for delta frames.
-// For opus (where chunk.type is not set) this is the TOC byte from
+// For opus (where encodedFrame.type is not set) this is the TOC byte from
 //   https://tools.ietf.org/html/rfc6716#section-3.1
 //
 // It makes the (encrypted) video and audio much more fun to watch and listen to
@@ -33,85 +33,85 @@ const frameTypeToCryptoOffset = {
   undefined: 1,
 };
 
-function dump(chunk, direction, max = 16) {
-  const data = new Uint8Array(chunk.data);
+function dump(encodedFrame, direction, max = 16) {
+  const data = new Uint8Array(encodedFrame.data);
   let bytes = '';
   for (let j = 0; j < data.length && j < max; j++) {
     bytes += (data[j] < 16 ? '0' : '') + data[j].toString(16) + ' ';
   }
   console.log(performance.now().toFixed(2), direction, bytes.trim(),
-      'len=' + chunk.data.byteLength,
-      'type=' + (chunk.type || 'audio'),
-      'ts=' + chunk.timestamp,
-      'ssrc=' + chunk.synchronizationSource
+      'len=' + encodedFrame.data.byteLength,
+      'type=' + (encodedFrame.type || 'audio'),
+      'ts=' + encodedFrame.timestamp,
+      'ssrc=' + encodedFrame.synchronizationSource
   );
 }
 
 let scount = 0;
-function encodeFunction(chunk, controller) {
+function encodeFunction(encodedFrame, controller) {
   if (scount++ < 30) { // dump the first 30 packets.
-    dump(chunk, 'send');
+    dump(encodedFrame, 'send');
   }
   if (currentCryptoKey) {
-    const view = new DataView(chunk.data);
+    const view = new DataView(encodedFrame.data);
     // Any length that is needed can be used for the new buffer.
-    const newData = new ArrayBuffer(chunk.data.byteLength + 5);
+    const newData = new ArrayBuffer(encodedFrame.data.byteLength + 5);
     const newView = new DataView(newData);
 
-    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[chunk.type] : 0;
-    for (let i = 0; i < cryptoOffset && i < chunk.data.byteLength; ++i) {
+    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[encodedFrame.type] : 0;
+    for (let i = 0; i < cryptoOffset && i < encodedFrame.data.byteLength; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
     // This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
-    for (let i = cryptoOffset; i < chunk.data.byteLength; ++i) {
+    for (let i = cryptoOffset; i < encodedFrame.data.byteLength; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
     // Append keyIdentifier.
-    newView.setUint8(chunk.data.byteLength, currentKeyIdentifier % 0xff);
+    newView.setUint8(encodedFrame.data.byteLength, currentKeyIdentifier % 0xff);
     // Append checksum
-    newView.setUint32(chunk.data.byteLength + 1, 0xDEADBEEF);
+    newView.setUint32(encodedFrame.data.byteLength + 1, 0xDEADBEEF);
 
-    chunk.data = newData;
+    encodedFrame.data = newData;
   }
-  controller.enqueue(chunk);
+  controller.enqueue(encodedFrame);
 }
 
 let rcount = 0;
-function decodeFunction(chunk, controller) {
+function decodeFunction(encodedFrame, controller) {
   if (rcount++ < 30) { // dump the first 30 packets
-    dump(chunk, 'recv');
+    dump(encodedFrame, 'recv');
   }
-  const view = new DataView(chunk.data);
-  const checksum = chunk.data.byteLength > 4 ? view.getUint32(chunk.data.byteLength - 4) : false;
+  const view = new DataView(encodedFrame.data);
+  const checksum = encodedFrame.data.byteLength > 4 ? view.getUint32(encodedFrame.data.byteLength - 4) : false;
   if (currentCryptoKey) {
     if (checksum !== 0xDEADBEEF) {
       console.log('Corrupted frame received, checksum ' +
                   checksum.toString(16));
       return; // This can happen when the key is set and there is an unencrypted frame in-flight.
     }
-    const keyIdentifier = view.getUint8(chunk.data.byteLength - 5);
+    const keyIdentifier = view.getUint8(encodedFrame.data.byteLength - 5);
     if (keyIdentifier !== currentKeyIdentifier) {
       console.log(`Key identifier mismatch, got ${keyIdentifier} expected ${currentKeyIdentifier}.`);
       return;
     }
 
-    const newData = new ArrayBuffer(chunk.data.byteLength - 5);
+    const newData = new ArrayBuffer(encodedFrame.data.byteLength - 5);
     const newView = new DataView(newData);
-    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[chunk.type] : 0;
+    const cryptoOffset = useCryptoOffset? frameTypeToCryptoOffset[encodedFrame.type] : 0;
 
     for (let i = 0; i < cryptoOffset; ++i) {
       newView.setInt8(i, view.getInt8(i));
     }
-    for (let i = cryptoOffset; i < chunk.data.byteLength - 5; ++i) {
+    for (let i = cryptoOffset; i < encodedFrame.data.byteLength - 5; ++i) {
       const keyByte = currentCryptoKey.charCodeAt(i % currentCryptoKey.length);
       newView.setInt8(i, view.getInt8(i) ^ keyByte);
     }
-    chunk.data = newData;
+    encodedFrame.data = newData;
   } else if (checksum === 0xDEADBEEF) {
     return; // encrypted in-flight frame but we already forgot about the key.
   }
-  controller.enqueue(chunk);
+  controller.enqueue(encodedFrame);
 }
 
 onmessage = async (event) => {
