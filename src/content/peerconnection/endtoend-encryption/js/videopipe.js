@@ -23,12 +23,14 @@
 
 function VideoPipe(stream, forceSend, forceReceive, handler) {
   this.pc1 = new RTCPeerConnection({
-    forceEncodedVideoInsertableStreams: forceSend,
-    forceEncodedAudioInsertableStreams: forceSend,
+    encodedInsertableStreams: forceSend,
+    forceEncodedVideoInsertableStreams: forceSend, // legacy, to be removed in M85.
+    forceEncodedAudioInsertableStreams: forceSend, // legacy, to be removed in M85.
   });
   this.pc2 = new RTCPeerConnection({
-    forceEncodedVideoInsertableStreams: forceReceive,
-    forceEncodedAudioInsertableStreams: forceReceive,
+    encodedInsertableStreams: forceReceive,
+    forceEncodedVideoInsertableStreams: forceReceive, // legacy, to be removed in M85.
+    forceEncodedAudioInsertableStreams: forceReceive, // legacy, to be removed in M85.
   });
 
   stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
