@@ -13,11 +13,8 @@
 
 /* globals MediaRecorder */
 
-const mediaSource = new MediaSource();
-mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
 let mediaRecorder;
 let recordedBlobs;
-let sourceBuffer;
 
 const errorMsgElement = document.querySelector('span#errorMsg');
 const recordedVideo = document.querySelector('video#recorded');
@@ -59,12 +56,6 @@ downloadButton.addEventListener('click', () => {
   }, 100);
 });
 
-function handleSourceOpen(event) {
-  console.log('MediaSource opened');
-  sourceBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
-  console.log('Source buffer: ', sourceBuffer);
-}
-
 function handleDataAvailable(event) {
   console.log('handleDataAvailable', event);
   if (event.data && event.data.size > 0) {
@@ -74,18 +65,15 @@ function handleDataAvailable(event) {
 
 function startRecording() {
   recordedBlobs = [];
-  let options = {mimeType: 'video/webm;codecs=vp9'};
+  let options = {mimeType: 'video/webm;codecs=vp9,opus'};
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.error(`${options.mimeType} is not Supported`);
-    errorMsgElement.innerHTML = `${options.mimeType} is not Supported`;
-    options = {mimeType: 'video/webm;codecs=vp8'};
+    console.error(`${options.mimeType} is not supported`);
+    options = {mimeType: 'video/webm;codecs=vp8,opus'};
     if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      console.error(`${options.mimeType} is not Supported`);
-      errorMsgElement.innerHTML = `${options.mimeType} is not Supported`;
+      console.error(`${options.mimeType} is not supported`);
       options = {mimeType: 'video/webm'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.error(`${options.mimeType} is not Supported`);
-        errorMsgElement.innerHTML = `${options.mimeType} is not Supported`;
+        console.error(`${options.mimeType} is not supported`);
         options = {mimeType: ''};
       }
     }
@@ -108,7 +96,7 @@ function startRecording() {
     console.log('Recorded Blobs: ', recordedBlobs);
   };
   mediaRecorder.ondataavailable = handleDataAvailable;
-  mediaRecorder.start(10); // collect 10ms of data
+  mediaRecorder.start();
   console.log('MediaRecorder started', mediaRecorder);
 }
 
