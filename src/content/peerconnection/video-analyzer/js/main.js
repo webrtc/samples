@@ -261,7 +261,7 @@ function videoAnalyzer(chunk, controller) {
   if (chunk.type === prevFrameType &&
       chunk.timestamp === prevFrameTimestamp &&
       chunk.synchronizationSource === prevFrameSynchronizationSource) {
-    duplicateCount += 1;
+    duplicateCount++;
   }
   prevFrameType = chunk.type;
   prevFrameTimestamp = chunk.timestamp;
