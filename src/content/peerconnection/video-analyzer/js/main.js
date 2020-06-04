@@ -62,7 +62,7 @@ let localStream;
 let pc1;
 let pc2;
 const offerOptions = {
-  offerToReceiveAudio: 1,
+  offerToReceiveAudio: 0,
   offerToReceiveVideo: 1
 };
 
@@ -138,7 +138,7 @@ async function onCreateOfferSuccess(desc) {
 
   console.log('pc2 setRemoteDescription start');
   try {
-    await pc2.setRemoteDescription(desc);
+    await pc2.setRemoteDescription({type: 'offer', sdp: desc.sdp.replace('red/90000', 'green/90000')});
     onSetRemoteSuccess(pc2);
   } catch (e) {
     onSetSessionDescriptionError();
