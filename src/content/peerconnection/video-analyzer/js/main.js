@@ -62,7 +62,7 @@ let localStream;
 let pc1;
 let pc2;
 const offerOptions = {
-  offerToReceiveAudio: 1,
+  offerToReceiveAudio: 0,
   offerToReceiveVideo: 1
 };
 
@@ -138,7 +138,7 @@ async function onCreateOfferSuccess(desc) {
 
   console.log('pc2 setRemoteDescription start');
   try {
-    await pc2.setRemoteDescription(desc);
+    await pc2.setRemoteDescription({type: 'offer', sdp: desc.sdp.replace('red/90000', 'green/90000')});
     onSetRemoteSuccess(pc2);
   } catch (e) {
     onSetSessionDescriptionError();
@@ -233,10 +233,15 @@ const keyFrameSizeDisplay = document.querySelector('#keyframe-size');
 const interFrameCountDisplay = document.querySelector('#interframe-count');
 const interFrameSizeDisplay = document.querySelector('#interframe-size');
 const videoSizeDisplay = document.querySelector('#video-size');
+const duplicateCountDisplay = document.querySelector('#duplicate-count');
 let keyFrameCount = 0;
 let interFrameCount = 0;
 let keyFrameLastSize = 0;
 let interFrameLastSize = 0;
+let duplicateCount = 0;
+let prevFrameType;
+let prevFrameTimestamp;
+let prevFrameSynchronizationSource;
 
 function videoAnalyzer(chunk, controller) {
   const view = new DataView(chunk.data);
@@ -253,6 +258,14 @@ function videoAnalyzer(chunk, controller) {
     interFrameCount++;
     interFrameLastSize = chunk.data.byteLength;
   }
+  if (chunk.type === prevFrameType &&
+      chunk.timestamp === prevFrameTimestamp &&
+      chunk.synchronizationSource === prevFrameSynchronizationSource) {
+    duplicateCount++;
+  }
+  prevFrameType = chunk.type;
+  prevFrameTimestamp = chunk.timestamp;
+  prevFrameSynchronizationSource = chunk.synchronizationSource;
   controller.enqueue(chunk);
 }
 
@@ -262,6 +275,7 @@ setInterval(() => {
   keyFrameSizeDisplay.innerText = keyFrameLastSize;
   interFrameCountDisplay.innerText = interFrameCount;
   interFrameSizeDisplay.innerText = interFrameLastSize;
+  duplicateCountDisplay.innerText = duplicateCount;
 }, 500);
 
 remoteVideo.addEventListener('resize', () => {
