@@ -12,6 +12,22 @@
  */
 
 'use strict';
+// Polyfill RTCEncoded(Audio|Video)Frame.getMetadata() (not available in M83, available M84+).
+// The polyfill can not be done on the prototype since its not exposed in workers. Instead,
+// it is done as another transformation to keep it separate.
+function polyFillEncodedFrameMetadata(encodedFrame, controller) {
+  if (!encodedFrame.getMetadata) {
+    encodedFrame.getMetadata = function() {
+      return {
+        // TODO: provide a more complete polyfill based on additionalData for video.
+        synchronizationSource: this.synchronizationSource,
+        contributingSources: this.contributingSources
+      };
+    };
+  }
+  controller.enqueue(encodedFrame);
+}
+
 let currentCryptoKey;
 let useCryptoOffset = true;
 let currentKeyIdentifier = 0;
@@ -43,7 +59,7 @@ function dump(encodedFrame, direction, max = 16) {
       'len=' + encodedFrame.data.byteLength,
       'type=' + (encodedFrame.type || 'audio'),
       'ts=' + encodedFrame.timestamp,
-      'ssrc=' + encodedFrame.synchronizationSource
+      'ssrc=' + encodedFrame.getMetadata().synchronizationSource
   );
 }
 
@@ -122,6 +138,9 @@ onmessage = async (event) => {
       transform: encodeFunction,
     });
     readableStream
+        .pipeThrough(new TransformStream({
+          transform: polyFillEncodedFrameMetadata, // M83 polyfill.
+        }))
         .pipeThrough(transformStream)
         .pipeTo(writableStream);
   } else if (operation === 'decode') {
@@ -130,6 +149,9 @@ onmessage = async (event) => {
       transform: decodeFunction,
     });
     readableStream
+        .pipeThrough(new TransformStream({
+          transform: polyFillEncodedFrameMetadata, // M83 polyfill.
+        }))
         .pipeThrough(transformStream)
         .pipeTo(writableStream);
   } else if (operation === 'setCryptoKey') {
