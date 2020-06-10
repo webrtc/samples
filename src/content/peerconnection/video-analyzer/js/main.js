@@ -33,10 +33,13 @@ hdButton.addEventListener('click', () => {
 
 const banner = document.querySelector('#banner');
 
-const supportsInsertableStreams =
-      !!RTCRtpSender.prototype.createEncodedVideoStreams;
 
-if (!supportsInsertableStreams) {
+const supportsInsertableStreamsLegacy =
+      !!RTCRtpSender.prototype.createEncodedVideoStreams;
+const supportsInsertableStreams =
+      !!RTCRtpSender.prototype.createEncodedStreams;
+
+if (!(supportsInsertableStreams || supportsInsertableStreamsLegacy)) {
   banner.innerText = 'Your browser does not support Insertable Streams. ' +
   'This sample will not work.';
   startButton.disabled = true;
@@ -103,7 +106,10 @@ async function call() {
   pc1 = new RTCPeerConnection();
   console.log('Created local peer connection object pc1');
   pc1.addEventListener('icecandidate', e => onIceCandidate(pc1, e));
-  pc2 = new RTCPeerConnection({forceEncodedVideoInsertableStreams: true});
+  pc2 = new RTCPeerConnection({
+    encodedInsertableStreams: true,
+    forceEncodedVideoInsertableStreams: true,
+  });
   console.log('Created remote peer connection object pc2');
   pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
   pc1.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc1, e));
@@ -167,7 +173,7 @@ function onSetSessionDescriptionError(error) {
 
 function gotRemoteTrack(e) {
   console.log('pc2 received remote stream');
-  const frameStreams = e.receiver.createEncodedVideoStreams();
+  const frameStreams = supportsInsertableStreams ? e.receiver.createEncodedStreams() : e.receiver.createEncodedVideoStreams();
   frameStreams.readableStream.pipeThrough(new TransformStream({
     transform: videoAnalyzer
   }))
@@ -243,8 +249,8 @@ let prevFrameType;
 let prevFrameTimestamp;
 let prevFrameSynchronizationSource;
 
-function videoAnalyzer(chunk, controller) {
-  const view = new DataView(chunk.data);
+function videoAnalyzer(encodedFrame, controller) {
+  const view = new DataView(encodedFrame.data);
   // We assume that the video is VP8.
   // TODO: Check the codec to see that it is.
   // The lowest value bit in the first byte is the keyframe indicator.
@@ -253,20 +259,20 @@ function videoAnalyzer(chunk, controller) {
   // console.log(view.getUint8(0).toString(16));
   if (keyframeBit === 0) {
     keyFrameCount++;
-    keyFrameLastSize = chunk.data.byteLength;
+    keyFrameLastSize = encodedFrame.data.byteLength;
   } else {
     interFrameCount++;
-    interFrameLastSize = chunk.data.byteLength;
+    interFrameLastSize = encodedFrame.data.byteLength;
   }
-  if (chunk.type === prevFrameType &&
-      chunk.timestamp === prevFrameTimestamp &&
-      chunk.synchronizationSource === prevFrameSynchronizationSource) {
+  if (encodedFrame.type === prevFrameType &&
+      encodedFrame.timestamp === prevFrameTimestamp &&
+      encodedFrame.synchronizationSource === prevFrameSynchronizationSource) {
     duplicateCount++;
   }
-  prevFrameType = chunk.type;
-  prevFrameTimestamp = chunk.timestamp;
-  prevFrameSynchronizationSource = chunk.synchronizationSource;
-  controller.enqueue(chunk);
+  prevFrameType = encodedFrame.type;
+  prevFrameTimestamp = encodedFrame.timestamp;
+  prevFrameSynchronizationSource = encodedFrame.synchronizationSource;
+  controller.enqueue(encodedFrame);
 }
 
 // Update the display of the counters once a second.
