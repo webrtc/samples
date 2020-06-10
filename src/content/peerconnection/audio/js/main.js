@@ -36,6 +36,25 @@ const offerOptions = {
   voiceActivityDetection: false
 };
 
+// Enabling opus DTX is an expert option without GUI.
+// eslint-disable-next-line prefer-const
+let useDtx = false;
+
+// Change the ptime. For opus supported values are [10, 20, 40, 60].
+// Expert option without GUI.
+// eslint-disable-next-line no-unused-vars
+async function setPtime(ptime) {
+  const offer = await pc1.createOffer();
+  await pc1.setLocalDescription(offer);
+  const desc = pc1.remoteDescription;
+  if (desc.sdp.indexOf('a=ptime:') !== -1) {
+    desc.sdp = desc.sdp.replace(/a=ptime:.*/, 'a=ptime:' + ptime);
+  } else {
+    desc.sdp += 'a=ptime:' + ptime + '\r\n';
+  }
+  await pc1.setRemoteDescription(desc);
+}
+
 function gotStream(stream) {
   hangupButton.disabled = false;
   console.log('Received local stream');
@@ -105,6 +124,9 @@ function gotDescription2(desc) {
   console.log(`Answer from pc2\n${desc.sdp}`);
   pc2.setLocalDescription(desc).then(() => {
     desc.sdp = forceChosenAudioCodec(desc.sdp);
+    if (useDtx) {
+      desc.sdp = desc.sdp.replace('useinbandfec=1', 'useinbandfec=1;usedtx=1');
+    }
     pc1.setRemoteDescription(desc).then(() => {}, onSetSessionDescriptionError);
   }, onSetSessionDescriptionError);
 }
