@@ -40,6 +40,10 @@ const offerOptions = {
 // eslint-disable-next-line prefer-const
 let useDtx = false;
 
+// Disabling Opus FEC is an expert option without GUI.
+// eslint-disable-next-line prefer-const
+let useFec = true;
+
 // Change the ptime. For opus supported values are [10, 20, 40, 60].
 // Expert option without GUI.
 // eslint-disable-next-line no-unused-vars
@@ -126,6 +130,9 @@ function gotDescription2(desc) {
     desc.sdp = forceChosenAudioCodec(desc.sdp);
     if (useDtx) {
       desc.sdp = desc.sdp.replace('useinbandfec=1', 'useinbandfec=1;usedtx=1');
+    }
+    if (!useFec) {
+      desc.sdp = desc.sdp.replace('useinbandfec=1', 'useinbandfec=0');
     }
     pc1.setRemoteDescription(desc).then(() => {}, onSetSessionDescriptionError);
   }, onSetSessionDescriptionError);
