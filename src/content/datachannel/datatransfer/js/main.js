@@ -106,8 +106,8 @@ function sendData() {
     if (timeUsed > maxTimeUsedInSend) {
       maxTimeUsedInSend = timeUsed;
       totalTimeUsedInSend += timeUsed;
-      numberOfSendCalls += 1;
     }
+    numberOfSendCalls += 1;
     bufferedAmount += chunkSize;
     sendProgress.value += chunkSize;
 
