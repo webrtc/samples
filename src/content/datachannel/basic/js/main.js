@@ -116,14 +116,14 @@ function getName(pc) {
   return (pc === localConnection) ? 'localPeerConnection' : 'remotePeerConnection';
 }
 
-function onIceCandidate(pc, event) {
-  getOtherPc(pc)
-      .addIceCandidate(event.candidate)
+function onIceCandidate(pc, {candidate}) {
+  candidate && getOtherPc(pc)
+      .addIceCandidate(candidate)
       .then(
           () => onAddIceCandidateSuccess(pc),
           err => onAddIceCandidateError(pc, err)
       );
-  console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
+  console.log(`${getName(pc)} ICE candidate: ${candidate ? candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
