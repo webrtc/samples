@@ -44,6 +44,29 @@ let useDtx = false;
 // eslint-disable-next-line prefer-const
 let useFec = true;
 
+// We only show one way of doing this.
+const codecPreferences = document.querySelector('#codecPreferences');
+const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
+  'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
+if (supportsSetCodecPreferences) {
+  codecSelector.style.display = 'none';
+
+  const {codecs} = RTCRtpSender.getCapabilities('audio');
+  codecs.forEach(codec => {
+    if (['audio/CN', 'audio/telephone-event'].includes(codec.mimeType)) {
+      return;
+    }
+    const option = document.createElement('option');
+    option.value = (codec.mimeType + ' ' + codec.clockRate + ' ' +
+      (codec.sdpFmtpLine || '')).trim();
+    option.innerText = option.value;
+    codecPreferences.appendChild(option);
+  });
+  codecPreferences.disabled = false;
+} else {
+  codecPreferences.style.display = 'none';
+}
+
 // Change the ptime. For opus supported values are [10, 20, 40, 60].
 // Expert option without GUI.
 // eslint-disable-next-line no-unused-vars
@@ -69,6 +92,23 @@ function gotStream(stream) {
   }
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Adding Local Stream to peer connection');
+
+  if (supportsSetCodecPreferences) {
+    const preferredCodec = codecPreferences.options[codecPreferences.selectedIndex];
+    if (preferredCodec.value !== '') {
+      const [mimeType, clockRate, sdpFmtpLine] = preferredCodec.value.split(' ');
+      const {codecs} = RTCRtpSender.getCapabilities('audio');
+      console.log(mimeType, clockRate, sdpFmtpLine);
+      console.log(JSON.stringify(codecs, null, ' '));
+      const selectedCodecIndex = codecs.findIndex(c => c.mimeType === mimeType && c.clockRate === parseInt(clockRate, 10) && c.sdpFmtpLine === sdpFmtpLine);
+      const selectedCodec = codecs[selectedCodecIndex];
+      codecs.slice(selectedCodecIndex, 1);
+      codecs.unshift(selectedCodec);
+      const transceiver = pc1.getTransceivers().find(t => t.sender && t.sender.track === localStream.getAudioTracks()[0]);
+      transceiver.setCodecPreferences(codecs);
+      console.log('Preferred video codec', selectedCodec);
+    }
+  }
 
   pc1.createOffer(offerOptions)
       .then(gotDescription1, onCreateSessionDescriptionError);
@@ -117,7 +157,9 @@ function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
   pc1.setLocalDescription(desc)
       .then(() => {
-        desc.sdp = forceChosenAudioCodec(desc.sdp);
+        if (!supportsSetCodecPreferences) {
+          desc.sdp = forceChosenAudioCodec(desc.sdp);
+        }
         pc2.setRemoteDescription(desc).then(() => {
           return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
         }, onSetSessionDescriptionError);
@@ -127,7 +169,9 @@ function gotDescription1(desc) {
 function gotDescription2(desc) {
   console.log(`Answer from pc2\n${desc.sdp}`);
   pc2.setLocalDescription(desc).then(() => {
-    desc.sdp = forceChosenAudioCodec(desc.sdp);
+    if (!supportsSetCodecPreferences) {
+      desc.sdp = forceChosenAudioCodec(desc.sdp);
+    }
     if (useDtx) {
       desc.sdp = desc.sdp.replace('useinbandfec=1', 'useinbandfec=1;usedtx=1');
     }
