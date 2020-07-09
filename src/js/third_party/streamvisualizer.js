@@ -29,7 +29,10 @@ function StreamVisualizer(remoteStream, canvas) {
   console.log('Creating StreamVisualizer with remoteStream and canvas: ',
     remoteStream, canvas);
   this.canvas = canvas;
+  this.initWidth = this.canvas.width;
+  this.initHeight = this.canvas.height;
   this.drawContext = this.canvas.getContext('2d');
+  this.isStart = false;
 
   // cope with browser differences
   if (typeof AudioContext === 'function') {
@@ -58,7 +61,12 @@ function StreamVisualizer(remoteStream, canvas) {
 }
 
 StreamVisualizer.prototype.start = function() {
+  this.isStart = true;
   requestAnimationFrame(this.draw.bind(this));
+};
+
+StreamVisualizer.prototype.stop = function() {
+  this.isStart = false;
 };
 
 StreamVisualizer.prototype.draw = function() {
@@ -99,8 +107,13 @@ StreamVisualizer.prototype.draw = function() {
     this.drawContext.fillStyle = 'white';
     this.drawContext.fillRect(i * barWidth, offset, 1, 2);
   }
-
-  requestAnimationFrame(this.draw.bind(this));
+  if (this.isStart) {
+    requestAnimationFrame(this.draw.bind(this));
+  } else {
+    this.drawContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.canvas.width = this.initWidth;
+    this.canvas.height = this.initHeight;
+  }
 };
 
 StreamVisualizer.prototype.getFrequencyValue = function(freq) {
