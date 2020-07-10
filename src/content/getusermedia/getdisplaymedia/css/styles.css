@@ -1,4 +1,0 @@
-video#captured-media {
-  width: 100%;
-  height: calc(width * 16 / 9);
-}
