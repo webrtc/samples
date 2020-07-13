@@ -48,6 +48,8 @@ const offerOptions = {
   offerToReceiveVideo: 1
 };
 
+THIS SHOULD THROW AN ERROR
+
 function getName(pc) {
   return (pc === pc1) ? 'pc1' : 'pc2';
 }
