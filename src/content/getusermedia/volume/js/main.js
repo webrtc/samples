@@ -10,10 +10,10 @@
 
 'use strict';
 
-const startButton = document.getElementById('startButton')
-const stopButton = document.getElementById('stopButton')
-startButton.onclick = start
-stopButton.onclick = stop
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+startButton.onclick = start;
+stopButton.onclick = stop;
 
 const instantMeter = document.querySelector('#instant meter');
 const slowMeter = document.querySelector('#slow meter');
@@ -29,7 +29,7 @@ const constraints = window.constraints = {
   video: false
 };
 
-var meterRefresh = null;
+let meterRefresh = null;
 
 function handleSuccess(stream) {
   // Put variables in global scope to make them available to the
