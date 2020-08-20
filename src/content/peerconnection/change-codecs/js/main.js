@@ -116,7 +116,6 @@ async function call() {
   console.log('Added local stream to pc1');
   if (supportsSetCodecPreferences) {
     const preferredCodec = codecPreferences.options[codecPreferences.selectedIndex];
-    console.log(preferredCodec);
     if (preferredCodec.value !== '') {
       const [mimeType, sdpFmtpLine] = preferredCodec.value.split(' ');
       const {codecs} = RTCRtpSender.getCapabilities('video');
