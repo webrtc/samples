@@ -36,6 +36,10 @@ const offerOptions = {
   voiceActivityDetection: false
 };
 
+const audioLevels = [];
+let audioLevelGraph;
+let audioLevelSeries;
+
 // Enabling opus DTX is an expert option without GUI.
 // eslint-disable-next-line prefer-const
 let useDtx = false;
@@ -123,6 +127,10 @@ function gotStream(stream) {
   packetSeries = new TimelineDataSeries();
   packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
   packetGraph.updateEndDate();
+
+  audioLevelSeries = new TimelineDataSeries();
+  audioLevelGraph = new TimelineGraphView('audioLevelGraph', 'audioLevelCanvas');
+  audioLevelGraph.updateEndDate();
 }
 
 function onCreateSessionDescriptionError(error) {
@@ -359,3 +367,33 @@ window.setInterval(() => {
     lastResult = res;
   });
 }, 1000);
+
+if (window.RTCRtpReceiver && ('getSynchronizationSources' in window.RTCRtpReceiver.prototype)) {
+  let lastTime;
+  const getAudioLevel = (timestamp) => {
+    window.requestAnimationFrame(getAudioLevel);
+    if (!pc2) {
+      return;
+    }
+    const receiver = pc2.getReceivers().find(r => r.track.kind === 'audio');
+    if (!receiver) {
+      return;
+    }
+    const sources = receiver.getSynchronizationSources();
+    sources.forEach(source => {
+      audioLevels.push(source.audioLevel);
+    });
+    if (!lastTime) {
+      lastTime = timestamp;
+    } else if (timestamp - lastTime > 500 && audioLevels.length > 0) {
+      // Update graph every 500ms.
+      const maxAudioLevel = Math.max.apply(null, audioLevels);
+      audioLevelSeries.addPoint(Date.now(), maxAudioLevel);
+      audioLevelGraph.setDataSeries([audioLevelSeries]);
+      audioLevelGraph.updateEndDate();
+      audioLevels.length = 0;
+      lastTime = timestamp;
+    }
+  };
+  window.requestAnimationFrame(getAudioLevel);
+}
