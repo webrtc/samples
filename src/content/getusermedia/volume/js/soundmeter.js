@@ -56,6 +56,7 @@ SoundMeter.prototype.connectToSource = function(stream, callback) {
 };
 
 SoundMeter.prototype.stop = function() {
+  console.log('SoundMeter stopping');
   this.mic.disconnect();
   this.script.disconnect();
 };
