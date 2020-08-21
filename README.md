@@ -18,7 +18,7 @@ If you encounter a bug or problem with one of the samples, please submit a
 [new issue](https://github.com/webrtc/samples/issues/new) so we know about it and can fix it.
 
 Please avoid submitting issues on this repository for general problems you have with WebRTC. If you have found a bug in
-the WebRTC APIs, please see [webrtc.org/bugs](https://webrtc.org/bugs) for how to submit bugs on the affected browsers.
+the WebRTC APIs, please see [webrtc.org/bugs](https://webrtc.org/support/bug-reporting) for how to submit bugs on the affected browsers.
 If you need support on how to implement your own WebRTC-based application, please see the
 [discuss-webrtc](https://groups.google.com/forum/#!forum/discuss-webrtc) Google Group.
 
