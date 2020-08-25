@@ -174,10 +174,10 @@ function onSetSessionDescriptionError(error) {
 function gotRemoteTrack(e) {
   console.log('pc2 received remote stream');
   const frameStreams = supportsInsertableStreams ? e.receiver.createEncodedStreams() : e.receiver.createEncodedVideoStreams();
-  frameStreams.readableStream.pipeThrough(new TransformStream({
+  (fraemStreams.readable || frameStreams.readableStream).pipeThrough(new TransformStream({
     transform: videoAnalyzer
   }))
-      .pipeTo(frameStreams.writableStream);
+      .pipeTo(frameStreams.writable || frameStreams.writableStream);
   remoteVideo.srcObject = e.streams[0];
 }
 
