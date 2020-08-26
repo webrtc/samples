@@ -25,7 +25,7 @@ hangUpButton.disabled = true;
 let pc1 = null;
 let pc2 = null;
 let localStream;
-const remoteStream = new MediaStream()
+const remoteStream = new MediaStream();
 
 const offerOptions = {
   offerToReceiveAudio: 1,
@@ -144,7 +144,7 @@ function stop() {
 }
 
 function gotRemoteStream(e) {
-  vid2.srcObject = remoteStream
+  vid2.srcObject = remoteStream;
   remoteStream.addTrack(e.track, remoteStream);
 }
 
