@@ -105,11 +105,13 @@ function setupSenderTransform(sender) {
       .pipeThrough(transformStream)
       .pipeTo(senderStreams.writableStream);
   */
+  const readableStream = senderStreams.readable || senderStreams.readableStream;
+  const writableStream = senderStreams.writable || senderStreams.writableStream;
   worker.postMessage({
     operation: 'encode',
-    readableStream: senderStreams.readableStream,
-    writableStream: senderStreams.writableStream,
-  }, [senderStreams.readableStream, senderStreams.writableStream]);
+    readableStream,
+    writableStream,
+  }, [readableStream, writableStream]);
 }
 
 function setupReceiverTransform(receiver) {
@@ -119,11 +121,13 @@ function setupReceiverTransform(receiver) {
   } else {
     receiverStreams = receiver.track.kind === 'video' ? receiver.createEncodedVideoStreams() : receiver.createEncodedAudioStreams();
   }
+  const readableStream = receiverStreams.readable || receiverStreams.readableStream;
+  const writableStream = receiverStreams.writable || receiverStreams.writableStream;
   worker.postMessage({
     operation: 'decode',
-    readableStream: receiverStreams.readableStream,
-    writableStream: receiverStreams.writableStream,
-  }, [receiverStreams.readableStream, receiverStreams.writableStream]);
+    readableStream,
+    writableStream,
+  }, [readableStream, writableStream]);
 }
 
 function call() {
