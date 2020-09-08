@@ -34,7 +34,8 @@ if (!browserSupportsIPHandlingPolicy()) {
 // Saves options.
 function saveOptions() {
   const radios = document.getElementsByName('ip_policy_selection');
-  for (let i = 0; i < radios.length; i++) {
+  let i;
+  for (i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
       break;
     }
