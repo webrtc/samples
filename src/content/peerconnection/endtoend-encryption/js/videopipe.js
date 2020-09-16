@@ -21,6 +21,10 @@
 //
 'use strict';
 
+// Preferring a certain codec is an expert option without GUI.
+// eslint-disable-next-line prefer-const
+let preferredVideoCodecMimeType = undefined;
+
 function VideoPipe(stream, forceSend, forceReceive, handler) {
   this.pc1 = new RTCPeerConnection({
     encodedInsertableStreams: forceSend,
@@ -35,6 +39,15 @@ function VideoPipe(stream, forceSend, forceReceive, handler) {
 
   stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
   this.pc2.ontrack = handler;
+  if (preferredVideoCodecMimeType) {
+    const {codecs} = RTCRtpSender.getCapabilities('video');
+    const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
+    const selectedCodec = codecs[selectedCodecIndex];
+    codecs.slice(selectedCodecIndex, 1);
+    codecs.unshift(selectedCodec);
+    const transceiver = this.pc1.getTransceivers().find(t => t.sender && t.sender.track === stream.getVideoTracks()[0]);
+    transceiver.setCodecPreferences(codecs);
+  }
 }
 
 VideoPipe.prototype.negotiate = async function() {
