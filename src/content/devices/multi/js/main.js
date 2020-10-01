@@ -38,7 +38,9 @@ function gotDevices(deviceInfos) {
   // Clone the master outputSelector and replace outputSelector placeholders.
   const allOutputSelectors = document.querySelectorAll('select');
   for (let selector = 0; selector < allOutputSelectors.length; selector++) {
+    const selectorType = allOutputSelectors[selector].dataset.type;
     const newOutputSelector = masterOutputSelector.cloneNode(true);
+    newOutputSelector.dataset.type = selectorType;
     newOutputSelector.addEventListener('change', changeAudioDestination);
     allOutputSelectors[selector].parentNode.replaceChild(newOutputSelector,
         allOutputSelectors[selector]);
@@ -71,8 +73,7 @@ function attachSinkId(element, sinkId, outputSelector) {
 function changeAudioDestination(event) {
   const deviceId = event.target.value;
   const outputSelector = event.target;
-  // FIXME: Make the media element lookup dynamic.
-  const element = event.path[2].childNodes[1];
+  const element = document.querySelector(`[data-type="${event.target.dataset.type}"]`);
   attachSinkId(element, deviceId, outputSelector);
 }
 
