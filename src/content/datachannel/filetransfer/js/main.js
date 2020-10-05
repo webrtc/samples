@@ -183,37 +183,35 @@ function receiveChannelCallback(event) {
 }
 
 async function onReceiveMessageCallback(event) {
-  if (sendChannel && receiveChannel) {
-    console.log(`Received Message ${event.data.byteLength}`);
-    receiveBuffer.push(event.data);
-    receivedSize += event.data.byteLength;
-    receiveProgress.value = receivedSize;
+  console.log(`Received Message ${event.data.byteLength}`);
+  receiveBuffer.push(event.data);
+  receivedSize += event.data.byteLength;
+  receiveProgress.vaßlue = receivedSize;
 
-    // we are assuming that our signaling protocol told
-    // about the expected file size (and name, hash, etc).
-    const file = fileInput.files[0];
-    if (receivedSize === file.size) {
-      const received = new Blob(receiveBuffer);
-      receiveBuffer = [];
+  // we are assuming that our signaling protocol told
+  // about the expected file size (and name, hash, etc).
+  const file = fileInput.files[0];
+  if (receivedSize === file.size) {
+    const received = new Blob(receiveBuffer);
+    receiveBuffer = [];
 
-      downloadAnchor.href = URL.createObjectURL(received);
-      downloadAnchor.download = file.name;
-      downloadAnchor.textContent =
-        `Click to download '${file.name}' (${file.size} bytes)`;
-      downloadAnchor.style.display = 'block';
+    downloadAnchor.href = URL.createObjectURL(received);
+    downloadAnchor.download = file.name;
+    downloadAnchor.textContent =
+      `Click to download '${file.name}' (${file.size} bytes)`;
+    downloadAnchor.style.display = 'block';
 
-      const bitrate = Math.round(receivedSize * 8 /
-        ((new Date()).getTime() - timestampStart));
-      bitrateDiv.innerHTML =
-        `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
+    const bitrate = Math.round(receivedSize * 8 /
+      ((new Date()).getTime() - timestampStart));
+    bitrateDiv.innerHTML =
+      `<strong>Average Bitrate:</strong> ${bitrate} kbits/sec (max: ${bitrateMax} kbits/sec)`;
 
-      if (statsInterval) {
-        clearInterval(statsInterval);
-        statsInterval = null;
-      }
-
-      closeDataChannels();
+    if (statsInterval) {
+      clearInterval(statsInterval);
+      statsInterval = null;
     }
+
+    closeDataChannels();
   }
 }
 
