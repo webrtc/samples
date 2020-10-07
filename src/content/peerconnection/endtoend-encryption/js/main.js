@@ -43,7 +43,16 @@ const supportsInsertableStreamsLegacy =
 const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedStreams;
 
-if (!(supportsInsertableStreams || supportsInsertableStreamsLegacy)) {
+let supportsTransferableStreams = false;
+try {
+  const stream = new ReadableStream();
+  window.postMessage(stream, '*', [stream]);
+  supportsTransferableStreams = true;
+} catch (e) {
+  console.error('Transferable streams are not supported.');
+}
+
+if (!((supportsInsertableStreams || supportsInsertableStreamsLegacy) && supportsTransferableStreams)) {
   banner.innerText = 'Your browser does not support Insertable Streams. ' +
   'This sample will not work.';
   if (adapter.browserDetails.browser === 'chrome') {
