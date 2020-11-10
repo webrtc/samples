@@ -119,7 +119,7 @@ async function call() {
       const {codecs} = RTCRtpSender.getCapabilities('video');
       const selectedCodecIndex = codecs.findIndex(c => c.mimeType === mimeType && c.sdpFmtpLine === sdpFmtpLine);
       const selectedCodec = codecs[selectedCodecIndex];
-      codecs.slice(selectedCodecIndex, 1);
+      codecs.splice(selectedCodecIndex, 1);
       codecs.unshift(selectedCodec);
       console.log(codecs);
       const transceiver = pc1.getTransceivers().find(t => t.sender && t.sender.track === localStream.getVideoTracks()[0]);
