@@ -8,6 +8,8 @@
 
 'use strict';
 
+/* global createProcessedMediaStreamTrack */ // defined in main.js
+
 /**
  * Wrapper around createProcessedMediaStreamTrack to apply transform to a
  * MediaStream.
@@ -99,7 +101,7 @@ class MediaStreamSink {  // eslint-disable-line no-unused-vars
 /**
  * Assembles a MediaStreamSource, FrameTransform, and MediaStreamSink together.
  */
-class Pipeline {
+class Pipeline { // eslint-disable-line no-unused-vars
   constructor() {
     /** @private {?MediaStreamSource} set by updateSource*/
     this.source_ = null;

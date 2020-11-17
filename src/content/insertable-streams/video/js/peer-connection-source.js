@@ -8,6 +8,9 @@
 
 'use strict';
 
+/* global PeerConnectionPipe */ // defined in peer-connection-pipe.js
+/* global VideoMirrorHelper */ // defined in video-mirror-helper.js
+
 /**
  * Sends the original source video to one end of an RTCPeerConnection and
  * provides the remote end as the final source.
@@ -17,7 +20,7 @@
  * PeerConnectionSink.
  * @implements {MediaStreamSource} in pipeline.js
  */
-class PeerConnectionSource {
+class PeerConnectionSource { // eslint-disable-line no-unused-vars
   /**
    * @param {!MediaStreamSource} originalSource original stream source, whose
    *     output is sent over the peer connection

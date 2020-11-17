@@ -8,11 +8,13 @@
 
 'use strict';
 
+/* global VideoMirrorHelper */ // defined in video-mirror-helper.js
+
 /**
  * Opens the device's camera with getUserMedia.
  * @implements {MediaStreamSource} in pipeline.js
  */
-class CameraSource {
+class CameraSource { // eslint-disable-line no-unused-vars
   constructor() {
     /**
      * @private @const {!VideoMirrorHelper} manages displaying the video stream

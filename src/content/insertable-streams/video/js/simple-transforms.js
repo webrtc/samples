@@ -12,7 +12,7 @@
  * Drops frames at random.
  * @implements {FrameTransform} in pipeline.js
  */
-class DropTransform {
+class DropTransform { // eslint-disable-line no-unused-vars
   /** @override */
   async init() {}
   /** @override */
@@ -32,7 +32,7 @@ class DropTransform {
  * TODO(benjaminwagner): Should the timestamp be adjusted?
  * @implements {FrameTransform} in pipeline.js
  */
-class DelayTransform {
+class DelayTransform { // eslint-disable-line no-unused-vars
   /** @override */
   async init() {}
   /** @override */

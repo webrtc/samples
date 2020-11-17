@@ -12,7 +12,7 @@
  * Decodes and plays a video.
  * @implements {MediaStreamSource} in pipeline.js
  */
-class VideoSource {
+class VideoSource { // eslint-disable-line no-unused-vars
   constructor() {
     /** @private {boolean} */
     this.visibility_ = false;

@@ -17,7 +17,7 @@
  * For more detailed samples using RTCPeerConnection, take a look at
  * https://webrtc.github.io/samples/.
  */
-class PeerConnectionPipe {
+class PeerConnectionPipe { // eslint-disable-line no-unused-vars
   /**
    * @param {!MediaStream} inputStream stream to pipe over the peer connection
    * @param {string} debugPath the path to this object from the debug global var

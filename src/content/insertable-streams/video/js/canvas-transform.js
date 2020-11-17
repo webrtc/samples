@@ -12,7 +12,7 @@
  * Applies a picture-frame effect using CanvasRenderingContext2D.
  * @implements {FrameTransform} in pipeline.js
  */
-class CanvasTransform {
+class CanvasTransform { // eslint-disable-line no-unused-vars
   constructor() {
     // All fields are initialized in init()
     /** @private {?OffscreenCanvas} canvas used to create the 2D context */

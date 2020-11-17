@@ -12,7 +12,7 @@
  * Displays the output stream in a video element.
  * @implements {MediaStreamSink} in pipeline.js
  */
-class VideoSink {
+class VideoSink { // eslint-disable-line no-unused-vars
   constructor() {
     /**
      * @private {?HTMLVideoElement} output video element

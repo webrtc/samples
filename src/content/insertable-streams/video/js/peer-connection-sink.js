@@ -8,6 +8,9 @@
 
 'use strict';
 
+/* global PeerConnectionPipe */ // defined in peer-connection-pipe.js
+/* global VideoSink */ // defined in video-sink.js
+
 /**
  * Sends the transformed video to one end of an RTCPeerConnection and displays
  * the remote end in a video element. In this sample, a PeerConnectionSink
@@ -16,7 +19,7 @@
  * participant. Contrast with a PeerConnectionSource.
  * @implements {MediaStreamSink} in pipeline.js
  */
-class PeerConnectionSink {
+class PeerConnectionSink { // eslint-disable-line no-unused-vars
   constructor() {
     /**
      * @private @const {!VideoSink} manages displaying the video stream in the

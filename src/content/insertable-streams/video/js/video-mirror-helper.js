@@ -12,7 +12,7 @@
  * Helper to display a MediaStream in an HTMLVideoElement, based on the
  * visibility setting.
  */
-class VideoMirrorHelper {
+class VideoMirrorHelper { // eslint-disable-line no-unused-vars
   constructor() {
     /** @private {boolean} */
     this.visibility_ = false;

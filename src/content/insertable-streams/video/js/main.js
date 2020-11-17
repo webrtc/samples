@@ -17,6 +17,16 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
       'page.');
 }
 
+/* global CameraSource */ // defined in camera-source.js
+/* global CanvasTransform */ // defined in canvas-transform.js
+/* global PeerConnectionSink */ // defined in peer-connection-sink.js
+/* global PeerConnectionSource */ // defined in peer-connection-source.js
+/* global Pipeline */ // defined in pipeline.js
+/* global DropTransform, DelayTransform */ // defined in simple-transforms.js
+/* global VideoSink */ // defined in video-sink.js
+/* global VideoSource */ // defined in video-source.js
+/* global WebGLTransform */ // defined in webgl-transform.js
+
 /**
  * Allows inspecting objects in the console. See console log messages for
  * attributes added to this debug object.
@@ -50,6 +60,7 @@ let FrameTransformFn;  // eslint-disable-line no-unused-vars
  * @return {!MediaStreamTrack} the result of sourceTrack transformed using
  *     transform.
  */
+// eslint-disable-next-line no-unused-vars
 function createProcessedMediaStreamTrack(sourceTrack, transform) {
   // Create the MediaStreamTrackProcessor.
   /** @type {?MediaStreamTrackProcessor<!VideoFrame>} */

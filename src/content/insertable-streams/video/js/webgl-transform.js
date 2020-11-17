@@ -12,7 +12,7 @@
  * Applies a warp effect using WebGL.
  * @implements {FrameTransform} in pipeline.js
  */
-class WebGLTransform {
+class WebGLTransform { // eslint-disable-line no-unused-vars
   constructor() {
     // All fields are initialized in init()
     /** @private {?OffscreenCanvas} canvas used to create the WebGL context */
