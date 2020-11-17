@@ -8,6 +8,7 @@
 
 'use strict';
 
+/* global MediaStreamTrackProcessor, MediaStreamTrackGenerator */
 if (typeof MediaStreamTrackProcessor === 'undefined' ||
     typeof MediaStreamTrackGenerator === 'undefined') {
   alert(
@@ -33,7 +34,7 @@ let debug = {};
  *     !VideoFrame,
  *     !TransformStreamDefaultController<!VideoFrame>): undefined}
  */
-let FrameTransformFn;
+let FrameTransformFn; // eslint-disable-line no-unused-vars
 
 /**
  * Creates a pair of MediaStreamTrackProcessor and MediaStreamTrackGenerator
@@ -127,7 +128,7 @@ function createProcessedMediaStream(sourceStream, transform) {
  * and sink.
  * @interface
  */
-class MediaStreamSource {
+class MediaStreamSource { // eslint-disable-line no-unused-vars
   /**
    * Sets the path to this object from the debug global var.
    * @param {string} path
@@ -155,7 +156,7 @@ class MediaStreamSource {
  * source and sink.
  * @interface
  */
-class FrameTransform {
+class FrameTransform { // eslint-disable-line no-unused-vars
   /** Initializes state that is reused across frames. */
   async init() {}
   /**
@@ -175,7 +176,7 @@ class FrameTransform {
  * transform.
  * @interface
  */
-class MediaStreamSink {
+class MediaStreamSink { // eslint-disable-line no-unused-vars
   /**
    * @param {!MediaStream} stream
    */
@@ -235,7 +236,10 @@ class Pipeline {
     try {
       this.processedStream_ =
           createProcessedMediaStream(sourceStream, (frame, controller) => {
-            this.frameTransform_?.transform(frame, controller);
+            // this.frameTransform_?.transform(frame, controller);
+            if (this.frameTransform_) {
+              this.frameTransform_.transform(frame, controller);
+            }
           });
     } catch (e) {
       this.destroy();
@@ -341,7 +345,13 @@ sourceSelector.oninput = updatePipelineSource;
 sourceVisibleCheckbox.oninput = () => {
   console.log(`[UI] Changed source visibility: ${
       sourceVisibleCheckbox.checked ? 'added' : 'removed'}`);
-  pipeline?.getSource()?.setVisibility(sourceVisibleCheckbox.checked);
+  // pipeline?.getSource()?.setVisibility(sourceVisibleCheckbox.checked);
+  if (pipeline) {
+    const source = pipeline.getSource();
+    if (source) {
+      source.setVisibility(sourceVisibleCheckbox.checked);
+    }
+  }
 };
 
 const transformSelector = /** @type {!HTMLSelectElement} */ (
@@ -487,7 +497,7 @@ class VideoMirrorHelper {
 
 /**
  * Opens the device's camera with getUserMedia.
- * @implements MediaStreamSource
+ * @implements {MediaStreamSource}
  */
 class CameraSource {
   constructor() {
@@ -534,7 +544,7 @@ class CameraSource {
 
 /**
  * Decodes and plays a video.
- * @implements MediaStreamSource
+ * @implements {MediaStreamSource}
  */
 class VideoSource {
   constructor() {
@@ -741,7 +751,7 @@ class PeerConnectionPipe {
  * remote participant and locally processing it using a
  * MediaStreamTrackProcessor before displaying it on the screen. Contrast with a
  * PeerConnectionSink.
- * @implements MediaStreamSource
+ * @implements {MediaStreamSource}
  */
 class PeerConnectionSource {
   /**
@@ -811,7 +821,7 @@ class PeerConnectionSource {
 
 /**
  * Applies a warp effect using WebGL.
- * @implements FrameTransform
+ * @implements {FrameTransform}
  */
 class WebGLTransform {
   constructor() {
@@ -998,7 +1008,7 @@ class WebGLTransform {
 
 /**
  * Applies a picture-frame effect using CanvasRenderingContext2D.
- * @implements FrameTransform
+ * @implements {FrameTransform}
  */
 class CanvasTransform {
   constructor() {
@@ -1065,7 +1075,7 @@ class CanvasTransform {
 
 /**
  * Drops frames at random.
- * @implements FrameTransform
+ * @implements {FrameTransform}
  */
 class DropTransform {
   /** @override */
@@ -1085,7 +1095,7 @@ class DropTransform {
 /**
  * Delays all frames by 100ms.
  * TODO(benjaminwagner): Should the timestamp be adjusted?
- * @implements FrameTransform
+ * @implements {FrameTransform}
  */
 class DelayTransform {
   /** @override */
@@ -1103,7 +1113,7 @@ class DelayTransform {
 
 /**
  * Displays the output stream in a video element.
- * @implements MediaStreamSink
+ * @implements {MediaStreamSink}
  */
 class VideoSink {
   constructor() {
@@ -1153,7 +1163,7 @@ class VideoSink {
  * represents processing the local user's camera input using a
  * MediaStreamTrackProcessor before sending it to a remote video call
  * participant. Contrast with a PeerConnectionSource.
- * @implements MediaStreamSink
+ * @implements {MediaStreamSink}
  */
 class PeerConnectionSink {
   constructor() {
