@@ -298,9 +298,9 @@ class Pipeline {
 let pipeline;
 
 const sourceSelector = /** @type {!HTMLSelectElement} */ (
-    document.getElementById('sourceSelector'));
-const sourceVisibleCheckbox =
-    /** @type {!HTMLInputElement} */ (document.getElementById('sourceVisible'));
+  document.getElementById('sourceSelector'));
+const sourceVisibleCheckbox = (/** @type {!HTMLInputElement} */ (
+  document.getElementById('sourceVisible')));
 /**
  * Updates the pipeline based on the current settings of the sourceSelector and
  * sourceVisible UI elements. Unlike updatePipelineSource(), never
@@ -355,7 +355,7 @@ sourceVisibleCheckbox.oninput = () => {
 };
 
 const transformSelector = /** @type {!HTMLSelectElement} */ (
-    document.getElementById('transformSelector'));
+  document.getElementById('transformSelector'));
 /**
  * Updates the pipeline based on the current settings of the transformSelector
  * UI element.
@@ -384,8 +384,8 @@ function updatePipelineTransform() {
 }
 transformSelector.oninput = updatePipelineTransform;
 
-const sinkSelector =
-    /** @type {!HTMLSelectElement} */ (document.getElementById('sinkSelector'));
+const sinkSelector = (/** @type {!HTMLSelectElement} */ (
+  document.getElementById('sinkSelector')));
 /**
  * Updates the pipeline based on the current settings of the sinkSelector UI
  * element.
@@ -473,7 +473,7 @@ class VideoMirrorHelper {
   maybeAddVideoElement_() {
     if (!this.video_ && this.visibility_ && this.stream_) {
       this.video_ =
-          /** @type {!HTMLVideoElement} */ (document.createElement('video'));
+        /** @type {!HTMLVideoElement} */ (document.createElement('video'));
       console.log(
           '[VideoMirrorHelper] Adding source video mirror.',
           `${this.debugPath_}.video_ =`, this.video_);
@@ -598,7 +598,7 @@ class VideoSource {
     console.log('[VideoSource] Loading video');
 
     this.video_ =
-        /** @type {!HTMLVideoElement} */ (document.createElement('video'));
+      /** @type {!HTMLVideoElement} */ (document.createElement('video'));
     this.video_.classList.add('video', 'sourceVideo');
     this.video_.controls = true;
     this.video_.loop = true;
@@ -844,7 +844,7 @@ class WebGLTransform {
     console.log('[WebGLTransform] Initializing WebGL.');
     this.canvas_ = new OffscreenCanvas(1, 1);
     const gl = /** @type {?WebGLRenderingContext} */ (
-        this.canvas_.getContext('webgl'));
+      this.canvas_.getContext('webgl'));
     if (!gl) {
       alert(
           'Failed to create WebGL context. Check that WebGL is supported ' +
@@ -909,7 +909,7 @@ class WebGLTransform {
     // Initialize input texture
     this.texture_ = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.texture_);
-    const pixel = new Uint8Array([0, 0, 255, 255]);  // opaque blue
+    const pixel = new Uint8Array([0, 0, 255, 255]); // opaque blue
     gl.texImage2D(
         gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -1000,7 +1000,7 @@ class WebGLTransform {
     if (this.gl_) {
       console.log('[WebGLTransform] Forcing WebGL context to be lost.');
       /** @type {!WEBGL_lose_context} */ (
-          this.gl_.getExtension('WEBGL_lose_context'))
+        this.gl_.getExtension('WEBGL_lose_context'))
           .loseContext();
     }
   }
@@ -1028,7 +1028,7 @@ class CanvasTransform {
     console.log('[CanvasTransform] Initializing 2D context for transform');
     this.canvas_ = new OffscreenCanvas(1, 1);
     this.ctx_ = /** @type {?CanvasRenderingContext2D} */ (
-        this.canvas_.getContext('2d', {alpha: false, desynchronized: true}));
+      this.canvas_.getContext('2d', {alpha: false, desynchronized: true}));
     if (!this.ctx_) {
       throw new Error('Unable to create CanvasRenderingContext2D');
     }
@@ -1136,7 +1136,7 @@ class VideoSink {
     console.log('[VideoSink] Setting sink stream.', stream);
     if (!this.video_) {
       this.video_ =
-          /** @type {!HTMLVideoElement} */ (document.createElement('video'));
+        /** @type {!HTMLVideoElement} */ (document.createElement('video'));
       this.video_.classList.add('video', 'sinkVideo');
       document.getElementById('outputVideo').appendChild(this.video_);
       console.log(
