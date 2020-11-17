@@ -64,7 +64,7 @@ class VideoSource { // eslint-disable-line no-unused-vars
     console.log('[VideoSource] Loading video');
 
     this.video_ =
-        /** @type {!HTMLVideoElement} */ (document.createElement('video'));
+      /** @type {!HTMLVideoElement} */ (document.createElement('video'));
     this.video_.classList.add('video', 'sourceVideo');
     this.video_.controls = true;
     this.video_.loop = true;

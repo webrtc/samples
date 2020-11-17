@@ -41,7 +41,7 @@ function createProcessedMediaStream(sourceStream, transform) {
  * and sink.
  * @interface
  */
-class MediaStreamSource {  // eslint-disable-line no-unused-vars
+class MediaStreamSource { // eslint-disable-line no-unused-vars
   /**
    * Sets the path to this object from the debug global var.
    * @param {string} path
@@ -69,7 +69,7 @@ class MediaStreamSource {  // eslint-disable-line no-unused-vars
  * source and sink.
  * @interface
  */
-class FrameTransform {  // eslint-disable-line no-unused-vars
+class FrameTransform { // eslint-disable-line no-unused-vars
   /** Initializes state that is reused across frames. */
   async init() {}
   /**
@@ -89,7 +89,7 @@ class FrameTransform {  // eslint-disable-line no-unused-vars
  * transform.
  * @interface
  */
-class MediaStreamSink {  // eslint-disable-line no-unused-vars
+class MediaStreamSink { // eslint-disable-line no-unused-vars
   /**
    * @param {!MediaStream} stream
    */

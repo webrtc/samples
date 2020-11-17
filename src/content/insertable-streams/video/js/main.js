@@ -44,7 +44,7 @@ let debug = {};
  *     !VideoFrame,
  *     !TransformStreamDefaultController<!VideoFrame>): undefined}
  */
-let FrameTransformFn;  // eslint-disable-line no-unused-vars
+let FrameTransformFn; // eslint-disable-line no-unused-vars
 
 /**
  * Creates a pair of MediaStreamTrackProcessor and MediaStreamTrackGenerator
@@ -115,9 +115,9 @@ function createProcessedMediaStreamTrack(sourceTrack, transform) {
 let pipeline;
 
 const sourceSelector = /** @type {!HTMLSelectElement} */ (
-    document.getElementById('sourceSelector'));
+  document.getElementById('sourceSelector'));
 const sourceVisibleCheckbox = (/** @type {!HTMLInputElement} */ (
-    document.getElementById('sourceVisible')));
+  document.getElementById('sourceVisible')));
 /**
  * Updates the pipeline based on the current settings of the sourceSelector and
  * sourceVisible UI elements. Unlike updatePipelineSource(), never
@@ -172,7 +172,7 @@ sourceVisibleCheckbox.oninput = () => {
 };
 
 const transformSelector = /** @type {!HTMLSelectElement} */ (
-    document.getElementById('transformSelector'));
+  document.getElementById('transformSelector'));
 /**
  * Updates the pipeline based on the current settings of the transformSelector
  * UI element.
@@ -204,7 +204,7 @@ function updatePipelineTransform() {
 transformSelector.oninput = updatePipelineTransform;
 
 const sinkSelector = (/** @type {!HTMLSelectElement} */ (
-    document.getElementById('sinkSelector')));
+  document.getElementById('sinkSelector')));
 /**
  * Updates the pipeline based on the current settings of the sinkSelector UI
  * element.

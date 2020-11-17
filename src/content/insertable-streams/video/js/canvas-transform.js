@@ -30,7 +30,7 @@ class CanvasTransform { // eslint-disable-line no-unused-vars
     console.log('[CanvasTransform] Initializing 2D context for transform');
     this.canvas_ = new OffscreenCanvas(1, 1);
     this.ctx_ = /** @type {?CanvasRenderingContext2D} */ (
-        this.canvas_.getContext('2d', {alpha: false, desynchronized: true}));
+      this.canvas_.getContext('2d', {alpha: false, desynchronized: true}));
     if (!this.ctx_) {
       throw new Error('Unable to create CanvasRenderingContext2D');
     }

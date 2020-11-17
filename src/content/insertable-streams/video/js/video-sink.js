@@ -33,7 +33,7 @@ class VideoSink { // eslint-disable-line no-unused-vars
     console.log('[VideoSink] Setting sink stream.', stream);
     if (!this.video_) {
       this.video_ =
-          /** @type {!HTMLVideoElement} */ (document.createElement('video'));
+        /** @type {!HTMLVideoElement} */ (document.createElement('video'));
       this.video_.classList.add('video', 'sinkVideo');
       document.getElementById('outputVideo').appendChild(this.video_);
       console.log(

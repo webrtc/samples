@@ -59,7 +59,7 @@ class VideoMirrorHelper { // eslint-disable-line no-unused-vars
   maybeAddVideoElement_() {
     if (!this.video_ && this.visibility_ && this.stream_) {
       this.video_ =
-          /** @type {!HTMLVideoElement} */ (document.createElement('video'));
+        /** @type {!HTMLVideoElement} */ (document.createElement('video'));
       console.log(
           '[VideoMirrorHelper] Adding source video mirror.',
           `${this.debugPath_}.video_ =`, this.video_);
