@@ -42,7 +42,7 @@ let debug = {};
  * resources and maintain good performance.
  * @typedef {function(
  *     !VideoFrame,
- *     !TransformStreamDefaultController<!VideoFrame>): undefined}
+ *     !TransformStreamDefaultController<!VideoFrame>): !Promise<undefined>}
  */
 let FrameTransformFn; // eslint-disable-line no-unused-vars
 

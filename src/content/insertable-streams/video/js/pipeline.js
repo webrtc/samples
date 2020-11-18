@@ -148,9 +148,9 @@ class Pipeline { // eslint-disable-line no-unused-vars
     await this.frameTransform_.init();
     try {
       this.processedStream_ =
-          createProcessedMediaStream(sourceStream, (frame, controller) => {
+          createProcessedMediaStream(sourceStream, async (frame, controller) => {
             if (this.frameTransform_) {
-              this.frameTransform_.transform(frame, controller);
+              await this.frameTransform_.transform(frame, controller);
             }
           });
     } catch (e) {
