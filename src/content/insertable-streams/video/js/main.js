@@ -52,7 +52,7 @@ let FrameTransformFn; // eslint-disable-line no-unused-vars
  * sample, demonstrating how to use the new API.
  * @param {!MediaStreamTrack} sourceTrack the video track to be transformed. The
  *     track can be from any source, e.g. getUserMedia, RTCTrackEvent, or
- * captureStream on HTMLMediaElement or HTMLCanvasElement.
+ *     captureStream on HTMLMediaElement or HTMLCanvasElement.
  * @param {!FrameTransformFn} transform the transform to apply to sourceTrack;
  *     the transformed frames are available on the returned track. See the
  *     implementations of FrameTransform.transform later in this file for
@@ -162,7 +162,6 @@ sourceSelector.oninput = updatePipelineSource;
 sourceVisibleCheckbox.oninput = () => {
   console.log(`[UI] Changed source visibility: ${
       sourceVisibleCheckbox.checked ? 'added' : 'removed'}`);
-  // pipeline?.getSource()?.setVisibility(sourceVisibleCheckbox.checked);
   if (pipeline) {
     const source = pipeline.getSource();
     if (source) {

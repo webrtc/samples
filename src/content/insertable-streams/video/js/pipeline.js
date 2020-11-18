@@ -149,7 +149,6 @@ class Pipeline { // eslint-disable-line no-unused-vars
     try {
       this.processedStream_ =
           createProcessedMediaStream(sourceStream, (frame, controller) => {
-            // this.frameTransform_?.transform(frame, controller);
             if (this.frameTransform_) {
               this.frameTransform_.transform(frame, controller);
             }
