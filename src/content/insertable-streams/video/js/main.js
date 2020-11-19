@@ -57,11 +57,12 @@ let FrameTransformFn; // eslint-disable-line no-unused-vars
  *     the transformed frames are available on the returned track. See the
  *     implementations of FrameTransform.transform later in this file for
  *     examples.
+ * @param {!AbortSignal} signal can be used to stop processing
  * @return {!MediaStreamTrack} the result of sourceTrack transformed using
  *     transform.
  */
 // eslint-disable-next-line no-unused-vars
-function createProcessedMediaStreamTrack(sourceTrack, transform) {
+function createProcessedMediaStreamTrack(sourceTrack, transform, signal) {
   // Create the MediaStreamTrackProcessor.
   /** @type {?MediaStreamTrackProcessor<!VideoFrame>} */
   let processor;
@@ -94,7 +95,19 @@ function createProcessedMediaStreamTrack(sourceTrack, transform) {
 
   // Apply the transform to the processor's stream and send it to the
   // generator's stream.
-  source.pipeThrough(transformer).pipeTo(sink);
+  const promise = source.pipeThrough(transformer, {signal}).pipeTo(sink);
+
+  promise.catch((e) => {
+    if (signal.aborted) {
+      console.log(
+          '[createProcessedMediaStreamTrack] Shutting down streams after abort.');
+    } else {
+      console.error(
+          '[createProcessedMediaStreamTrack] Error from stream transform:', e);
+    }
+    source.cancel(e);
+    sink.abort(e);
+  });
 
   debug['processor'] = processor;
   debug['generator'] = generator;

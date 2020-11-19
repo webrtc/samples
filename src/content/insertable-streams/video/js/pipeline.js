@@ -17,16 +17,17 @@
  *     first video track will be used.
  * @param {!FrameTransformFn} transform the transform to apply to the
  *     sourceStream.
+ * @param {!AbortSignal} signal can be used to stop processing
  * @return {!MediaStream} holds a single video track of the transformed video
  *     frames
  */
-function createProcessedMediaStream(sourceStream, transform) {
+function createProcessedMediaStream(sourceStream, transform, signal) {
   // For this sample, we're only dealing with video tracks.
   /** @type {!MediaStreamTrack} */
   const sourceTrack = sourceStream.getVideoTracks()[0];
 
   const processedTrack =
-      createProcessedMediaStreamTrack(sourceTrack, transform);
+      createProcessedMediaStreamTrack(sourceTrack, transform, signal);
 
   // Create a new MediaStream to hold our processed track.
   const processedStream = new MediaStream();
@@ -109,6 +110,8 @@ class Pipeline { // eslint-disable-line no-unused-vars
     this.frameTransform_ = null;
     /** @private {?MediaStreamSink} set by updateSink */
     this.sink_ = null;
+    /** @private {!AbortController} may used to stop all processing */
+    this.abortController_ = new AbortController();
     /**
      * @private {?MediaStream} set in maybeStartPipeline_ after all of source_,
      *     frameTransform_, and sink_ are set
@@ -127,6 +130,8 @@ class Pipeline { // eslint-disable-line no-unused-vars
    */
   async updateSource(mediaStreamSource) {
     if (this.source_) {
+      this.abortController_.abort();
+      this.abortController_ = new AbortController();
       this.source_.destroy();
       this.processedStream_ = null;
     }
@@ -147,18 +152,20 @@ class Pipeline { // eslint-disable-line no-unused-vars
     const sourceStream = await this.source_.getMediaStream();
     await this.frameTransform_.init();
     try {
-      this.processedStream_ =
-          createProcessedMediaStream(sourceStream, async (frame, controller) => {
+      this.processedStream_ = createProcessedMediaStream(
+          sourceStream, async (frame, controller) => {
             if (this.frameTransform_) {
               await this.frameTransform_.transform(frame, controller);
             }
-          });
+          }, this.abortController_.signal);
     } catch (e) {
       this.destroy();
       return;
     }
     await this.sink_.setMediaStream(this.processedStream_);
-    console.log('[Pipeline] Pipeline started.');
+    console.log(
+        '[Pipeline] Pipeline started.',
+        'debug.pipeline.abortController_ =', this.abortController_);
   }
 
   /**
@@ -197,6 +204,7 @@ class Pipeline { // eslint-disable-line no-unused-vars
   /** Frees any resources used by this object. */
   destroy() {
     console.log('[Pipeline] Destroying Pipeline');
+    this.abortController_.abort();
     if (this.source_) this.source_.destroy();
     if (this.frameTransform_) this.frameTransform_.destroy();
     if (this.sink_) this.sink_.destroy();
