@@ -175,12 +175,14 @@ class WebGLTransform { // eslint-disable-line no-unused-vars
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(
         gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputBitmap);
+    inputBitmap.close();
     gl.useProgram(this.program_);
     gl.uniform1i(this.sampler_, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindTexture(gl.TEXTURE_2D, null);
     const outputBitmap = await createImageBitmap(this.canvas_);
     const outputFrame = new VideoFrame(outputBitmap, {timestamp});
+    outputBitmap.close();
     controller.enqueue(outputFrame);
   }
 
