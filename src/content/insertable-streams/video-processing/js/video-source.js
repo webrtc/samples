@@ -69,11 +69,8 @@ class VideoSource { // eslint-disable-line no-unused-vars
     this.video_.controls = true;
     this.video_.loop = true;
     this.video_.muted = true;
-    // TODO(benjaminwagner): this isn't the best way to do this
-    this.video_.innerHTML = `
-        <source src="../../../video/chrome.webm" type="video/webm"/>
-        <source src="../../../video/chrome.mp4" type="video/mp4"/>
-        <p>This browser does not support the video element.</p>`;
+    // All browsers that support insertable streams also support WebM/VP8.
+    this.video_.src = '../../../video/chrome.webm';
     this.video_.load();
     this.video_.play();
     this.updateVideoVisibility();

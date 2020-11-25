@@ -29,7 +29,6 @@ class DropTransform { // eslint-disable-line no-unused-vars
 
 /**
  * Delays all frames by 100ms.
- * TODO(benjaminwagner): Should the timestamp be adjusted?
  * @implements {FrameTransform} in pipeline.js
  */
 class DelayTransform { // eslint-disable-line no-unused-vars
@@ -37,8 +36,6 @@ class DelayTransform { // eslint-disable-line no-unused-vars
   async init() {}
   /** @override */
   async transform(frame, controller) {
-    // TODO(benjaminwagner): why is there a difference between await vs.
-    // callback?
     await new Promise(resolve => setTimeout(resolve, 100));
     controller.enqueue(frame);
   }
