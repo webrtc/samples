@@ -46,17 +46,17 @@
 
     <div class="box">
         <span>Source:</span>
-        <select id="sourceSelector">
+        <select id="sourceSelector" disabled>
             <option selected value="">(stopped)</option>
             <option value="camera">Camera</option>
             <option value="video">Video</option>
             <option value="pc">Peer connection (from camera)</option>
         </select>
-        <span>Add to page: <input type="checkbox" id="sourceVisible"></span>
+        <span>Add to page: <input type="checkbox" id="sourceVisible" disabled></span>
     </div>
     <div class="box">
         <span>Transform:</span>
-        <select id="transformSelector">
+        <select id="transformSelector" disabled>
             <option selected value="webgl">WebGL</option>
             <option value="canvas2d">Canvas2D</option>
             <option value="drop">Drop frames at random</option>
@@ -65,7 +65,7 @@
     </div>
     <div class="box">
         <span>Destination:</span>
-        <select id="sinkSelector">
+        <select id="sinkSelector" disabled>
             <option selected value="video">Video</option>
             <option value="pc">Peer connection</option>
         </select>

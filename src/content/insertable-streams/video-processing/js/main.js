@@ -165,14 +165,19 @@ function updatePipelineSourceIfSet() {
  */
 function updatePipelineSource() {
   const sourceType = sourceSelector.options[sourceSelector.selectedIndex].value;
-  if (!sourceType) {
+  if (!sourceType || !pipeline) {
     initPipeline();
   } else {
     updatePipelineSourceIfSet();
   }
 }
 sourceSelector.oninput = updatePipelineSource;
-sourceVisibleCheckbox.oninput = () => {
+sourceSelector.disabled = false;
+
+/**
+ * Updates the source visibility, if the source is already started.
+ */
+function updatePipelineSourceVisibility() {
   console.log(`[UI] Changed source visibility: ${
       sourceVisibleCheckbox.checked ? 'added' : 'removed'}`);
   if (pipeline) {
@@ -181,7 +186,9 @@ sourceVisibleCheckbox.oninput = () => {
       source.setVisibility(sourceVisibleCheckbox.checked);
     }
   }
-};
+}
+sourceVisibleCheckbox.oninput = updatePipelineSourceVisibility;
+sourceVisibleCheckbox.disabled = false;
 
 const transformSelector = /** @type {!HTMLSelectElement} */ (
   document.getElementById('transformSelector'));
@@ -214,6 +221,7 @@ function updatePipelineTransform() {
   }
 }
 transformSelector.oninput = updatePipelineTransform;
+transformSelector.disabled = false;
 
 const sinkSelector = (/** @type {!HTMLSelectElement} */ (
   document.getElementById('sinkSelector')));
@@ -237,6 +245,7 @@ function updatePipelineSink() {
   }
 }
 sinkSelector.oninput = updatePipelineSink;
+sinkSelector.disabled = false;
 
 /**
  * Initializes/reinitializes the pipeline. Called on page load and after the
@@ -252,5 +261,3 @@ function initPipeline() {
   console.log(
       '[initPipeline] Created new Pipeline.', 'debug.pipeline =', pipeline);
 }
-
-initPipeline();
