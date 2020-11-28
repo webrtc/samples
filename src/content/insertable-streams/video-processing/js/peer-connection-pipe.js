@@ -66,7 +66,6 @@ class PeerConnectionPipe { // eslint-disable-line no-unused-vars
     const outputStream = new MediaStream();
     const receiverStreamPromise = new Promise(resolve => {
       this.callee_.ontrack = (/** !RTCTrackEvent */ event) => {
-        if (!event.track) return;
         outputStream.addTrack(event.track);
         if (outputStream.getTracks().length == inputStream.getTracks().length) {
           resolve(outputStream);

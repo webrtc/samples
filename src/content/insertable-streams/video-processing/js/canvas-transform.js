@@ -60,6 +60,8 @@ class CanvasTransform { // eslint-disable-line no-unused-vars
     frame.destroy();
 
     ctx.drawImage(inputBitmap, 0, 0);
+    inputBitmap.close();
+
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 20;
     ctx.lineWidth = 50;
@@ -68,6 +70,7 @@ class CanvasTransform { // eslint-disable-line no-unused-vars
 
     const outputBitmap = await createImageBitmap(this.canvas_);
     const outputFrame = new VideoFrame(outputBitmap, {timestamp});
+    outputBitmap.close();
     controller.enqueue(outputFrame);
   }
 
