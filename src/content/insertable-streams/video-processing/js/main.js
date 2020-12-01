@@ -127,130 +127,146 @@ function createProcessedMediaStreamTrack(sourceTrack, transform, signal) {
  */
 let pipeline;
 
-const sourceSelector = /** @type {!HTMLSelectElement} */ (
-  document.getElementById('sourceSelector'));
-const sourceVisibleCheckbox = (/** @type {!HTMLInputElement} */ (
-  document.getElementById('sourceVisible')));
 /**
- * Updates the pipeline based on the current settings of the sourceSelector and
- * sourceVisible UI elements. Unlike updatePipelineSource(), never
- * re-initializes the pipeline.
+ * Sets up handlers for interacting with the UI elements on the page.
  */
-function updatePipelineSourceIfSet() {
-  const sourceType = sourceSelector.options[sourceSelector.selectedIndex].value;
-  if (!sourceType) return;
-  console.log(`[UI] Selected source: ${sourceType}`);
-  let source;
-  switch (sourceType) {
-    case 'camera':
-      source = new CameraSource();
-      break;
-    case 'video':
-      source = new VideoSource();
-      break;
-    case 'pc':
-      source = new PeerConnectionSource(new CameraSource());
-      break;
-    default:
-      alert(`unknown source ${sourceType}`);
-      return;
+function initUI() {
+  const sourceSelector = /** @type {!HTMLSelectElement} */ (
+    document.getElementById('sourceSelector'));
+  const sourceVisibleCheckbox = (/** @type {!HTMLInputElement} */ (
+    document.getElementById('sourceVisible')));
+  /**
+   * Updates the pipeline based on the current settings of the sourceSelector
+   * and sourceVisible UI elements. Unlike updatePipelineSource(), never
+   * re-initializes the pipeline.
+   */
+  function updatePipelineSourceIfSet() {
+    const sourceType =
+        sourceSelector.options[sourceSelector.selectedIndex].value;
+    if (!sourceType) return;
+    console.log(`[UI] Selected source: ${sourceType}`);
+    let source;
+    switch (sourceType) {
+      case 'camera':
+        source = new CameraSource();
+        break;
+      case 'video':
+        source = new VideoSource();
+        break;
+      case 'pc':
+        source = new PeerConnectionSource(new CameraSource());
+        break;
+      default:
+        alert(`unknown source ${sourceType}`);
+        return;
+    }
+    source.setVisibility(sourceVisibleCheckbox.checked);
+    pipeline.updateSource(source);
   }
-  source.setVisibility(sourceVisibleCheckbox.checked);
-  pipeline.updateSource(source);
-}
-/**
- * Updates the pipeline based on the current settings of the sourceSelector and
- * sourceVisible UI elements. If the "stopped" option is selected, reinitializes
- * the pipeline instead.
- */
-function updatePipelineSource() {
-  const sourceType = sourceSelector.options[sourceSelector.selectedIndex].value;
-  if (!sourceType) {
-    initPipeline();
-  } else {
-    updatePipelineSourceIfSet();
-  }
-}
-sourceSelector.oninput = updatePipelineSource;
-sourceVisibleCheckbox.oninput = () => {
-  console.log(`[UI] Changed source visibility: ${
-      sourceVisibleCheckbox.checked ? 'added' : 'removed'}`);
-  if (pipeline) {
-    const source = pipeline.getSource();
-    if (source) {
-      source.setVisibility(sourceVisibleCheckbox.checked);
+  /**
+   * Updates the pipeline based on the current settings of the sourceSelector
+   * and sourceVisible UI elements. If the "stopped" option is selected,
+   * reinitializes the pipeline instead.
+   */
+  function updatePipelineSource() {
+    const sourceType =
+        sourceSelector.options[sourceSelector.selectedIndex].value;
+    if (!sourceType || !pipeline) {
+      initPipeline();
+    } else {
+      updatePipelineSourceIfSet();
     }
   }
-};
+  sourceSelector.oninput = updatePipelineSource;
+  sourceSelector.disabled = false;
 
-const transformSelector = /** @type {!HTMLSelectElement} */ (
-  document.getElementById('transformSelector'));
-/**
- * Updates the pipeline based on the current settings of the transformSelector
- * UI element.
- */
-function updatePipelineTransform() {
-  const transformType =
-      transformSelector.options[transformSelector.selectedIndex].value;
-  console.log(`[UI] Selected transform: ${transformType}`);
-  switch (transformType) {
-    case 'webgl':
-      pipeline.updateTransform(new WebGLTransform());
-      break;
-    case 'canvas2d':
-      pipeline.updateTransform(new CanvasTransform());
-      break;
-    case 'drop':
-      // Defined in simple-transforms.js.
-      pipeline.updateTransform(new DropTransform());
-      break;
-    case 'delay':
-      // Defined in simple-transforms.js.
-      pipeline.updateTransform(new DelayTransform());
-      break;
-    default:
-      alert(`unknown transform ${transformType}`);
-      break;
+  /**
+   * Updates the source visibility, if the source is already started.
+   */
+  function updatePipelineSourceVisibility() {
+    console.log(`[UI] Changed source visibility: ${
+        sourceVisibleCheckbox.checked ? 'added' : 'removed'}`);
+    if (pipeline) {
+      const source = pipeline.getSource();
+      if (source) {
+        source.setVisibility(sourceVisibleCheckbox.checked);
+      }
+    }
+  }
+  sourceVisibleCheckbox.oninput = updatePipelineSourceVisibility;
+  sourceVisibleCheckbox.disabled = false;
+
+  const transformSelector = /** @type {!HTMLSelectElement} */ (
+    document.getElementById('transformSelector'));
+  /**
+   * Updates the pipeline based on the current settings of the transformSelector
+   * UI element.
+   */
+  function updatePipelineTransform() {
+    const transformType =
+        transformSelector.options[transformSelector.selectedIndex].value;
+    console.log(`[UI] Selected transform: ${transformType}`);
+    switch (transformType) {
+      case 'webgl':
+        pipeline.updateTransform(new WebGLTransform());
+        break;
+      case 'canvas2d':
+        pipeline.updateTransform(new CanvasTransform());
+        break;
+      case 'drop':
+        // Defined in simple-transforms.js.
+        pipeline.updateTransform(new DropTransform());
+        break;
+      case 'delay':
+        // Defined in simple-transforms.js.
+        pipeline.updateTransform(new DelayTransform());
+        break;
+      default:
+        alert(`unknown transform ${transformType}`);
+        break;
+    }
+  }
+  transformSelector.oninput = updatePipelineTransform;
+  transformSelector.disabled = false;
+
+  const sinkSelector = (/** @type {!HTMLSelectElement} */ (
+    document.getElementById('sinkSelector')));
+  /**
+   * Updates the pipeline based on the current settings of the sinkSelector UI
+   * element.
+   */
+  function updatePipelineSink() {
+    const sinkType = sinkSelector.options[sinkSelector.selectedIndex].value;
+    console.log(`[UI] Selected sink: ${sinkType}`);
+    switch (sinkType) {
+      case 'video':
+        pipeline.updateSink(new VideoSink());
+        break;
+      case 'pc':
+        pipeline.updateSink(new PeerConnectionSink());
+        break;
+      default:
+        alert(`unknown sink ${sinkType}`);
+        break;
+    }
+  }
+  sinkSelector.oninput = updatePipelineSink;
+  sinkSelector.disabled = false;
+
+  /**
+   * Initializes/reinitializes the pipeline. Called on page load and after the
+   * user chooses to stop the video source.
+   */
+  function initPipeline() {
+    if (pipeline) pipeline.destroy();
+    pipeline = new Pipeline();
+    debug = {pipeline};
+    updatePipelineSourceIfSet();
+    updatePipelineTransform();
+    updatePipelineSink();
+    console.log(
+        '[initPipeline] Created new Pipeline.', 'debug.pipeline =', pipeline);
   }
 }
-transformSelector.oninput = updatePipelineTransform;
 
-const sinkSelector = (/** @type {!HTMLSelectElement} */ (
-  document.getElementById('sinkSelector')));
-/**
- * Updates the pipeline based on the current settings of the sinkSelector UI
- * element.
- */
-function updatePipelineSink() {
-  const sinkType = sinkSelector.options[sinkSelector.selectedIndex].value;
-  console.log(`[UI] Selected sink: ${sinkType}`);
-  switch (sinkType) {
-    case 'video':
-      pipeline.updateSink(new VideoSink());
-      break;
-    case 'pc':
-      pipeline.updateSink(new PeerConnectionSink());
-      break;
-    default:
-      alert(`unknown sink ${sinkType}`);
-      break;
-  }
-}
-sinkSelector.oninput = updatePipelineSink;
-
-/**
- * Initializes/reinitializes the pipeline. Called on page load and after the
- * user chooses to stop the video source.
- */
-function initPipeline() {
-  if (pipeline) pipeline.destroy();
-  pipeline = new Pipeline();
-  debug = {pipeline};
-  updatePipelineSourceIfSet();
-  updatePipelineTransform();
-  updatePipelineSink();
-  console.log(
-      '[initPipeline] Created new Pipeline.', 'debug.pipeline =', pipeline);
-}
-
-initPipeline();
+window.onload = initUI;
