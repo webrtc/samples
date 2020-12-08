@@ -29,5 +29,6 @@ module.exports = {
     "ga": true,
     "getPolicyFromBooleans": true,
     "TransformStream": true,
+    "VideoFrame": true,
   },
 };
