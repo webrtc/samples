@@ -11,3 +11,18 @@ a [new issue](https://github.com/webrtc/samples/issues/new) where we can discuss
 
 When creating a new sample or updating an existing one, please make sure you also create, or update any existing, tests.
 All tests in this repository are implemented as Nightwatch.JS UI tests, so please follow the same design in your own.
+
+# How to start developing a patch, new feature or bug fix
+
+## Clone the repo in desired folder
+```bash
+git clone https://github.com/webrtc/samples.git
+```
+
+## Install npm dependencies
+```bash
+npm install
+```
+
+## Start web server for development
+From the root of the checkout do `cd web_server` then run `node server.js` and finally navigate your browser to `https://localhost:8080`.
