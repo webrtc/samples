@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -20,7 +20,7 @@
 
     <base target="_blank">
 
-    <title>Peer connection</title>
+    <title>Insertable Streams Video Analyzer</title>
 
     <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
@@ -33,11 +33,11 @@
 
 <div id="container">
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
-        <span>Peer connection</span></h1>
+        <span>Insertable Streams Video Analyzer</span></h1>
 
-    <p>This sample shows how to setup a connection between two peers using
-        <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection">RTCPeerConnection</a> and
-        choose the preferred video codec to use (when that functionality is available.
+    <h3><span id="banner"></span></h3>
+    <p>This sample shows how Insertable Streams can be used to analyze
+      the encoded form of a video track.
     </p>
 
     <video id="localVideo" playsinline autoplay muted></video>
@@ -47,26 +47,24 @@
         <button id="startButton">Start</button>
         <button id="callButton">Call</button>
         <button id="hangupButton">Hang Up</button>
+        <br><br>
+        <button id="size-small" disabled>Small</button>
+        <button id="size-vga" disabled>VGA</button>
+        <button id="size-hd" disabled>HD</button>
     </div>
 
-    <div class="box">
-        <span>Codec preferences:</span>
-        <select id="codecPreferences" disabled>
-            <option selected value="">Default</option>
-        </select>
-        <div id="actualCodec"></div>
+    <p>View the console to see logging.
+    </p>
+    <div class="analyzer">
+      Video size: <span id="video-size"></span><br>
+      Keyframe count: <span id="keyframe-count"></span><br>
+      Interframe count: <span id="interframe-count"></span><br>
+      Last keyframe size: <span id="keyframe-size"></span><br>
+      Last interframe size: <span id="interframe-size"></span><br>
+      Duplicate count: <span id="duplicate-count"></span><br>
     </div>
 
-    <p>View the console to see logging. The <code>MediaStream</code> object <code>localStream</code>, and the <code>RTCPeerConnection</code>
-        objects <code>pc1</code> and <code>pc2</code> are in global scope, so you can inspect them in the console as
-        well.</p>
-
-    <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/"
-                                                            title="HTML5 Rocks article about WebRTC by Sam Dutton">Getting
-        Started With WebRTC</a>.</p>
-
-
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/change-codecs"
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/insertable-streams/video-analyzer"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
 </div>

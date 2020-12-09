@@ -108,8 +108,6 @@ async function call() {
   pc2 = new RTCPeerConnection(configuration);
   console.log('Created remote peer connection object pc2');
   pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
-  pc1.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc1, e));
-  pc2.addEventListener('iceconnectionstatechange', e => onIceStateChange(pc2, e));
   pc2.addEventListener('track', gotRemoteStream);
 
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
@@ -206,6 +204,20 @@ async function onCreateAnswerSuccess(desc) {
   try {
     await pc1.setRemoteDescription(desc);
     onSetRemoteSuccess(pc1);
+
+    // Display the video codec that is actually used.
+    setTimeout(async () => {
+      const stats = await pc1.getStats();
+      stats.forEach(stat => {
+        if (!(stat.type === 'outbound-rtp' && stat.kind === 'video')) {
+          return;
+        }
+        const codec = stats.get(stat.codecId);
+        document.getElementById('actualCodec').innerText = 'Using ' + codec.mimeType +
+            ' ' + (codec.sdpFmtpLine ? codec.sdpFmtpLine + ' ' : '') +
+            ', payloadType=' + codec.payloadType + '.';
+      });
+    }, 1000);
   } catch (e) {
     onSetSessionDescriptionError(e);
   }
@@ -227,13 +239,6 @@ function onAddIceCandidateSuccess(pc) {
 
 function onAddIceCandidateError(pc, error) {
   console.log(`${getName(pc)} failed to add ICE Candidate: ${error.toString()}`);
-}
-
-function onIceStateChange(pc, event) {
-  if (pc) {
-    console.log(`${getName(pc)} ICE state: ${pc.iceConnectionState}`);
-    console.log('ICE state change event: ', event);
-  }
 }
 
 function hangup() {
