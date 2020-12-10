@@ -89,7 +89,7 @@ function getMedia() {
   navigator.mediaDevices.getUserMedia(getUserMediaConstraints())
       .then(gotStream)
       .catch(e => {
-        const message = `getUserMedia error: ${e.name}\nPermissionDeniedError may mean invalid constraints.`;
+        const message = `getUserMedia error: ${e.name}\nThis may mean invalid constraints.`;
         alert(message);
         console.log(message);
         getMediaButton.disabled = false;
