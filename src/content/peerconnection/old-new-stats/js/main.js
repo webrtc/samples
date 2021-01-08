@@ -136,10 +136,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     remotePeerConnection = new RTCPeerConnection(null);
     localStream.getTracks().forEach(track => localPeerConnection.addTrack(track, localStream));
     console.log('localPeerConnection creating offer');
-    localPeerConnection.onnegotiationeeded = () => {
+    localPeerConnection.onnegotiationneeded = () => {
       console.log('Negotiation needed - localPeerConnection');
     };
-    remotePeerConnection.onnegotiationeeded = () => {
+    remotePeerConnection.onnegotiationneeded = () => {
       console.log('Negotiation needed - remotePeerConnection');
     };
 
