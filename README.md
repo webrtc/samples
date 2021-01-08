@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/webrtc/samples.svg?branch=gh-pages)](https://travis-ci.org/webrtc/samples/)
 
-# WebRTC code samples
+# WebRTC Code Samples
 
 This is a repository for the WebRTC JavaScript code samples. All of the samples can be tested from [webrtc.github.io/samples](https://webrtc.github.io/samples).
 
@@ -11,6 +11,22 @@ We welcome contributions and bugfixes. Please see [CONTRIBUTING.md](https://gith
 Some of the samples have an associated test. These are currently using [Nightwatch.JS](https://nightwatchjs.org) and
 are only testing the UI of the samples. The purpose of these is to provide examples of how you can write UI tests for
 your WebRTC web application.
+
+# How to start developing a patch, new feature or bug fix
+## Clone the repo in desired folder
+```bash
+git clone https://github.com/webrtc/samples.git
+```
+
+## Install npm dependencies
+```bash
+npm install
+```
+
+## Start web server for development
+```bash
+npm start
+```
 
 ## Bugs
 

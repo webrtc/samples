@@ -66,7 +66,7 @@
         <p>Most of the samples use <a href="https://github.com/webrtc/adapter">adapter.js</a>, a shim to insulate apps
             from spec changes and prefix differences.</p>
 
-        <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">https://webrtc.org/testing</a>
+        <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">https://webrtc.org/getting-started/testing</a>
             lists command line flags useful for development and testing with Chrome.</p>
 
         <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a>
@@ -98,6 +98,8 @@
             <li><a href="src/content/getusermedia/record/">Record stream</a></li>
 
             <li><a href="src/content/getusermedia/getdisplaymedia/">Screensharing with getDisplayMedia</a></li>
+
+            <li><a href="src/content/getusermedia/pan-tilt-zoom/">Control camera pan, tilt, and zoom</a></li>
         </ul>
         <h2 id="devices">Devices:</h2>
         <p class="description">Query media devices</p>
@@ -129,6 +131,8 @@
         <p class="description">Controlling peer connectivity</p>
         <ul>
             <li><a href="src/content/peerconnection/pc1/">Basic peer connection demo</a></li>
+
+            <li><a href="src/content/peerconnection/perfect-negotiation/">Peer connection using Perfect Negotiation</a></li>
 
             <li><a href="src/content/peerconnection/audio/">Audio-only peer connection demo</a></li>
 
@@ -166,8 +170,6 @@
             </li>
 
             <li><a href="src/content/peerconnection/webaudio-output/">Peer connection as input to Web Audio</a></li>
-            <li><a href="src/content/peerconnection/endtoend-encryption">End to end encryption using Insertable Streams</a></li> (Experimental)
-            <li><a href="src/content/peerconnection/video-analyzer">Video analyzer using Insertable Streams</a></li> (Experimental)
         </ul>
         <h2 id="datachannel"><a
                 href="https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel">RTCDataChannel:</a></h2>
@@ -191,6 +193,15 @@
             <li><a href="https://apprtc.appspot.com/params.html">AppRTC URL parameters</a></li>
 
         </ul>
+
+        <h2 id="capture">Insertable Streams:</h2>
+        <p class="description">API for processing media</p>
+        <ul>
+            <li><a href="src/content/insertable-streams/endtoend-encryption">End to end encryption using WebRTC Insertable Streams</a></li> (Experimental)
+            <li><a href="src/content/insertable-streams/video-analyzer">Video analyzer using WebRTC Insertable Streams</a></li> (Experimental)
+            <li><a href="src/content/insertable-streams/video-processing">Video processing using MediaStream Insertable Streams</a></li> (Experimental)            
+        </ul>
+
     </section>
 
 </div>

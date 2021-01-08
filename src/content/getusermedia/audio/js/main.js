@@ -29,7 +29,7 @@ function handleSuccess(stream) {
 
 function handleError(error) {
   const errorMessage = 'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' + error.name;
-  errorMsgElement.innerHTML = errorMessage;
+  document.getElementById('errorMsg').innerText = errorMessage;
   console.log(errorMessage);
 }
 
