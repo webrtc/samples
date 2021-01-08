@@ -12,6 +12,22 @@ Some of the samples have an associated test. These are currently using [Nightwat
 are only testing the UI of the samples. The purpose of these is to provide examples of how you can write UI tests for
 your WebRTC web application.
 
+# How to start developing a patch, new feature or bug fix
+## Clone the repo in desired folder
+```bash
+git clone https://github.com/webrtc/samples.git
+```
+
+## Install npm dependencies
+```bash
+npm install
+```
+
+## Start web server for development
+```bash
+npm start
+```
+
 ## Bugs
 
 If you encounter a bug or problem with one of the samples, please submit a
