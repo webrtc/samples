@@ -22,7 +22,7 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
 /* global PeerConnectionSink */ // defined in peer-connection-sink.js
 /* global PeerConnectionSource */ // defined in peer-connection-source.js
 /* global Pipeline */ // defined in pipeline.js
-/* global DropTransform, DelayTransform */ // defined in simple-transforms.js
+/* global NullTransform, DropTransform, DelayTransform */ // defined in simple-transforms.js
 /* global VideoSink */ // defined in video-sink.js
 /* global VideoSource */ // defined in video-source.js
 /* global WebGLTransform */ // defined in webgl-transform.js
@@ -203,6 +203,9 @@ function initUI() {
    * UI element.
    */
   function updatePipelineTransform() {
+    if (!pipeline) {
+      return;
+    }
     const transformType =
         transformSelector.options[transformSelector.selectedIndex].value;
     console.log(`[UI] Selected transform: ${transformType}`);
@@ -217,9 +220,17 @@ function initUI() {
         // Defined in simple-transforms.js.
         pipeline.updateTransform(new DropTransform());
         break;
+      case 'noop':
+        // Defined in simple-transforms.js.
+        pipeline.updateTransform(new NullTransform());
+        break;
       case 'delay':
         // Defined in simple-transforms.js.
         pipeline.updateTransform(new DelayTransform());
+        break;
+      case 'webcodec':
+        // Defined in webcodec-transform.js
+        pipeline.updateTransform(new WebCodecTransform());
         break;
       default:
         alert(`unknown transform ${transformType}`);
