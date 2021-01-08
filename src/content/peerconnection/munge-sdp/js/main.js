@@ -189,7 +189,13 @@ async function init() {
   }
 
   async function setOffer() {
-    const sdp = offerSdpTextarea.value;
+    // Restore the SDP from the textarea. Ensure we use CRLF which is what is generated
+    // even though https://tools.ietf.org/html/rfc4566#section-5 requires
+    // parsers to handle both LF and CRLF.
+    const sdp = offerSdpTextarea.value
+        .split('\n')
+        .map(l => l.trim())
+        .join('\r\n');
     const offer = {
       type: 'offer',
       sdp: sdp
@@ -231,7 +237,13 @@ async function init() {
   }
 
   async function setAnswer() {
-    const sdp = answerSdpTextarea.value;
+    // Restore the SDP from the textarea. Ensure we use CRLF which is what is generated
+    // even though https://tools.ietf.org/html/rfc4566#section-5 requires
+    // parsers to handle both LF and CRLF.
+    const sdp = answerSdpTextarea.value
+        .split('\n')
+        .map(l => l.trim())
+        .join('\r\n');
     const answer = {
       type: 'answer',
       sdp: sdp

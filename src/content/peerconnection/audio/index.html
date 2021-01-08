@@ -57,6 +57,10 @@
             <option value="ISAC">iSAC 16K</option>
             <option value="G722">G722</option>
             <option value="PCMU">PCMU</option>
+            <option value="red">RED</option>
+        </select>
+        <select id="codecPreferences" disabled>
+            <option selected value="">Default</option>
         </select>
         <button id="callButton">Call</button>
         <button id="hangupButton">Hang Up</button>
@@ -68,6 +72,10 @@
     <div class="graph-container" id="packetGraph">
         <div>Packets sent per second</div>
         <canvas id="packetCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="audioLevelGraph">
+        <div>average audio level ([0..1])</div>
+        <canvas id="audioLevelCanvas"></canvas>
     </div>
 
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/audio"

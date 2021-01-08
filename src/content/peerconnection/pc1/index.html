@@ -37,8 +37,6 @@
 
     <p>This sample shows how to setup a connection between two peers using
         <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection">RTCPeerConnection</a>.
-        An option to specify the <a href="https://webrtc.org/web-apis/chrome/unified-plan/">SDP semantics</a> for
-        the connection is also available (unified-plan, plan-b or default).
     </p>
 
     <video id="localVideo" playsinline autoplay muted></video>
@@ -48,15 +46,6 @@
         <button id="startButton">Start</button>
         <button id="callButton">Call</button>
         <button id="hangupButton">Hang Up</button>
-    </div>
-
-    <div class="box">
-        <span>SDP Semantics:</span>
-        <select id="sdpSemantics">
-            <option selected value="">Default</option>
-            <option value="unified-plan">Unified Plan</option>
-            <option value="plan-b">Plan B</option>
-        </select>
     </div>
 
     <p>View the console to see logging. The <code>MediaStream</code> object <code>localStream</code>, and the <code>RTCPeerConnection</code>

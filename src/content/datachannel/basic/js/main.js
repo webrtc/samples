@@ -120,8 +120,8 @@ function onIceCandidate(pc, event) {
   getOtherPc(pc)
       .addIceCandidate(event.candidate)
       .then(
-          () => onAddIceCandidateSuccess(pc),
-          err => onAddIceCandidateError(pc, err)
+          onAddIceCandidateSuccess,
+          onAddIceCandidateError
       );
   console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }

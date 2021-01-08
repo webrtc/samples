@@ -24,7 +24,9 @@ hangUpButton.disabled = true;
 
 let pc1 = null;
 let pc2 = null;
-let localstream;
+let localStream;
+const remoteStream = new MediaStream();
+
 const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
@@ -33,7 +35,7 @@ const offerOptions = {
 function gotStream(stream) {
   console.log('Received local stream');
   vid1.srcObject = stream;
-  localstream = stream;
+  localStream = stream;
   callButton.disabled = false;
 }
 
@@ -50,8 +52,8 @@ function start() {
   acceptButton.disabled = false;
   hangUpButton.disabled = false;
   console.log('Starting Call');
-  const videoTracks = localstream.getVideoTracks();
-  const audioTracks = localstream.getAudioTracks();
+  const videoTracks = localStream.getVideoTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (videoTracks.length > 0) {
     console.log(`Using Video device: ${videoTracks[0].label}`);
   }
@@ -68,7 +70,7 @@ function start() {
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
 
-  localstream.getTracks().forEach(track => pc1.addTrack(track, localstream));
+  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer(offerOptions).then(gotDescription1, onCreateSessionDescriptionError);
@@ -142,10 +144,8 @@ function stop() {
 }
 
 function gotRemoteStream(e) {
-  if (vid2.srcObject !== e.streams[0]) {
-    vid2.srcObject = e.streams[0];
-    console.log('Received remote stream');
-  }
+  vid2.srcObject = remoteStream;
+  remoteStream.addTrack(e.track, remoteStream);
 }
 
 function getOtherPc(pc) {

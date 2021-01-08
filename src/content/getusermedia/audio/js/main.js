@@ -28,8 +28,9 @@ function handleSuccess(stream) {
 }
 
 function handleError(error) {
-  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+  const errorMessage = 'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' + error.name;
+  document.getElementById('errorMsg').innerText = errorMessage;
+  console.log(errorMessage);
 }
 
 navigator.mediaDevices.getUserMedia(constraints).then(handleSuccess).catch(handleError);
-

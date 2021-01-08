@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Insertable Streams Video Analyzer</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+
+<body>
+
+<div id="container">
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+        <span>Insertable Streams Video Analyzer</span></h1>
+
+    <h3><span id="banner"></span></h3>
+    <p>This sample shows how Insertable Streams can be used to analyze
+      the encoded form of a video track.
+    </p>
+
+    <video id="localVideo" playsinline autoplay muted></video>
+    <video id="remoteVideo" playsinline autoplay></video>
+
+    <div class="box">
+        <button id="startButton">Start</button>
+        <button id="callButton">Call</button>
+        <button id="hangupButton">Hang Up</button>
+        <br><br>
+        <button id="size-small" disabled>Small</button>
+        <button id="size-vga" disabled>VGA</button>
+        <button id="size-hd" disabled>HD</button>
+    </div>
+
+    <p>View the console to see logging.
+    </p>
+    <div class="analyzer">
+      Video size: <span id="video-size"></span><br>
+      Keyframe count: <span id="keyframe-count"></span><br>
+      Interframe count: <span id="interframe-count"></span><br>
+      Last keyframe size: <span id="keyframe-size"></span><br>
+      Last interframe size: <span id="interframe-size"></span><br>
+      Duplicate count: <span id="duplicate-count"></span><br>
+    </div>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/insertable-streams/video-analyzer"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/main.js" async></script>
+
+<script src="../../../js/lib/ga.js"></script>
+</body>
+</html>

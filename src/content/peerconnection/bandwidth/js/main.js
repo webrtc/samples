@@ -24,10 +24,12 @@ let localStream;
 
 // Can be set in the console before making a call to test this keeps
 // within the envelope set by the SDP. In kbps.
-const maxBandwidth = 0;
+// eslint-disable-next-line prefer-const
+let maxBandwidth = 0;
 
 let bitrateGraph;
 let bitrateSeries;
+let headerrateSeries;
 
 let packetGraph;
 let packetSeries;
@@ -57,6 +59,9 @@ function gotStream(stream) {
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
   bitrateGraph.updateEndDate();
+
+  headerrateSeries = new TimelineDataSeries();
+  headerrateSeries.setColor('green');
 
   packetSeries = new TimelineDataSeries();
   packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
@@ -174,6 +179,7 @@ bandwidthSelector.onchange = () => {
   // (local) renegotiation. Note that this will be within the envelope of
   // the initial maximum bandwidth negotiated via SDP.
   if ((adapter.browserDetails.browser === 'chrome' ||
+       adapter.browserDetails.browser === 'safari' ||
        (adapter.browserDetails.browser === 'firefox' &&
         adapter.browserDetails.version >= 64)) &&
       'RTCRtpSender' in window &&
@@ -247,6 +253,7 @@ window.setInterval(() => {
   sender.getStats().then(res => {
     res.forEach(report => {
       let bytes;
+      let headerBytes;
       let packets;
       if (report.type === 'outbound-rtp') {
         if (report.isRemote) {
@@ -254,15 +261,20 @@ window.setInterval(() => {
         }
         const now = report.timestamp;
         bytes = report.bytesSent;
+        headerBytes = report.headerBytesSent;
+
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {
           // calculate bitrate
           const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
             (now - lastResult.get(report.id).timestamp);
+          const headerrate = 8 * (headerBytes - lastResult.get(report.id).headerBytesSent) /
+            (now - lastResult.get(report.id).timestamp);
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
-          bitrateGraph.setDataSeries([bitrateSeries]);
+          headerrateSeries.addPoint(now, headerrate);
+          bitrateGraph.setDataSeries([bitrateSeries, headerrateSeries]);
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
