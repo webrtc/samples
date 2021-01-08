@@ -89,7 +89,7 @@ function getMedia() {
   navigator.mediaDevices.getUserMedia(getUserMediaConstraints())
       .then(gotStream)
       .catch(e => {
-        const message = `getUserMedia error: ${e.name}\nPermissionDeniedError may mean invalid constraints.`;
+        const message = `getUserMedia error: ${e.name}\nThis may mean invalid constraints.`;
         alert(message);
         console.log(message);
         getMediaButton.disabled = false;
@@ -151,8 +151,8 @@ function createPeerConnection() {
   remotePeerConnection = new RTCPeerConnection(null);
   localStream.getTracks().forEach(track => localPeerConnection.addTrack(track, localStream));
   console.log('localPeerConnection creating offer');
-  localPeerConnection.onnegotiationeeded = () => console.log('Negotiation needed - localPeerConnection');
-  remotePeerConnection.onnegotiationeeded = () => console.log('Negotiation needed - remotePeerConnection');
+  localPeerConnection.onnegotiationneeded = () => console.log('Negotiation needed - localPeerConnection');
+  remotePeerConnection.onnegotiationneeded = () => console.log('Negotiation needed - remotePeerConnection');
   localPeerConnection.onicecandidate = e => {
     console.log('Candidate localPeerConnection');
     remotePeerConnection

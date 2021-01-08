@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC Javascript code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Perfect Negotiation</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+
+<body>
+
+<div id="container">
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+        <span>Perfect Negotiation</span></h1>
+
+    <p>This sample shows how to setup a connection between two peers using
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection">RTCPeerConnection</a>
+        with the <a href="https://w3c.github.io/webrtc-pc/#perfect-negotiation-example">Perfect Negotiation</a>
+        usage pattern.</p>
+
+    <p>Perfect Negotiation supports both endpoints sending offers. The pattern intelligently handles the
+        situation of "glare" (both peers making an offer at the same time, causing a collision) by having
+        one peer be "polite" and the other peer be "impolite". In the event of an offer collision, the
+        polite peer rolls back its offer in order to process the impolite peer's incoming offer. Once
+        back to the stable signaling state, the polite peer's <code>onnegotiationneeded</code> fires again and a
+        follow-up O/A is completed.</p>
+
+    <p>Click both peers' Start button to create local streams.
+        Then press the Swap Sending Track button to modify which transceiver is sending;
+        this will be negotiated and displayed as a remote track on the other peer's iframe.</p>
+
+    <div id="iframes">
+        <iframe id="polite"></iframe>
+        <iframe id="impolite"></iframe>
+    </div>
+
+    <div id="buttons">
+        <button onclick="swapOnBoth(true)">Swap on both (glare): Polite to offer first</button>
+        <button onclick="swapOnBoth(false)">Swap on both (glare): Impolite to offer first</button>
+    </div>
+
+    <p>The JavaScript console shows logs for the negotiation steps.</p>
+
+    <p>For more information about RTCPeerConnection, see <a href="http://www.html5rocks.com/en/tutorials/webrtc/basics/"
+                                                            title="HTML5 Rocks article about WebRTC by Sam Dutton">Getting
+        Started With WebRTC</a>.</p>
+
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/perfect-negotiation"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/main.js" type="module" async></script>
+
+<script src="../../../js/lib/ga.js"></script>
+</body>
+</html>

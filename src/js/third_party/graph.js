@@ -160,7 +160,7 @@ const TimelineGraphView = (function() {
   let TEXT_COLOR = '#000';
   let BACKGROUND_COLOR = '#FFF';
 
-  let MAX_DECIMAL_PRECISION = 2;
+  let MAX_DECIMAL_PRECISION = 3;
 
   /**
    * @constructor
