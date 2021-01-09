@@ -26,6 +26,7 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
 /* global VideoSink */ // defined in video-sink.js
 /* global VideoSource */ // defined in video-source.js
 /* global WebGLTransform */ // defined in webgl-transform.js
+/* global WebCodecTransform */ // defined in webcodec-transform.js
 
 /**
  * Allows inspecting objects in the console. See console log messages for

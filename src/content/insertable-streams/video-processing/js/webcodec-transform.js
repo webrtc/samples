@@ -12,6 +12,9 @@
  * Encodes and decodes frames using the WebCodec API.
  * @implements {FrameTransform} in pipeline.js
  */
+
+/* global VideoEncoder, VideoDecoder */ // part of WebCodec specification
+
 class WebCodecTransform { // eslint-disable-line no-unused-vars
   constructor() {
     // All fields are initialized in init()
@@ -20,16 +23,15 @@ class WebCodecTransform { // eslint-disable-line no-unused-vars
   /** @override */
   async init() {
     console.log('[WebCodecTransform] Initializing encoder and decoder');
-    this.decoder_ = new VideoDecoder({ output: this.enqueueDecoded.bind(this), error: this.error });
-    this.encoder_ = new VideoEncoder({ output: this.decodeEncoded.bind(this), error: this.error });
-    this.encoder_.configure({codec: 'vp8', width: 640, height:480});
-    this.decoder_.configure({codec: 'vp8', width: 640, height:480});
+    this.decoder_ = new VideoDecoder({output: this.enqueueDecoded.bind(this), error: this.error});
+    this.encoder_ = new VideoEncoder({output: this.decodeEncoded.bind(this), error: this.error});
+    this.encoder_.configure({codec: 'vp8', width: 640, height: 480});
+    this.decoder_.configure({codec: 'vp8', width: 640, height: 480});
     this.controller_ = null;
   }
 
   /** @override */
   async transform(frame, controller) {
-    const ctx = this.ctx_;
     if (!this.encoder_) {
       frame.destroy();
       return;
