@@ -17,17 +17,24 @@
 
 class WebCodecTransform { // eslint-disable-line no-unused-vars
   constructor() {
-    // All fields are initialized in init()
-    this.debugPath_ = 'debug.pipeline.frameTransform_';
+    // Encoder and decoder are initialized in init()
+    this.decoder_ = null;
+    this.encoder_ = null;
+    this.controller_ = null;
   }
   /** @override */
   async init() {
     console.log('[WebCodecTransform] Initializing encoder and decoder');
-    this.decoder_ = new VideoDecoder({output: this.enqueueDecoded.bind(this), error: this.error});
-    this.encoder_ = new VideoEncoder({output: this.decodeEncoded.bind(this), error: this.error});
+    this.decoder_ = new VideoDecoder({
+      output: frame => this.handleDecodedFrame(frame),
+      error: this.error
+    });
+    this.encoder_ = new VideoEncoder({
+      output: frame => this.handleEncodedFrame(frame),
+      error: this.error
+    });
     this.encoder_.configure({codec: 'vp8', width: 640, height: 480});
     this.decoder_.configure({codec: 'vp8', width: 640, height: 480});
-    this.controller_ = null;
   }
 
   /** @override */
@@ -44,16 +51,16 @@ class WebCodecTransform { // eslint-disable-line no-unused-vars
   destroy() {}
 
   /* Helper functions */
-  enqueueDecoded(videoFrame) {
+  handleEncodedFrame(encodedFrame) {
+    this.decoder_.decode(encodedFrame);
+  }
+
+  handleDecodedFrame(videoFrame) {
     if (!this.controller_) {
       videoFrame.destroy();
       return;
     }
     this.controller_.enqueue(videoFrame);
-  }
-
-  decodeEncoded(encodedFrame) {
-    this.decoder_.decode(encodedFrame);
   }
 
   error(e) {
