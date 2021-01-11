@@ -12,9 +12,6 @@
  * Encodes and decodes frames using the WebCodec API.
  * @implements {FrameTransform} in pipeline.js
  */
-
-/* global VideoEncoder, VideoDecoder */ // part of WebCodec specification
-
 class WebCodecTransform { // eslint-disable-line no-unused-vars
   constructor() {
     // Encoder and decoder are initialized in init()
