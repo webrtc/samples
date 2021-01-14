@@ -20,7 +20,7 @@
   },
   "scripts": {
     "test": "gulp",
-    "start": "http-server . -c -1"
+    "start": "http-server . -c-1"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
