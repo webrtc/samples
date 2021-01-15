@@ -29,13 +29,19 @@ let processingSeries;
 let timeGraph;
 let timeSeries;
 
+let networkDelayGraph;
+let networkDelaySeries;
+
 let maxProcessingDuration = -1;
 let maxRenderTime = -1;
+let maxNetworkDelay = -1;
 const windowSize = 30;
 function rVFC(now, metaData) {
   // For graph purposes, take the maximum over a window.
-  maxProcessingDuration = Math.max(metaData.processingDuration, maxProcessingDuration);
+  maxProcessingDuration = Math.max(1000 * metaData.processingDuration, maxProcessingDuration);
   maxRenderTime = Math.max(metaData.expectedDisplayTime - metaData.receiveTime, maxRenderTime);
+  // Note: captureTime is currently only present when there are bidirectional streams.
+  maxNetworkDelay = Math.max(metaData.receiveTime - metaData.captureTime, maxNetworkDelay);
   if (metaData.presentedFrames % windowSize !== 0) {
     remoteVideo.requestVideoFrameCallback(rVFC);
     return;
@@ -49,8 +55,13 @@ function rVFC(now, metaData) {
   timeGraph.setDataSeries([timeSeries]);
   timeGraph.updateEndDate();
 
+  networkDelaySeries.addPoint(Date.now(), maxNetworkDelay);
+  networkDelayGraph.setDataSeries([networkDelaySeries]);
+  networkDelayGraph.updateEndDate();
+
   maxProcessingDuration = -1;
   maxRenderTime = -1;
+  maxNetworkDelay = -1;
 
   remoteVideo.requestVideoFrameCallback(rVFC);
 }
@@ -67,6 +78,8 @@ function gotStream(stream) {
   localStream = stream;
   localVideo.srcObject = stream;
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
+  // Currently the captureTime on the remote end requires bidirectional video.
+  localStream.getTracks().forEach(track => pc2.addTrack(track, localStream));
   console.log('Adding Local Stream to peer connection');
 
   pc1.createOffer().then(
@@ -81,6 +94,10 @@ function gotStream(stream) {
   timeSeries = new TimelineDataSeries();
   timeGraph = new TimelineGraphView('timeGraph', 'timeCanvas');
   timeGraph.updateEndDate();
+
+  networkDelaySeries = new TimelineDataSeries();
+  networkDelayGraph = new TimelineGraphView('networkDelayGraph', 'networkDelayCanvas');
+  networkDelayGraph.updateEndDate();
 }
 
 function onCreateSessionDescriptionError(error) {

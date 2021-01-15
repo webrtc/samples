@@ -48,13 +48,18 @@
         <button id="callButton">Call</button>
         <button id="hangupButton">Hang Up</button>
     </div>
-    <div class="graph-container" id="processingGraph">
-        <div>Processing time (milliseconds)</div>
-        <canvas id="processingCanvas"></canvas>
+    <div class="graph-container" id="networkDelayGraph">
+        <div>Network delay (milliseconds)</div>
+        <canvas id="networkDelayCanvas"></canvas>
     </div>
     <div class="graph-container" id="timeGraph">
         <div>Render delay (milliseconds): presentation time minus receive time</div>
         <canvas id="timeCanvas"></canvas>
+    </div>
+    <br/>
+    <div class="graph-container" id="processingGraph">
+        <div>Processing time (converted to milliseconds)</div>
+        <canvas id="processingCanvas"></canvas>
     </div>
     <p>For more information about requestVideoFrameCallback, see <a href="https://web.dev/requestvideoframecallback-rvfc/"
                                                             title="Perform efficient per-video-frame operations on video with requestVideoFrameCallback()">Perform efficient per-video-frame operations on video with requestVideoFrameCallback()</a>.</p>
