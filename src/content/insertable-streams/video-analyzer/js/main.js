@@ -34,12 +34,10 @@ hdButton.addEventListener('click', () => {
 const banner = document.querySelector('#banner');
 
 
-const supportsInsertableStreamsLegacy =
-      !!RTCRtpSender.prototype.createEncodedVideoStreams;
 const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedStreams;
 
-if (!(supportsInsertableStreams || supportsInsertableStreamsLegacy)) {
+if (!supportsInsertableStreams) {
   banner.innerText = 'Your browser does not support Insertable Streams. ' +
   'This sample will not work.';
   startButton.disabled = true;
@@ -108,7 +106,6 @@ async function call() {
   pc1.addEventListener('icecandidate', e => onIceCandidate(pc1, e));
   pc2 = new RTCPeerConnection({
     encodedInsertableStreams: true,
-    forceEncodedVideoInsertableStreams: true,
   });
   console.log('Created remote peer connection object pc2');
   pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
@@ -173,7 +170,7 @@ function onSetSessionDescriptionError(error) {
 
 function gotRemoteTrack(e) {
   console.log('pc2 received remote stream');
-  const frameStreams = supportsInsertableStreams ? e.receiver.createEncodedStreams() : e.receiver.createEncodedVideoStreams();
+  const frameStreams = e.receiver.createEncodedStreams();
   (frameStreams.readable || frameStreams.readableStream).pipeThrough(new TransformStream({
     transform: videoAnalyzer
   }))

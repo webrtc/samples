@@ -17,15 +17,21 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
       'page.');
 }
 
+// In Chrome 88, VideoFrame.close() was called VideoFrame.destroy()
+if (VideoFrame.prototype.close === undefined) {
+  VideoFrame.prototype.close = VideoFrame.prototype.destroy;
+}
+
 /* global CameraSource */ // defined in camera-source.js
 /* global CanvasTransform */ // defined in canvas-transform.js
 /* global PeerConnectionSink */ // defined in peer-connection-sink.js
 /* global PeerConnectionSource */ // defined in peer-connection-source.js
 /* global Pipeline */ // defined in pipeline.js
-/* global DropTransform, DelayTransform */ // defined in simple-transforms.js
+/* global NullTransform, DropTransform, DelayTransform */ // defined in simple-transforms.js
 /* global VideoSink */ // defined in video-sink.js
 /* global VideoSource */ // defined in video-source.js
 /* global WebGLTransform */ // defined in webgl-transform.js
+/* global WebCodecTransform */ // defined in webcodec-transform.js
 
 /**
  * Allows inspecting objects in the console. See console log messages for
@@ -38,7 +44,7 @@ let debug = {};
  * FrameTransformFn applies a transform to a frame and queues the output frame
  * (if any) using the controller. The first argument is the input frame and the
  * second argument is the stream controller.
- * The VideoFrame should be destroyed as soon as it is no longer needed to free
+ * The VideoFrame should be closed as soon as it is no longer needed to free
  * resources and maintain good performance.
  * @typedef {function(
  *     !VideoFrame,
@@ -203,6 +209,9 @@ function initUI() {
    * UI element.
    */
   function updatePipelineTransform() {
+    if (!pipeline) {
+      return;
+    }
     const transformType =
         transformSelector.options[transformSelector.selectedIndex].value;
     console.log(`[UI] Selected transform: ${transformType}`);
@@ -217,9 +226,17 @@ function initUI() {
         // Defined in simple-transforms.js.
         pipeline.updateTransform(new DropTransform());
         break;
+      case 'noop':
+        // Defined in simple-transforms.js.
+        pipeline.updateTransform(new NullTransform());
+        break;
       case 'delay':
         // Defined in simple-transforms.js.
         pipeline.updateTransform(new DelayTransform());
+        break;
+      case 'webcodec':
+        // Defined in webcodec-transform.js
+        pipeline.updateTransform(new WebCodecTransform());
         break;
       default:
         alert(`unknown transform ${transformType}`);
