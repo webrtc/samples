@@ -43,7 +43,7 @@
     "lodash": "^4.17.15",
     "lodash.template": "^4.5.0",
     "minimatch": "^3.0.4",
-    "nightwatch": "^1.2.2",
+    "nightwatch": "^1.5.1",
     "selenium-server": "^3.141.59",
     "stylelint": "^10.1.0",
     "stylelint-config-recommended": "^2.2.0"
