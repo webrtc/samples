@@ -28,7 +28,11 @@ module.exports = {
     "chrome": true,
     "ga": true,
     "getPolicyFromBooleans": true,
+    // From Streams specification
     "TransformStream": true,
+    // From WebCodec specification
     "VideoFrame": true,
+    "VideoEncoder": true,
+    "VideoDecoder": true,
   },
 };

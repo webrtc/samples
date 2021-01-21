@@ -38,8 +38,6 @@ let localStream;
 // eslint-disable-next-line no-unused-vars
 let remoteStream;
 
-const supportsInsertableStreamsLegacy =
-      !!RTCRtpSender.prototype.createEncodedVideoStreams;
 const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedStreams;
 
@@ -52,7 +50,7 @@ try {
   console.error('Transferable streams are not supported.');
 }
 
-if (!((supportsInsertableStreams || supportsInsertableStreamsLegacy) && supportsTransferableStreams)) {
+if (!(supportsInsertableStreams && supportsTransferableStreams)) {
   banner.innerText = 'Your browser does not support Insertable Streams. ' +
   'This sample will not work.';
   if (adapter.browserDetails.browser === 'chrome') {
@@ -95,12 +93,7 @@ function start() {
 // for basic concepts.
 const worker = new Worker('./js/worker.js', {name: 'E2EE worker'});
 function setupSenderTransform(sender) {
-  let senderStreams;
-  if (supportsInsertableStreams) {
-    senderStreams = sender.createEncodedStreams();
-  } else {
-    senderStreams = sender.track.kind === 'video' ? sender.createEncodedVideoStreams() : sender.createEncodedAudioStreams();
-  }
+  const senderStreams = sender.createEncodedStreams();
   // Instead of creating the transform stream here, we do a postMessage to the worker. The first
   // argument is an object defined by us, the sceond a list of variables that will be transferred to
   // the worker. See
@@ -124,12 +117,7 @@ function setupSenderTransform(sender) {
 }
 
 function setupReceiverTransform(receiver) {
-  let receiverStreams;
-  if (supportsInsertableStreams) {
-    receiverStreams = receiver.createEncodedStreams();
-  } else {
-    receiverStreams = receiver.track.kind === 'video' ? receiver.createEncodedVideoStreams() : receiver.createEncodedAudioStreams();
-  }
+  const receiverStreams = receiver.createEncodedStreams();
   const readableStream = receiverStreams.readable || receiverStreams.readableStream;
   const writableStream = receiverStreams.writable || receiverStreams.writableStream;
   worker.postMessage({
