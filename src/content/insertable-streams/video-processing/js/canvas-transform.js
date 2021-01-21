@@ -44,7 +44,7 @@ class CanvasTransform { // eslint-disable-line no-unused-vars
   async transform(frame, controller) {
     const ctx = this.ctx_;
     if (!this.canvas_ || !ctx) {
-      frame.destroy();
+      frame.close();
       return;
     }
     const width = frame.displayWidth;
@@ -57,7 +57,7 @@ class CanvasTransform { // eslint-disable-line no-unused-vars
     // non-optional.
     const timestamp = /** @type {number} */ (frame.timestamp);
     const inputBitmap = await frame.createImageBitmap();
-    frame.destroy();
+    frame.close();
 
     ctx.drawImage(inputBitmap, 0, 0);
     inputBitmap.close();

@@ -37,7 +37,7 @@ class WebCodecTransform { // eslint-disable-line no-unused-vars
   /** @override */
   async transform(frame, controller) {
     if (!this.encoder_) {
-      frame.destroy();
+      frame.close();
       return;
     }
     this.controller_ = controller;
@@ -54,7 +54,7 @@ class WebCodecTransform { // eslint-disable-line no-unused-vars
 
   handleDecodedFrame(videoFrame) {
     if (!this.controller_) {
-      videoFrame.destroy();
+      videoFrame.close();
       return;
     }
     this.controller_.enqueue(videoFrame);
