@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2021 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -53,10 +53,6 @@ remoteVideo.onresize = () => {
 let localStream;
 let pc1;
 let pc2;
-const offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 0
-};
 
 function logToScreen(text) {
   log.append(document.createElement('br'));
@@ -85,6 +81,18 @@ async function start() {
   callButton.disabled = false;
 }
 
+async function runOfferAnswer() {
+  const startTime = performance.now();
+  const offer = await pc1.createOffer();
+  await pc1.setLocalDescription(offer);
+  await pc2.setRemoteDescription(offer);
+  const answer = await pc2.createAnswer();
+  await pc1.setRemoteDescription(answer);
+  await pc2.setLocalDescription(answer);
+  const elapsedTime = performance.now() - startTime;
+  return elapsedTime;
+}
+
 async function call() {
   callButton.disabled = true;
   renegotiateButton.disabled = false;
@@ -109,16 +117,8 @@ async function call() {
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Added local stream to pc1');
 
-  console.log('pc1 createOffer start');
-  const offer = await pc1.createOffer(offerOptions);
-  console.log(`Offer from pc1\n${offer.sdp}`);
-  console.log('pc1 setLocalDescription start');
-  await Promise.all([pc1.setLocalDescription(offer), pc2.setRemoteDescription(offer)]);
-  console.log(`setLocalDescription offer complete`);
-  const answer = await pc2.createAnswer();
-  await pc1.setRemoteDescription(answer);
-  await pc2.setLocalDescription(answer);
-  console.log('set*Description(answer) complete');
+  await runOfferAnswer();
+  console.log('Initial negotiation complete');
 }
 
 function gotRemoteStream(e) {
@@ -178,7 +178,7 @@ async function getAudioImpairment(audioTransceiver) {
 }
 
 async function baselineAudioImpairment(pc) {
-  audioTransceiver = pc.getTransceivers().filter(tr => tr.receiver.track.kind == 'audio')[0];
+  audioTransceiver = pc.getTransceivers().find(tr => tr.receiver.track.kind == 'audio');
   console.log('Found audio transceiver');
   audioImpairmentAtStart = await getAudioImpairment(audioTransceiver);
 }
@@ -196,17 +196,9 @@ async function renegotiate() {
   renegotiateButton.disabled = true;
   await baselineAudioImpairment(pc2);
   const previousVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
-  const startTime = performance.now();
-  const offer = await pc1.createOffer();
-  await pc1.setLocalDescription(offer);
-  await pc2.setRemoteDescription(offer);
-  const answer = await pc2.createAnswer();
-  await pc1.setRemoteDescription(answer);
-  await pc2.setLocalDescription(answer);
-  const elapsedTime = performance.now() - startTime;
+  const elapsedTime = await runOfferAnswer();
   console.log(`Renegotiate finished after ${elapsedTime} milliseconds`);
   renegotiateButton.disabled = false;
-  const fixedTime = elapsedTime.toFixed(2);
   const currentVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
   const audioImpairment = await measureAudioImpairment(pc2);
   logToScreen(`Negotiation from ${previousVideoTransceiverCount} to ${currentVideoTransceiverCount} video transceivers took ${elapsedTime.toFixed(2)} milliseconds, audio impairment ${audioImpairment}`);
@@ -219,6 +211,7 @@ function hangup() {
   pc1 = null;
   pc2 = null;
 
+  console.log('Releasing camera');
   const videoTracks = localStream.getVideoTracks();
   videoTracks.forEach(videoTrack => {
     videoTrack.stop();
@@ -228,5 +221,7 @@ function hangup() {
   localVideo.srcObject = localStream;
 
   hangupButton.disabled = true;
-  callButton.disabled = false;
+  callButton.disabled = true;
+  renegotiateButton.disabled = true;
+  startButton.disabled = false;
 }
