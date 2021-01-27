@@ -153,7 +153,7 @@ class WebGLTransform { // eslint-disable-line no-unused-vars
   async transform(frame, controller) {
     const gl = this.gl_;
     if (!gl || !this.canvas_) {
-      frame.destroy();
+      frame.close();
       return;
     }
     const width = frame.displayWidth;
@@ -169,7 +169,7 @@ class WebGLTransform { // eslint-disable-line no-unused-vars
     // non-optional.
     const timestamp = /** @type {number} */ (frame.timestamp);
     const inputBitmap = await frame.createImageBitmap();
-    frame.destroy();
+    frame.close();
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture_);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
