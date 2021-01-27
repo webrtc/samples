@@ -27,6 +27,9 @@ let startTime;
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 
+let audioTransceiver;
+let audioImpairmentAtStart = 0;
+
 localVideo.addEventListener('loadedmetadata', function() {
   console.log(`Local video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
@@ -101,7 +104,7 @@ async function call() {
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc1.oniceconnectionstatechange = e => onIceStateChange(pc1, e);
   pc2.oniceconnectionstatechange = e => onIceStateChange(pc2, e);
-  pc2.ontrack = gotRemoteStream;
+  pc2.addEventListener('track', gotRemoteStream, {once: true});
 
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Added local stream to pc1');
@@ -120,10 +123,11 @@ async function call() {
 
 function gotRemoteStream(e) {
   console.log('gotRemoteStream', e.track, e.streams[0]);
-
-  // reset srcObject to work around minor bugs in Chrome and Edge.
-  remoteVideo.srcObject = null;
-  remoteVideo.srcObject = e.streams[0];
+  if (e.streams[0]) {
+    // reset srcObject to work around minor bugs in Chrome and Edge.
+    remoteVideo.srcObject = null;
+    remoteVideo.srcObject = e.streams[0];
+  }
 }
 
 async function onIceCandidate(pc, event) {
@@ -140,21 +144,54 @@ function onIceStateChange(pc, event) {
 }
 
 function adjustTransceiverCounts(pc, videoCount) {
-  const currentVideoCount = pc.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
+  const currentVideoTransceivers = pc.getTransceivers().filter(tr => tr.receiver.track.kind == 'video');
+  const currentVideoCount = currentVideoTransceivers.length;
   if (currentVideoCount < videoCount) {
     console.log('Adding ' + (videoCount - currentVideoCount) + ' transceivers');
     for (let i = currentVideoCount; i < videoCount; ++i) {
-      console.log('Adding transceiver ' + i);
       pc.addTransceiver('video');
+    }
+  } else if (currentVideoCount > videoCount) {
+    console.log('Stopping ' + (currentVideoCount - videoCount) + ' transceivers');
+    for (let i = videoCount; i < currentVideoCount; ++i) {
+      currentVideoTransceivers[i].stop();
     }
   } else {
     console.log(`No adjustment, video count is ${currentVideoCount}, target was ${videoCount}`);
   }
 }
 
+async function getAudioImpairment(audioTransceiver) {
+  const stats = await audioTransceiver.receiver.getStats();
+  let currentImpairment;
+  stats.forEach(stat => {
+    if (stat.type == 'track') {
+      currentImpairment = stat.concealedSamples;
+    }
+  });
+  console.log('Found impairment value ', currentImpairment);
+  return currentImpairment;
+}
+
+async function baselineAudioImpairment(pc) {
+  audioTransceiver = pc.getTransceivers().filter(tr => tr.receiver.track.kind == 'audio')[0];
+  console.log('Found audio transceiver');
+  audioImpairmentAtStart = await getAudioImpairment(audioTransceiver);
+}
+
+async function measureAudioImpairment(pc) {
+  const startTime = performance.now();
+  const audioImpairmentNow = await getAudioImpairment(audioTransceiver);
+  console.log('Measurement took ' + (performance.now() - startTime) + ' msec');
+  return audioImpairmentNow - audioImpairmentAtStart;
+}
+
+
 async function renegotiate() {
   adjustTransceiverCounts(pc1, parseInt(videoSectionsField.value));
   renegotiateButton.disabled = true;
+  await baselineAudioImpairment(pc2);
+  const previousVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
   const startTime = performance.now();
   const offer = await pc1.createOffer();
   await pc1.setLocalDescription(offer);
@@ -166,7 +203,9 @@ async function renegotiate() {
   console.log(`Renegotiate finished after ${elapsedTime} milliseconds`);
   renegotiateButton.disabled = false;
   const fixedTime = elapsedTime.toFixed(2);
-  logToScreen(`Negotiation took ${elapsedTime.toFixed(2)} milliseconds`);
+  const currentVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
+  const audioImpairment = await measureAudioImpairment(pc2);
+  logToScreen(`Negotiation from ${previousVideoTransceiverCount} to ${currentVideoTransceiverCount} video transceivers took ${elapsedTime.toFixed(2)} milliseconds, audio impairment ${audioImpairment}`);
 }
 
 function hangup() {
