@@ -20,7 +20,7 @@
 
     <base target="_blank">
 
-    <title>Peer connection - upgrade</title>
+    <title>Peer connection - Renegotiate</title>
 
     <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
@@ -44,7 +44,11 @@
         <button id="renegotiateButton">Renegotiate</button>
         <button id="hangupButton">Hang Up</button>
     </div>
-
+    <div>
+      <p>
+        Video sections after renegotiating: <input type="number" id="videoSections" value="5">
+      </p>
+    </div>
     <p>View the console to see logging. The <code>MediaStream</code> object <code>localStream</code>, and the <code>RTCPeerConnection</code>
         objects <code>pc1</code> and <code>pc2</code> are in global scope, so you can inspect them in the console as
         well.</p>

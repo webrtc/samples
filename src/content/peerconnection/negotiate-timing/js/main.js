@@ -12,7 +12,9 @@ const startButton = document.getElementById('startButton');
 const callButton = document.getElementById('callButton');
 const renegotiateButton = document.getElementById('renegotiateButton');
 const hangupButton = document.getElementById('hangupButton');
-const logs = document.getElementById('log');
+const log = document.getElementById('log');
+const videoSectionsField = document.getElementById('videoSections');
+
 callButton.disabled = true;
 hangupButton.disabled = true;
 renegotiateButton.disabled = true;
@@ -53,6 +55,11 @@ const offerOptions = {
   offerToReceiveVideo: 0
 };
 
+function logToScreen(text) {
+  log.append(document.createElement('br'));
+  log.append(text);
+}
+
 function getName(pc) {
   return (pc === pc1) ? 'pc1' : 'pc2';
 }
@@ -61,26 +68,21 @@ function getOtherPc(pc) {
   return (pc === pc1) ? pc2 : pc1;
 }
 
-function gotStream(stream) {
+async function start() {
+  console.log('Requesting local stream');
+  startButton.disabled = true;
+  const stream = await navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: true
+      });
   console.log('Received local stream');
   localVideo.srcObject = stream;
   localStream = stream;
   callButton.disabled = false;
 }
 
-function start() {
-  console.log('Requesting local stream');
-  startButton.disabled = true;
-  navigator.mediaDevices
-      .getUserMedia({
-        'audio': true,
-        'video': true
-      })
-      .then(gotStream)
-      .catch(e => alert(`getUserMedia() error: ${e.name}`));
-}
-
-function call() {
+async function call() {
   callButton.disabled = true;
   renegotiateButton.disabled = false;
   hangupButton.disabled = false;
@@ -105,36 +107,15 @@ function call() {
   console.log('Added local stream to pc1');
 
   console.log('pc1 createOffer start');
-  pc1.createOffer(offerOptions).then(onCreateOfferSuccess, onCreateSessionDescriptionError);
-}
-
-function onCreateSessionDescriptionError(error) {
-  console.log(`Failed to create session description: ${error.toString()}`);
-}
-
-function onCreateOfferSuccess(desc) {
-  console.log(`Offer from pc1\n${desc.sdp}`);
+  const offer = await pc1.createOffer(offerOptions);
+  console.log(`Offer from pc1\n${offer.sdp}`);
   console.log('pc1 setLocalDescription start');
-  pc1.setLocalDescription(desc).then(() => onSetLocalSuccess(pc1), onSetSessionDescriptionError);
-  console.log('pc2 setRemoteDescription start');
-  pc2.setRemoteDescription(desc).then(() => onSetRemoteSuccess(pc2), onSetSessionDescriptionError);
-  console.log('pc2 createAnswer start');
-  // Since the 'remote' side has no media stream we need
-  // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio and video.
-  pc2.createAnswer().then(onCreateAnswerSuccess, onCreateSessionDescriptionError);
-}
-
-function onSetLocalSuccess(pc) {
-  console.log(`${getName(pc)} setLocalDescription complete`);
-}
-
-function onSetRemoteSuccess(pc) {
-  console.log(`${getName(pc)} setRemoteDescription complete`);
-}
-
-function onSetSessionDescriptionError(error) {
-  console.log(`Failed to set session description: ${error.toString()}`);
+  await Promise.all([pc1.setLocalDescription(offer), pc2.setRemoteDescription(offer)]);
+  console.log(`setLocalDescription offer complete`);
+  const answer = await pc2.createAnswer();
+  await pc1.setRemoteDescription(answer);
+  await pc2.setLocalDescription(answer);
+  console.log('set*Description(answer) complete');
 }
 
 function gotRemoteStream(e) {
@@ -145,47 +126,47 @@ function gotRemoteStream(e) {
   remoteVideo.srcObject = e.streams[0];
 }
 
-function onCreateAnswerSuccess(desc) {
-  console.log(`Answer from pc2:
-${desc.sdp}`);
-  console.log('pc2 setLocalDescription start');
-  pc2.setLocalDescription(desc).then(() => onSetLocalSuccess(pc2), onSetSessionDescriptionError);
-  console.log('pc1 setRemoteDescription start');
-  pc1.setRemoteDescription(desc).then(() => onSetRemoteSuccess(pc1), onSetSessionDescriptionError);
-}
-
-function onIceCandidate(pc, event) {
-  getOtherPc(pc)
-      .addIceCandidate(event.candidate)
-      .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+async function onIceCandidate(pc, event) {
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
-}
-
-function onAddIceCandidateSuccess(pc) {
+  await getOtherPc(pc).addIceCandidate(event.candidate);
   console.log(`${getName(pc)} addIceCandidate success`);
-}
-
-function onAddIceCandidateError(pc, error) {
-  console.log(`${getName(pc)} failed to add ICE Candidate: ${error.toString()}`);
 }
 
 function onIceStateChange(pc, event) {
   if (pc) {
     console.log(`${getName(pc)} ICE state: ${pc.iceConnectionState}`);
-    console.log('ICE state change event: ', event);
+    console.log('ICE state change event, state: ', pc.iceConnectionState);
+  }
+}
+
+function adjustTransceiverCounts(pc, videoCount) {
+  const currentVideoCount = pc.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
+  if (currentVideoCount < videoCount) {
+    console.log('Adding ' + (videoCount - currentVideoCount) + ' transceivers');
+    for (let i = currentVideoCount; i < videoCount; ++i) {
+      console.log('Adding transceiver ' + i);
+      pc.addTransceiver('video');
+    }
+  } else {
+    console.log(`No adjustment, video count is ${currentVideoCount}, target was ${videoCount}`);
   }
 }
 
 async function renegotiate() {
+  adjustTransceiverCounts(pc1, parseInt(videoSectionsField.value));
   renegotiateButton.disabled = true;
+  const startTime = performance.now();
   const offer = await pc1.createOffer();
   await pc1.setLocalDescription(offer);
   await pc2.setRemoteDescription(offer);
   const answer = await pc2.createAnswer();
   await pc1.setRemoteDescription(answer);
   await pc2.setLocalDescription(answer);
+  const elapsedTime = performance.now() - startTime;
+  console.log(`Renegotiate finished after ${elapsedTime} milliseconds`);
   renegotiateButton.disabled = false;
-  //log.innerHtml += 'Renegotiation done<br>';
+  const fixedTime = elapsedTime.toFixed(2);
+  logToScreen(`Negotiation took ${elapsedTime.toFixed(2)} milliseconds`);
 }
 
 function hangup() {
