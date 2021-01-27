@@ -218,7 +218,6 @@ function hangup() {
     localStream.removeTrack(videoTrack);
   });
   localVideo.srcObject = null;
-  localVideo.srcObject = localStream;
 
   hangupButton.disabled = true;
   callButton.disabled = true;
