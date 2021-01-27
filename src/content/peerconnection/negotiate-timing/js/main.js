@@ -131,7 +131,11 @@ function gotRemoteStream(e) {
 }
 
 async function onIceCandidate(pc, event) {
-  console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
+  if (event.candidate) {
+    console.log(`${getName(pc)} emitted ICE candidate for index ${event.candidate.sdpMLineIndex}:\n${event.candidate.candidate}`);
+  } else {
+    console.log(`$getName(pc)} ICE NULL candidate`);
+  }
   await getOtherPc(pc).addIceCandidate(event.candidate);
   console.log(`${getName(pc)} addIceCandidate success`);
 }
