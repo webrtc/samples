@@ -68,7 +68,7 @@ function errorMsg(msg, error) {
   }
 }
 
-async function init(e) {
+/*async function init(e) {
   try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     handleSuccess(stream);
@@ -76,6 +76,50 @@ async function init(e) {
   } catch (e) {
     handleError(e);
   }
+}*/
+
+//document.querySelector('#showVideo').addEventListener('click', e => init(e));
+
+async function init() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    handleSuccess(stream);
+  } catch (e) {
+    handleError(e);
+  }
 }
 
-document.querySelector('#showVideo').addEventListener('click', e => init(e));
+document.addEventListener("keydown", function(e) {
+  console.log(e.which + " keydown");
+
+  var event = new Event('input', {
+    'bubbles': true,
+    'cancelable': true
+  });
+
+  if(e.which == 33) {
+   console.log("ZOOM +");
+   document.getElementById("zoom").stepUp(5);
+   document.getElementById("zoom").dispatchEvent(event);
+  } else if(e.which == 34) {
+   console.log("ZOOM -");
+   document.getElementById("zoom").stepDown(5);
+   document.getElementById("zoom").dispatchEvent(event);
+  } else if(e.which == 39) {
+   console.log("PAN +");
+   document.getElementById("pan").stepUp(5);
+   document.getElementById("pan").dispatchEvent(event);
+  } else if(e.which == 37) {
+   console.log("PAN -");
+   document.getElementById("pan").stepDown(5);
+   document.getElementById("pan").dispatchEvent(event);
+  } else if(e.which == 38) {
+   console.log("TILT +");
+   document.getElementById("tilt").stepUp(5);
+   document.getElementById("tilt").dispatchEvent(event);
+  } else if(e.which == 40) {
+   console.log("TILT -");
+   document.getElementById("tilt").stepDown(5);
+   document.getElementById("tilt").dispatchEvent(event);
+  }
+});
