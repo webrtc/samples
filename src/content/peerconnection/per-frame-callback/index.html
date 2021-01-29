@@ -48,15 +48,19 @@
         <button id="callButton">Call</button>
         <button id="hangupButton">Hang Up</button>
     </div>
+    <div class="graph-container" id="localDelayGraph">
+        <div>Local capture delay (converted to milliseconds)</div>
+        <canvas id="localDelayCanvas"></canvas>
+    </div>
     <div class="graph-container" id="networkDelayGraph">
         <div>Network delay (milliseconds)</div>
         <canvas id="networkDelayCanvas"></canvas>
     </div>
+    <br/>
     <div class="graph-container" id="timeGraph">
-        <div>Render delay (milliseconds): presentation time minus receive time</div>
+        <div>Render delay (milliseconds)</div>
         <canvas id="timeCanvas"></canvas>
     </div>
-    <br/>
     <div class="graph-container" id="processingGraph">
         <div>Processing time (converted to milliseconds)</div>
         <canvas id="processingCanvas"></canvas>

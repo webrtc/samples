@@ -23,6 +23,28 @@ if (!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) {
   callButton.disabled = true;
 }
 
+let localDelayGraph;
+let localDelaySeries;
+
+let maxLocalDelay = -1;
+localVideo.requestVideoFrameCallback(function rVFC(now, metaData) {
+  // For graph purposes, take the maximum over a window.
+  maxLocalDelay = Math.max(1000 * (metaData.expectedDisplayTime - metaData.captureTime), maxLocalDelay);
+
+  if (metaData.presentedFrames % windowSize !== 0) {
+    localVideo.requestVideoFrameCallback(rVFC);
+    return;
+  }
+  // The graph library does not like the performance.now() style `now`.
+  localDelaySeries.addPoint(Date.now(), maxLocalDelay);
+  localDelayGraph.setDataSeries([localDelaySeries]);
+  localDelayGraph.updateEndDate();
+
+  maxLocalDelay = -1;
+
+  localVideo.requestVideoFrameCallback(rVFC);
+});
+
 let processingGraph;
 let processingSeries;
 
@@ -36,12 +58,13 @@ let maxProcessingDuration = -1;
 let maxRenderTime = -1;
 let maxNetworkDelay = -1;
 const windowSize = 30;
-function rVFC(now, metaData) {
+remoteVideo.requestVideoFrameCallback(function rVFC(now, metaData) {
   // For graph purposes, take the maximum over a window.
   maxProcessingDuration = Math.max(1000 * metaData.processingDuration, maxProcessingDuration);
   maxRenderTime = Math.max(metaData.expectedDisplayTime - metaData.receiveTime, maxRenderTime);
   // Note: captureTime is currently only present when there are bidirectional streams.
   maxNetworkDelay = Math.max(metaData.receiveTime - metaData.captureTime, maxNetworkDelay);
+
   if (metaData.presentedFrames % windowSize !== 0) {
     remoteVideo.requestVideoFrameCallback(rVFC);
     return;
@@ -62,10 +85,10 @@ function rVFC(now, metaData) {
   maxProcessingDuration = -1;
   maxRenderTime = -1;
   maxNetworkDelay = -1;
+  maxLocalDelay = -1;
 
   remoteVideo.requestVideoFrameCallback(rVFC);
-}
-remoteVideo.requestVideoFrameCallback(rVFC);
+});
 
 // Mostly copied from pc1/bandwidth sample.
 let pc1;
@@ -98,6 +121,9 @@ function gotStream(stream) {
   networkDelaySeries = new TimelineDataSeries();
   networkDelayGraph = new TimelineGraphView('networkDelayGraph', 'networkDelayCanvas');
   networkDelayGraph.updateEndDate();
+
+  localDelaySeries = new TimelineDataSeries();
+  localDelayGraph = new TimelineGraphView('localDelayGraph', 'localDelayCanvas');
 }
 
 function onCreateSessionDescriptionError(error) {
