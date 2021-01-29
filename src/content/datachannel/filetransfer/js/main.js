@@ -182,7 +182,7 @@ function receiveChannelCallback(event) {
   }
 }
 
-async function onReceiveMessageCallback(event) {
+function onReceiveMessageCallback(event) {
   console.log(`Received Message ${event.data.byteLength}`);
   receiveBuffer.push(event.data);
   receivedSize += event.data.byteLength;
@@ -217,7 +217,7 @@ async function onReceiveMessageCallback(event) {
 
 function onSendChannelStateChange() {
   if (sendChannel) {
-    const readyState = sendChannel.readyState;
+    const {readyState} = sendChannel;
     console.log(`Send channel state is: ${readyState}`);
     if (readyState === 'open') {
       sendData();

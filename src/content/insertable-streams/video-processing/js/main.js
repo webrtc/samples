@@ -17,6 +17,11 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
       'page.');
 }
 
+// In Chrome 88, VideoFrame.close() was called VideoFrame.destroy()
+if (VideoFrame.prototype.close === undefined) {
+  VideoFrame.prototype.close = VideoFrame.prototype.destroy;
+}
+
 /* global CameraSource */ // defined in camera-source.js
 /* global CanvasTransform */ // defined in canvas-transform.js
 /* global PeerConnectionSink */ // defined in peer-connection-sink.js
@@ -39,7 +44,7 @@ let debug = {};
  * FrameTransformFn applies a transform to a frame and queues the output frame
  * (if any) using the controller. The first argument is the input frame and the
  * second argument is the stream controller.
- * The VideoFrame should be destroyed as soon as it is no longer needed to free
+ * The VideoFrame should be closed as soon as it is no longer needed to free
  * resources and maintain good performance.
  * @typedef {function(
  *     !VideoFrame,

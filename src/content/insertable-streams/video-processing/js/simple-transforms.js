@@ -35,7 +35,7 @@ class DropTransform { // eslint-disable-line no-unused-vars
     if (Math.random() < 0.5) {
       controller.enqueue(frame);
     } else {
-      frame.destroy();
+      frame.close();
     }
   }
   /** @override */
