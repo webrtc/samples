@@ -87,9 +87,9 @@ function call() {
   pc2.ontrack = gotRemoteStream;
 
   console.log('Requesting local stream');
-  navigator.mediaDevices.getUserMedia({video: true})
+  navigator.mediaDevices.getDisplayMedia()
       .then(gotStream)
-      .catch(e => alert('getUserMedia() error: ' + e.name));
+      .catch(e => alert('getDisplayMedia() error: ' + e.name));
 }
 
 function gotDescription1(desc) {
