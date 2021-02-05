@@ -19,15 +19,22 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
 
 // Put variables in global scope to make them available to the browser console.
 
-// audio element
+// Audio element
 let audio;
 
 // Buttons
 let startButton;
 let stopButton;
 
+// Transformation chain elements
+let processor;
+let generator;
+let transformer;
+
 // Stream from getUserMedia
 let stream;
+// Output from the transform
+let processedStream;
 
 // Initialize on page load.
 async function init() {
@@ -44,6 +51,32 @@ const constraints = window.constraints = {
   video: false
 };
 
+// Returns a low-pass transform function for use with TransformStream.
+function lowPassFilter(cutoff = 100) {
+  let lastValue = undefined;
+  let alpha = undefined;
+  return (frame, controller) => {
+    const samples = frame.buffer.getChannelData(0);
+
+    // Initialize based on the first AudioBuffer.
+    if (lastValue == undefined) {
+      const rc = 1.0 / (cutoff * 2 * Math.PI);
+      const dt = 1.0 / frame.buffer.sampleRate;
+      alpha = dt / (rc + dt);
+      lastValue = samples[0];
+    }
+
+    // Apply low-pass filter to samples.
+    for (let i = 0; i < samples.length; ++i) {
+      lastValue = lastValue + alpha * (samples[i] - lastValue);
+      samples[i] = lastValue;
+    }
+
+    frame.buffer.copyToChannel(samples, 0);
+    controller.enqueue(frame);
+  };
+}
+
 async function start() {
   startButton.disabled = true;
   try {
@@ -58,7 +91,22 @@ async function start() {
   stream.oninactive = () => {
     console.log('Stream ended');
   };
-  audio.srcObject = stream;
+
+  processor = new MediaStreamTrackProcessor(audioTracks[0]);
+  generator = new MediaStreamTrackGenerator('audio');
+  const source = processor.readable;
+  const sink = generator.writable;
+  transformer = new TransformStream({transform: lowPassFilter()});
+  const promise = source.pipeThrough(transformer).pipeTo(sink);
+  promise.catch((e) => {
+    console.error('Error from transform:', e);
+    source.cancel(e);
+    sink.abort(e);
+  });
+
+  processedStream = new MediaStream();
+  processedStream.addTrack(generator);
+  audio.srcObject = processedStream;
   stopButton.disabled = false;
   await audio.play();
 }
