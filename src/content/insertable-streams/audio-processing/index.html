@@ -38,18 +38,21 @@
 
     <p>This sample shows how to perform processing on an audio stream using the experimental
         <a href="https://github.com/w3c/mediacapture-insertable-streams">insertable streams</a> API.
-        TODO -- explain what it does
+        It applies a low-pass filter in realtime to audio recorded from a microphone and plays it
+        back.
     </p>
     <audio id="audioOutput" controls></audio>
 
     <div>
-        <button type="button" id="startButton">Start</button> 
+        <button type="button" id="startButton">Start</button>
         <button type="button" id="stopButton" disabled>Stop</button>
     <div>
     <p class="warning">Warning: if you're not using headphones, pressing Start will cause feedback.</p>
 
-    <p>View the console to see logging. The TODO, <code>audio</code>, <code>stream</code> and TODO
-        variables are in global scope, so you can inspect them from the console.</p>
+    <p>View the console to see logging. The <code>audio</code>, <code>processor</code>,
+        <code>generator</code>, <code>transformer</code>, <code>stream</code> and
+        <code>processedStream</code> variables are in global scope, so you can inspect them from the
+        console.</p>
 
     <p>
         <b>Note</b>: This sample is using an experimental API that has not yet been standardized. As
