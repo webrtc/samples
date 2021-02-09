@@ -17,6 +17,15 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
       'page.');
 }
 
+try {
+  new MediaStreamTrackGenerator('audio');
+  console.log('Audio insertable streams supported');
+} catch {
+  alert(
+      'Your browser does not support insertable audio streams. See the note ' +
+        'at the bottom of the page.');
+}
+
 // Put variables in global scope to make them available to the browser console.
 
 // Audio element
@@ -36,6 +45,12 @@ let stream;
 // Output from the transform
 let processedStream;
 
+// Adjust this value to increase/decrease the amount of filtering.
+let cutoff = 100;
+
+// An AbortController used to stop the transform.
+let abortController;
+
 // Initialize on page load.
 async function init() {
   audio = document.getElementById('audioOutput');
@@ -52,27 +67,30 @@ const constraints = window.constraints = {
 };
 
 // Returns a low-pass transform function for use with TransformStream.
-function lowPassFilter(cutoff = 100) {
-  let lastValue = undefined;
-  let alpha = undefined;
+function lowPassFilter() {
+  let lastValuePerChannel = undefined;
   return (frame, controller) => {
-    const samples = frame.buffer.getChannelData(0);
-
-    // Initialize based on the first AudioBuffer.
-    if (lastValue == undefined) {
-      const rc = 1.0 / (cutoff * 2 * Math.PI);
-      const dt = 1.0 / frame.buffer.sampleRate;
-      alpha = dt / (rc + dt);
-      lastValue = samples[0];
+    const rc = 1.0 / (cutoff * 2 * Math.PI);
+    const dt = 1.0 / frame.buffer.sampleRate;
+    const alpha = dt / (rc + dt);
+    const nChannels = frame.buffer.numberOfChannels;
+    if (!lastValuePerChannel) {
+      console.log(`Audio stream has ${nChannels} channels.`);
+      lastValuePerChannel = Array(nChannels).fill(0);
     }
+    for (let c = 0; c < nChannels; c++) {
+      const samples = frame.buffer.getChannelData(c);
+      let lastValue = lastValuePerChannel[c];
 
-    // Apply low-pass filter to samples.
-    for (let i = 0; i < samples.length; ++i) {
-      lastValue = lastValue + alpha * (samples[i] - lastValue);
-      samples[i] = lastValue;
+      // Apply low-pass filter to samples.
+      for (let i = 0; i < samples.length; ++i) {
+        lastValue = lastValue + alpha * (samples[i] - lastValue);
+        samples[i] = lastValue;
+      }
+
+      frame.buffer.copyToChannel(samples, c);
+      lastValuePerChannel[c] = lastValue;
     }
-
-    frame.buffer.copyToChannel(samples, 0);
     controller.enqueue(frame);
   };
 }
@@ -97,9 +115,15 @@ async function start() {
   const source = processor.readable;
   const sink = generator.writable;
   transformer = new TransformStream({transform: lowPassFilter()});
-  const promise = source.pipeThrough(transformer).pipeTo(sink);
+  abortController = new AbortController();
+  const signal = abortController.signal;
+  const promise = source.pipeThrough(transformer, {signal}).pipeTo(sink);
   promise.catch((e) => {
-    console.error('Error from transform:', e);
+    if (signal.aborted) {
+      console.log('Shutting down streams after abort.');
+    } else {
+      console.error('Error from stream transform:', e);
+    }
     source.cancel(e);
     sink.abort(e);
   });
@@ -118,6 +142,8 @@ async function stop() {
   stream.getTracks().forEach(track => {
     track.stop();
   });
+  abortController.abort();
+  abortController = null;
   startButton.disabled = false;
 }
 
