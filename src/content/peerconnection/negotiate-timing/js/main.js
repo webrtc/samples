@@ -85,23 +85,24 @@ async function start() {
 
 async function runOfferAnswer() {
   const startTime = performance.now();
-  let result = {};
+  const result = {};
   const offer = await pc1.createOffer();
-  let markTime1 = performance.now();
+  const markTime1 = performance.now();
+  result.callerCreateOffer = markTime1 - startTime;
   await pc1.setLocalDescription(offer);
-  let markTime2 = performance.now();
-  result.callerSetLocalDescriptionTime = markTime1 - startTime;
+  const markTime2 = performance.now();
+  result.callerSetLocalDescription = markTime2 - markTime1;
   await pc2.setRemoteDescription(offer);
-  let markTime3 = performance.now();
-  result.calleeSetRemoteDescriptionTime = markTime2 - markTime1;
+  const markTime3 = performance.now();
+  result.calleeSetRemoteDescription = markTime3 - markTime2;
   const answer = await pc2.createAnswer();
-  let markTime4 = performance.now();
+  const markTime4 = performance.now();
   result.calleeCreateAnswer = markTime4 - markTime3;
   await pc1.setRemoteDescription(answer);
-  let markTime5 = performance.now();
+  const markTime5 = performance.now();
   result.callerSetRemoteDescription = markTime5 - markTime4;
   await pc2.setLocalDescription(answer);
-  let markTime6 = performance.now();
+  const markTime6 = performance.now();
   result.calleeSetLocalDescription = markTime6 - markTime5
   result.elapsedTime = markTime6 - startTime;
   return result;
@@ -206,17 +207,17 @@ async function measureAudioImpairment(pc) {
 
 
 async function renegotiate() {
-  adjustTransceiverCounts(pc1, parseInt(videoSectionsField.value));
   renegotiateButton.disabled = true;
+  adjustTransceiverCounts(pc1, parseInt(videoSectionsField.value));
   await baselineAudioImpairment(pc2);
   const previousVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
   result = await runOfferAnswer();
   console.log(`Renegotiate finished after ${result.elapsedTime} milliseconds`);
-  renegotiateButton.disabled = false;
   const currentVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
   result.audioImpairment = await measureAudioImpairment(pc2);
   logToScreen(`Negotiation from ${previousVideoTransceiverCount} to ${currentVideoTransceiverCount} video transceivers took ${result.elapsedTime.toFixed(2)} milliseconds, audio impairment ${result.audioImpairment}`);
   console.log('Results: ', JSON.stringify(result, ' ', 2));
+  renegotiateButton.disabled = false;
 }
 
 function hangup() {
