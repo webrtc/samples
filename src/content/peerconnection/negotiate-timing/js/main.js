@@ -103,7 +103,7 @@ async function runOfferAnswer() {
   result.callerSetRemoteDescription = markTime5 - markTime4;
   await pc2.setLocalDescription(answer);
   const markTime6 = performance.now();
-  result.calleeSetLocalDescription = markTime6 - markTime5
+  result.calleeSetLocalDescription = markTime6 - markTime5;
   result.elapsedTime = markTime6 - startTime;
   return result;
 }
