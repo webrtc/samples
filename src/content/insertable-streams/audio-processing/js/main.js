@@ -20,7 +20,7 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
 try {
   new MediaStreamTrackGenerator('audio');
   console.log('Audio insertable streams supported');
-} catch {
+} catch (e) {
   alert(
       'Your browser does not support insertable audio streams. See the note ' +
         'at the bottom of the page.');
@@ -46,6 +46,7 @@ let stream;
 let processedStream;
 
 // Adjust this value to increase/decrease the amount of filtering.
+// eslint-disable-next-line prefer-const
 let cutoff = 100;
 
 // An AbortController used to stop the transform.
