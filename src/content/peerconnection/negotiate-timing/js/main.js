@@ -9,16 +9,20 @@
 'use strict';
 
 const startButton = document.getElementById('startButton');
+const startButtonPlanB = document.getElementById('startButtonPlanB');
 const callButton = document.getElementById('callButton');
 const renegotiateButton = document.getElementById('renegotiateButton');
 const hangupButton = document.getElementById('hangupButton');
 const log = document.getElementById('log');
 const videoSectionsField = document.getElementById('videoSections');
 
+let sdpSemantics = null;
+
 callButton.disabled = true;
 hangupButton.disabled = true;
 renegotiateButton.disabled = true;
-startButton.onclick = start;
+startButton.onclick = () => { sdpSemantics = "unified-plan"; start(); }
+startButtonPlanB.onclick = () => { sdpSemantics = "plan-b"; start(); }
 callButton.onclick = call;
 renegotiateButton.onclick = renegotiate;
 hangupButton.onclick = hangup;
@@ -27,7 +31,7 @@ let startTime;
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 
-let audioTransceiver;
+let audioReceiver;
 let audioImpairmentAtStart = 0;
 
 let result;
@@ -53,8 +57,12 @@ remoteVideo.onresize = () => {
 };
 
 let localStream;
+let dummyVideoTrack;
+let dummyVideoStream;
 let pc1;
 let pc2;
+let videoSender;
+let audioSender;
 
 function logToScreen(text) {
   log.append(document.createElement('br'));
@@ -72,6 +80,7 @@ function getOtherPc(pc) {
 async function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
+  startButtonPlanB.disabled = true;
   const stream = await navigator.mediaDevices
       .getUserMedia({
         audio: true,
@@ -81,6 +90,12 @@ async function start() {
   localVideo.srcObject = stream;
   localStream = stream;
   callButton.disabled = false;
+  // In Plan B, a dummy track is used to adjust number of m= sections using the
+  // addTrack() API.
+  if (sdpSemantics == "plan-b") {
+    dummyVideoTrack = localStream.getVideoTracks()[0].clone();
+    dummyVideoStream = new MediaStream();
+  }
 }
 
 async function runOfferAnswer() {
@@ -118,18 +133,19 @@ async function call() {
   if (audioTracks.length > 0) {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
-  const servers = null;
-  pc1 = new RTCPeerConnection(servers);
+  const config = {sdpSemantics:sdpSemantics};
+  pc1 = new RTCPeerConnection(config);
   console.log('Created local peer connection object pc1');
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
-  pc2 = new RTCPeerConnection(servers);
+  pc2 = new RTCPeerConnection(config);
   console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc1.oniceconnectionstatechange = e => onIceStateChange(pc1, e);
   pc2.oniceconnectionstatechange = e => onIceStateChange(pc2, e);
   pc2.addEventListener('track', gotRemoteStream, {once: true});
 
-  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
+  videoSender = pc1.addTrack(localStream.getVideoTracks()[0], localStream);
+  audioSender = pc1.addTrack(localStream.getAudioTracks()[0], localStream);
   console.log('Added local stream to pc1');
 
   await runOfferAnswer();
@@ -138,7 +154,9 @@ async function call() {
 
 function gotRemoteStream(e) {
   console.log('gotRemoteStream', e.track, e.streams[0]);
-  if (e.streams[0]) {
+  if (e.streams[0] &&
+      (sdpSemantics == "unified-plan" ||
+       e.streams[0].id != dummyVideoStream.id)) {
     // reset srcObject to work around minor bugs in Chrome and Edge.
     remoteVideo.srcObject = null;
     remoteVideo.srcObject = e.streams[0];
@@ -180,8 +198,30 @@ function adjustTransceiverCounts(pc, videoCount) {
   }
 }
 
-async function getAudioImpairment(audioTransceiver) {
-  const stats = await audioTransceiver.receiver.getStats();
+async function adjustSenderCounts(pc, videoCount) {
+  const currentVideoSenders = pc.getSenders().filter(s => s != audioSender);
+  const currentVideoCount = currentVideoSenders.length;
+  if (currentVideoCount < videoCount) {
+    console.log('Adding ' + (videoCount - currentVideoCount) + ' senders');
+    for (let i = currentVideoCount; i < videoCount; ++i) {
+      // Plan B requires a track even though we do not want to send anything.
+      // The offer SDP is broken if we do replaceTrack(null) before the first
+      // offer with this track, so stopping and removing the clone happens
+      // later, see negotiate().
+      const newSender = pc.addTrack(dummyVideoTrack.clone(), dummyVideoStream);
+    }
+  } else if (currentVideoCount > videoCount) {
+    console.log('Stopping ' + (currentVideoCount - videoCount) + ' senders');
+    for (let i = videoCount; i < currentVideoCount; ++i) {
+      pc.removeTrack(currentVideoSenders[i]);
+    }
+  } else {
+    console.log(`No adjustment, video count is ${currentVideoCount}, target was ${videoCount}`);
+  }
+}
+
+async function getAudioImpairment(audioReceiver) {
+  const stats = await audioReceiver.getStats();
   let currentImpairment;
   stats.forEach(stat => {
     if (stat.type == 'track') {
@@ -193,14 +233,14 @@ async function getAudioImpairment(audioTransceiver) {
 }
 
 async function baselineAudioImpairment(pc) {
-  audioTransceiver = pc.getTransceivers().find(tr => tr.receiver.track.kind == 'audio');
-  console.log('Found audio transceiver');
-  audioImpairmentAtStart = await getAudioImpairment(audioTransceiver);
+  audioReceiver = pc.getReceivers().find(r => r.track.kind == 'audio');
+  console.log('Found audio receiver');
+  audioImpairmentAtStart = await getAudioImpairment(audioReceiver);
 }
 
 async function measureAudioImpairment(pc) {
   const startTime = performance.now();
-  const audioImpairmentNow = await getAudioImpairment(audioTransceiver);
+  const audioImpairmentNow = await getAudioImpairment(audioReceiver);
   console.log('Measurement took ' + (performance.now() - startTime) + ' msec');
   return audioImpairmentNow - audioImpairmentAtStart;
 }
@@ -208,14 +248,32 @@ async function measureAudioImpairment(pc) {
 
 async function renegotiate() {
   renegotiateButton.disabled = true;
-  adjustTransceiverCounts(pc1, parseInt(videoSectionsField.value));
+  let targetVideoSections = parseInt(videoSectionsField.value);
+  if (sdpSemantics == "unified-plan") {
+    adjustTransceiverCounts(pc1, targetVideoSections);
+  } else {
+    await adjustSenderCounts(pc1, targetVideoSections);
+  }
   await baselineAudioImpairment(pc2);
-  const previousVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
+  const previousVideoTransceiverCount = pc2.getReceivers().filter(r => r.track.kind == 'video').length;
   result = await runOfferAnswer();
+  if (sdpSemantics == "plan-b") {
+    // Clean up temporary clones created inside of adjustSenderCounts() above.
+    // This includes all senders except the first audio and video ones used for
+    // the preview.
+    const additionalSenders = pc1.getSenders().filter(
+        s => s!= videoSender && s != audioSender);
+    for (let i = 0; i < additionalSenders.length; i++) {
+      if (additionalSenders[i].track) {
+        additionalSenders[i].track.stop();
+        await additionalSenders[i].replaceTrack(null);
+      }
+    }
+  }
   console.log(`Renegotiate finished after ${result.elapsedTime} milliseconds`);
-  const currentVideoTransceiverCount = pc2.getTransceivers().filter(tr => tr.receiver.track.kind == 'video').length;
+  const currentVideoTransceiverCount = pc2.getReceivers().filter(r => r.track.kind == 'video').length;
   result.audioImpairment = await measureAudioImpairment(pc2);
-  logToScreen(`Negotiation from ${previousVideoTransceiverCount} to ${currentVideoTransceiverCount} video transceivers took ${result.elapsedTime.toFixed(2)} milliseconds, audio impairment ${result.audioImpairment}`);
+  logToScreen(`[${sdpSemantics}] Negotiation from ${previousVideoTransceiverCount} to ${currentVideoTransceiverCount} video transceivers took ${result.elapsedTime.toFixed(2)} milliseconds, audio impairment ${result.audioImpairment}`);
   console.log('Results: ', JSON.stringify(result, ' ', 2));
   renegotiateButton.disabled = false;
 }
@@ -228,15 +286,20 @@ function hangup() {
   pc2 = null;
 
   console.log('Releasing camera');
-  const videoTracks = localStream.getVideoTracks();
-  videoTracks.forEach(videoTrack => {
-    videoTrack.stop();
-    localStream.removeTrack(videoTrack);
+  const tracks = localStream.getTracks();
+  tracks.forEach(track => {
+    track.stop();
+    localStream.removeTrack(track);
   });
   localVideo.srcObject = null;
+  if (dummyVideoTrack) {
+    dummyVideoTrack.stop();
+    dummyVideoTrack = null;
+  }
 
   hangupButton.disabled = true;
   callButton.disabled = true;
   renegotiateButton.disabled = true;
   startButton.disabled = false;
+  startButtonPlanB.disabled = false;
 }
