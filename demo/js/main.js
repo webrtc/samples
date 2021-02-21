@@ -17,6 +17,7 @@ const sourceSelector = document.querySelector('select#source');
 const resolutionSelector = document.querySelector('select#resolution');
 const codecSelector = document.querySelector('select#codec');
 const upscaleToggle = document.getElementById("upscale");
+const upscaledContainer=  document.getElementById("upscaled-container");
 
 callButton.onclick = call;
 
@@ -242,6 +243,14 @@ function removeBandwidthRestriction(sdp) {
 upscaleToggle.onchange = () =>{
     if(upscaleToggle.checked) upscaler.enable();
     else  upscaler.disable();
+};
+
+
+sourceSelector.onchange = () =>{
+
+  if(sourceSelector.value === "local") upscaledContainer.style.visibility = "hidden";
+  else upscaledContainer.style.visibility = "visible";
+
 };
 
 
