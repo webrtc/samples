@@ -58,18 +58,24 @@
         <label>Bandwidth:</label>
         <select id="bandwidth" disabled>
             <option value="unlimited" selected>unlimited</option>
-            <option value="1000">1000</option>
-            <option value="800">800</option>
-            <option value="600">600</option>
-            <option value="400">400</option>
-            <option value="200">200</option>
-            <option value="100">100</option>
+            <option value="1000">1000 kbps</option>
+            <option value="800">800 kbps</option>
+            <option value="600">600 kbps</option>
+            <option value="400">400 kbps</option>
+            <option value="200">200 kbps</option>
+            <option value="100">100 kbps</option>
         </select>
-        kbps
+
+        <label>Codec:</label>
+        <select id="codec">
+            <option value="h264">H264</option>
+            <option value="vp9">VP9</option>
+        </select>
+
         <button id="callButton">Call</button>
 
 
-        <label>Currently Showing:</label>
+        <label>Showing:</label>
         <select id="source">
             <option value="remote">Receiver's Video</option>
             <option value="local">Broadcaster's Video</option>
