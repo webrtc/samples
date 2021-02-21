@@ -79,12 +79,19 @@
         <input id="upscale" type="checkbox" checked onclick="toggle()"  />
     </div>
 
-    <video id="localVideo" playsinline autoplay muted style="width: 720px; height: 540px;"></video>
+
+    <div id="feeds-container" style="width: 720px; height: 540px; position: relative; display: block; margin: auto;" >
+
+        <video id="localVideo" playsinline autoplay muted style="width: 720px; height: 540px;"></video>
 
 
-    <div id="upscaled-container" style="width: 960px; height: 720px; background: #222; position: absolute; transform: scale(0.75);" >
-        <video id="remoteVideo" playsinline autoplay width="320" height="240"></video>
+        <div id="upscaled-container" style="width: 720px; height: 540px; background: #222; position: absolute;  top: 0; left: 0;" >
+            <video id="remoteVideo" playsinline autoplay width="320" height="240"></video>
+        </div>
+
+
     </div>
+
 
 
 
