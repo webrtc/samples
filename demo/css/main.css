@@ -5,12 +5,14 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
+
+/*
 video {
   --width: 45%;
   width: var(--width);
   height: calc(var(--width) * 0.75);
 }
-
+*/
 button {
   margin: 0 20px 0 0;
   width: 96px;

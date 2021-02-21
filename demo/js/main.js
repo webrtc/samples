@@ -13,6 +13,11 @@ const remoteVideo = document.querySelector('video#remoteVideo');
 const localVideo = document.querySelector('video#localVideo');
 const callButton = document.querySelector('button#callButton');
 const bandwidthSelector = document.querySelector('select#bandwidth');
+const sourceSelector = document.querySelector('select#source');
+const resolutionSelector = document.querySelector('select#resolution');
+const codecSelector = document.querySelector('select#codec');
+const upscaleToggle = document.getElementById("upscale");
+
 callButton.onclick = call;
 
 let pc1;
@@ -30,6 +35,8 @@ let headerrateSeries;
 
 let packetGraph;
 let packetSeries;
+
+let upscaler;
 
 let lastResult;
 
@@ -88,8 +95,7 @@ function call() {
       .catch(e => console.warn('getUserMedia() error: ' + e.name));
 
 
-  let canvas = remoteVideo.nextSibling;
-  const upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: 320, height: 240});
+  upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: 320, height: 240});
 
 
 }
@@ -230,6 +236,15 @@ function updateBandwidthRestriction(sdp, bandwidth) {
 function removeBandwidthRestriction(sdp) {
   return sdp.replace(/b=AS:.*\r\n/, '').replace(/b=TIAS:.*\r\n/, '');
 }
+
+
+
+upscaleToggle.onchange = () =>{
+    if(upscaleToggle.checked) upscaler.enable();
+    else  upscaler.disable();
+};
+
+
 
 // query getStats every second
 window.setInterval(() => {
