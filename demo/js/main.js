@@ -18,6 +18,7 @@ const resolutionSelector = document.querySelector('select#resolution');
 const codecSelector = document.querySelector('select#codec');
 const upscaleToggle = document.getElementById("upscale");
 const upscaledContainer=  document.getElementById("upscaled-container");
+const feedContainer = document.getElementById("feeds-container");
 
 callButton.onclick = call;
 
@@ -33,6 +34,10 @@ let maxBandwidth = 0;
 let bitrateGraph;
 let bitrateSeries;
 let headerrateSeries;
+
+
+let height = 240;
+let width = 320;
 
 let packetGraph;
 let packetSeries;
@@ -79,6 +84,7 @@ function onCreateSessionDescriptionError(error) {
 function call() {
   callButton.disabled = true;
   bandwidthSelector.disabled = false;
+  resolutionSelector.disabled = true;
   console.log('Starting call');
   const servers = null;
   pc1 = new RTCPeerConnection(servers);
@@ -91,12 +97,12 @@ function call() {
   pc2.ontrack = gotRemoteStream;
 
   console.log('Requesting local stream');
-  navigator.mediaDevices.getUserMedia({video: { width:320, height: 240 }})
+  navigator.mediaDevices.getUserMedia({video: { width:width, height: height }})
       .then(gotStream)
       .catch(e => console.warn('getUserMedia() error: ' + e.name));
 
 
-  upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: 320, height: 240});
+  upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: width, height: height});
 
 
 }
@@ -253,6 +259,60 @@ sourceSelector.onchange = () =>{
 
 };
 
+
+resolutionSelector.onchange = () =>{
+
+  if(resolutionSelector.value === "240p"){
+      height = 240;
+      width = 320;
+
+
+      feedContainer.style.width = "720px";
+      feedContainer.style.height = "540px";
+
+      localVideo.style.width = "720px";
+      localVideo.style.height ="540px";
+
+      upscaledContainer.style.width =  "720px";
+      upscaledContainer.style.height = "540px";
+
+  } else if(resolutionSelector.value === "360p") {
+
+    height = 360;
+    width = 480;
+
+      feedContainer.style.width = "720px";
+      feedContainer.style.height = "540px";
+
+      localVideo.style.width = "720px";
+      localVideo.style.height ="540px";
+
+      upscaledContainer.style.width =  "720px";
+      upscaledContainer.style.height = "540px";
+
+  } else if(resolutionSelector.value === "360pw"){
+
+      height = 360;
+      width = 640;
+
+
+      feedContainer.style.width = "920px";
+      feedContainer.style.height = "540px";
+
+      localVideo.style.width = "920px";
+      localVideo.style.height ="540px";
+
+      upscaledContainer.style.width =  "920px";
+      upscaledContainer.style.height = "540px";
+  }
+
+
+
+    remoteVideo.width = width;
+    remoteVideo.height = height;
+
+
+};
 
 
 // query getStats every second
