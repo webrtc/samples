@@ -93,9 +93,9 @@ function call() {
 
 
   let canvas = remoteVideo.nextSibling;
+  const upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: 320, height: 240});
 
-  console.log("Canvas");
-  console.log(canvas);
+
 }
 
 function gotDescription1(desc) {

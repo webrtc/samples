@@ -10,22 +10,22 @@
 <head>
 
     <meta charset="utf-8">
-    <meta name="description" content="WebRTC code samples">
+    <meta name="description" content="Vectorly WebRTC Demo">
     <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-    <meta itemprop="description" content="Client-side WebRTC code samples">
-    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
-    <meta itemprop="name" content="WebRTC code samples">
+    <meta itemprop="description" content="Demo of Vectorly's client-side upscaling with WebRTC ">
+    <meta itemprop="image" content="images/vectorly-logo-circle.png">
+    <meta itemprop="name" content="Vectorly WebRTC Demo">
     <meta name="mobile-web-app-capable" content="yes">
     <meta id="theme-color" name="theme-color" content="#ffffff">
 
     <base target="_blank">
 
-    <title>Peer connection: adjust bandwidth</title>
+    <title>Vectorly Client-Side upscaling with WebRTC</title>
 
-    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link rel="icon" sizes="192x192" href="images/vectorly-logo-circle.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
     <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/parent.css"/>
     <link rel="stylesheet" href="css/main.css"/>
     <script src="js/upscaler.js" type="application/javascript"></script>
 
@@ -72,18 +72,18 @@
     </div>
 
 
-    <!--
+
 
     <div class="graph-container" id="bitrateGraph">
         <div>Bitrate</div>
-        <canvas id="bitrateCanvas"></canvas>
+        <canvas id="bitrateCanvas" style="width: 100%"></canvas>
     </div>
     <div class="graph-container" id="packetGraph">
         <div>Packets sent per second</div>
-        <canvas id="packetCanvas"></canvas>
+        <canvas id="packetCanvas"  style="width: 100%"> </canvas>
     </div>
 
--->
+
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/bandwidth"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
@@ -91,20 +91,9 @@
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="js/main.js" async></script>
-<script src="../../../js/third_party/graph.js"></script>
-
-<script src="../../../js/lib/ga.js"></script>
-
-
-<script>
-
-        const upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: 320, height: 240});
+<script src="js/graph.js"></script>
 
 
 
-
-
-
-</script>
 </body>
 </html>
