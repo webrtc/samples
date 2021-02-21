@@ -42,13 +42,19 @@
 
 <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: adjust bandwidth</span>
-    </h1>
-
-
+    <h1><a href="https://vectorly.io/docs/technology/" title="Vectorly">Vectorly</a> <span>WebRTC Demo</span> </h1>
 
 
     <div id="buttons">
+
+        <label>Resolution:</label>
+        <select id="resolution">
+            <option value="240p">240x320</option>
+            <option value="360p">360x480</option>
+            <option value="360pw">360x640</option>
+        </select>
+
+
         <label>Bandwidth:</label>
         <select id="bandwidth" disabled>
             <option value="unlimited" selected>unlimited</option>
@@ -61,13 +67,22 @@
         </select>
         kbps
         <button id="callButton">Call</button>
-        <button id="hangupButton">Hang Up</button>
+
+
+        <label>Currently Showing:</label>
+        <select id="source">
+            <option value="remote">Receiver's Video</option>
+            <option value="local">Broadcaster's Video</option>
+        </select>
+
+        <label>Upscaled</label>
+        <input id="upscale" type="checkbox" checked onclick="toggle()"  />
     </div>
 
-    <video id="localVideo" playsinline autoplay muted style="width: 960px; height: 720px;"></video>
+    <video id="localVideo" playsinline autoplay muted style="width: 720px; height: 540px;"></video>
 
 
-    <div id="upscaled-container" style="width: 960px; height: 720px; background: #222; position: absolute;" >
+    <div id="upscaled-container" style="width: 960px; height: 720px; background: #222; position: absolute; transform: scale(0.75);" >
         <video id="remoteVideo" playsinline autoplay width="320" height="240"></video>
     </div>
 

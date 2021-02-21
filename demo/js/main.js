@@ -12,11 +12,8 @@
 const remoteVideo = document.querySelector('video#remoteVideo');
 const localVideo = document.querySelector('video#localVideo');
 const callButton = document.querySelector('button#callButton');
-const hangupButton = document.querySelector('button#hangupButton');
 const bandwidthSelector = document.querySelector('select#bandwidth');
-hangupButton.disabled = true;
 callButton.onclick = call;
-hangupButton.onclick = hangup;
 
 let pc1;
 let pc2;
@@ -42,7 +39,6 @@ const offerOptions = {
 };
 
 function gotStream(stream) {
-  hangupButton.disabled = false;
   console.log('Received local stream');
   localStream = stream;
   localVideo.srcObject = stream;
@@ -126,18 +122,6 @@ function gotDescription2(desc) {
       },
       onSetSessionDescriptionError
   );
-}
-
-function hangup() {
-  console.log('Ending call');
-  localStream.getTracks().forEach(track => track.stop());
-  pc1.close();
-  pc2.close();
-  pc1 = null;
-  pc2 = null;
-  hangupButton.disabled = true;
-  callButton.disabled = false;
-  bandwidthSelector.disabled = true;
 }
 
 function gotRemoteStream(e) {
