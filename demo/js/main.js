@@ -20,6 +20,11 @@ const upscaleToggle = document.getElementById("upscale");
 const upscaledContainer=  document.getElementById("upscaled-container");
 const feedContainer = document.getElementById("feeds-container");
 
+
+
+
+
+
 callButton.onclick = call;
 
 let pc1;
@@ -51,9 +56,27 @@ const offerOptions = {
   offerToReceiveVideo: 1
 };
 
+
+let codecPreferences = [];
+
+
+const codecs= {};
+
+RTCRtpSender.getCapabilities("video").codecs.forEach(function (codec) {
+    codecs[codec.mimeType] = codec;
+});
+
+if(!codecs['video/H264'] && !codecs['video/VP9']) codecSelector.disabled = true;
+
+
+
+
+
 function gotStream(stream) {
   console.log('Received local stream');
   localStream = stream;
+
+  console.log(stream);
   localVideo.srcObject = stream;
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Adding Local Stream to peer connection');
@@ -85,9 +108,21 @@ function call() {
   callButton.disabled = true;
   bandwidthSelector.disabled = false;
   resolutionSelector.disabled = true;
+  codecSelector.disabled = true;
+
   console.log('Starting call');
+
+
+
+
   const servers = null;
   pc1 = new RTCPeerConnection(servers);
+
+    const rtpTransceiver = pc1.addTransceiver("video");
+
+    rtpTransceiver.setCodecPreferences(codecPreferences);
+
+
   console.log('Created local peer connection object pc1');
   pc1.onicecandidate = onIceCandidate.bind(pc1);
 
@@ -197,6 +232,8 @@ bandwidthSelector.onchange = () => {
     } else {
       parameters.encodings[0].maxBitrate = bandwidth * 1000;
     }
+
+
     sender.setParameters(parameters)
         .then(() => {
           bandwidthSelector.disabled = false;
@@ -259,6 +296,19 @@ sourceSelector.onchange = () =>{
 
 };
 
+
+codecSelector.onchange = () =>{
+  if(codecSelector.value === "vp9"){
+
+    codecPreferences = [codecs['video/VP9'], codecs['video/H264']];
+  } else {
+
+    codecPreferences = [codecs['video/H264'], codecs['video/VP9']];
+  }
+
+  console.log("Setting codec preferences");
+  console.log(codecPreferences);
+};
 
 resolutionSelector.onchange = () =>{
 
