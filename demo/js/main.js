@@ -137,7 +137,7 @@ function call() {
       .catch(e => console.warn('getUserMedia() error: ' + e.name));
 
 
-  upscaler  = new Upscaler(document.getElementById("remoteVideo"), {width: width, height: height});
+  upscaler  = new vectorlyUpscaler(remoteVideo, {width: width*3, height: height*3, name: 'residual_3k', version: '2.1'});
 
 
 }
