@@ -118,10 +118,9 @@ class CanvasSource {
       const outputVideo = outputVideoContainer.firstElementChild;
       if (outputVideo) {
         this.canvas_.width = roundToEven(outputVideo.clientWidth);
-        this.canvas_.height =
-            roundToEven(this.canvas_.width / CANVAS_ASPECT_RATIO);
       }
     }
+    this.canvas_.height = roundToEven(this.canvas_.width / CANVAS_ASPECT_RATIO);
 
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, this.canvas_.width, this.canvas_.height);
