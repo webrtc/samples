@@ -159,7 +159,10 @@ function initUI() {
       case 'video':
         source = new VideoSource();
         break;
-      case 'pc':
+    case 'canvas':
+      source = new CanvasSource();
+      break;
+    case 'pc':
         source = new PeerConnectionSource(new CameraSource());
         break;
       default:
