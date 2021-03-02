@@ -22,9 +22,9 @@ function roundToEven(x) {
 
 /**
  * Draws text on a Canvas.
- * @implements MediaStreamSource
+ * @implements {MediaStreamSource} in pipeline.js
  */
-class CanvasSource {
+class CanvasSource { // eslint-disable-line no-unused-vars
   constructor() {
     /** @private {boolean} */
     this.visibility_ = false;
@@ -65,7 +65,7 @@ class CanvasSource {
         })
         .catch((e) => {
           console.log(`[CanvasSource] The request to retrieve ${
-              TEXT_SOURCE} encountered an error: ${e}.`);
+            TEXT_SOURCE} encountered an error: ${e}.`);
         });
   }
   /** @override */
@@ -176,19 +176,19 @@ class CanvasSource {
 
     console.log('[CanvasSource] Initializing 2D context for source animation.');
     this.canvas_ =
-        /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
+      /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
     this.canvas_.classList.add('video', 'sourceVideo');
     // Generally video frames do not have an alpha channel. Even if the browser
     // supports it, there may be a performance cost, so we disable alpha.
     this.ctx_ = /** @type {?CanvasRenderingContext2D} */ (
-        this.canvas_.getContext('2d', {alpha: false}));
+      this.canvas_.getContext('2d', {alpha: false}));
     if (!this.ctx_) {
       throw new Error('Unable to create CanvasRenderingContext2D');
     }
     this.updateCanvasVisibility();
     this.stream_ = this.canvas_.captureStream(0);
     this.captureTrack_ = /** @type {!CanvasCaptureMediaStreamTrack} */ (
-        this.stream_.getTracks()[0]);
+      this.stream_.getTracks()[0]);
     this.requestAnimationFrame();
     console.log(
         '[CanvasSource] Initialized canvas, context, and capture stream.',

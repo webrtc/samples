@@ -23,6 +23,7 @@ if (VideoFrame.prototype.close === undefined) {
 }
 
 /* global CameraSource */ // defined in camera-source.js
+/* global CanvasSource */ // defined in canvas-source.js
 /* global CanvasTransform */ // defined in canvas-transform.js
 /* global PeerConnectionSink */ // defined in peer-connection-sink.js
 /* global PeerConnectionSource */ // defined in peer-connection-source.js
