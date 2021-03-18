@@ -120,7 +120,9 @@ function call() {
 
     const rtpTransceiver = pc1.addTransceiver("video");
 
-    rtpTransceiver.setCodecPreferences(codecPreferences);
+    if(rtpTransceiver.setCodecPreferences){
+        rtpTransceiver.setCodecPreferences(codecPreferences);
+    }
 
 
   console.log('Created local peer connection object pc1');
