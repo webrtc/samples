@@ -42,7 +42,7 @@
         stream to a video element on the page, which may affect the source FPS.
     </p>
 
-    <span id="outputVideo"></span>
+    <span id="outputVideoContainer"></span>
 
     <div class="box">
         <span>Source:</span>
@@ -50,6 +50,7 @@
             <option selected value="">(stopped)</option>
             <option value="camera">Camera</option>
             <option value="video">Video</option>
+            <option value="canvas">Canvas</option>
             <option value="pc">Peer connection (from camera)</option>
         </select>
         <span>Add to page: <input type="checkbox" id="sourceVisible" disabled></span>
@@ -88,6 +89,7 @@
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="js/camera-source.js" async></script>
+<script src="js/canvas-source.js" async></script>
 <script src="js/canvas-transform.js" async></script>
 <script src="js/peer-connection-pipe.js" async></script>
 <script src="js/peer-connection-sink.js" async></script>
