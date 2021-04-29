@@ -95,7 +95,7 @@ const worker = new Worker('./js/worker.js', {name: 'E2EE worker'});
 function setupSenderTransform(sender) {
   const senderStreams = sender.createEncodedStreams();
   // Instead of creating the transform stream here, we do a postMessage to the worker. The first
-  // argument is an object defined by us, the sceond a list of variables that will be transferred to
+  // argument is an object defined by us, the second is a list of variables that will be transferred to
   // the worker. See
   //   https://developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
   // If you want to do the operations on the main thread instead, comment out the code below.
