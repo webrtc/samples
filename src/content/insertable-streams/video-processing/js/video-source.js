@@ -53,8 +53,10 @@ class VideoSource { // eslint-disable-line no-unused-vars
       console.log(
           '[VideoSource] Adding source video element to page.',
           `${this.debugPath_}.video_ =`, this.video_);
-      const outputVideo = document.getElementById('outputVideo');
-      outputVideo.parentNode.insertBefore(this.video_, outputVideo);
+      const outputVideoContainer =
+          document.getElementById('outputVideoContainer');
+      outputVideoContainer.parentNode.insertBefore(
+          this.video_, outputVideoContainer);
     }
   }
   /** @override */
