@@ -16,6 +16,8 @@
 let mediaRecorder;
 let recordedBlobs;
 
+const codecPreferences = document.querySelector('#codecPreferences');
+
 const errorMsgElement = document.querySelector('span#errorMsg');
 const recordedVideo = document.querySelector('video#recorded');
 const recordButton = document.querySelector('button#record');
@@ -27,12 +29,14 @@ recordButton.addEventListener('click', () => {
     recordButton.textContent = 'Start Recording';
     playButton.disabled = false;
     downloadButton.disabled = false;
+    codecPreferences.disabled = false;
   }
 });
 
 const playButton = document.querySelector('button#play');
 playButton.addEventListener('click', () => {
-  const superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
+  const mimeType = codecPreferences.options[codecPreferences.selectedIndex].value.split(';', 1)[0];
+  const superBuffer = new Blob(recordedBlobs, {type: mimeType});
   recordedVideo.src = null;
   recordedVideo.srcObject = null;
   recordedVideo.src = window.URL.createObjectURL(superBuffer);
@@ -63,21 +67,22 @@ function handleDataAvailable(event) {
   }
 }
 
+function getSupportedMimeTypes() {
+  const possibleTypes = [
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=h264,opus',
+    'video/mp4;codecs=h264,aac',
+  ];
+  return possibleTypes.filter(mimeType => {
+    return MediaRecorder.isTypeSupported(mimeType);
+  });
+}
+
 function startRecording() {
   recordedBlobs = [];
-  let options = {mimeType: 'video/webm;codecs=vp9,opus'};
-  if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.error(`${options.mimeType} is not supported`);
-    options = {mimeType: 'video/webm;codecs=vp8,opus'};
-    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      console.error(`${options.mimeType} is not supported`);
-      options = {mimeType: 'video/webm'};
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.error(`${options.mimeType} is not supported`);
-        options = {mimeType: ''};
-      }
-    }
-  }
+  const mimeType = codecPreferences.options[codecPreferences.selectedIndex].value;
+  const options = {mimeType};
 
   try {
     mediaRecorder = new MediaRecorder(window.stream, options);
@@ -91,6 +96,7 @@ function startRecording() {
   recordButton.textContent = 'Stop Recording';
   playButton.disabled = true;
   downloadButton.disabled = true;
+  codecPreferences.disabled = true;
   mediaRecorder.onstop = (event) => {
     console.log('Recorder stopped: ', event);
     console.log('Recorded Blobs: ', recordedBlobs);
@@ -111,6 +117,14 @@ function handleSuccess(stream) {
 
   const gumVideo = document.querySelector('video#gum');
   gumVideo.srcObject = stream;
+
+  getSupportedMimeTypes().forEach(mimeType => {
+    const option = document.createElement('option');
+    option.value = mimeType;
+    option.innerText = option.value;
+    codecPreferences.appendChild(option);
+  });
+  codecPreferences.disabled = false;
 }
 
 async function init(constraints) {
@@ -124,6 +138,7 @@ async function init(constraints) {
 }
 
 document.querySelector('button#start').addEventListener('click', async () => {
+  document.querySelector('button#start').disabled = true;
   const hasEchoCancellation = document.querySelector('#echoCancellation').checked;
   const constraints = {
     audio: {
