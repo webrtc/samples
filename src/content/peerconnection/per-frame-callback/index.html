@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2021 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Peer connection and requestVideoFrameCallback()</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+
+<body>
+
+<div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection and requestVideoFrameCallback()</span>
+    </h1>
+
+    <div id="notsupported" style="display:none">
+      requestVideoAnimationCallback is not supported in your browser.
+    </div>
+
+    <video id="localVideo" playsinline autoplay muted></video>
+    <video id="remoteVideo" playsinline autoplay></video>
+
+    <div id="buttons">
+        <button id="callButton">Call</button>
+        <button id="hangupButton">Hang Up</button>
+    </div>
+    <div class="graph-container" id="localDelayGraph">
+        <div>Local capture delay (converted to milliseconds)</div>
+        <canvas id="localDelayCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="networkDelayGraph">
+        <div>Network delay (milliseconds)</div>
+        <canvas id="networkDelayCanvas"></canvas>
+    </div>
+    <br/>
+    <div class="graph-container" id="timeGraph">
+        <div>Render delay (milliseconds)</div>
+        <canvas id="timeCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="processingGraph">
+        <div>Processing time (converted to milliseconds)</div>
+        <canvas id="processingCanvas"></canvas>
+    </div>
+    <p>For more information about requestVideoFrameCallback, see <a href="https://web.dev/requestvideoframecallback-rvfc/"
+                                                            title="Perform efficient per-video-frame operations on video with requestVideoFrameCallback()">Perform efficient per-video-frame operations on video with requestVideoFrameCallback()</a>.</p>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/per-frame-callback"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/main.js" async></script>
+<script src="../../../js/third_party/graph.js"></script>
+
+<script src="../../../js/lib/ga.js"></script>
+</body>
+</html>
