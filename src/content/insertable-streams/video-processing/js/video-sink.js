@@ -35,7 +35,7 @@ class VideoSink { // eslint-disable-line no-unused-vars
       this.video_ =
         /** @type {!HTMLVideoElement} */ (document.createElement('video'));
       this.video_.classList.add('video', 'sinkVideo');
-      document.getElementById('outputVideo').appendChild(this.video_);
+      document.getElementById('outputVideoContainer').appendChild(this.video_);
       console.log(
           '[VideoSink] Added video element to page.',
           `${this.debugPath_}.video_ =`, this.video_);
