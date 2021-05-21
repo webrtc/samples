@@ -328,6 +328,9 @@ window.setInterval(() => {
     return;
   }
   const sender = pc1.getSenders()[0];
+  if (!sender) {
+    return;
+  }
   sender.getStats().then(res => {
     res.forEach(report => {
       let bytes;
