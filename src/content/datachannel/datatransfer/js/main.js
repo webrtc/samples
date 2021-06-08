@@ -32,6 +32,7 @@ let numberOfSendCalls = 0;
 let maxTimeUsedInSend = 0;
 let sendStartTime = 0;
 let currentThroughput = 0;
+let alreadyOffer = false;
 
 sendButton.addEventListener('click', createConnection);
 
@@ -75,19 +76,27 @@ async function createConnection() {
 
   console.log('Created local peer connection object localConnection: ', localConnection);
 
-  localConnection.addEventListener('icecandidate', e => onIceCandidate(localConnection, e));
+  localConnection.addEventListener('icecandidate', async e => {
+    await onIceCandidate(localConnection, e);
+    if (!alreadyOffer) {
+      sendOffer();
+    }
+  });
 
   remoteConnection = new RTCPeerConnection(servers);
-  remoteConnection.addEventListener('icecandidate', e => onIceCandidate(remoteConnection, e));
+  remoteConnection.addEventListener('icecandidate', async e => await onIceCandidate(remoteConnection, e));
   remoteConnection.addEventListener('datachannel', receiveChannelCallback);
 
+}
+
+function sendOffer() {
   try {
     const localOffer = await localConnection.createOffer();
     await handleLocalDescription(localOffer);
+    alreadyOffer = true;
   } catch (e) {
     console.error('Failed to create session description: ', e);
   }
-
   transferStatus.innerHTML = 'Peer connection setup complete.';
 }
 
