@@ -79,7 +79,7 @@ async function createConnection() {
   localConnection.addEventListener('icecandidate', async e => {
     await onIceCandidate(localConnection, e);
     if (!alreadyOffer) {
-      sendOffer();
+      await sendOffer();
     }
   });
 
@@ -89,7 +89,7 @@ async function createConnection() {
 
 }
 
-function sendOffer() {
+async function sendOffer() {
   try {
     const localOffer = await localConnection.createOffer();
     await handleLocalDescription(localOffer);
