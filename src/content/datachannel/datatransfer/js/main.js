@@ -75,10 +75,10 @@ async function createConnection() {
 
   console.log('Created local peer connection object localConnection: ', localConnection);
 
-  localConnection.addEventListener('icecandidate', e => onIceCandidate(localConnection, e));
+  localConnection.addEventListener('icecandidate', async e => await onIceCandidate(localConnection, e));
 
   remoteConnection = new RTCPeerConnection(servers);
-  remoteConnection.addEventListener('icecandidate', e => onIceCandidate(remoteConnection, e));
+  remoteConnection.addEventListener('icecandidate', async e => await onIceCandidate(remoteConnection, e));
   remoteConnection.addEventListener('datachannel', receiveChannelCallback);
 
   try {
