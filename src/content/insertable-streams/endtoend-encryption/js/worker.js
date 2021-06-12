@@ -117,21 +117,21 @@ function decodeFunction(encodedFrame, controller) {
 onmessage = async (event) => {
   const {operation} = event.data;
   if (operation === 'encode') {
-    const {readableStream, writableStream} = event.data;
+    const {readable, writable} = event.data;
     const transformStream = new TransformStream({
       transform: encodeFunction,
     });
-    readableStream
+    readable
         .pipeThrough(transformStream)
-        .pipeTo(writableStream);
+        .pipeTo(writable);
   } else if (operation === 'decode') {
-    const {readableStream, writableStream} = event.data;
+    const {readable, writable} = event.data;
     const transformStream = new TransformStream({
       transform: decodeFunction,
     });
-    readableStream
+    readable
         .pipeThrough(transformStream)
-        .pipeTo(writableStream);
+        .pipeTo(writable);
   } else if (operation === 'setCryptoKey') {
     if (event.data.currentCryptoKey !== currentCryptoKey) {
       currentKeyIdentifier++;
