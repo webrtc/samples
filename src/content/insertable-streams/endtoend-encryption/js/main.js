@@ -103,28 +103,26 @@ function setupSenderTransform(sender) {
   const transformStream = new TransformStream({
     transform: encodeFunction,
   });
-  senderStreams.readableStream
+  senderStreams.readable
       .pipeThrough(transformStream)
-      .pipeTo(senderStreams.writableStream);
+      .pipeTo(senderStreams.writable);
   */
-  const readableStream = senderStreams.readable || senderStreams.readableStream;
-  const writableStream = senderStreams.writable || senderStreams.writableStream;
+  const {readable, writable} = senderStreams;
   worker.postMessage({
     operation: 'encode',
-    readableStream,
-    writableStream,
-  }, [readableStream, writableStream]);
+    readable,
+    writable,
+  }, [readable, writable]);
 }
 
 function setupReceiverTransform(receiver) {
   const receiverStreams = receiver.createEncodedStreams();
-  const readableStream = receiverStreams.readable || receiverStreams.readableStream;
-  const writableStream = receiverStreams.writable || receiverStreams.writableStream;
+  const {readable, writable} = receiverStreams;
   worker.postMessage({
     operation: 'decode',
-    readableStream,
-    writableStream,
-  }, [readableStream, writableStream]);
+    readable,
+    writable,
+  }, [readable, writable]);
 }
 
 function call() {
