@@ -99,7 +99,7 @@ function start() {
 const worker = new Worker('./js/worker.js', {name: 'E2EE worker'});
 function setupSenderTransform(sender) {
   if (window.RTCRtpScriptTransform) {
-    sender.transform = new RTCRtpScriptTransform(worker, { operation: 'encode' });
+    sender.transform = new RTCRtpScriptTransform(worker, {operation: 'encode'});
     return;
   }
 
@@ -127,7 +127,7 @@ function setupSenderTransform(sender) {
 
 function setupReceiverTransform(receiver) {
   if (window.RTCRtpScriptTransform) {
-    receiver.transform = new RTCRtpScriptTransform(worker, { operation: 'decode' });
+    receiver.transform = new RTCRtpScriptTransform(worker, {operation: 'decode'});
     return;
   }
 

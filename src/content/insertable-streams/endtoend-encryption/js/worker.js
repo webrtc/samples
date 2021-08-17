@@ -133,8 +133,9 @@ function handleTransform(operation, readable, writable) {
 }
 
 onmessage = (event) => {
-  if (event.data.operation === 'encode' || event.data.operation === 'decode')
+  if (event.data.operation === 'encode' || event.data.operation === 'decode') {
     return handleTransform(event.data.operation, event.data.readable, event.data.writable);
+  }
   if (event.data.operation === 'setCryptoKey') {
     if (event.data.currentCryptoKey !== currentCryptoKey) {
       currentKeyIdentifier++;
@@ -144,5 +145,6 @@ onmessage = (event) => {
   }
 };
 
-if (self.RTCTransformEvent)
-  onrtctransform = (event) => handleTransform(event.transformer.options.operation, event.transformer.readable, event.transformer.writable);
+if (self.RTCTransformEvent) {
+  self.onrtctransform = (event) => handleTransform(event.transformer.options.operation, event.transformer.readable, event.transformer.writable);
+}
