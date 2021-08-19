@@ -8,6 +8,7 @@
 
 'use strict';
 
+/* global RTCRtpScriptTransform */
 /* global VideoPipe */
 
 const video1 = document.querySelector('video#video1');
