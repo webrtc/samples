@@ -90,7 +90,6 @@ async function init() {
 
   async function getMedia() {
     getMediaButton.disabled = true;
-    createPeerConnectionButton.disabled = false;
 
     if (localStream) {
       localVideo.srcObject = null;
@@ -126,15 +125,12 @@ async function init() {
     console.log('Received local stream');
     localVideo.srcObject = stream;
     localStream = stream;
+    createPeerConnectionButton.disabled = false;
   }
 
   function createPeerConnection() {
     createPeerConnectionButton.disabled = true;
     createOfferButton.disabled = false;
-    createAnswerButton.disabled = false;
-    setOfferButton.disabled = false;
-    setAnswerButton.disabled = false;
-    hangupButton.disabled = false;
     console.log('Starting call');
     const videoTracks = localStream.getVideoTracks();
     const audioTracks = localStream.getAudioTracks();
@@ -206,22 +202,28 @@ async function init() {
       // eslint-disable-next-line no-unused-vars
       const ignore = await localPeerConnection.setLocalDescription(offer);
       onSetSessionDescriptionSuccess();
+      setOfferButton.disabled = true;
     } catch (e) {
       onSetSessionDescriptionError(e);
+      return;
     }
 
     try {
       // eslint-disable-next-line no-unused-vars
       const ignore = await remotePeerConnection.setRemoteDescription(offer);
       onSetSessionDescriptionSuccess();
+      createAnswerButton.disabled = false;
     } catch (e) {
       onSetSessionDescriptionError(e);
+      return;
     }
   }
 
   function gotDescription1(description) {
     offerSdpTextarea.disabled = false;
     offerSdpTextarea.value = description.sdp;
+    createOfferButton.disabled = true;
+    setOfferButton.disabled = false;
   }
 
   async function createAnswer() {
@@ -237,6 +239,7 @@ async function init() {
   }
 
   async function setAnswer() {
+    setAnswerButton.disabled = false;
     // Restore the SDP from the textarea. Ensure we use CRLF which is what is generated
     // even though https://tools.ietf.org/html/rfc4566#section-5 requires
     // parsers to handle both LF and CRLF.
@@ -253,8 +256,10 @@ async function init() {
       // eslint-disable-next-line no-unused-vars
       const ignore = await remotePeerConnection.setLocalDescription(answer);
       onSetSessionDescriptionSuccess();
+      setAnswerButton.disabled = true;
     } catch (e) {
       onSetSessionDescriptionError(e);
+      return;
     }
 
     console.log(`Modified Answer from remotePeerConnection\n${sdp}`);
@@ -264,12 +269,17 @@ async function init() {
       onSetSessionDescriptionSuccess();
     } catch (e) {
       onSetSessionDescriptionError(e);
+      return;
     }
+    hangupButton.disabled = false;
+    createOfferButton.disabled = false;
   }
 
   function gotDescription2(description) {
     answerSdpTextarea.disabled = false;
     answerSdpTextarea.value = description.sdp;
+    createAnswerButton.disabled = true;
+    setAnswerButton.disabled = false;
   }
 
   function sendData() {

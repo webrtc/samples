@@ -207,7 +207,8 @@ class WebGLTransform { // eslint-disable-line no-unused-vars
     gl.bindTexture(gl.TEXTURE_2D, null);
     if (!this.use_image_bitmap_) {
       try {
-        controller.enqueue(new VideoFrame(this.canvas_, {timestamp}));
+        // alpha: 'discard' is needed in order to send frames to a PeerConnection.
+        controller.enqueue(new VideoFrame(this.canvas_, {timestamp, alpha: 'discard'}));
       } catch (e) {
         // This should only happen on Chrome <91.
         console.log(
