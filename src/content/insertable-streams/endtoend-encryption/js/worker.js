@@ -151,5 +151,5 @@ if (self.RTCTransformEvent) {
   self.onrtctransform = (event) => {
     const transformer = event.transformer;
     handleTransform(transformer.options.operation, transformer.readable, transformer.writable);
-  }
+  };
 }

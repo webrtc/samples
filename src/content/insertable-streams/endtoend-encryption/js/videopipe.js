@@ -22,8 +22,8 @@
 'use strict';
 
 // Preferring a certain codec is an expert option without GUI.
-// eslint-disable-next-line prefer-const
 // Use VP8 by default to limit depacketization issues.
+// eslint-disable-next-line prefer-const
 let preferredVideoCodecMimeType = 'video/VP8';
 
 function VideoPipe(stream, forceSend, forceReceive, handler) {
