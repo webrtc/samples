@@ -132,6 +132,7 @@ function handleTransform(operation, readable, writable) {
   }
 }
 
+// Handler for messages, including transferable streams.
 onmessage = (event) => {
   if (event.data.operation === 'encode' || event.data.operation === 'decode') {
     return handleTransform(event.data.operation, event.data.readable, event.data.writable);
@@ -145,6 +146,10 @@ onmessage = (event) => {
   }
 };
 
+// Handler for RTCRtpScriptTransforms.
 if (self.RTCTransformEvent) {
-  self.onrtctransform = (event) => handleTransform(event.transformer.options.operation, event.transformer.readable, event.transformer.writable);
+  self.onrtctransform = (event) => {
+    const transformer = event.transformer;
+    handleTransform(transformer.options.operation, transformer.readable, transformer.writable);
+  }
 }

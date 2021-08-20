@@ -57,7 +57,7 @@ if (!hasEnoughAPIs) {
 }
 
 if (!hasEnoughAPIs) {
-  banner.innerText = 'Your browser does not support Insertable Streams/WebRTC Encoded Transforms. ' +
+  banner.innerText = 'Your browser does not support WebRTC Encoded Transforms. ' +
   'This sample will not work.';
   if (adapter.browserDetails.browser === 'chrome') {
     banner.innerText += ' Try with Enable experimental Web Platform features enabled from chrome://flags.';
