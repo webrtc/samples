@@ -98,7 +98,9 @@ async function start() {
       const [mimeType, sdpFmtpLine] = event.target.value.split(' ');
       const selectedCodecIndex = codecs.findIndex(c => c.mimeType === mimeType && c.sdpFmtpLine === sdpFmtpLine);
       const selectedCodec = codecs[selectedCodecIndex];
-      scalabilityMode.innerHTML = "";
+      while (scalabilityMode.firstChild) {
+        scalabilityMode.firstChild.remove();
+      }
       const option = document.createElement('option');
       option.value = "";
       option.innerText = "NONE";
