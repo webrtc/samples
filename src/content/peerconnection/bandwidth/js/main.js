@@ -38,6 +38,9 @@ let packetSeries;
 let lastResult;
 
 let lastRemoteStart = 0;
+
+// lastRemoteFullSizeDelay is designed to be picked up by a test script.
+// eslint-disable-next-line no-unused-vars
 let lastRemoteFullSizeDelay = 0;
 
 const offerOptions = {
@@ -48,7 +51,7 @@ const offerOptions = {
 remoteVideo.addEventListener('resize', ev => {
   const elapsed = performance.now() - lastRemoteStart;
   console.log(elapsed, ': Resize event, size ',
-	      remoteVideo.videoWidth, 'x', remoteVideo.videoHeight);
+      remoteVideo.videoWidth, 'x', remoteVideo.videoHeight);
   if (localVideo.videoWidth == remoteVideo.videoWidth &&
       localVideo.videoHeight == remoteVideo.videoHeight) {
     lastRemoteFullSizeDelay = elapsed;
@@ -108,8 +111,8 @@ function call() {
   } else {
     console.log('Requesting live local stream');
     navigator.mediaDevices.getUserMedia({video: true})
-	.then(gotStream)
-	.catch(e => alert('getUserMedia() error: ' + e.name));
+        .then(gotStream)
+        .catch(e => alert('getUserMedia() error: ' + e.name));
   }
 }
 
@@ -314,13 +317,13 @@ window.setInterval(() => {
 
 function syntheticVideoStream({width = 640, height = 480, signal} = {}) {
   const canvas = Object.assign(
-      document.createElement("canvas"), {width, height}
+      document.createElement('canvas'), {width, height}
   );
   const ctx = canvas.getContext('2d');
   const stream = canvas.captureStream();
 
   let count = 0;
-  const interval = setInterval(() => {
+  setInterval(() => {
     // Use relatively-prime multipliers to get a color roll
     const r = Math.abs((count*2)%512 - 256);
     const g = Math.abs((count*3)%512 - 256);
