@@ -186,7 +186,8 @@ async function call() {
     }
   }
   codecPreferences.disabled = true;
-
+  scalabilityMode.disabled = true;
+	
   try {
     console.log('pc1 createOffer start');
     const offer = await pc1.createOffer(offerOptions);
@@ -308,6 +309,7 @@ function hangup() {
   hangupButton.disabled = true;
   callButton.disabled = false;
   codecPreferences.disabled = false;
+  scalabilityMode.disabled = false;
 }
 
 // query getStats every second
