@@ -315,6 +315,13 @@ window.setInterval(() => {
   });
 }, 1000);
 
+// Return a number between 0 and maxValue based on the input number,
+// so that the output changes smoothly up and down.
+function triangle(number, maxValue) {
+  const modulus = (maxValue + 1) * 2;
+  return Math.abs(number % modulus - maxValue);
+}
+
 function syntheticVideoStream({width = 640, height = 480, signal} = {}) {
   const canvas = Object.assign(
       document.createElement('canvas'), {width, height}
@@ -325,23 +332,23 @@ function syntheticVideoStream({width = 640, height = 480, signal} = {}) {
   let count = 0;
   setInterval(() => {
     // Use relatively-prime multipliers to get a color roll
-    const r = Math.abs((count*2)%512 - 256);
-    const g = Math.abs((count*3)%512 - 256);
-    const b = Math.abs((count*5)%512 - 256);
+    const r = triangle(count*2, 255);
+    const g = triangle(count*3, 255);
+    const b = triangle(count*5, 255);
     ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
     count += 1;
     const boxSize=80;
     ctx.fillRect(0, 0, width, height);
     // Add some bouncing boxes in contrast color to add a little more noise.
-    const rContrast = (r + 128)%255;
-    const gContrast = (g + 128)%255;
-    const bContrast = (b + 128)%255;
+    const rContrast = (r + 128)%256;
+    const gContrast = (g + 128)%256;
+    const bContrast = (b + 128)%256;
     ctx.fillStyle = `rgb(${rContrast}, ${gContrast}, ${bContrast})`;
-    const xpos = count*5 % (width - boxSize);
-    const ypos = count*7 % (height - boxSize);
+    const xpos = triangle(count*5, width - boxSize);
+    const ypos = triangle(count*7, height - boxSize);
     ctx.fillRect(xpos, ypos, boxSize, boxSize);
-    const xpos2 = (count*3) % (width - boxSize);
-    const ypos2 = (count*11) % (height - boxSize);
+    const xpos2 = triangle(count*11, width - boxSize);
+    const ypos2 = triangle(count*13, height - boxSize);
     ctx.fillRect(xpos2, ypos2, boxSize, boxSize);
     // If signal is set (0-255), add a constant-color box of that luminance to
     // the video frame at coordinates 20 to 60 in both X and Y direction.
