@@ -18,6 +18,7 @@ const servers = document.querySelector('select#servers');
 const urlInput = document.querySelector('input#url');
 const usernameInput = document.querySelector('input#username');
 const iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
+const getUserMediaInput = document.querySelector('input#getUserMedia');
 
 addButton.onclick = addServer;
 gatherButton.onclick = start;
@@ -29,13 +30,14 @@ resetButton.onclick = (e) => {
   setDefaultServer(serversSelect);
 };
 
-iceCandidatePoolInput.onchange = function(e) {
+iceCandidatePoolInput.onchange = (e) => {
   const span = e.target.parentElement.querySelector('span');
   span.textContent = e.target.value;
 };
 
 let begin;
 let pc;
+let stream;
 let candidates;
 
 const allServersKey = 'servers';
@@ -115,13 +117,17 @@ function removeServer() {
   writeServersToLocalStorage();
 }
 
-function start() {
+async function start() {
   // Clean out the table.
   while (candidateTBody.firstChild) {
     candidateTBody.removeChild(candidateTBody.firstChild);
   }
 
   gatherButton.disabled = true;
+  if (getUserMediaInput.checked) {
+    stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+  }
+  getUserMediaInput.disabled = true;
 
   // Read the values from the input boxes.
   const iceServers = [];
@@ -154,6 +160,9 @@ function start() {
   pc.onicecandidate = iceCallback;
   pc.onicegatheringstatechange = gatheringStateChange;
   pc.onicecandidateerror = iceCandidateError;
+  if (stream) {
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+  }
   pc.createOffer(
       offerOptions
   ).then(
@@ -254,7 +263,13 @@ function iceCallback(event) {
     appendCell(row, getFinalResult(), 7);
     pc.close();
     pc = null;
+    pc = null;
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
     gatherButton.disabled = false;
+    getUserMediaInput.disabled = false;
   }
   candidateTBody.appendChild(row);
 }
@@ -269,7 +284,12 @@ function gatheringStateChange() {
   appendCell(row, getFinalResult(), 7);
   pc.close();
   pc = null;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
   gatherButton.disabled = false;
+  getUserMediaInput.disabled = false;
   candidateTBody.appendChild(row);
 }
 
