@@ -1,0 +1,24 @@
+/*
+ *  Copyright (c) 2021 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
+ video {
+    width: 480px;
+    height: 270px;
+}
+
+.child{
+      margin: 0px 0px 10px 0px;
+}
+
+.worker {
+  width: 480px;
+  height: 270px;
+  float: left;
+  margin: 0px 0px 0px 0px;
+}
+  

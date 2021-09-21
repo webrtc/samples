@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Insertable Streams - Video</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+    <div id="container">
+        <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+            <br>
+            <span>WebGPU rendering with insertable streams for multiple video feeds</span>
+        </h1>
+
+        <p>This sample shows how to perform WebGPU rendering on video streams using the
+            <a href="https://github.com/w3c/mediacapture-insertable-streams">insertable streams</a> API and
+            <a href="https://gpuweb.github.io/gpuweb/"> WebGPU </a> API.
+            There are options for the source of the input stream and the destination of the output stream.
+        </p>
+        <div class="box">
+            <span>Choose type of rendering:</span>
+            <select id="sourceSelector">
+                <option selected value="stopped">(stopped)</option>
+                <option value="multi-video">Multi video rendering</option>
+                <option value="worker">Multiple worker threads</option>
+            </select>
+        </div>
+
+        <div>Input:</div>
+        <video id="inputVideo" class="child" width="480" height="270"></video>
+        <video id="gumInputVideo" width="480" height="270"></video>
+
+        <div>Output:</div>
+        <div id="outputVideo" class="worker"></div>
+        <div id="gumOutputVideo" class="worker"></div>
+        <p>
+            <b>Note</b>: This sample is using WebGPU API that is in Origin Trial as
+            of 2021-09-21 and is available in Chrome M94 if the experimental code is enabled on
+            the command line with
+            <code>--enable-unsafe-webgpu</code>.
+        </p>
+
+    </div>
+
+    <script src="js/main.js" async></script>
+    <script src="js/multi-video.js" async></script>
+    <script src="js/webpgu-worker.js" async></script>
+    <script src="js/worker.js" async></script>
+</body>
+
+</html>
