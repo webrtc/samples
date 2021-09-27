@@ -3,7 +3,7 @@
 if (typeof MediaStreamTrackProcessor === 'undefined' ||
     typeof MediaStreamTrackGenerator === 'undefined') {
     const errorMessage = 'Your browser does not support the MediaStreamTrack '
-     + 'API for Insertable Streams of Media which was shipped in M94.';
+        + 'API for Insertable Streams of Media which was shipped in M94.';
     document.getElementById('errorMsg').innerText = errorMessage;
     console.log(errorMessage);
 }
