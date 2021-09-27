@@ -55,6 +55,13 @@ class WebGPUTransform {
 
         const canvas = this.canvas_;
         const context = canvas.getContext('webgpu');
+        if(context == null){
+            const errorMessage = 'Your browser does not support the WebGPU API.' +
+            ' Please see the note at the bottom of the page.';
+            document.getElementById('errorMsg').innerText = errorMessage;
+            console.log(errorMessage);
+            return;
+        }
         this.context_ = context;
         const adapter = await navigator.gpu.requestAdapter();
         const device = await adapter.requestDevice();
@@ -149,7 +156,6 @@ class WebGPUTransform {
     async transform(frame, frame2) {
         const device = this.device_;
         if (device == null) {
-            console.log("Device is null");
             if (frame) frame.close();
             if (frame2) frame2.close();
             return;

@@ -36,6 +36,10 @@ class WebGPUWorker {
                 operation: 'init',
                 canvas: offScreen2,
             }, [offScreen2]);
+        this.worker_.addEventListener("message", function handleMsgFromWorker(msg) {
+            document.getElementById('errorMsg').innerText = msg.data;
+            console.log(msg.data);
+        });
     }
 
     async transform(frame, frame2) {
@@ -46,7 +50,6 @@ class WebGPUWorker {
                     frame: frame,
                     number: 1,
                 }, [frame]);
-            
         }
         if(frame2){
             this.worker2_.postMessage(
@@ -55,7 +58,6 @@ class WebGPUWorker {
                     frame: frame2,
                     number: 2,
                 }, [frame2]);
-
         }
     }
 

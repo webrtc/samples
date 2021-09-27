@@ -1,3 +1,13 @@
+'use strict';
+
+if (typeof MediaStreamTrackProcessor === 'undefined' ||
+    typeof MediaStreamTrackGenerator === 'undefined') {
+    const errorMessage = 'Your browser does not support the MediaStreamTrack '
+     + 'API for Insertable Streams of Media which was shipped in M94.';
+    document.getElementById('errorMsg').innerText = errorMessage;
+    console.log(errorMessage);
+}
+
 let videoElement;
 
 async function getMediaStream(src) {
@@ -69,20 +79,20 @@ async function main(sourceType) {
         if (gpuTransform) {
             await gpuTransform.transform(frame1, frame2);
         }
-        else{
-            if(frame1) frame1.close();
-            if(frame2) frame2.close();
+        else {
+            if (frame1) frame1.close();
+            if (frame2) frame2.close();
         }
     };
 
     async function updateScreenImage() {
         while (true) {
             let chunk1, chunk2;
-            if(video_source){
+            if (video_source) {
                 let { value: chunk } = await video_source.read();
                 chunk1 = chunk;
             }
-            if(gum_source){
+            if (gum_source) {
                 let { value: chunk } = await gum_source.read();
                 chunk2 = chunk;
             }

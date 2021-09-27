@@ -42,6 +42,12 @@ onmessage = async (event) => {
     if (operation == 'init') {
         const { canvas } = event.data;
         context = canvas.getContext('webgpu');
+        if(context == null){
+            const errorMessage = 'Your browser does not support the WebGPU API.' +
+            ' Please see the note at the bottom of the page.';
+            postMessage(errorMessage);
+            return;
+        }
         const adapter = await navigator.gpu.requestAdapter();
         device = await adapter.requestDevice();
         if (device == null) return;

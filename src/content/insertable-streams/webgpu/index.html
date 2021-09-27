@@ -38,11 +38,14 @@
             <span>WebGPU rendering with insertable streams for multiple video feeds</span>
         </h1>
 
-        <p>This sample shows how to render multiple video streams to a single canvas using the <a
+        <p>This sample shows how to render multiple video streams to canvas using the <a
                 href="https://github.com/w3c/mediacapture-insertable-streams">insertable streams</a> and <a
-                    href="https://gpuweb.github.io/gpuweb/">WebGPU</a> APIs. There are options for the source of the
-                input stream and the destination of the output stream.
+                href="https://gpuweb.github.io/gpuweb/">WebGPU</a> APIs. A single canvas is used in case of Multi-video
+            rendering and two canvases in case of worker processing as each worker thread is passed a different canvas
+            instance. There are options for the type of rendering used to process the input.
         </p>
+        <div id="errorMsg" class="error"></div>
+    <br>
         <div class="box">
             <span>Choose type of rendering:</span>
             <select id="sourceSelector">

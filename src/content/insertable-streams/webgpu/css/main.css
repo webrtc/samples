@@ -21,4 +21,9 @@
   float: left;
   margin: 0px 0px 0px 0px;
 }
+
+.error {
+  font-size: 20px;
+  color:red;
+}
   
