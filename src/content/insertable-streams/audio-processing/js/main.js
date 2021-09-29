@@ -8,7 +8,7 @@
 
 'use strict';
 
-/* global MediaStreamTrackProcessor, MediaStreamTrackGenerator */
+/* global MediaStreamTrackProcessor, MediaStreamTrackGenerator, AudioData */
 if (typeof MediaStreamTrackProcessor === 'undefined' ||
     typeof MediaStreamTrackGenerator === 'undefined') {
   alert(
@@ -24,6 +24,12 @@ try {
   alert(
       'Your browser does not support insertable audio streams. See the note ' +
         'at the bottom of the page.');
+}
+
+if (typeof AudioData === 'undefined') {
+  alert(
+      'Your browser does not support WebCodecs. See the note at the bottom ' +
+      'of the page.');
 }
 
 // Put variables in global scope to make them available to the browser console.
@@ -95,7 +101,14 @@ function lowPassFilter() {
 
       lastValuePerChannel[c] = lastValue;
     }
-    controller.enqueue(new AudioData({format, sampleRate: data.sampleRate, numberOfFrames: data.numberOfFrames, numberOfChannels: nChannels, timestamp: data.timestamp, data: buffer}));
+    controller.enqueue(new AudioData({
+      format,
+      sampleRate: data.sampleRate,
+      numberOfFrames: data.numberOfFrames,
+      numberOfChannels: nChannels,
+      timestamp: data.timestamp,
+      data: buffer
+    }));
   };
 }
 
@@ -104,7 +117,9 @@ async function start() {
   try {
     stream = await navigator.mediaDevices.getUserMedia(constraints);
   } catch (error) {
-    const errorMessage = 'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' + error.name;
+    const errorMessage =
+          'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' +
+          error.name;
     document.getElementById('errorMsg').innerText = errorMessage;
     console.log(errorMessage);
   }
