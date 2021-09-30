@@ -11,15 +11,14 @@
     height: 270px;
 }
 
-.child{
-      margin: 0px 0px 10px 0px;
+.input{
+    float: left;
+    margin: 0px 0px 0px 0px;
 }
 
-.worker {
-  width: 480px;
-  height: 270px;
-  float: left;
-  margin: 0px 0px 0px 0px;
+.output {
+  width: 960px;
+  height: 540px;
 }
 
 .error {

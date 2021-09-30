@@ -33,14 +33,24 @@ fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
 `,
 };
 
+async function updateScreenImage(source) {
+    let frame;
+    if (source) {
+        let { value: chunk } = await source.read();
+        frame = chunk;
+    }
+    return frame;
+}
+
 class WebGPUTransform {
     constructor() {
         this.canvas_ = null;
         this.context_ = null;
         this.device_ = null;
         this.renderPipeline_ = null;
+        this.sampler_ = null;
         this.videoTexture_ = null;
-        this.verticesBuffer_ = null;
+        this.vertexBuffer_ = null;
     }
 
     async init() {
@@ -55,9 +65,9 @@ class WebGPUTransform {
 
         const canvas = this.canvas_;
         const context = canvas.getContext('webgpu');
-        if(context == null){
+        if (context === null || context === undefined) {
             const errorMessage = 'Your browser does not support the WebGPU API.' +
-            ' Please see the note at the bottom of the page.';
+                ' Please see the note at the bottom of the page.';
             document.getElementById('errorMsg').innerText = errorMessage;
             console.log(errorMessage);
             return;
@@ -66,10 +76,12 @@ class WebGPUTransform {
         const adapter = await navigator.gpu.requestAdapter();
         const device = await adapter.requestDevice();
         this.device_ = device;
-        if (this.device_ === null) return;
+        if (this.device_ === null || this.device_ === undefined) {
+            console.log('[WebGPUTransform] requestDevice failed.')
+            return;
+        }
         const swapChainFormat = 'bgra8unorm';
 
-        // prettier-ignore
         const rectVerts = new Float32Array([
             1.0, 1.0, 0.0, 1.0, 0.0,
             1.0, -1.0, 0.0, 1.0, 1.0,
@@ -79,17 +91,17 @@ class WebGPUTransform {
             -1.0, 1.0, 0.0, 0.0, 0.0,
         ]);
         //Creates a GPU buffer.
-        const verticesBuffer = device.createBuffer({
+        const vertexBuffer = device.createBuffer({
             size: rectVerts.byteLength,
             usage: GPUBufferUsage.VERTEX,
             mappedAtCreation: true,
         });
-        // Copies rectVerts to verticesBuffer
-        new Float32Array(verticesBuffer.getMappedRange()).set(rectVerts);
-        verticesBuffer.unmap();
-        this.verticesBuffer_ = verticesBuffer;
+        // Copies rectVerts to vertexBuffer
+        new Float32Array(vertexBuffer.getMappedRange()).set(rectVerts);
+        vertexBuffer.unmap();
+        this.vertexBuffer_ = vertexBuffer;
 
-        this.context_.configure({
+        context.configure({
             device,
             format: swapChainFormat
         })
@@ -151,59 +163,58 @@ class WebGPUTransform {
                 GPUTextureUsage.RENDER_ATTACHMENT,
         });
 
-    }
-
-    async transform(frame, frame2) {
-        const device = this.device_;
-        if (device == null) {
-            if (frame) frame.close();
-            if (frame2) frame2.close();
-            return;
-        }
-        // const canvas = this.canvas_;
-        const sampler = device.createSampler({
+        this.sampler_ = device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             addressModeW: 'repeat',
             magFilter: 'linear',
             minFilter: 'linear',
         });
+    }
+
+    async renderOnScreen(videoFrame, gumFrame) {
+        const device = this.device_;
+        if (device === null || device === undefined) {
+            console.log('[WebGPUTransform] device is undefined or null.')
+            if (videoFrame) videoFrame.close();
+            if (gumFrame) gumFrame.close();
+            return;
+        }
         const videoTexture = this.videoTexture_;
-        let videoFrame, videoFrame2;
-        if (frame) {
-            videoFrame = await createImageBitmap(frame, { resizeWidth: 480, resizeHeight: 270 });
+        let videoBitmap, gumBitmap;
+        if (videoFrame) {
+            videoBitmap = await createImageBitmap(videoFrame, { resizeWidth: 480, resizeHeight: 270 });
             device.queue.copyExternalImageToTexture(
-                { source: videoFrame, origin: { x: 0, y: 0 } },
+                { source: videoBitmap, origin: { x: 0, y: 0 } },
                 { texture: videoTexture, origin: { x: 0, y: 270 } },
                 {
                     // the width of the image being copied
-                    width: videoFrame.width,
-                    height: videoFrame.height,
+                    width: videoBitmap.width,
+                    height: videoBitmap.height,
                 }
             );
+            videoBitmap.close();
             videoFrame.close();
-            frame.close();
         }
-        if (frame2) {
-            videoFrame2 = await createImageBitmap(frame2, { resizeWidth: 480, resizeHeight: 270 });
+        if (gumFrame) {
+            gumBitmap = await createImageBitmap(gumFrame, { resizeWidth: 480, resizeHeight: 270 });
             device.queue.copyExternalImageToTexture(
-                { source: videoFrame2, origin: { x: 0, y: 0 } },
+                { source: gumBitmap, origin: { x: 0, y: 0 } },
                 { texture: videoTexture, origin: { x: 480, y: 0 } },
                 {
-                    width: videoFrame2.width,
-                    height: videoFrame2.height,
+                    width: gumBitmap.width,
+                    height: gumBitmap.height,
                 }
             );
-            videoFrame2.close();
-            frame2.close();
+            gumBitmap.close();
+            gumFrame.close();
         }
-        // const renderPipeline = this.renderPipeline_;
         const uniformBindGroup = device.createBindGroup({
             layout: this.renderPipeline_.getBindGroupLayout(0),
             entries: [
                 {
                     binding: 0,
-                    resource: sampler,
+                    resource: this.sampler_,
                 },
                 {
                     binding: 1,
@@ -224,28 +235,37 @@ class WebGPUTransform {
                 },
             ],
         };
-        // const verticesBuffer = this.verticesBuffer_;
         const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
         passEncoder.setPipeline(this.renderPipeline_);
-        passEncoder.setVertexBuffer(0, this.verticesBuffer_);
+        passEncoder.setVertexBuffer(0, this.vertexBuffer_);
         passEncoder.setBindGroup(0, uniformBindGroup);
         passEncoder.draw(6, 1, 0, 0);
         passEncoder.endPass();
         device.queue.submit([commandEncoder.finish()]);
     }
 
-    /** @override */
+
+    async transform(videoStream, gumStream) {
+        const videoSource = videoStream.getReader();
+        const gumSource = gumStream.getReader();
+
+        while (true) {
+            const videoFrame = await updateScreenImage(videoSource);
+            const gumFrame = await updateScreenImage(gumSource);
+            this.renderOnScreen(videoFrame, gumFrame);
+        }
+    }
+
     async destroy() {
         if (this.device_) {
             // Not yet in canary
             // await this.device_.destroy();
-            this.verticesBuffer_.destroy();
+            this.vertexBuffer_.destroy();
             this.device_ = null;
             if (this.canvas_.parentNode) {
                 this.canvas_.parentNode.removeChild(this.canvas_);
             }
-            console.log('[WebGPUTransform] WebGPU context is lost.',);
-
+            console.log('[WebGPUTransform] Context destroyed',);
         }
     }
 }

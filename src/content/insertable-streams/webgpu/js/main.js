@@ -23,17 +23,16 @@ async function getMediaStream(src) {
     const mediaPromise = new Promise((resolve, reject) => {
         videoElement.oncanplay = () => {
             if (!resolve || !reject) return;
-            console.log('[VideoSource] Obtaining video capture stream');
+            console.log('Obtaining video capture stream');
             if (videoElement.captureStream) {
                 sourceStream = videoElement.captureStream();
-                resolve("Success");
+                resolve();
             } else if (videoElement.mozCaptureStream) {
                 sourceStream = videoElement.mozCaptureStream();
-                resolve("Success");
+                resolve();
             } else {
-                const e = new Error('Stream capture is not supported');
-                console.error(e);
-                reject(e);
+                console.error(new Error('Stream capture is not supported'));
+                reject();
             }
             resolve = null;
             reject = null;
@@ -41,22 +40,36 @@ async function getMediaStream(src) {
     });
     await mediaPromise;
     console.log(
-        '[VideoSource] Received source video stream.',
-        `stream_ =`, sourceStream);
+        'Received source video stream.', sourceStream);
     return sourceStream;
 
 }
 
+async function getUserMediaStream() {
+    let gUMStream;
+    const gUMPromise = new Promise((resolve) => {
+        navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { width: 480, height: 270 }
+        }).then(stream => {
+            gUMStream = stream;
+            resolve();
+        }).catch(err => {
+            throw new Error("Unable to fetch getUserMedia stream " + err);
+        });
+    });
+
+    await gUMPromise;
+    return gUMStream;
+}
 
 let gpuTransform;
-let gUMStream, gUMTrack;
-let gUMVideo;
+let gUMTrack, gUMVideo;
 
 async function main(sourceType) {
-    gUMStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { width: 480, height: 270 } });
+    const gUMStream = await getUserMediaStream();
     gUMTrack = gUMStream.getVideoTracks()[0];
-    const gum_processor = new MediaStreamTrackProcessor({ track: gUMTrack });
-    const gum_source = gum_processor.readable.getReader();
+    const gumProcessor = new MediaStreamTrackProcessor({ track: gUMTrack });
 
     gUMVideo = document.getElementById('gumInputVideo');
     gUMVideo.srcObject = gUMStream;
@@ -64,75 +77,47 @@ async function main(sourceType) {
 
     const videoStream = await getMediaStream('../../../video/chrome.webm');
     const videoTrack = videoStream.getVideoTracks()[0];
-    const video_processor = new MediaStreamTrackProcessor({ track: videoTrack });
-    const video_source = video_processor.readable.getReader();
+    const videoProcessor = new MediaStreamTrackProcessor({ track: videoTrack });
 
-    if (sourceType == "multi-video") {
+    if (sourceType === "main") {
         gpuTransform = new WebGPUTransform();
     }
-    if (sourceType == "worker") {
+    if (sourceType === "worker") {
         gpuTransform = new WebGPUWorker();
     }
-    await gpuTransform.init();
-
-    const transform_func = async (frame1, frame2) => {
-        if (gpuTransform) {
-            await gpuTransform.transform(frame1, frame2);
-        }
-        else {
-            if (frame1) frame1.close();
-            if (frame2) frame2.close();
-        }
-    };
-
-    async function updateScreenImage() {
-        while (true) {
-            let chunk1, chunk2;
-            if (video_source) {
-                let { value: chunk } = await video_source.read();
-                chunk1 = chunk;
-            }
-            if (gum_source) {
-                let { value: chunk } = await gum_source.read();
-                chunk2 = chunk;
-            }
-            transform_func(chunk1, chunk2);
-        }
+    if (gpuTransform) {
+        await gpuTransform.init();
+        await gpuTransform.transform(videoProcessor.readable, gumProcessor.readable);
     }
-
-    updateScreenImage();
 }
 
 function destroy_source() {
     if (videoElement) {
-        console.log('[VideoSource] Stopping source video');
+        console.log('Stopping source video');
         videoElement.pause();
     }
     if (gUMVideo) {
-        console.log('[VideoSource] Stopping gUM stream');
+        console.log('Stopping gUM stream');
         gUMVideo.pause();
         gUMVideo.srcObject = null;
     }
     if (gUMTrack) gUMTrack.stop();
 }
 
-
-
 const sourceSelector = document.getElementById('sourceSelector');
 
 async function updateSource() {
     if (gpuTransform) {
         await gpuTransform.destroy();
-        gpuTransform = null;
     }
+    gpuTransform = null;
     destroy_source();
     const sourceType = sourceSelector.options[sourceSelector.selectedIndex].value;
 
     console.log("New source is", sourceType);
-    if (sourceType != "stopped") {
+    if (sourceType !== "stopped") {
         main(sourceType);
     }
-
 }
 
 sourceSelector.oninput = updateSource;

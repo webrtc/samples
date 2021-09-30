@@ -40,41 +40,39 @@
 
         <p>This sample shows how to render multiple video streams to canvas using the <a
                 href="https://github.com/w3c/mediacapture-insertable-streams">insertable streams</a> and <a
-                href="https://gpuweb.github.io/gpuweb/">WebGPU</a> APIs. A single canvas is used in case of Multi-video
-            rendering and two canvases in case of worker processing as each worker thread is passed a different canvas
-            instance. There are options for the type of rendering used to process the input.
+                href="https://gpuweb.github.io/gpuweb/">WebGPU</a> APIs. There are options to either process the
+            rendering on the main thread or on a worker thread.
         </p>
         <div id="errorMsg" class="error"></div>
-    <br>
+        <br>
         <div class="box">
             <span>Choose type of rendering:</span>
             <select id="sourceSelector">
                 <option selected value="stopped">(stopped)</option>
-                <option value="multi-video">Multi video rendering</option>
-                <option value="worker">Multiple worker threads</option>
+                <option value="main">Main thread</option>
+                <option value="worker">Worker thread</option>
             </select>
         </div>
 
         <div>Input:</div>
-        <video id="inputVideo" class="child" width="480" height="270"></video>
-        <video id="gumInputVideo" width="480" height="270"></video>
-
+        <video id="inputVideo" class="input" width="480" height="270"></video>
+        <video id="gumInputVideo" width="480"  height="270"></video>
         <div>Output:</div>
-        <div id="outputVideo" class="worker"></div>
-        <div id="gumOutputVideo" class="worker"></div>
+        <div id="outputVideo" class="output"></div>
         <p>
             <b>Note</b>: This sample is using WebGPU API that is in Origin Trial as
             of 2021-09-21 and is available in Chrome M94 if the experimental code is enabled on
             the command line with
             <code>--enable-unsafe-webgpu</code>.
         </p>
+        <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/insertable-streams/webgpu"
+            title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
     </div>
 
     <script src="js/main.js" async></script>
     <script src="js/multi-video.js" async></script>
     <script src="js/webpgu-worker.js" async></script>
-    <script src="js/worker.js" async></script>
 </body>
 
 </html>
