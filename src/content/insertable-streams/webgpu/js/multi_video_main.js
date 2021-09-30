@@ -265,7 +265,7 @@ class WebGPUTransform {
             if (this.canvas_.parentNode) {
                 this.canvas_.parentNode.removeChild(this.canvas_);
             }
-            console.log('[WebGPUTransform] Context destroyed',);
+            console.log('[WebGPUTransform] Context destroyed.',);
         }
     }
 }

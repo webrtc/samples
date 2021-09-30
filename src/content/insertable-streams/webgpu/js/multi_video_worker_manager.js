@@ -11,7 +11,7 @@ class WebGPUWorker {
         screenCanvas = document.createElement('canvas');
         document.getElementById('outputVideo').append(screenCanvas);
 
-        worker = new Worker('./js/worker.js');
+        worker = new Worker('./js/multi_video_worker.js');
         const offScreen = screenCanvas.transferControlToOffscreen()
         worker.postMessage(
             {
@@ -62,6 +62,6 @@ class WebGPUWorker {
         });
 
         await onMessage;
-        console.log('[WebGPUWorker] Context destroyed');
+        console.log('[WebGPUWorker] Context destroyed.');
     }
 }
