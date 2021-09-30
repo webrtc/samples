@@ -10,6 +10,8 @@ class WebGPUWorker {
 
         screenCanvas = document.createElement('canvas');
         document.getElementById('outputVideo').append(screenCanvas);
+        screenCanvas.width = 5000;
+        screenCanvas.height = 2500;
 
         worker = new Worker('./js/multi_video_worker.js');
         const offScreen = screenCanvas.transferControlToOffscreen()
