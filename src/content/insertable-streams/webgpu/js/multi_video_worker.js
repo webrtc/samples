@@ -38,18 +38,15 @@ fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
 `,
 };
 
-async function updateScreenImage(source) {
-    let frame;
-    if (source) {
-        let { value: chunk } = await source.read();
-        frame = chunk;
-    }
+async function getFrame(source) {
+    let { value: chunk } = await source.read();
+    const frame = chunk;
     return frame;
 }
 
 async function renderOnScreen(videoFrame, gumFrame) {
     if (device === null || device === undefined) {
-        console.log('[WebGPUTransform] device is undefined or null.')
+        console.log('[WebGPUWorker] device is undefined or null.')
         if (videoFrame) videoFrame.close();
         if (gumFrame) gumFrame.close();
         return;
@@ -145,7 +142,7 @@ onmessage = async (event) => {
             -1.0, -1.0, 0.0, 0.0, 1.0,
         ]);
 
-        //Creates a GPU buffer.
+        // Creates a GPU buffer.
         vertexBuffer = device.createBuffer({
             size: rectVerts.byteLength,
             usage: GPUBufferUsage.VERTEX,
@@ -230,20 +227,28 @@ onmessage = async (event) => {
         const { videoStream, gumStream } = event.data;
         const videoSource = videoStream.getReader();
         const gumSource = gumStream.getReader();
+        if (videoSource === undefined || videoSource === null) {
+            console.log('[WebGPUWorker] videoSource is undefined or null.')
+            return;
+        }
+        if (gumSource === undefined || gumSource === null) {
+            console.log('[WebGPUWorker] gumSource is undefined or null.')
+            return;
+        }
 
         while (true) {
-            const videoFrame = await updateScreenImage(videoSource);
-            const gumFrame = await updateScreenImage(gumSource);
+            const videoFrame = await getFrame(videoSource);
+            const gumFrame = await getFrame(gumSource);
             renderOnScreen(videoFrame, gumFrame);
         }
     }
     else if (operation === 'destroy') {
         // Not yet in canary
         // await device_.destroy();
-        if(device){
+        if (device) {
             vertexBuffer.destroy();
             device = null;
         }
-        postMessage('Destroyed');        
+        postMessage('Destroyed');
     }
 };

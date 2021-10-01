@@ -33,12 +33,9 @@ fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
 `,
 };
 
-async function updateScreenImage(source) {
-    let frame;
-    if (source) {
-        let { value: chunk } = await source.read();
-        frame = chunk;
-    }
+async function getFrame(source) {
+    let { value: chunk } = await source.read();
+    const frame = chunk;
     return frame;
 }
 
@@ -59,8 +56,8 @@ class WebGPUTransform {
         if (!this.canvas_) {
             this.canvas_ = document.createElement('canvas');
             document.getElementById('outputVideo').append(this.canvas_);
-            this.canvas_.width = 5000;
-            this.canvas_.height = 2500;
+            this.canvas_.width = 960;
+            this.canvas_.height = 540;
         }
 
         const canvas = this.canvas_;
@@ -90,7 +87,7 @@ class WebGPUTransform {
             -1.0, -1.0, 0.0, 0.0, 1.0,
             -1.0, 1.0, 0.0, 0.0, 0.0,
         ]);
-        //Creates a GPU buffer.
+        // Creates a GPU buffer.
         const vertexBuffer = device.createBuffer({
             size: rectVerts.byteLength,
             usage: GPUBufferUsage.VERTEX,
@@ -248,10 +245,18 @@ class WebGPUTransform {
     async transform(videoStream, gumStream) {
         const videoSource = videoStream.getReader();
         const gumSource = gumStream.getReader();
-
+        if(videoSource === undefined || videoSource === null){
+            console.log('[WebGPUTransform] videoSource is undefined or null.')
+            return;
+        }
+        if(gumSource === undefined || gumSource === null){
+            console.log('[WebGPUTransform] gumSource is undefined or null.')
+            return;
+        }
+        
         while (true) {
-            const videoFrame = await updateScreenImage(videoSource);
-            const gumFrame = await updateScreenImage(gumSource);
+            const videoFrame = await getFrame(videoSource);
+            const gumFrame = await getFrame(gumSource);
             this.renderOnScreen(videoFrame, gumFrame);
         }
     }

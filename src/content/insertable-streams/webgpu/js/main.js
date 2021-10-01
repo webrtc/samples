@@ -46,21 +46,12 @@ async function getMediaStream(src) {
 }
 
 async function getUserMediaStream() {
-    let gumStream;
-    const gumPromise = new Promise((resolve) => {
-        navigator.mediaDevices.getUserMedia({
+    return navigator.mediaDevices.getUserMedia({
             audio: false,
             video: { width: 480, height: 270 }
-        }).then(stream => {
-            gumStream = stream;
-            resolve();
         }).catch(err => {
             throw new Error("Unable to fetch getUserMedia stream " + err);
         });
-    });
-
-    await gumPromise;
-    return gumStream;
 }
 
 let gpuTransform;
