@@ -33,12 +33,6 @@ fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
 `,
 };
 
-async function getFrame(source) {
-    let { value: chunk } = await source.read();
-    const frame = chunk;
-    return frame;
-}
-
 class WebGPUTransform {
     constructor() {
         this.canvas_ = null;
@@ -175,7 +169,7 @@ class WebGPUTransform {
             console.log('[WebGPUTransform] device is undefined or null.')
             if (videoFrame) videoFrame.close();
             if (gumFrame) gumFrame.close();
-            return;
+            return false;
         }
         const videoTexture = this.videoTexture_;
         let videoBitmap, gumBitmap;
@@ -239,25 +233,29 @@ class WebGPUTransform {
         passEncoder.draw(6, 1, 0, 0);
         passEncoder.endPass();
         device.queue.submit([commandEncoder.finish()]);
+        return true;
     }
 
 
     async transform(videoStream, gumStream) {
         const videoSource = videoStream.getReader();
         const gumSource = gumStream.getReader();
-        if(videoSource === undefined || videoSource === null){
+        if (videoSource === undefined || videoSource === null) {
             console.log('[WebGPUTransform] videoSource is undefined or null.')
             return;
         }
-        if(gumSource === undefined || gumSource === null){
+        if (gumSource === undefined || gumSource === null) {
             console.log('[WebGPUTransform] gumSource is undefined or null.')
             return;
         }
-        
+
         while (true) {
-            const videoFrame = await getFrame(videoSource);
-            const gumFrame = await getFrame(gumSource);
-            this.renderOnScreen(videoFrame, gumFrame);
+            let { value: videoFrame } = await videoSource.read();
+            let { value: gumFrame } = await gumSource.read();
+            const rendered = await this.renderOnScreen(videoFrame, gumFrame);
+            if(!rendered){
+                break;
+            }
         }
     }
 

@@ -47,11 +47,11 @@ async function getMediaStream(src) {
 
 async function getUserMediaStream() {
     return navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: { width: 480, height: 270 }
-        }).catch(err => {
-            throw new Error("Unable to fetch getUserMedia stream " + err);
-        });
+        audio: false,
+        video: { width: 480, height: 270 }
+    }).catch(err => {
+        throw new Error("Unable to fetch getUserMedia stream " + err);
+    });
 }
 
 let gpuTransform;
@@ -76,10 +76,8 @@ async function main(sourceType) {
     if (sourceType === "worker") {
         gpuTransform = new WebGPUWorker();
     }
-    if (gpuTransform) {
-        await gpuTransform.init();
-        await gpuTransform.transform(videoProcessor.readable, gumProcessor.readable);
-    }
+    await gpuTransform.init();
+    await gpuTransform.transform(videoProcessor.readable, gumProcessor.readable);
 }
 
 function destroy_source() {

@@ -38,12 +38,6 @@ fn main([[location(0)]] fragUV : vec2<f32>) -> [[location(0)]] vec4<f32> {
 `,
 };
 
-async function getFrame(source) {
-    let { value: chunk } = await source.read();
-    const frame = chunk;
-    return frame;
-}
-
 async function renderOnScreen(videoFrame, gumFrame) {
     if (device === null || device === undefined) {
         console.log('[WebGPUWorker] device is undefined or null.')
@@ -237,8 +231,8 @@ onmessage = async (event) => {
         }
 
         while (true) {
-            const videoFrame = await getFrame(videoSource);
-            const gumFrame = await getFrame(gumSource);
+            let { value: videoFrame } = await videoSource.read();
+            let { value: gumFrame } = await gumSource.read();
             renderOnScreen(videoFrame, gumFrame);
         }
     }
