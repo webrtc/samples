@@ -44,9 +44,9 @@ class WebGPUTransform {
         this.vertexBuffer_ = null;
     }
 
-    async init() {
+    async init(inputCanvas) {
         console.log('[WebGPUTransform] Initializing WebGPU.');
-
+        this.canvas_ = inputCanvas;
         if (!this.canvas_) {
             this.canvas_ = document.createElement('canvas');
             document.getElementById('outputVideo').append(this.canvas_);
@@ -56,7 +56,7 @@ class WebGPUTransform {
 
         const canvas = this.canvas_;
         const context = canvas.getContext('webgpu');
-        if (context === null || context === undefined) {
+        if (!context) {
             const errorMessage = 'Your browser does not support the WebGPU API.' +
                 ' Please see the note at the bottom of the page.';
             document.getElementById('errorMsg').innerText = errorMessage;
@@ -67,7 +67,7 @@ class WebGPUTransform {
         const adapter = await navigator.gpu.requestAdapter();
         const device = await adapter.requestDevice();
         this.device_ = device;
-        if (this.device_ === null || this.device_ === undefined) {
+        if (!this.device_) {
             console.log('[WebGPUTransform] requestDevice failed.')
             return;
         }
@@ -140,15 +140,7 @@ class WebGPUTransform {
         });
 
         this.videoTexture_ = device.createTexture({
-            size: {
-                width: 480 * 2,
-                height: 270 * 2,
-                depthOrArrayLayers: 1,
-            },
-            arrayLayerCount: 1,
-            mipLevelCount: 1,
-            sampleCount: 1,
-            dimension: '2d',
+            size: [480 * 2, 270 * 2],
             format: 'rgba8unorm',
             usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING |
                 GPUTextureUsage.RENDER_ATTACHMENT,
@@ -163,43 +155,46 @@ class WebGPUTransform {
         });
     }
 
-    async renderOnScreen(videoFrame, gumFrame) {
+    async copyOnTexture(device, videoTexture, frame, xcorr, ycorr) {
+        if (!frame) {
+            return;
+        }
+        // Using GPUExternalTexture(when it's implemented for Breakout Box frames) will
+        // avoid making extra copies through ImageBitmap.
+        const videoBitmap = await createImageBitmap(frame, { resizeWidth: 480, resizeHeight: 270 });
+        device.queue.copyExternalImageToTexture(
+            { source: videoBitmap, origin: { x: 0, y: 0 } },
+            { texture: videoTexture, origin: { x: xcorr, y: ycorr } },
+            {
+                // the width of the image being copied
+                width: videoBitmap.width,
+                height: videoBitmap.height,
+            }
+        );
+        videoBitmap.close();
+        frame.close();
+    }
+
+    async renderOnScreen(videoSource, gumSource) {
         const device = this.device_;
-        if (device === null || device === undefined) {
+        const videoTexture = this.videoTexture_;
+        if (!device) {
             console.log('[WebGPUTransform] device is undefined or null.')
-            if (videoFrame) videoFrame.close();
-            if (gumFrame) gumFrame.close();
             return false;
         }
-        const videoTexture = this.videoTexture_;
-        let videoBitmap, gumBitmap;
-        if (videoFrame) {
-            videoBitmap = await createImageBitmap(videoFrame, { resizeWidth: 480, resizeHeight: 270 });
-            device.queue.copyExternalImageToTexture(
-                { source: videoBitmap, origin: { x: 0, y: 0 } },
-                { texture: videoTexture, origin: { x: 0, y: 270 } },
-                {
-                    // the width of the image being copied
-                    width: videoBitmap.width,
-                    height: videoBitmap.height,
-                }
-            );
-            videoBitmap.close();
-            videoFrame.close();
+
+        const videoPromise = videoSource.read().then(({ value }) => {
+            this.copyOnTexture(device, videoTexture, value, 0, 270);
+        });
+        const gumPromise = gumSource.read().then(({ value }) => {
+            this.copyOnTexture(device, videoTexture, value, 480, 0);
+        });
+        await videoPromise, gumPromise;
+
+        if (!this.device_) {
+            return false;
         }
-        if (gumFrame) {
-            gumBitmap = await createImageBitmap(gumFrame, { resizeWidth: 480, resizeHeight: 270 });
-            device.queue.copyExternalImageToTexture(
-                { source: gumBitmap, origin: { x: 0, y: 0 } },
-                { texture: videoTexture, origin: { x: 480, y: 0 } },
-                {
-                    width: gumBitmap.width,
-                    height: gumBitmap.height,
-                }
-            );
-            gumBitmap.close();
-            gumFrame.close();
-        }
+
         const uniformBindGroup = device.createBindGroup({
             layout: this.renderPipeline_.getBindGroupLayout(0),
             entries: [
@@ -240,31 +235,23 @@ class WebGPUTransform {
     async transform(videoStream, gumStream) {
         const videoSource = videoStream.getReader();
         const gumSource = gumStream.getReader();
-        if (videoSource === undefined || videoSource === null) {
-            console.log('[WebGPUTransform] videoSource is undefined or null.')
-            return;
-        }
-        if (gumSource === undefined || gumSource === null) {
-            console.log('[WebGPUTransform] gumSource is undefined or null.')
-            return;
-        }
-
         while (true) {
-            let { value: videoFrame } = await videoSource.read();
-            let { value: gumFrame } = await gumSource.read();
-            const rendered = await this.renderOnScreen(videoFrame, gumFrame);
-            if(!rendered){
+            const rendered = await this.renderOnScreen(videoSource, gumSource);
+            if (!rendered) {
                 break;
             }
         }
+        videoSource.cancel();
+        gumSource.cancel();
     }
 
-    async destroy() {
+    destroy() {
         if (this.device_) {
             // Not yet in canary
             // await this.device_.destroy();
-            this.vertexBuffer_.destroy();
             this.device_ = null;
+            this.vertexBuffer_.destroy();
+            this.videoTexture_.destroy();
             if (this.canvas_.parentNode) {
                 this.canvas_.parentNode.removeChild(this.canvas_);
             }

@@ -6,20 +6,14 @@ let screenCanvas;
 
 class WebGPUWorker {
     async init() {
-        console.log('[WebGPUWorker] Initializing WebGPUWorkers.');
-
         screenCanvas = document.createElement('canvas');
         document.getElementById('outputVideo').append(screenCanvas);
         screenCanvas.width = 960;
         screenCanvas.height = 540;
 
         worker = new Worker('./js/multi_video_worker.js');
+        console.log('Created a worker thread.');
         const offScreen = screenCanvas.transferControlToOffscreen()
-        worker.postMessage(
-            {
-                operation: 'init',
-                canvas: offScreen,
-            }, [offScreen]);
 
         const onMessage = new Promise((resolve, reject) => {
             worker.addEventListener("message", function handleMsgFromWorker(msg) {
@@ -33,6 +27,11 @@ class WebGPUWorker {
                 }
             });
         });
+        worker.postMessage(
+            {
+                operation: 'init',
+                canvas: offScreen,
+            }, [offScreen]);
 
         await onMessage;
     }
@@ -48,22 +47,11 @@ class WebGPUWorker {
         }
     }
 
-    async destroy() {
-        worker.postMessage(
-            {
-                operation: 'destroy',
-            });
+    destroy() {
         if (screenCanvas.parentNode) {
             screenCanvas.parentNode.removeChild(screenCanvas);
         }
-        const onMessage = new Promise((resolve) => {
-            worker.addEventListener("message", function handleMsgFromWorker() {
-                this.terminate();
-                resolve();
-            });
-        });
-
-        await onMessage;
-        console.log('[WebGPUWorker] Context destroyed.');
+        worker.terminate();
+        console.log('Worker thread destroyed.');
     }
 }

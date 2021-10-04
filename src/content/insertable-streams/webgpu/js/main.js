@@ -45,7 +45,7 @@ async function getMediaStream(src) {
 
 }
 
-async function getUserMediaStream() {
+function getUserMediaStream() {
     return navigator.mediaDevices.getUserMedia({
         audio: false,
         video: { width: 480, height: 270 }
@@ -95,9 +95,9 @@ function destroy_source() {
 
 const sourceSelector = document.getElementById('sourceSelector');
 
-async function updateSource() {
+function updateSource() {
     if (gpuTransform) {
-        await gpuTransform.destroy();
+        gpuTransform.destroy();
     }
     gpuTransform = null;
     destroy_source();
