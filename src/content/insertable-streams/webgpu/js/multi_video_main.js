@@ -247,7 +247,7 @@ class WebGPUTransform {
 
     destroy() {
         if (this.device_) {
-            // Not yet in canary
+            // Currently being implemented.
             // await this.device_.destroy();
             this.device_ = null;
             this.vertexBuffer_.destroy();
