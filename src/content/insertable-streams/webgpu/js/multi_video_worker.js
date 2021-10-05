@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-undef
 importScripts('./multi_video_main.js');
 'use strict';
 

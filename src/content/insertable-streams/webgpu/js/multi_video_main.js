@@ -85,7 +85,6 @@ class WebGPUTransform { // eslint-disable-line no-unused-vars
     // Creates a GPU buffer.
     const vertexBuffer = device.createBuffer({
       size: rectVerts.byteLength,
-      // eslint-disable-next-line no-undef
       usage: GPUBufferUsage.VERTEX,
       mappedAtCreation: true,
     });
@@ -144,9 +143,7 @@ class WebGPUTransform { // eslint-disable-line no-unused-vars
     this.videoTexture_ = device.createTexture({
       size: [480 * 2, 270 * 2],
       format: 'rgba8unorm',
-      // eslint-disable-next-line no-undef
       usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING |
-                // eslint-disable-next-line no-undef
                 GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
