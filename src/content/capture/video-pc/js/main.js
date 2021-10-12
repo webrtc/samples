@@ -52,7 +52,7 @@ if (leftVideo.readyState >= 3) { // HAVE_FUTURE_DATA
 leftVideo.play();
 
 rightVideo.onloadedmetadata = () => {
-  console.log(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
+  console.log(`Remote video videoWidth: ${rightVideo.videoWidth}px,  videoHeight: ${rightVideo.videoHeight}px`);
 };
 
 rightVideo.onresize = () => {
