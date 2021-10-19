@@ -1,8 +1,4 @@
 {
-  "background": {
-    "page": "background.html",
-    "persistent": false
-  },
   "default_locale": "en",
   "description": "__MSG_NETLI_APPDESC__",
   "icons": {

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2021 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Integrations with WebGPU for custom video rendering</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css" />
+    <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+    <div id="container">
+        <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+            <span>Integrations with WebGPU for custom video rendering</span>
+        </h1>
+
+        <p>This sample shows how to render multiple video streams to canvas using the <a
+                href="https://github.com/w3c/mediacapture-transform">insertable streams</a> and <a
+                href="https://gpuweb.github.io/gpuweb/">WebGPU</a> APIs. There are options to either process the
+            rendering on the main thread or on a worker thread.
+        </p>
+        <div id="errorMsg" class="error"></div>
+        <br>
+        <div class="box">
+            <span>Choose type of rendering:</span>
+            <select id="sourceSelector">
+                <option selected value="stopped">(stopped)</option>
+                <option value="main">Main thread</option>
+                <option value="worker">Worker thread</option>
+            </select>
+        </div>
+
+        <div>Input:</div>
+        <video id="inputVideo" class="input" width="480" height="270"></video>
+        <video id="gumInputVideo" width="480"  height="270"></video>
+        <div>Output:</div>
+        <div id="outputVideo" class="output"></div>
+        <p>
+            <b>Note</b>: This sample is using WebGPU API that is in Origin Trial as
+            of 2021-09-21 and is available in Chrome M94 if the experimental code is enabled on
+            the command line with
+            <code>--enable-unsafe-webgpu</code>.
+        </p>
+        <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/insertable-streams/webgpu"
+            title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+    </div>
+
+    <script src="js/main.js" async></script>
+    <script src="js/multi_video_main.js" async></script>
+    <script src="js/multi_video_worker_manager.js" async></script>
+</body>
+
+</html>
