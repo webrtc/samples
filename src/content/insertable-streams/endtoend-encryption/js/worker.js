@@ -115,10 +115,8 @@ function decodeFunction(encodedFrame, controller) {
   controller.enqueue(encodedFrame);
 }
 
-onmessage = async (event) => {
-  const {operation} = event.data;
+function handleTransform(operation, readable, writable) {
   if (operation === 'encode') {
-    const {readable, writable} = event.data;
     const transformStream = new TransformStream({
       transform: encodeFunction,
     });
@@ -126,14 +124,21 @@ onmessage = async (event) => {
         .pipeThrough(transformStream)
         .pipeTo(writable);
   } else if (operation === 'decode') {
-    const {readable, writable} = event.data;
     const transformStream = new TransformStream({
       transform: decodeFunction,
     });
     readable
         .pipeThrough(transformStream)
         .pipeTo(writable);
-  } else if (operation === 'setCryptoKey') {
+  }
+}
+
+// Handler for messages, including transferable streams.
+onmessage = (event) => {
+  if (event.data.operation === 'encode' || event.data.operation === 'decode') {
+    return handleTransform(event.data.operation, event.data.readable, event.data.writable);
+  }
+  if (event.data.operation === 'setCryptoKey') {
     if (event.data.currentCryptoKey !== currentCryptoKey) {
       currentKeyIdentifier++;
     }
@@ -141,3 +146,11 @@ onmessage = async (event) => {
     useCryptoOffset = event.data.useCryptoOffset;
   }
 };
+
+// Handler for RTCRtpScriptTransforms.
+if (self.RTCTransformEvent) {
+  self.onrtctransform = (event) => {
+    const transformer = event.transformer;
+    handleTransform(transformer.options.operation, transformer.readable, transformer.writable);
+  };
+}
