@@ -257,10 +257,13 @@ function iceCallback(event) {
     appendCell(row, candidate.address);
     appendCell(row, candidate.port);
     appendCell(row, formatPriority(candidate.priority));
+    appendCell(row, candidate.sdpMid);
+    appendCell(row, candidate.sdpMLineIndex);
+    appendCell(row, candidate.usernameFragment);
     candidates.push(candidate);
   } else if (!('onicegatheringstatechange' in RTCPeerConnection.prototype)) {
     // should not be done if its done in the icegatheringstatechange callback.
-    appendCell(row, getFinalResult(), 7);
+    appendCell(row, getFinalResult(), 10);
     pc.close();
     pc = null;
     pc = null;
