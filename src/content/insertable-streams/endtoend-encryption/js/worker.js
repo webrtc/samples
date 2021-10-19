@@ -43,7 +43,8 @@ function dump(encodedFrame, direction, max = 16) {
       'len=' + encodedFrame.data.byteLength,
       'type=' + (encodedFrame.type || 'audio'),
       'ts=' + encodedFrame.timestamp,
-      'ssrc=' + encodedFrame.getMetadata().synchronizationSource
+      'ssrc=' + encodedFrame.getMetadata().synchronizationSource,
+      'pt=' + (encodedFrame.getMetadata().payloadType || '(unknown)')
   );
 }
 

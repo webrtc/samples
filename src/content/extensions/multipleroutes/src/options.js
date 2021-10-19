@@ -18,18 +18,10 @@ mapPolicyToRadioId[pi.DEFAULT_PUBLIC_INTERFACE_ONLY] = 2;
 mapPolicyToRadioId[pi.DISABLE_NON_PROXIED_UDP] = 3;
 
 const mapRadioIdToPolicy = {};
-if (!browserSupportsIPHandlingPolicy()) {
-  // radio id => [|webRTCMultipleRoutesEnabled|, |webRTCNonProxiedUdpEnabled|]
-  // The [1] option won't exist if pn.webRTCIPHandlingPolicy is undefined.
-  mapRadioIdToPolicy[0] = {allowMultipleRoutes: true, allowUdp: true};
-  mapRadioIdToPolicy[2] = {allowMultipleRoutes: false, allowUdp: true};
-  mapRadioIdToPolicy[3] = {allowMultipleRoutes: false, allowUdp: false};
-} else {
-  mapRadioIdToPolicy[0] = pi.DEFAULT;
-  mapRadioIdToPolicy[1] = pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
-  mapRadioIdToPolicy[2] = pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
-  mapRadioIdToPolicy[3] = pi.DISABLE_NON_PROXIED_UDP;
-}
+mapRadioIdToPolicy[0] = pi.DEFAULT;
+mapRadioIdToPolicy[1] = pi.DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
+mapRadioIdToPolicy[2] = pi.DEFAULT_PUBLIC_INTERFACE_ONLY;
+mapRadioIdToPolicy[3] = pi.DISABLE_NON_PROXIED_UDP;
 
 // Saves options.
 function saveOptions() {
@@ -41,22 +33,9 @@ function saveOptions() {
     }
   }
 
-  if (browserSupportsIPHandlingPolicy()) {
-    pn.webRTCIPHandlingPolicy.set({
-      value: mapRadioIdToPolicy[i]
-    });
-  } else {
-    const oldBools = mapRadioIdToPolicy[i];
-    pn.webRTCMultipleRoutesEnabled.set({
-      value: oldBools.allowMultipleRoutes
-    }, function() {
-      if (browserSupportsNonProxiedUdpBoolean()) {
-        pn.webRTCNonProxiedUdpEnabled.set({
-          value: oldBools.allowUdp
-        });
-      }
-    });
-  }
+  pn.webRTCIPHandlingPolicy.set({
+    value: mapRadioIdToPolicy[i]
+  });
 }
 
 function restoreRadios(policy) {
@@ -65,27 +44,10 @@ function restoreRadios(policy) {
 }
 
 function restoreOption() {
-  if (browserSupportsIPHandlingPolicy()) {
-    pn.webRTCIPHandlingPolicy.get({}, function(details) {
-      restoreRadios(details.value);
-    });
-  } else {
-    getPolicyFromBooleans(function(policy) {
-      restoreRadios(policy);
-    });
-  }
+  pn.webRTCIPHandlingPolicy.get({}, function(details) {
+    restoreRadios(details.value);
+  });
 }
-
-const supportedIPPolicyModes = {
-  // DEFAULT
-  Mode0: true,
-  // DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES
-  Mode1: browserSupportsIPHandlingPolicy(),
-  // DEFAULT_PUBLIC_INTERFACE_ONLY
-  Mode2: true,
-  // NON_PROXIED_UDP
-  Mode3: browserSupportsNonProxiedUdpBoolean()
-};
 
 document.addEventListener('DOMContentLoaded', restoreOption);
 document.getElementById('default').
@@ -105,17 +67,19 @@ for (let i = 0; i < i18nElements.length; i++) {
   elem.innerHTML = chrome.i18n.getMessage(msg);
 }
 
-let hideBanner = true;
-for (let i = 0; i < Object.keys(supportedIPPolicyModes).length; i++) {
-  const key = 'Mode' + i;
-  if (!supportedIPPolicyModes[key]) {
+function browserSupportsIPHandlingPolicy() {
+  return pn.webRTCIPHandlingPolicy !== undefined;
+}
+
+if (browserSupportsIPHandlingPolicy()) {
+  // Hide the 'not supported' banner.
+  document.getElementById('not_supported').innerHTML = '';
+} else {
+  // Disable all options.
+  for (let i = 0; i < 4; i++) {
+    const key = 'Mode' + i;
     const section = document.getElementById(key);
     section.style.color = 'gray';
     section.querySelector('input').disabled = true;
-    hideBanner = false;
   }
-}
-
-if (hideBanner) {
-  document.getElementById('not_supported').innerHTML = '';
 }
