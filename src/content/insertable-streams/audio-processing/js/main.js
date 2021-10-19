@@ -8,7 +8,7 @@
 
 'use strict';
 
-/* global MediaStreamTrackProcessor, MediaStreamTrackGenerator */
+/* global MediaStreamTrackProcessor, MediaStreamTrackGenerator, AudioData */
 if (typeof MediaStreamTrackProcessor === 'undefined' ||
     typeof MediaStreamTrackGenerator === 'undefined') {
   alert(
@@ -24,6 +24,12 @@ try {
   alert(
       'Your browser does not support insertable audio streams. See the note ' +
         'at the bottom of the page.');
+}
+
+if (typeof AudioData === 'undefined') {
+  alert(
+      'Your browser does not support WebCodecs. See the note at the bottom ' +
+      'of the page.');
 }
 
 // Put variables in global scope to make them available to the browser console.
@@ -69,18 +75,22 @@ const constraints = window.constraints = {
 
 // Returns a low-pass transform function for use with TransformStream.
 function lowPassFilter() {
+  const format = 'f32-planar';
   let lastValuePerChannel = undefined;
-  return (frame, controller) => {
+  return (data, controller) => {
     const rc = 1.0 / (cutoff * 2 * Math.PI);
-    const dt = 1.0 / frame.buffer.sampleRate;
+    const dt = 1.0 / data.sampleRate;
     const alpha = dt / (rc + dt);
-    const nChannels = frame.buffer.numberOfChannels;
+    const nChannels = data.numberOfChannels;
     if (!lastValuePerChannel) {
       console.log(`Audio stream has ${nChannels} channels.`);
       lastValuePerChannel = Array(nChannels).fill(0);
     }
+    const buffer = new Float32Array(data.numberOfFrames * nChannels);
     for (let c = 0; c < nChannels; c++) {
-      const samples = frame.buffer.getChannelData(c);
+      const offset = data.numberOfFrames * c;
+      const samples = buffer.subarray(offset, offset + data.numberOfFrames);
+      data.copyTo(samples, {planeIndex: c, format});
       let lastValue = lastValuePerChannel[c];
 
       // Apply low-pass filter to samples.
@@ -89,10 +99,16 @@ function lowPassFilter() {
         samples[i] = lastValue;
       }
 
-      frame.buffer.copyToChannel(samples, c);
       lastValuePerChannel[c] = lastValue;
     }
-    controller.enqueue(frame);
+    controller.enqueue(new AudioData({
+      format,
+      sampleRate: data.sampleRate,
+      numberOfFrames: data.numberOfFrames,
+      numberOfChannels: nChannels,
+      timestamp: data.timestamp,
+      data: buffer
+    }));
   };
 }
 
@@ -101,7 +117,9 @@ async function start() {
   try {
     stream = await navigator.mediaDevices.getUserMedia(constraints);
   } catch (error) {
-    const errorMessage = 'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' + error.name;
+    const errorMessage =
+          'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' +
+          error.name;
     document.getElementById('errorMsg').innerText = errorMessage;
     console.log(errorMessage);
   }

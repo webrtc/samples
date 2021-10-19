@@ -32,6 +32,10 @@ let audioImpairmentAtStart = 0;
 
 let result;
 
+// Allows configuration of bundlePolicy et al.
+// eslint-disable-next-line prefer-const
+let configuration = null;
+
 localVideo.addEventListener('loadedmetadata', function() {
   console.log(`Local video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
@@ -118,11 +122,10 @@ async function call() {
   if (audioTracks.length > 0) {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
-  const servers = null;
-  pc1 = new RTCPeerConnection(servers);
+  pc1 = new RTCPeerConnection(configuration);
   console.log('Created local peer connection object pc1');
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
-  pc2 = new RTCPeerConnection(servers);
+  pc2 = new RTCPeerConnection(configuration);
   console.log('Created remote peer connection object pc2');
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc1.oniceconnectionstatechange = e => onIceStateChange(pc1, e);
