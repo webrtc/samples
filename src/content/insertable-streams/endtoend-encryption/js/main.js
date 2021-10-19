@@ -8,6 +8,7 @@
 
 'use strict';
 
+/* global RTCRtpScriptTransform */
 /* global VideoPipe */
 
 const video1 = document.querySelector('video#video1');
@@ -38,20 +39,25 @@ let localStream;
 // eslint-disable-next-line no-unused-vars
 let remoteStream;
 
-const supportsInsertableStreams =
+let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
+
+if (!hasEnoughAPIs) {
+  const supportsInsertableStreams =
       !!RTCRtpSender.prototype.createEncodedStreams;
 
-let supportsTransferableStreams = false;
-try {
-  const stream = new ReadableStream();
-  window.postMessage(stream, '*', [stream]);
-  supportsTransferableStreams = true;
-} catch (e) {
-  console.error('Transferable streams are not supported.');
+  let supportsTransferableStreams = false;
+  try {
+    const stream = new ReadableStream();
+    window.postMessage(stream, '*', [stream]);
+    supportsTransferableStreams = true;
+  } catch (e) {
+    console.error('Transferable streams are not supported.');
+  }
+  hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
 }
 
-if (!(supportsInsertableStreams && supportsTransferableStreams)) {
-  banner.innerText = 'Your browser does not support Insertable Streams. ' +
+if (!hasEnoughAPIs) {
+  banner.innerText = 'Your browser does not support WebRTC Encoded Transforms. ' +
   'This sample will not work.';
   if (adapter.browserDetails.browser === 'chrome') {
     banner.innerText += ' Try with Enable experimental Web Platform features enabled from chrome://flags.';
@@ -93,6 +99,11 @@ function start() {
 // for basic concepts.
 const worker = new Worker('./js/worker.js', {name: 'E2EE worker'});
 function setupSenderTransform(sender) {
+  if (window.RTCRtpScriptTransform) {
+    sender.transform = new RTCRtpScriptTransform(worker, {operation: 'encode'});
+    return;
+  }
+
   const senderStreams = sender.createEncodedStreams();
   // Instead of creating the transform stream here, we do a postMessage to the worker. The first
   // argument is an object defined by us, the second is a list of variables that will be transferred to
@@ -116,6 +127,11 @@ function setupSenderTransform(sender) {
 }
 
 function setupReceiverTransform(receiver) {
+  if (window.RTCRtpScriptTransform) {
+    receiver.transform = new RTCRtpScriptTransform(worker, {operation: 'decode'});
+    return;
+  }
+
   const receiverStreams = receiver.createEncodedStreams();
   const {readable, writable} = receiverStreams;
   worker.postMessage({
