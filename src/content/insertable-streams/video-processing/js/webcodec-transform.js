@@ -40,8 +40,12 @@ class WebCodecTransform { // eslint-disable-line no-unused-vars
       frame.close();
       return;
     }
-    this.controller_ = controller;
-    this.encoder_.encode(frame);
+    try {
+      this.controller_ = controller;
+      this.encoder_.encode(frame);
+    } finally {
+      frame.close();
+    }
   }
 
   /** @override */
