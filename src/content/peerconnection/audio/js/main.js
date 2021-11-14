@@ -23,6 +23,7 @@ let localStream;
 
 let bitrateGraph;
 let bitrateSeries;
+let targetBitrateSeries;
 let headerrateSeries;
 
 let packetGraph;
@@ -120,6 +121,9 @@ function gotStream(stream) {
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
   bitrateGraph.updateEndDate();
+
+  targetBitrateSeries = new TimelineDataSeries();
+  targetBitrateSeries.setColor('blue');
 
   headerrateSeries = new TimelineDataSeries();
   headerrateSeries.setColor('green');
@@ -346,7 +350,7 @@ window.setInterval(() => {
 
         packets = report.packetsSent;
         if (lastResult && lastResult.has(report.id)) {
-          const deltaT = now - lastResult.get(report.id).timestamp;
+          const deltaT = (now - lastResult.get(report.id).timestamp) / 1000;
           // calculate bitrate
           const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
             deltaT;
@@ -356,11 +360,12 @@ window.setInterval(() => {
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
           headerrateSeries.addPoint(now, headerrate);
-          bitrateGraph.setDataSeries([bitrateSeries, headerrateSeries]);
+          targetBitrateSeries.addPoint(now, report.targetBitrate);
+          bitrateGraph.setDataSeries([bitrateSeries, headerrateSeries, targetBitrateSeries]);
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
-          packetSeries.addPoint(now, 1000 * (packets -
+          packetSeries.addPoint(now, (packets -
             lastResult.get(report.id).packetsSent) / deltaT);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
