@@ -215,7 +215,7 @@ async function onCreateAnswerSuccess(desc) {
         const codec = stats.get(stat.codecId);
         document.getElementById('actualCodec').innerText = 'Using ' + codec.mimeType +
             ' ' + (codec.sdpFmtpLine ? codec.sdpFmtpLine + ' ' : '') +
-            ', payloadType=' + codec.payloadType + '.';
+            ', payloadType=' + codec.payloadType + '. Encoder: ' + stat.encoderImplementation;
       });
     }, 1000);
   } catch (e) {
