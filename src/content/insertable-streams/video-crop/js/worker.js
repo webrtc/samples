@@ -8,17 +8,16 @@
 
 'use strict';
 
-const canvas = new OffscreenCanvas(640, 360);
-const ctx = canvas.getContext('2d', {desynchronized: true});
-
 function transform(frame, controller) {
-  // Cropping is a bit too complex. See https://github.com/w3c/webcodecs/issues/281
-  // See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
-  ctx.drawImage(frame,
-      320, 180,
-      640, 360,
-      0, 0, 640, 360);
-  const newFrame = new VideoFrame(canvas);
+  // Cropping from an existing video frame is supported by the API in Chrome 94+.
+  const newFrame = new VideoFrame(frame, {
+    visibleRect: {
+      x: 320,
+      width: 640,
+      y: 180,
+      height: 360,
+    }
+  });
   controller.enqueue(newFrame);
   frame.close();
 }
