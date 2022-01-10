@@ -295,7 +295,11 @@ function dumpStats(results) {
     statsString += `time ${res.timestamp}<br>`;
     Object.keys(res).forEach(k => {
       if (k !== 'timestamp' && k !== 'type' && k !== 'id') {
-        statsString += `${k}: ${res[k]}<br>`;
+        if (typeof res[k] === 'object') {
+          statsString += `${k}: ${JSON.stringify(res[k])}<br>`;
+        } else {
+          statsString += `${k}: ${res[k]}<br>`;
+        }
       }
     });
   });
