@@ -15,10 +15,6 @@ const video = document.querySelector('video');
 
 let pc1;
 let pc2;
-const offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 1
-};
 
 let startTime;
 
@@ -78,7 +74,7 @@ function call() {
   console.log('Added local stream to pc1');
 
   console.log('pc1 createOffer start');
-  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError, offerOptions);
+  pc1.createOffer(onCreateOfferSuccess, onCreateSessionDescriptionError);
 }
 
 function onCreateSessionDescriptionError(error) {
