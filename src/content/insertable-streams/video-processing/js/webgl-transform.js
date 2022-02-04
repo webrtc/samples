@@ -25,17 +25,6 @@ class WebGLTransform { // eslint-disable-line no-unused-vars
     this.program_ = null;
     /** @private {?WebGLTexture} input texture */
     this.texture_ = null;
-    /**
-     * @private {boolean} If false, pass VideoFrame directly to
-     * WebGLRenderingContext.texImage2D and create VideoFrame directly from
-     * this.canvas_. If either of these operations fail (it's not supported in
-     * Chrome <90 and broken in Chrome 90: https://crbug.com/1184128), we set
-     * this field to true; in that case we create an ImageBitmap from the
-     * VideoFrame and pass the ImageBitmap to texImage2D on the input side and
-     * create the VideoFrame using an ImageBitmap of the canvas on the output
-     * side.
-     */
-    this.use_image_bitmap_ = false;
     /** @private {string} */
     this.debugPath_ = 'debug.pipeline.frameTransform_';
   }
@@ -178,52 +167,15 @@ class WebGLTransform { // eslint-disable-line no-unused-vars
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture_);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    if (!this.use_image_bitmap_) {
-      try {
-        // Supported for Chrome 90+.
-        gl.texImage2D(
-            gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, frame);
-      } catch (e) {
-        // This should only happen on Chrome <90.
-        console.log(
-            '[WebGLTransform] Failed to upload VideoFrame directly. Falling ' +
-                'back to ImageBitmap.',
-            e);
-        this.use_image_bitmap_ = true;
-      }
-    }
-    if (this.use_image_bitmap_) {
-      // Supported for Chrome <92.
-      const inputBitmap =
-            await frame.createImageBitmap({imageOrientation: 'flipY'});
-      gl.texImage2D(
-          gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, inputBitmap);
-      inputBitmap.close();
-    }
+    gl.texImage2D(
+        gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, frame);
     frame.close();
     gl.useProgram(this.program_);
     gl.uniform1i(this.sampler_, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     gl.bindTexture(gl.TEXTURE_2D, null);
-    if (!this.use_image_bitmap_) {
-      try {
-        // alpha: 'discard' is needed in order to send frames to a PeerConnection.
-        controller.enqueue(new VideoFrame(this.canvas_, {timestamp, alpha: 'discard'}));
-      } catch (e) {
-        // This should only happen on Chrome <91.
-        console.log(
-            '[WebGLTransform] Failed to create VideoFrame from ' +
-                'OffscreenCanvas directly. Falling back to ImageBitmap.',
-            e);
-        this.use_image_bitmap_ = true;
-      }
-    }
-    if (this.use_image_bitmap_) {
-      const outputBitmap = await createImageBitmap(this.canvas_);
-      const outputFrame = new VideoFrame(outputBitmap, {timestamp});
-      outputBitmap.close();
-      controller.enqueue(outputFrame);
-    }
+    // alpha: 'discard' is needed in order to send frames to a PeerConnection.
+    controller.enqueue(new VideoFrame(this.canvas_, {timestamp, alpha: 'discard'}));
   }
 
   /** @override */
