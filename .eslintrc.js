@@ -28,6 +28,10 @@ module.exports = {
     "chrome": true,
     "ga": true,
     "getPolicyFromBooleans": true,
+    "importScripts": true,
+    // From WebGPU specification
+    "GPUBufferUsage": true,
+    "GPUTextureUsage": true,
     // From Streams specification
     "TransformStream": true,
     // From WebCodec specification

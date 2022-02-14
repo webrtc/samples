@@ -43,7 +43,8 @@ function dump(encodedFrame, direction, max = 16) {
       'len=' + encodedFrame.data.byteLength,
       'type=' + (encodedFrame.type || 'audio'),
       'ts=' + encodedFrame.timestamp,
-      'ssrc=' + encodedFrame.getMetadata().synchronizationSource
+      'ssrc=' + encodedFrame.getMetadata().synchronizationSource,
+      'pt=' + (encodedFrame.getMetadata().payloadType || '(unknown)')
   );
 }
 
@@ -114,25 +115,30 @@ function decodeFunction(encodedFrame, controller) {
   controller.enqueue(encodedFrame);
 }
 
-onmessage = async (event) => {
-  const {operation} = event.data;
+function handleTransform(operation, readable, writable) {
   if (operation === 'encode') {
-    const {readableStream, writableStream} = event.data;
     const transformStream = new TransformStream({
       transform: encodeFunction,
     });
-    readableStream
+    readable
         .pipeThrough(transformStream)
-        .pipeTo(writableStream);
+        .pipeTo(writable);
   } else if (operation === 'decode') {
-    const {readableStream, writableStream} = event.data;
     const transformStream = new TransformStream({
       transform: decodeFunction,
     });
-    readableStream
+    readable
         .pipeThrough(transformStream)
-        .pipeTo(writableStream);
-  } else if (operation === 'setCryptoKey') {
+        .pipeTo(writable);
+  }
+}
+
+// Handler for messages, including transferable streams.
+onmessage = (event) => {
+  if (event.data.operation === 'encode' || event.data.operation === 'decode') {
+    return handleTransform(event.data.operation, event.data.readable, event.data.writable);
+  }
+  if (event.data.operation === 'setCryptoKey') {
     if (event.data.currentCryptoKey !== currentCryptoKey) {
       currentKeyIdentifier++;
     }
@@ -140,3 +146,11 @@ onmessage = async (event) => {
     useCryptoOffset = event.data.useCryptoOffset;
   }
 };
+
+// Handler for RTCRtpScriptTransforms.
+if (self.RTCTransformEvent) {
+  self.onrtctransform = (event) => {
+    const transformer = event.transformer;
+    handleTransform(transformer.options.operation, transformer.readable, transformer.writable);
+  };
+}

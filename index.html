@@ -66,7 +66,7 @@
         <p>Most of the samples use <a href="https://github.com/webrtc/adapter">adapter.js</a>, a shim to insulate apps
             from spec changes and prefix differences.</p>
 
-        <p><a href="http://www.webrtc.org/testing" title="Command-line flags for WebRTC testing">https://webrtc.org/getting-started/testing</a>
+        <p><a href="https://webrtc.org/getting-started/testing" title="Command-line flags for WebRTC testing">https://webrtc.org/getting-started/testing</a>
             lists command line flags useful for development and testing with Chrome.</p>
 
         <p>Patches and issues welcome! See <a href="https://github.com/webrtc/samples/blob/gh-pages/CONTRIBUTING.md">CONTRIBUTING.md</a>
@@ -78,7 +78,7 @@
 
     <section>
 
-        <h2 id="getusermedia"><a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/getUserMedia">getUserMedia():</a>
+        <h2 id="getusermedia"><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia">getUserMedia():</a>
         </h2>
         <p class="description">Access media devices</p>
         <ul>
@@ -130,7 +130,9 @@
         </h2>
         <p class="description">Controlling peer connectivity</p>
         <ul>
-            <li><a href="src/content/peerconnection/pc1/">Basic peer connection demo</a></li>
+            <li><a href="src/content/peerconnection/pc1/">Basic peer connection demo in a single tab</a></li>
+
+            <li><a href="src/content/peerconnection/channel/">Basic peer connection demo between two tabs</a></li>
 
             <li><a href="src/content/peerconnection/perfect-negotiation/">Peer connection using Perfect Negotiation</a></li>
 
@@ -205,7 +207,9 @@
             <li><a href="src/content/insertable-streams/video-analyzer">Video analyzer using WebRTC Insertable Streams</a></li> (Experimental)
             <li><a href="src/content/insertable-streams/video-processing">Video processing using MediaStream Insertable Streams</a></li> (Experimental)
             <li><a href="src/content/insertable-streams/audio-processing">Audio processing using MediaStream Insertable Streams</a></li> (Experimental)
-        </ul>
+            <li><a href="src/content/insertable-streams/video-crop">Video cropping using MediaStream Insertable Streams in a Worker</a></li> (Experimental)
+            <li><a href="src/content/insertable-streams/webgpu">Integrations with WebGPU for custom video rendering:</a></li> (Experimental)
+        </ul>   
 
     </section>
 

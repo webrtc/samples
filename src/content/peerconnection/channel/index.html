@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2021 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -20,11 +20,10 @@
 
     <base target="_blank">
 
-    <title>Peer connection: adjust bandwidth</title>
+    <title>Peer connection between two tabs</title>
 
     <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-    <link href="//fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="../../../css/main.css"/>
     <link rel="stylesheet" href="css/main.css"/>
 
@@ -33,46 +32,31 @@
 <body>
 
 <div id="container">
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+        <span>Peer connection</span></h1>
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection: adjust bandwidth</span>
-    </h1>
+    <p>This sample shows how to setup a connection between two peers in different tabs using
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection">RTCPeerConnection</a>
+        and <a href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API">Broadcast Channel</a>
+    </p>
 
     <video id="localVideo" playsinline autoplay muted></video>
     <video id="remoteVideo" playsinline autoplay></video>
 
-    <div id="buttons">
-        <label>Bandwidth:</label>
-        <select id="bandwidth" disabled>
-            <option value="unlimited" selected>unlimited</option>
-            <option value="2000">2000</option>
-            <option value="1000">1000</option>
-            <option value="500">500</option>
-            <option value="250">250</option>
-            <option value="125">125</option>
-            <option value="75">75</option>
-        </select>
-        kbps
-        <button id="callButton">Call</button>
+    <div class="box">
+        <button id="startButton">Start</button>
         <button id="hangupButton">Hang Up</button>
-        Use synthetic video: <input type="checkbox" id="synthetic">
-    </div>
-    <div class="graph-container" id="bitrateGraph">
-        <div>Bitrate</div>
-        <canvas id="bitrateCanvas"></canvas>
-    </div>
-    <div class="graph-container" id="packetGraph">
-        <div>Packets sent per second</div>
-        <canvas id="packetCanvas"></canvas>
     </div>
 
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/bandwidth"
+    <p>Click the start button in two tabs (of the same browser) to make a call</p>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/channel"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 
 </div>
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="js/main.js" async></script>
-<script src="../../../js/third_party/graph.js"></script>
 
 <script src="../../../js/lib/ga.js"></script>
 </body>
