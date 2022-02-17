@@ -27,7 +27,7 @@
     "babel-plugin-add-module-exports": "^1.0.2",
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
-    "chromedriver": "^76.0.1",
+    "chromedriver": ">76.0.1",
     "eslint-config-google": "^0.14.0",
     "extend": "^3.0.2",
     "fs": "0.0.2",
