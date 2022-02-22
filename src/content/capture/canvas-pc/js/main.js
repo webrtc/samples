@@ -110,6 +110,9 @@ function gotRemoteStream(e) {
   if (video.srcObject !== e.streams[0]) {
     video.srcObject = e.streams[0];
     console.log('pc2 received remote stream');
+    if (video.paused) {
+      document.getElementById('autoplay').style.display = 'block';
+    }
   }
 }
 
