@@ -17,11 +17,6 @@ if (typeof MediaStreamTrackProcessor === 'undefined' ||
       'page.');
 }
 
-// In Chrome 88, VideoFrame.close() was called VideoFrame.destroy()
-if (VideoFrame.prototype.close === undefined) {
-  VideoFrame.prototype.close = VideoFrame.prototype.destroy;
-}
-
 /* global CameraSource */ // defined in camera-source.js
 /* global CanvasSource */ // defined in canvas-source.js
 /* global CanvasTransform */ // defined in canvas-transform.js
