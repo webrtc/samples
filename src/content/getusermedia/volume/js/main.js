@@ -82,6 +82,7 @@ function stop() {
 
   window.stream.getTracks().forEach(track => track.stop());
   window.soundMeter.stop();
+  window.audioContext.close();
   clearInterval(meterRefresh);
   instantMeter.value = instantValueDisplay.innerText = '';
   slowMeter.value = slowValueDisplay.innerText = '';

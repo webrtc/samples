@@ -36,6 +36,10 @@ let result;
 // eslint-disable-next-line prefer-const
 let configuration = null;
 
+// Preferring a certain codec is an expert option without GUI.
+// eslint-disable-next-line prefer-const
+let preferredVideoCodecMimeType = undefined; // e.g. 'video/VP8'
+
 localVideo.addEventListener('loadedmetadata', function() {
   console.log(`Local video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
@@ -171,7 +175,15 @@ function adjustTransceiverCounts(pc, videoCount) {
   if (currentVideoCount < videoCount) {
     console.log('Adding ' + (videoCount - currentVideoCount) + ' transceivers');
     for (let i = currentVideoCount; i < videoCount; ++i) {
-      pc.addTransceiver('video');
+      const transceiver = pc.addTransceiver('video');
+      if (preferredVideoCodecMimeType) {
+        const {codecs} = RTCRtpSender.getCapabilities('video');
+        const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
+        const selectedCodec = codecs[selectedCodecIndex];
+        codecs.splice(selectedCodecIndex, 1);
+        codecs.unshift(selectedCodec);
+        transceiver.setCodecPreferences(codecs);
+      }
     }
   } else if (currentVideoCount > videoCount) {
     console.log('Stopping ' + (currentVideoCount - videoCount) + ' transceivers');
