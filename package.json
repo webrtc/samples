@@ -38,6 +38,6 @@
     "nightwatch": "^2.0.7",
     "selenium-server": "^3.141.59",
     "stylelint": ">10.1.0",
-    "stylelint-config-recommended": "^2.2.0"
+    "stylelint-config-recommended": ">2.2.0"
   }
 }
