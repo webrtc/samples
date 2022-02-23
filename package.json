@@ -19,30 +19,20 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "gulp",
-    "start": "http-server . -c-1"
+    "start": "http-server . -c-1",
+    "test": "npm run eslint && npm run stylelint",
+    "eslint": "eslint 'src/content/**/*.js'",
+    "stylelint": "stylelint 'src/**/*.css'"
   },
+  "eslintIgnore": [
+    "'**/third_party/*.js'"
+  ],
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-add-module-exports": "^1.0.2",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
     "chromedriver": ">76.0.1",
+    "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
-    "extend": "^3.0.2",
-    "fs": "0.0.2",
     "geckodriver": "^1.19.1",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-eslint": "^6.0.0",
-    "gulp-exec": "^4.0.0",
-    "gulp-nightwatch": "^1.1.0",
-    "gulp-stylelint": "^9.0.0",
-    "gulp-zip": "^5.0.0",
     "http-server": "^0.12.3",
-    "lodash": "^4.17.15",
-    "lodash.template": "^4.5.0",
-    "minimatch": "^3.0.4",
     "nightwatch": "^1.7.8",
     "selenium-server": "^3.141.59",
     "stylelint": "^10.1.0",
