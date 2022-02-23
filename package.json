@@ -19,8 +19,14 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "start": "http-server . -c-1"
+    "start": "http-server . -c-1",
+    "test": "npm run eslint && npm run stylelint",
+    "eslint": "eslint 'src/content/**/*.js'",
+    "stylelint": "stylelint 'src/**/*.css'"
   },
+  "eslintIgnore": [
+    "'**/third_party/*.js'"
+  ],
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
