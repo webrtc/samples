@@ -19,6 +19,7 @@ let pc2;
 let startTime;
 
 video.addEventListener('loadedmetadata', function() {
+  document.getElementById('autoplay').style.display = 'none';
   console.log(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
 
