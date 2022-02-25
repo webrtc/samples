@@ -79,6 +79,15 @@ function changeAudioDestination() {
 function gotStream(stream) {
   window.stream = stream; // make stream available to console
   videoElement.srcObject = stream;
+
+  try {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    window.audioContext = window.audioContext || new AudioContext();
+  } catch (e) {
+    alert('Web Audio API not supported.');
+  }
+  window.audioContext.createMediaStreamSource(stream);
+
   // Refresh button list in case labels have become available
   return navigator.mediaDevices.enumerateDevices();
 }
