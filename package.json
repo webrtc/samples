@@ -28,13 +28,9 @@
     "'**/third_party/*.js'"
   ],
   "devDependencies": {
-    "chromedriver": ">76.0.1",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
-    "geckodriver": ">1.19.1",
     "http-server": "^14.1.0",
-    "nightwatch": "^2.0.7",
-    "selenium-server": "^3.141.59",
     "stylelint": "^14.5.3",
     "stylelint-config-recommended": "^7.0.0"
   }

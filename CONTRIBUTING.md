@@ -25,12 +25,3 @@ npm install
 npm start
 ```
 
-# Testing
-
-Some of the samples have an associated test. These are currently using [Nightwatch.JS](https://nightwatchjs.org) and
-are only testing the UI of the samples. The purpose of these is to provide examples of how you can write UI tests for
-your WebRTC web application.
-
-When creating a new sample or updating an existing one, please make sure you also create, or update any existing, tests.
-All tests in this repository are implemented as Nightwatch.JS UI tests, so please follow the same design in your own.
-
