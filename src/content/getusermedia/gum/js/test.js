@@ -5,15 +5,36 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-export default {
-  'It should have a video element': (browser) => {
-    const path = '/src/content/getusermedia/gum/index.html';
-    const url = 'file://' + process.cwd() + path;
+/* eslint-env node, mocha */
+'use strict';
 
-    browser
-      .url(url)
-      .waitForElementVisible('video', 5000)
-      .waitForClientConnected('video', 5000)
-      .end();
-  }
-};
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
+const {expect} = require('chai');
+
+let driver;
+const path = '/src/content/getusermedia/gum/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
+
+describe('getUserMedia', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
+
+  beforeEach(() => {
+    return driver.get(url);
+  });
+
+  it('opens a camera', async () => {
+    await driver.findElement(webdriver.By.css('button')).click();
+    await driver.wait(() => driver.executeScript(() =>
+      document.querySelector('video').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA)
+    );
+    const width = await driver.findElement(webdriver.By.css('video')).getAttribute('videoWidth');
+    expect(width >>> 0).to.be.at.least(320);
+  });
+});
+

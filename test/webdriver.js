@@ -48,11 +48,10 @@ function buildDriver(browser = 'chrome', options = {}) {
   // Chrome options.
   let chromeOptions = new chrome.Options()
       .addArguments('allow-file-access-from-files')
-      .addArguments('allow-insecure-localhost')
       .addArguments('use-fake-device-for-media-stream')
+      .addArguments('use-fake-ui-for-media-stream')
       .addArguments('disable-translate')
       .addArguments('no-process-singleton-dialog')
-      // .addArguments('disable-dev-shm-usage')
       .addArguments('mute-audio');
   // ensure chrome.runtime is visible.
   chromeOptions.excludeSwitches('test-type');

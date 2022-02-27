@@ -5,24 +5,71 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-export default {
-  'It should send DTMF codes': (browser) => {
-    const path = '/src/content/peerconnection/dtmf/index.html';
-    const url = 'file://' + process.cwd() + path;
+/*
+/* eslint-env node, mocha */
+'use strict';
 
-    // TODO Test all codecs?
-    browser
-      .url(url)
-      .click('#callButton')
-      .waitForClientConnected('audio', 1000, 'Receiving remote audio.')
-      .useXpath()
-      .click('/html/body/div/div[@id=\'dialPad\']/div[1]/button[1]') // 1
-      .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[1]') // 9
-      .click('/html/body/div/div[@id=\'dialPad\']/div[3]/button[4]') // #
-      .click('/html/body/div/div[@id=\'dialPad\']/div[4]/button[1]') // A
-      .useCss()
-      .assert.value('input#sentTones', '1 9 # A ')
-      .click('#hangupButton')
-      .end();
-  }
-};
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
+const {expect} = require('chai');
+
+let driver;
+const path = '/src/content/peerconnection/dtmf/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
+
+describe('peerconnection dtmf', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
+
+  beforeEach(async () => {
+    await driver.get(url);
+    await driver.findElement(webdriver.By.id('callButton')).click();
+    await driver.wait(() => driver.executeScript(() => {
+      return localStream !== null; // eslint-disable-line no-undef
+    }));
+    await driver.wait(() => driver.executeScript(() => {
+      return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
+    }));
+  });
+
+  it('sends the digit 1', async () => {
+    await driver.findElement(webdriver.By.css('#dialPad>div:nth-child(1)>button:nth-child(1)')).click();
+    await driver.wait(driver.executeScript(() => {
+      document.getElementById('sentTones').value.length !== 0;
+    }));
+    const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
+    expect(sentTones).to.equal('1 ');
+  });
+
+  it('sends the digit 9', async () => {
+    await driver.findElement(webdriver.By.css('#dialPad>div:nth-child(3)>button:nth-child(1)')).click();
+    await driver.wait(driver.executeScript(() => {
+      document.getElementById('sentTones').value.length !== 0;
+    }));
+    const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
+    expect(sentTones).to.equal('9 ');
+  });
+
+  it('sends the #', async () => {
+    await driver.findElement(webdriver.By.css('#dialPad>div:nth-child(3)>button:nth-child(4)')).click();
+    await driver.wait(driver.executeScript(() => {
+      document.getElementById('sentTones').value.length !== 0;
+    }));
+    const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
+    expect(sentTones).to.equal('# ');
+  });
+
+  it('sends the A', async () => {
+    await driver.findElement(webdriver.By.css('#dialPad>div:nth-child(4)>button:nth-child(1)')).click();
+    await driver.wait(driver.executeScript(() => {
+      document.getElementById('sentTones').value.length !== 0;
+    }));
+    const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
+    expect(sentTones).to.equal('A ');
+  });
+});
+

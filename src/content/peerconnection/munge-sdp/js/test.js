@@ -5,74 +5,58 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node */
+/* eslint-env node, mocha */
 
 'use strict';
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-const test = require('tape');
-
 const webdriver = require('selenium-webdriver');
-const seleniumHelpers = require('webrtc-utilities').seleniumLib;
+const seleniumHelpers = require('../../../../../test/webdriver');
 
-test('Munge SDP sample', t => {
-  const driver = seleniumHelpers.buildDriver();
-  const path = '/src/content/peerconnection/munge-sdp/index.html';
-  const url = (process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())) + path;
+let driver;
+const path = '/src/content/peerconnection/munge-sdp/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-  driver.get(url)
-    .then(() => {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.id('getMedia')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return typeof window.localStream !== \'undefined\'')))
-    .then(() => {
-      t.pass('got media');
-      return driver.findElement(webdriver.By.id('createPeerConnection')).click();
-    })
-    .then(() => {
-      return driver.wait(webdriver.until.elementIsVisible(driver.findElement(webdriver.By.id('createOffer')))).click();
-    })
-    .then(() => {
-      // Need to wait for createOffer to succeed which takes some time
-      // on travis.
-      const script = 'return document.querySelector(\'#local>textarea\').value !== \'\'';
-      return driver.wait(() => driver.executeScript(script));
-    })
-    .then(() => driver.findElement(webdriver.By.css('#local>textarea')).getAttribute('value'))
-    .then(value => {
-      t.ok(value !== '', 'local SDP is shown in textarea');
-      return driver.findElement(webdriver.By.id('setOffer')).click();
-    })
-    .then(() => driver.findElement(webdriver.By.id('createAnswer')).click())
-    .then(() => {
-      // Need to wait for createAnswer to succeed which takes some time
-      // on travis.
-      return driver.wait(() => driver.executeScript(
-        'return document.querySelector(\'#remote>textarea\').value !== \'\''));
-    })
-    .then(() => driver.findElement(webdriver.By.css('#remote>textarea'))
-      .getAttribute('value'))
-    .then(value => {
-      t.ok(value !== '', 'remote SDP is shown in textarea');
-      return driver.findElement(webdriver.By.id('setAnswer')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript(
-      'return remotePeerConnection && ' +
-      'remotePeerConnection.iceConnectionState === \'connected\';'), 30 * 1000))
-    .then(() => {
-      t.pass('remotePeerConnection ICE connected');
-      // Need to make sure some data has had time to transfer.
-      return driver.wait(() => driver.executeScript('return typeof dataChannelDataReceived !== \'undefined\';'));
-    })
-    .then(() => driver.executeScript('return dataChannelDataReceived;'))
-    .then(value => t.ok(value !== '', 'dataChannelDataReceived is not empty.'))
-    .then(() => {
-      t.pass('remotePeerConnection ICE connected');
-      t.end();
-    })
-    .then(null, err => {
-      t.fail(err);
-      t.end();
-    });
+describe('peerconnection sdp munging', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
+
+  beforeEach(() => {
+    return driver.get(url);
+  });
+
+  it('establishes a connection and allows hangup and new offer', async () => {
+    await driver.findElement(webdriver.By.id('getMedia')).click();
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('createPeerConnection')).isEnabled());
+    await driver.findElement(webdriver.By.id('createPeerConnection')).click();
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('createOffer')).isEnabled());
+    await driver.findElement(webdriver.By.id('createOffer')).click();
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('setOffer')).isEnabled());
+    await driver.findElement(webdriver.By.id('setOffer')).click();
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('createAnswer')).isEnabled());
+    await driver.findElement(webdriver.By.id('createAnswer')).click();
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('setAnswer')).isEnabled());
+    await driver.findElement(webdriver.By.id('setAnswer')).click();
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('hangup')).isEnabled());
+    await driver.wait(() => driver.findElement(webdriver.By.id('createOffer')).isEnabled());
+
+    await Promise.all([
+      await driver.wait(() => driver.executeScript(() => {
+        return localPeerConnection && localPeerConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+      })),
+      await driver.wait(() => driver.executeScript(() => {
+        return remotePeerConnection && remotePeerConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+      })),
+    ]);
+  });
+
+  // TODO: add test to ensure the text fields are properly filled
 });

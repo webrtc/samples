@@ -5,43 +5,56 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node */
+/* eslint-env node, mocha */
 
 'use strict';
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-const test = require('tape');
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
 
-test('PeerConnection pc1 sample', t => {
-  const webdriver = require('selenium-webdriver');
-  const seleniumHelpers = require('webrtc-utilities').seleniumLib;
-  const driver = seleniumHelpers.buildDriver();
+let driver;
+const path = '/src/content/peerconnection/pc1/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-  const path = '/src/content/peerconnection/pc1/index.html';
-  const url = (process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())) + path;
-  driver.get(url)
-    .then(() => {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.id('startButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return localStream !== null'), 30 * 1000))
-    .then(() => {
-      t.pass('got media');
-      return driver.findElement(webdriver.By.id('callButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript(
-      'return pc2 && pc2.iceConnectionState === \'connected\';'), 30 * 1000))
-    .then(() => {
-      t.pass('pc2 ICE connected');
-      return driver.findElement(webdriver.By.id('hangupButton')).click();
-    })
-    .then(() => driver.wait(() => driver.executeScript('return pc1 === null'), 30 * 1000))
-    .then(() => {
-      t.pass('hangup');
-      t.end();
-    })
-    .then(null, err => {
-      t.fail(err);
-      t.end();
-    });
+describe('simple peerconnection', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
+
+  beforeEach(() => {
+    return driver.get(url);
+  });
+
+  it('establishes a connection and hangs up', async () => {
+    await driver.findElement(webdriver.By.id('startButton')).click();
+
+    await driver.wait(() => driver.executeScript(() => {
+      return localStream !== null; // eslint-disable-line no-undef
+    }));
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled());
+    await driver.findElement(webdriver.By.id('callButton')).click();
+
+    await Promise.all([
+      await driver.wait(() => driver.executeScript(() => {
+        return pc1 && pc1.connectionState === 'connected'; // eslint-disable-line no-undef
+      })),
+      await driver.wait(() => driver.executeScript(() => {
+        return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
+      })),
+    ]);
+
+    await driver.wait(() => driver.executeScript(() => {
+      return document.getElementById('remoteVideo').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
+    }));
+
+    await driver.findElement(webdriver.By.id('hangupButton')).click();
+
+    await driver.wait(() => driver.executeScript(() => {
+      return pc1 === null; // eslint-disable-line no-undef
+    }));
+  });
 });
+

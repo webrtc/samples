@@ -5,16 +5,57 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-export default {
-  'It should have select elements for each media device': (browser) => {
-    const path = '/src/content/devices/input-output/index.html';
-    const url = 'file://' + process.cwd() + path;
+/* eslint-env node, mocha */
+'use strict';
 
-    browser
-      .url(url)
-      .waitForElementVisible('#audioSource option:nth-of-type(1)', 1000, 'Check that there is at least one audio source')
-      .waitForElementVisible('#audioOutput option:nth-of-type(1)', 1000, 'Check that there is at least one audio output')
-      .waitForElementVisible('#videoSource option:nth-of-type(1)', 1000, 'Check that there is at least one video source')
-      .end();
-  }
-};
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
+const {expect} = require('chai');
+
+let driver;
+const path = '/src/content/devices/input-output/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
+
+describe('input-output', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
+
+  beforeEach(() => {
+    return driver.get(url);
+  });
+
+  it('shows at least one audio input device', async () => {
+    await driver.wait(driver.executeScript(() => {
+      window.stream !== undefined; // eslint-disable-line no-undef
+    }));
+    const numberOfSources = await driver.findElement(webdriver.By.id('audioSource'))
+        .getAttribute('childElementCount');
+    expect(numberOfSources >>> 0).to.be.above(0);
+  });
+
+  it('shows at least one video input device', async () => {
+    await driver.wait(driver.executeScript(() => {
+      window.stream !== undefined; // eslint-disable-line no-undef
+    }));
+    const numberOfSources = await driver.findElement(webdriver.By.id('videoSource'))
+        .getAttribute('childElementCount');
+    expect(numberOfSources >>> 0).to.be.above(0);
+  });
+
+  it('shows at least one audio output device device', async function() {
+    if (process.env.BROWSER === 'firefox') {
+      this.skip();
+    }
+    await driver.wait(driver.executeScript(() => {
+      window.stream !== undefined; // eslint-disable-line no-undef
+    }));
+    const numberOfSinks = await driver.findElement(webdriver.By.id('audioOutput'))
+        .getAttribute('childElementCount');
+    expect(numberOfSinks >>> 0).to.be.above(0);
+  });
+});
+
