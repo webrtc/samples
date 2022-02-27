@@ -28,10 +28,13 @@
     "'**/third_party/*.js'"
   ],
   "devDependencies": {
+    "chromedriver": "^98.0.1",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "http-server": "^14.1.0",
+    "selenium-webdriver": "^3.6.0",
     "stylelint": "^14.5.3",
-    "stylelint-config-recommended": "^7.0.0"
+    "stylelint-config-recommended": "^7.0.0",
+    "tape": "^5.5.2"
   }
 }
