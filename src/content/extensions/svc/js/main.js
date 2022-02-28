@@ -102,12 +102,11 @@ async function start() {
         scalabilityMode.firstChild.remove();
       }
       const option = document.createElement('option');
-      option.value = "";
-      option.innerText = "NONE";
+      option.value = '';
+      option.innerText = 'NONE';
       scalabilityMode.appendChild(option);
       if (selectedCodec.scalabilityModes) {
-        for (const mode of selectedCodec.scalabilityModes)
-        {
+        for (const mode of selectedCodec.scalabilityModes) {
           const option = document.createElement('option');
           option.value = mode;
           option.innerText = mode;
@@ -119,7 +118,6 @@ async function start() {
       }
     });
     codecPreferences.disabled = false;
-          
   }
 
   bitrateSeries = new TimelineDataSeries();
@@ -158,15 +156,15 @@ async function call() {
   pc2.addEventListener('track', gotRemoteStream);
   const mode = scalabilityMode.value;
   localStream.getTracks().forEach((track) =>{
-    if (track.kind == "video" && mode) {
+    if (track.kind == 'video' && mode) {
       pc1.addTransceiver(track, {
-      streams: [localStream],
-	sendEncodings: [
-	  { scalabilityMode: mode }
-	]
+        streams: [localStream],
+        sendEncodings: [
+          {scalabilityMode: mode}
+        ]
       });
     } else {
-      pc1.addTrack(track, localStream)
+      pc1.addTrack(track, localStream);
     }
   });
   console.log('Added local stream to pc1');
@@ -187,7 +185,7 @@ async function call() {
   }
   codecPreferences.disabled = true;
   scalabilityMode.disabled = true;
-	
+
   try {
     console.log('pc1 createOffer start');
     const offer = await pc1.createOffer(offerOptions);
