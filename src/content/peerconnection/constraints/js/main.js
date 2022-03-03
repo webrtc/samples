@@ -38,6 +38,8 @@ const remoteVideo = document.querySelector('div#remoteVideo video');
 const localVideoStatsDiv = document.querySelector('div#localVideo div');
 const remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 
+const updateStats = document.querySelector('input#updateStats');
+
 let localPeerConnection;
 let remotePeerConnection;
 let localStream;
@@ -260,6 +262,9 @@ function showLocalStats(results) {
 
 // Display statistics
 setInterval(() => {
+  if (!updateStats.checked) {
+    return;
+  }
   if (localPeerConnection && remotePeerConnection) {
     remotePeerConnection
         .getStats(null)
