@@ -22,6 +22,7 @@
     "start": "http-server . -c-1",
     "test": "npm run eslint && npm run stylelint",
     "eslint": "eslint 'src/content/**/*.js'",
+    "mocha": "mocha 'src/content/**/test.js'",
     "stylelint": "stylelint 'src/**/*.css'"
   },
   "eslintIgnore": [
@@ -37,7 +38,7 @@
     "mocha": "^9.2.1",
     "selenium-webdriver": "^3.6.0",
     "stylelint": "^14.5.3",
-    "stylelint-config-recommended": "^7.0.0"
-  },
-  "dependencies": {}
+    "stylelint-config-recommended": "^7.0.0",
+    "travis-multirunner": "^4.6.0"
+  }
 }

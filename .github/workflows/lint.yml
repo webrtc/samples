@@ -3,7 +3,7 @@ name: lint
 on: [pull_request]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -11,3 +11,17 @@ jobs:
     - run: npm install
     - run: npm run eslint
     - run: npm run stylelint
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chrome]
+        version: [stable]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+    - run: npm install
+    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} ./node_modules/travis-multirunner/setup.sh
+    - run: Xvfb :99 &
+    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} DISPLAY=:99.0 npm run mocha

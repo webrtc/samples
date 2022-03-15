@@ -15,7 +15,7 @@ let driver;
 const path = '/src/content/peerconnection/pc1/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-describe('simple peerconnection', () => {
+describe.skip('simple peerconnection', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });

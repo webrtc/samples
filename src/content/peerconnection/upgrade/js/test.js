@@ -15,7 +15,7 @@ let driver;
 const path = '/src/content/peerconnection/upgrade/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-describe('peerconnection upgrade from audio-only to audio-video', () => {
+describe.skip('peerconnection upgrade from audio-only to audio-video', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });

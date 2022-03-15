@@ -16,7 +16,7 @@ let driver;
 const path = '/src/content/peerconnection/restart-ice/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-xdescribe('peerconnection ice restart', () => {
+describe.skip('peerconnection ice restart', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });

@@ -16,7 +16,7 @@ let driver;
 const path = '/src/content/datachannel/datatransfer/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-describe('datachannel datatransfer', () => {
+describe.skip('datachannel datatransfer', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });

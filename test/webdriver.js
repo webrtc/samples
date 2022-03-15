@@ -18,7 +18,7 @@ if (os.platform() === 'win32') {
   process.env.PATH += ':node_modules/.bin';
 }
 
-function buildDriver(browser = 'chrome', options = {}) {
+function buildDriver(browser = process.env.BROWSER || 'chrome', options = {bver: process.env.BVER}) {
   // Firefox options.
   let profile;
   profile = new firefox.Profile();
@@ -96,7 +96,6 @@ function buildDriver(browser = 'chrome', options = {}) {
   // callbacks to be caught in tests.
   driver
     .manage().timeouts().setScriptTimeout(5 * 1000);
-  driver
   return driver;
 }
 
