@@ -22,3 +22,7 @@ video {
   margin: 1em;
   object-fit: cover;
 }
+
+#autoplay {
+  display: none;
+}
