@@ -22,20 +22,23 @@
     "start": "http-server . -c-1",
     "test": "npm run eslint && npm run stylelint",
     "eslint": "eslint 'src/content/**/*.js'",
+    "mocha": "mocha 'src/content/**/test.js'",
     "stylelint": "stylelint 'src/**/*.css'"
   },
   "eslintIgnore": [
     "'**/third_party/*.js'"
   ],
   "devDependencies": {
-    "chromedriver": ">76.0.1",
+    "chai": "^4.3.6",
+    "chromedriver": "^98.0.1",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
-    "geckodriver": ">1.19.1",
+    "geckodriver": "^3.0.1",
     "http-server": "^14.1.0",
-    "nightwatch": "^2.0.7",
-    "selenium-server": "^3.141.59",
+    "mocha": "^9.2.1",
+    "selenium-webdriver": "^3.6.0",
     "stylelint": "^14.5.3",
-    "stylelint-config-recommended": "^7.0.0"
+    "stylelint-config-recommended": "^7.0.0",
+    "travis-multirunner": "^4.6.0"
   }
 }

@@ -21,6 +21,7 @@ const video1 = document.querySelector('video#video1');
 const video2 = document.querySelector('video#video2');
 const video3 = document.querySelector('video#video3');
 
+let localStream;
 let pc1Local;
 let pc1Remote;
 let pc2Local;
@@ -33,7 +34,7 @@ const offerOptions = {
 function gotStream(stream) {
   console.log('Received local stream');
   video1.srcObject = stream;
-  window.localStream = stream;
+  localStream = stream;
   callButton.disabled = false;
 }
 
@@ -53,8 +54,8 @@ function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   console.log('Starting calls');
-  const audioTracks = window.localStream.getAudioTracks();
-  const videoTracks = window.localStream.getVideoTracks();
+  const audioTracks = localStream.getAudioTracks();
+  const videoTracks = localStream.getVideoTracks();
   if (audioTracks.length > 0) {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
@@ -77,13 +78,13 @@ function call() {
   pc2Remote.onicecandidate = iceCallback2Remote;
   console.log('pc2: created local and remote peer connection objects');
 
-  window.localStream.getTracks().forEach(track => pc1Local.addTrack(track, window.localStream));
+  localStream.getTracks().forEach(track => pc1Local.addTrack(track, localStream));
   console.log('Adding local stream to pc1Local');
   pc1Local
       .createOffer(offerOptions)
       .then(gotDescription1Local, onCreateSessionDescriptionError);
 
-  window.localStream.getTracks().forEach(track => pc2Local.addTrack(track, window.localStream));
+  localStream.getTracks().forEach(track => pc2Local.addTrack(track, localStream));
   console.log('Adding local stream to pc2Local');
   pc2Local.createOffer(offerOptions)
       .then(gotDescription2Local, onCreateSessionDescriptionError);
