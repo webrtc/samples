@@ -23,53 +23,63 @@ function handleSuccess(stream) {
 
   // make track variable available to browser console.
   const [track] = [window.track] = stream.getVideoTracks();
+
+  loadProperties();
+  
+  document.querySelector(`button[id=refreshControls]`).disabled = false;
+}
+
+function loadProperties(refreshValuesOnly) {
+  
+  const track = window.track;
   const capabilities = track.getCapabilities();
   const settings = track.getSettings();
-  console.log('Initial capabilities: ', capabilities);
-  console.log('Initial settings: ', settings);
-
-  for (const ptz of ['exposureMode', 'exposureTime', 'exposureCompensation', 'brightness', 'whiteBalanceMode']) {
+  console.log('Capabilities: ', capabilities);
+  console.log('Settings: ', settings);
+	
+  for (const property of ['exposureMode', 'exposureTime', 'exposureCompensation', 'brightness', 'whiteBalanceMode']) {
     // Check whether camera supports exposure.
-    if (!(ptz in settings)) {
-      errorMsg(`Camera does not support ${ptz}.`);
+    if (!(property in settings)) {
+      errorMsg(`Camera does not support ${property}.`);
       continue;
     }
 
     let element;
 
-    if (Array.isArray(capabilities[ptz])) {
+    if (Array.isArray(capabilities[property])) {
       // Map it to a select element.
-      const select = document.querySelector(`select[name=${ptz}]`);
+      const select = document.querySelector(`select[name=${property}]`);
       element = select;
-      if (capabilities.exposureMode) {
-        for (const mode of capabilities.exposureMode) {
+      if (capabilities[property] && !refreshValuesOnly) {
+        for (const mode of capabilities[property]) {
           select.insertAdjacentHTML('afterbegin', `<option value="${mode}">${mode}</option>`);
         }
       }
     } else {
       // Map it to a slider element.
-      const input = document.querySelector(`input[name=${ptz}]`);
+      const input = document.querySelector(`input[name=${property}]`);
       element = input;
-      input.min = capabilities[ptz].min;
-      input.max = capabilities[ptz].max;
-      input.step = capabilities[ptz].step;
+      input.min = capabilities[property].min;
+      input.max = capabilities[property].max;
+      input.step = capabilities[property].step;
     }
 
-    element.value = settings[ptz];
+    element.value = settings[property];
     element.disabled = false;
-    element.oninput = async event => {
-      try {
-        const constraints = {advanced: [{[ptz]: element.value}]};
-        await track.applyConstraints(constraints);
-		console.log('Did successfully apply new constraints: ', constraints);
-		console.log('New camera settings: ', track.getSettings());
-      } catch (err) {
-        console.error('applyConstraints() failed: ', err);
-      }
-    };
-
-
+	if (!refreshValuesOnly) {
+		element.oninput = async event => {
+        try {
+          const constraints = {advanced: [{[property]: element.value}]};
+          await track.applyConstraints(constraints);
+		  console.log('Did successfully apply new constraints: ', constraints);
+		  console.log('New camera settings: ', track.getSettings());
+        } catch (err) {
+          console.error('applyConstraints() failed: ', err);
+        }
+	  };
+	}
   }
+	
 }
 
 function handleError(error) {
