@@ -31,7 +31,7 @@
             display: inline-block;
             font-weight: 400;
             margin: 0 0.5em 0 0;
-            width: 3.5em;
+            width: 10em;
         }
     </style>
 </head>
@@ -55,9 +55,21 @@
         <div class="label">Exposure Time:</div>
         <input name="exposureTime" type="range" disabled>
     </div>
+	
     <div>
         <div class="label">Exposure Compensation:</div>
         <input name="exposureCompensation" type="range" disabled>
+    </div>
+	
+	<div>
+        <div class="label">Brightness:</div>
+        <input name="brightness" type="range" disabled>
+    </div>
+	
+	<div>
+        <div class="label">White Balance Mode:</div>
+        <select name="whiteBalanceMode" id="whiteBalanceMode" disabled>
+        </select>
     </div>
 
     <div id="errorMsg"></div>

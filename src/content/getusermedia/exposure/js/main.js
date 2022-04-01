@@ -28,7 +28,7 @@ function handleSuccess(stream) {
   console.log('Initial capabilities: ', capabilities);
   console.log('Initial settings: ', settings);
 
-  for (const ptz of ['exposureMode', 'exposureTime', 'exposureCompensation']) {
+  for (const ptz of ['exposureMode', 'exposureTime', 'exposureCompensation', 'brightness', 'whiteBalanceMode']) {
     // Check whether camera supports exposure.
     if (!(ptz in settings)) {
       errorMsg(`Camera does not support ${ptz}.`);
@@ -37,7 +37,7 @@ function handleSuccess(stream) {
 
     let element;
 
-    if (ptz === 'exposureMode') {
+    if (Array.isArray(capabilities[ptz])) {
       // Map it to a select element.
       const select = document.querySelector(`select[name=${ptz}]`);
       element = select;
