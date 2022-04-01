@@ -43,7 +43,7 @@ function handleSuccess(stream) {
       element = select;
       if (capabilities.exposureMode) {
         for (const mode of capabilities.exposureMode) {
-          select.innerHTML(`<option value="${mode}">mode</option>`);
+          select.insertAdjacentHTML('afterbegin', `<option value="${mode}">${mode}</option>`);
         }
       }
     } else {
@@ -61,6 +61,8 @@ function handleSuccess(stream) {
       try {
         const constraints = {advanced: [{[ptz]: element.value}]};
         await track.applyConstraints(constraints);
+		console.log('Did successfully apply new constraints: ', constraints);
+		console.log('New camera settings: ', track.getSettings());
       } catch (err) {
         console.error('applyConstraints() failed: ', err);
       }
