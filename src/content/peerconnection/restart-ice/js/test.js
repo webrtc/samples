@@ -16,7 +16,7 @@ let driver;
 const path = '/src/content/peerconnection/restart-ice/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-describe.skip('peerconnection ice restart', () => {
+describe('peerconnection ice restart', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });
@@ -58,7 +58,6 @@ describe.skip('peerconnection ice restart', () => {
     await driver.wait(() => driver.findElement(webdriver.By.id('restartButton')).isEnabled());
     await driver.findElement(webdriver.By.id('restartButton')).click();
 
-    await driver.wait(() => !driver.findElement(webdriver.By.id('restartButton')).isEnabled());
     await driver.wait(() => driver.findElement(webdriver.By.id('restartButton')).isEnabled());
 
     const secondCandidateIds = await Promise.all([
