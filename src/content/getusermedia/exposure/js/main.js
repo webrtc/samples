@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
+ *  Copyright (c) 2022 The WebRTC project authors. All Rights Reserved.
  *
  *  Use of this source code is governed by a BSD-style license
  *  that can be found in the LICENSE file in the root of the source
@@ -9,9 +9,8 @@
 
 // Put variables in global scope to make them available to the browser console.
 const constraints = window.constraints = {
-  video: {
-    pan: true, tilt: true, zoom: true
-  }
+  audio: false,
+  video: true
 };
 
 function handleSuccess(stream) {
@@ -25,18 +24,18 @@ function handleSuccess(stream) {
   const [track] = [window.track] = stream.getVideoTracks();
 
   loadProperties();
-  
+
   document.querySelector(`button[id=refreshControls]`).disabled = false;
 }
 
 function loadProperties(refreshValuesOnly) {
-  
+
   const track = window.track;
   const capabilities = track.getCapabilities();
   const settings = track.getSettings();
   console.log('Capabilities: ', capabilities);
   console.log('Settings: ', settings);
-	
+
   for (const property of ['exposureMode', 'exposureTime', 'exposureCompensation', 'brightness', 'whiteBalanceMode']) {
     // Check whether camera supports exposure.
     if (!(property in settings)) {
@@ -79,7 +78,7 @@ function loadProperties(refreshValuesOnly) {
 	  };
 	}
   }
-	
+
 }
 
 function handleError(error) {
