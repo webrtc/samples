@@ -83,7 +83,7 @@ function selectServer(event) {
 
 function addServer() {
   const scheme = urlInput.value.split(':')[0];
-  if (scheme !== 'stun' && scheme !== 'turn' && scheme !== 'turns') {
+  if (!['stun', 'stuns', 'turn', 'turns'].includes(scheme)) {
     alert(`URI scheme ${scheme} is not valid`);
     return;
   }
