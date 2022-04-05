@@ -21,7 +21,7 @@ function handleSuccess(stream) {
   video.srcObject = stream;
 
   // make track variable available to browser console.
-  const [track] = [window.track] = stream.getVideoTracks();
+  [window.track] = stream.getVideoTracks();
 
   loadProperties();
 
@@ -29,7 +29,6 @@ function handleSuccess(stream) {
 }
 
 function loadProperties(refreshValuesOnly) {
-
   const track = window.track;
   const capabilities = track.getCapabilities();
   const settings = track.getSettings();
@@ -65,20 +64,19 @@ function loadProperties(refreshValuesOnly) {
 
     element.value = settings[property];
     element.disabled = false;
-	if (!refreshValuesOnly) {
-		element.oninput = async event => {
+    if (!refreshValuesOnly) {
+      element.oninput = async event => {
         try {
           const constraints = {advanced: [{[property]: element.value}]};
           await track.applyConstraints(constraints);
-		  console.log('Did successfully apply new constraints: ', constraints);
-		  console.log('New camera settings: ', track.getSettings());
+          console.log('Did successfully apply new constraints: ', constraints);
+          console.log('New camera settings: ', track.getSettings());
         } catch (err) {
           console.error('applyConstraints() failed: ', err);
         }
-	  };
-	}
+      };
+    }
   }
-
 }
 
 function handleError(error) {
