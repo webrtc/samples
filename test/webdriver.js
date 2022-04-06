@@ -20,30 +20,21 @@ if (os.platform() === 'win32') {
 
 function buildDriver(browser = process.env.BROWSER || 'chrome', options = {bver: process.env.BVER}) {
   // Firefox options.
-  let profile;
-  profile = new firefox.Profile();
-  profile.setAcceptUntrustedCerts(true);
-
-  profile.setPreference('media.navigator.streams.fake', true);
-  profile.setPreference('media.navigator.permission.disabled', true);
-  profile.setPreference('xpinstall.signatures.required', false);
-  profile.setPreference('media.peerconnection.dtls.version.min', 771); // force DTLS 1.2
-
-  const firefoxOptions = new firefox.Options()
-      .setProfile(profile);
   let firefoxPath;
   if (options.firefoxpath) {
-      firefoxPath = options.firefoxpath;
+    firefoxPath = options.firefoxpath;
+  } else if (os.platform() == 'linux' && options.bver) {
+    firefoxPath = 'browsers/bin/firefox-' + options.bver;
   } else {
-    if (os.platform() == 'linux' && options.bver) {
-      firefoxPath = 'browsers/bin/firefox-' + options.bver;
-    }
+    firefoxPath = firefox.Channel.RELEASE;
   }
-  const firefoxBinary = new firefox.Binary(firefoxPath);
-  if (options.headless) {
-    firefoxBinary.addArguments('-headless');
-  }
-  firefoxOptions.setBinary(firefoxBinary);
+
+  const firefoxOptions = new firefox.Options()
+      .setPreference('media.navigator.streams.fake', true)
+      .setPreference('media.navigator.permission.disabled', true)
+      .setPreference('xpinstall.signatures.required', false)
+      .setPreference('media.peerconnection.dtls.version.min', 771)
+      .setBinary(firefoxPath);
 
   // Chrome options.
   let chromeOptions = new chrome.Options()
@@ -65,38 +56,14 @@ function buildDriver(browser = process.env.BROWSER || 'chrome', options = {bver:
   const safariOptions = new safari.Options();
   safariOptions.setTechnologyPreview(options.bver === 'unstable');
 
-  const loggingPreferences = new webdriver.logging.Preferences();
-  if (options.browserLogging) {
-    loggingPreferences.setLevel(webdriver.logging.Type.BROWSER, webdriver.logging.Level.ALL);
-  }
-
-  let driver = new webdriver.Builder()
+  const driver = new webdriver.Builder()
       .setFirefoxOptions(firefoxOptions)
       .setChromeOptions(chromeOptions)
       .setSafariOptions(safariOptions)
-      .setLoggingPrefs(loggingPreferences)
       .forBrowser(browser);
+  driver.getCapabilities().set('acceptInsecureCerts', true);
 
-  if (browser === 'chrome') {
-    driver.getCapabilities().set('goog:chromeOptions', chromeOptions);
-  }
-  if (browser === 'firefox') {
-    driver.getCapabilities().set('moz:firefoxOptions', firefoxOptions);
-  }
-  if (browser === 'firefox') {
-    driver.getCapabilities().set('marionette', true);
-    driver.getCapabilities().set('acceptInsecureCerts', true);
-  }
-  if (options.applicationName) {
-    driver.getCapabilities().set('applicationName', options.applicationName);
-  }
-
-  driver = driver.build();
-  // Set global executeAsyncScript() timeout (default is 0) to allow async
-  // callbacks to be caught in tests.
-  driver
-    .manage().timeouts().setScriptTimeout(5 * 1000);
-  return driver;
+  return driver.build();
 }
 
 module.exports = {
