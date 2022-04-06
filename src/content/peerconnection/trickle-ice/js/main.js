@@ -155,30 +155,26 @@ async function start() {
   // Whether we only gather a single set of candidates for RTP and RTCP.
 
   console.log(`Creating new PeerConnection with config=${JSON.stringify(config)}`);
-  document.getElementById('error').innerText = '';
-  pc = new RTCPeerConnection(config);
-  pc.onicecandidate = iceCallback;
-  pc.onicegatheringstatechange = gatheringStateChange;
-  pc.onicecandidateerror = iceCandidateError;
-  if (stream) {
-    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+  const errDiv = document.getElementById('error');
+  errDiv.innerText = '';
+  let desc;
+  try {
+    pc = new RTCPeerConnection(config);
+    pc.onicecandidate = iceCallback;
+    pc.onicegatheringstatechange = gatheringStateChange;
+    pc.onicecandidateerror = iceCandidateError;
+    if (stream) {
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    }
+    desc = await pc.createOffer(offerOptions);
+  } catch (err) {
+    errDiv.innerText = `Error creating offer: ${err}`;
+    gatherButton.disabled = false;
+    return;
   }
-  pc.createOffer(
-      offerOptions
-  ).then(
-      gotDescription,
-      noDescription
-  );
-}
-
-function gotDescription(desc) {
   begin = window.performance.now();
   candidates = [];
   pc.setLocalDescription(desc);
-}
-
-function noDescription(error) {
-  console.log('Error creating offer: ', error);
 }
 
 // Parse the uint32 PRIORITY field into its constituent parts from RFC 5245,
