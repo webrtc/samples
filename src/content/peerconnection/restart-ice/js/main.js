@@ -32,6 +32,8 @@ remoteVideo.addEventListener('loadedmetadata', function() {
   console.log(`Remote video videoWidth: ${this.videoWidth}px,  videoHeight: ${this.videoHeight}px`);
 });
 
+const useSelectedCandidatePairChange = window.RTCIceTransport && 'onselectedcandidatepairchange' in RTCIceTransport.prototype;
+
 remoteVideo.onresize = () => {
   console.log(`Remote video size changed to ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
   // We'll use the first onsize callback as an indication that video has started
@@ -170,6 +172,18 @@ function onCreateAnswerSuccess(desc) {
   pc2.setLocalDescription(desc).then(() => onSetLocalSuccess(pc2), onSetSessionDescriptionError);
   console.log('pc1 setRemoteDescription start');
   pc1.setRemoteDescription(desc).then(() => onSetRemoteSuccess(pc1), onSetSessionDescriptionError);
+
+  if (useSelectedCandidatePairChange) {
+    pc1.getSenders()[0].transport.iceTransport.onselectedcandidatepairchange = () => {
+      checkStats(pc1);
+      if (pc1.iceConnectionState === 'connected') {
+        restartButton.disabled = false;
+      }
+    };
+    pc2.getSenders()[0].transport.iceTransport.onselectedcandidatepairchange = () => {
+      checkStats(pc2);
+    };
+  }
 }
 
 function onIceCandidate(pc, event) {
@@ -191,10 +205,11 @@ function onIceStateChange(pc, event) {
   if (pc) {
     console.log(`${getName(pc)} ICE state: ${pc.iceConnectionState}`);
     console.log('ICE state change event: ', event);
-    // TODO: get rid of this in favor of http://w3c.github.io/webrtc-pc/#widl-RTCIceTransport-onselectedcandidatepairchange
-    if (pc.iceConnectionState === 'connected' ||
-      pc.iceConnectionState === 'completed') {
-      checkStats(pc);
+    if (!useSelectedCandidatePairChange) {
+      if (pc.iceConnectionState === 'connected' ||
+        pc.iceConnectionState === 'completed') {
+        checkStats(pc);
+      }
     }
   }
 }
