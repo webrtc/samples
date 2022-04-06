@@ -8,15 +8,13 @@
 /* eslint-env node, mocha */
 'use strict';
 
-const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/devices/input-output/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-describe.skip('input-output', () => {
+describe('input-output', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });
@@ -30,20 +28,14 @@ describe.skip('input-output', () => {
 
   it('shows at least one audio input device', async () => {
     await driver.wait(driver.executeScript(() => {
-      window.stream !== undefined; // eslint-disable-line no-undef
+      return document.getElementById('audioSource').childElementCount > 0;
     }));
-    const numberOfSources = await driver.findElement(webdriver.By.id('audioSource'))
-        .getAttribute('childElementCount');
-    expect(numberOfSources >>> 0).to.be.above(0);
   });
 
   it('shows at least one video input device', async () => {
     await driver.wait(driver.executeScript(() => {
-      window.stream !== undefined; // eslint-disable-line no-undef
+      return document.getElementById('videoSource').childElementCount > 0;
     }));
-    const numberOfSources = await driver.findElement(webdriver.By.id('videoSource'))
-        .getAttribute('childElementCount');
-    expect(numberOfSources >>> 0).to.be.above(0);
   });
 
   it('shows at least one audio output device device', async function() {
@@ -51,11 +43,8 @@ describe.skip('input-output', () => {
       this.skip();
     }
     await driver.wait(driver.executeScript(() => {
-      window.stream !== undefined; // eslint-disable-line no-undef
+      return document.getElementById('audioOutput').childElementCount > 0;
     }));
-    const numberOfSinks = await driver.findElement(webdriver.By.id('audioOutput'))
-        .getAttribute('childElementCount');
-    expect(numberOfSinks >>> 0).to.be.above(0);
   });
 });
 
