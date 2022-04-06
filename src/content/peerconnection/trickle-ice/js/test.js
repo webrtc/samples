@@ -31,7 +31,7 @@ describe('Trickle-Ice', () => {
     return driver.executeScript(() => localStorage.clear());
   });
 
-  it.skip('gathers a candidate', async () => {
+  it('gathers a candidate', async () => {
     await driver.findElement(webdriver.By.id('gather')).click();
     await driver.wait(() => driver.executeScript(() => pc === null && candidates.length > 0), 30 * 1000); // eslint-disable-line no-undef
   });
