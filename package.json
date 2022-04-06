@@ -22,7 +22,7 @@
     "start": "http-server . -c-1",
     "test": "npm run eslint && npm run stylelint",
     "eslint": "eslint 'src/content/**/*.js'",
-    "mocha": "mocha 'src/content/**/test.js'",
+    "mocha": "mocha --timeout 5000 'src/content/**/test.js'",
     "stylelint": "stylelint 'src/**/*.css'"
   },
   "eslintIgnore": [
@@ -30,7 +30,7 @@
   ],
   "devDependencies": {
     "chai": "^4.3.6",
-    "chromedriver": "^98.0.1",
+    "chromedriver": ">98.0.1",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "geckodriver": "^3.0.1",
