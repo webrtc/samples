@@ -36,7 +36,7 @@
     "geckodriver": "^3.0.1",
     "http-server": "^14.1.0",
     "mocha": "^9.2.1",
-    "selenium-webdriver": "^3.6.0",
+    "selenium-webdriver": "^4.1.1",
     "stylelint": "^14.5.3",
     "stylelint-config-recommended": "^7.0.0",
     "travis-multirunner": "^4.6.0"
