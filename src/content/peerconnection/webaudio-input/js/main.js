@@ -95,7 +95,6 @@ function gotDescription1(desc) {
   console.log(`Offer from pc1\n${desc.sdp}`);
 
   pc1.setLocalDescription(desc);
-  console.log(`Offer from pc1\n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
   pc2.createAnswer()
       .then(gotDescription2)
@@ -103,8 +102,8 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
   console.log(`Answer from pc2\n${desc.sdp}`);
+  pc2.setLocalDescription(desc);
   pc1.setRemoteDescription(desc);
 }
 
