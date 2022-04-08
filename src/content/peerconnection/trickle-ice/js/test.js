@@ -36,8 +36,7 @@ describe('Trickle-Ice', () => {
     await driver.wait(() => driver.executeScript(() => pc === null && candidates.length > 0), 30 * 1000); // eslint-disable-line no-undef
   });
 
-  // TODO: doubleclick does not seem to work...
-  it.skip('loads server data', async () => {
+  it('loads server data on double click', async () => {
     const element = await driver.findElement(webdriver.By.css('#servers>option'));
     const actions = driver.actions({async: true});
     await actions.doubleClick(element).perform();

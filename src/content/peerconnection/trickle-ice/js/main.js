@@ -43,10 +43,11 @@ let candidates;
 const allServersKey = 'servers';
 
 function setDefaultServer(serversSelect) {
-  const o = document.createElement('option');
-  o.value = '{"urls":["stun:stun.l.google.com:19302"]}';
-  o.text = 'stun:stun.l.google.com:19302';
-  serversSelect.add(o);
+  const option = document.createElement('option');
+  option.value = '{"urls":["stun:stun.l.google.com:19302"]}';
+  option.text = 'stun:stun.l.google.com:19302';
+  option.ondblclick = selectServer;
+  serversSelect.add(option);
 }
 
 function writeServersToLocalStorage() {
