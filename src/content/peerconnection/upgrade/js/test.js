@@ -15,7 +15,7 @@ let driver;
 const path = '/src/content/peerconnection/upgrade/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-describe.skip('peerconnection upgrade from audio-only to audio-video', () => {
+describe('peerconnection upgrade from audio-only to audio-video', () => {
   before(() => {
     driver = seleniumHelpers.buildDriver();
   });
@@ -32,17 +32,20 @@ describe.skip('peerconnection upgrade from audio-only to audio-video', () => {
     await driver.wait(() => driver.executeScript(() => {
       return localStream !== null; // eslint-disable-line no-undef
     }));
+    await driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled());
     await driver.findElement(webdriver.By.id('callButton')).click();
 
     await driver.wait(() => driver.executeScript(() => {
       return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
     }));
 
+    await driver.wait(() => driver.findElement(webdriver.By.id('upgradeButton')).isEnabled());
     await driver.findElement(webdriver.By.id('upgradeButton')).click();
     await driver.wait(() => driver.executeScript(() => {
       return remoteVideo.videoWidth > 0; // eslint-disable-line no-undef
     }));
 
+    await driver.wait(() => driver.findElement(webdriver.By.id('hangupButton')).isEnabled());
     await driver.findElement(webdriver.By.id('hangupButton')).click();
     await driver.wait(() => driver.executeScript(() => {
       return pc1 === null; // eslint-disable-line no-undef
