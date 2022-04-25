@@ -21,14 +21,14 @@ startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-const pc1StateDiv = document.querySelector('div#pc1State');
+const pc1SignalStateDiv = document.querySelector('div#pc1SignalState');
 const pc1IceStateDiv = document.querySelector('div#pc1IceState');
 const pc1ConnStateDiv = document.querySelector('div#pc1ConnState');
-const pc2StateDiv = document.querySelector('div#pc2State');
+const pc2SignalStateDiv = document.querySelector('div#pc2SignalState');
 const pc2IceStateDiv = document.querySelector('div#pc2IceState');
 const pc2ConnStateDiv = document.querySelector('div#pc2ConnState');
 
-let localstream;
+let localStream;
 let pc1;
 let pc2;
 
@@ -40,7 +40,7 @@ const offerOptions = {
 function gotStream(stream) {
   console.log('Received local stream');
   video1.srcObject = stream;
-  localstream = stream;
+  localStream = stream;
   callButton.disabled = false;
 }
 
@@ -60,8 +60,8 @@ function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   console.log('Starting call');
-  const videoTracks = localstream.getVideoTracks();
-  const audioTracks = localstream.getAudioTracks();
+  const videoTracks = localStream.getVideoTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (videoTracks.length > 0) {
     console.log(`Using Video device: ${videoTracks[0].label}`);
   }
@@ -72,25 +72,28 @@ function call() {
 
   pc1 = new RTCPeerConnection(servers);
   console.log('Created local peer connection object pc1');
-  pc1StateDiv.textContent = pc1.signalingState || pc1.readyState;
   pc1.onsignalingstatechange = stateCallback1;
 
+  pc1SignalStateDiv.textContent = pc1.signalingState;
   pc1IceStateDiv.textContent = pc1.iceConnectionState;
+  pc1ConnStateDiv.textContent = pc1.connectionState;
+
   pc1.oniceconnectionstatechange = iceStateCallback1;
   pc1.onconnectionstatechange = connStateCallback1;
   pc1.onicecandidate = e => onIceCandidate(pc1, e);
 
   pc2 = new RTCPeerConnection(servers);
   console.log('Created remote peer connection object pc2');
-  pc2StateDiv.textContent = pc2.signalingState || pc2.readyState;
   pc2.onsignalingstatechange = stateCallback2;
 
+  pc2SignalStateDiv.textContent = pc2.signalingState;
   pc2IceStateDiv.textContent = pc2.iceConnectionState;
+  pc2ConnStateDiv.textContent = pc2.connectionState;
   pc2.oniceconnectionstatechange = iceStateCallback2;
   pc2.onconnectionstatechange = connStateCallback2;
   pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
-  localstream.getTracks().forEach(track => pc1.addTrack(track, localstream));
+  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Adding Local Stream to peer connection');
   pc1.createOffer(offerOptions).then(gotDescription1, onCreateSessionDescriptionError);
 }
@@ -116,10 +119,12 @@ function hangup() {
   console.log('Ending call');
   pc1.close();
   pc2.close();
-  pc1StateDiv.textContent += ` => ${pc1.signalingState}` || pc1.readyState;
-  pc2StateDiv.textContent += ` => ${pc2.signalingState}` || pc2.readyState;
+  pc1SignalStateDiv.textContent += ` => ${pc1.signalingState}`;
+  pc2SignalStateDiv.textContent += ` => ${pc2.signalingState}`;
   pc1IceStateDiv.textContent += ` => ${pc1.iceConnectionState}`;
   pc2IceStateDiv.textContent += ` => ${pc2.iceConnectionState}`;
+  pc1ConnStateDiv.textContent += ` => ${pc1.connectionState}`;
+  pc2ConnStateDiv.textContent += ` => ${pc2.connectionState}`;
   pc1 = null;
   pc2 = null;
   hangupButton.disabled = true;
@@ -136,18 +141,18 @@ function gotRemoteStream(e) {
 function stateCallback1() {
   let state;
   if (pc1) {
-    state = pc1.signalingState || pc1.readyState;
+    state = pc1.signalingState;
     console.log(`pc1 state change callback, state: ${state}`);
-    pc1StateDiv.textContent += ` => ${state}`;
+    pc1SignalStateDiv.textContent += ` => ${state}`;
   }
 }
 
 function stateCallback2() {
   let state;
   if (pc2) {
-    state = pc2.signalingState || pc2.readyState;
+    state = pc2.signalingState;
     console.log(`pc2 state change callback, state: ${state}`);
-    pc2StateDiv.textContent += ` => ${state}`;
+    pc2SignalStateDiv.textContent += ` => ${state}`;
   }
 }
 
