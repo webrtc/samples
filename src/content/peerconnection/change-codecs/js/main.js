@@ -40,7 +40,7 @@ remoteVideo.addEventListener('resize', () => {
   }
 });
 
-const codecPreferences = document.querySelector('#codecPreferences');
+const codecPreferences = document.getElementById('codecPreferences');
 const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
   'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
 
@@ -214,7 +214,7 @@ async function onCreateAnswerSuccess(desc) {
         }
         const codec = stats.get(stat.codecId);
         document.getElementById('actualCodec').innerText = 'Using ' + codec.mimeType +
-            ' ' + (codec.sdpFmtpLine ? codec.sdpFmtpLine + ' ' : '') +
+            (codec.sdpFmtpLine ? ' ' + codec.sdpFmtpLine + ' ' : '') +
             ', payloadType=' + codec.payloadType + '. Encoder: ' + stat.encoderImplementation;
       });
     }, 1000);
