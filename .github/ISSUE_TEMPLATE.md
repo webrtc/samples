@@ -1,10 +1,6 @@
 # Please read first!
 Please use [discuss-webrtc](https://groups.google.com/forum/#!forum/discuss-webrtc) for general technical discussions and questions.
-If you have found an issue/bug with the native `libwebrtc` SDK please create an issue at [bugs.webrtc.org](https://bugs.webrtc.org)
-If you have found an issue/bug with one of the browser's behaviours around WebRTC please create an issue in the relevant issue tracker
-  - Chromium (Includes Chrome/Brave/Opera/Edge) - [crbug.com](https://crbug.com)
-  - Firefox - [bugzilla.mozilla.org](https://bugzilla.mozilla.org/buglist.cgi?product=Core&component=WebRTC&resolution=---)
-  - Webkit (Includes Safari on MacOS, iOS and iPadOS) - [webkit.org/reporting-bugs](https://webkit.org/reporting-bugs/)
+If you have found an issue/bug with the native `libwebrtc` SDK or a browser's behaviour around WebRTC please create an issue in the relevant bug tracker. You can find more information on how to submit a bug and do so in the right place [here](https://webrtc.googlesource.com/src/+/refs/heads/main/docs/bug-reporting.md)
 
 - [ ] I understand that issues created here are _only_ relevant to the samples in this repo - not browser or SDK bugs 
 - [ ] I have provided steps to reproduce
