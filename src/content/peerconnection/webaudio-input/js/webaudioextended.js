@@ -13,7 +13,17 @@
 function WebAudioExtended() {
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
   /* global AudioContext */
-  this.context = new AudioContext();
+  const self = this;
+  // tricky solution for suspended state
+  // for more information => https://developer.chrome.com/blog/autoplay/#web-audio
+  navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: false,
+  }).then(() => {
+    self.context = new AudioContext();
+  }).catch((err) => {
+    alert(`ERROR : ${err.message}`);
+  });
   this.soundBuffer = null;
 }
 
