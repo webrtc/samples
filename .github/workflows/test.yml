@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v3
     - run: npm install
     - run: npm run eslint
     - run: npm run stylelint
@@ -21,7 +21,7 @@ jobs:
         version: [stable]
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
     - run: npm install
     - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} ./node_modules/travis-multirunner/setup.sh
     - run: Xvfb :99 &
