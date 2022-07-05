@@ -258,18 +258,6 @@ function iceCallback(event) {
     appendCell(row, candidate.sdpMLineIndex);
     appendCell(row, candidate.usernameFragment);
     candidates.push(candidate);
-  } else if (!('onicegatheringstatechange' in RTCPeerConnection.prototype)) {
-    // should not be done if its done in the icegatheringstatechange callback.
-    appendCell(row, getFinalResult(), 10);
-    pc.close();
-    pc = null;
-    pc = null;
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
-    }
-    gatherButton.disabled = false;
-    getUserMediaInput.disabled = false;
   }
   candidateTBody.appendChild(row);
 }
