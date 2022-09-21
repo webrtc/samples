@@ -40,7 +40,7 @@ function errorMsg(msg, error) {
 
 const startButton = document.getElementById('startButton');
 startButton.addEventListener('click', () => {
-  navigator.mediaDevices.getDisplayMedia({video: true})
+  navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
       .then(handleSuccess, handleError);
 });
 
