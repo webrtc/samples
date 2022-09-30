@@ -7,9 +7,14 @@
  */
 'use strict';
 
-// Polyfill in Firefox.
-// See https://blog.mozilla.org/webrtc/getdisplaymedia-now-available-in-adapter-js/
-if (adapter.browserDetails.browser == 'firefox') {
+const sharingPreference = document.getElementById('preference');
+
+if (adapter.browserDetails.browser === 'chrome' && adapter.browserDetails.version >= 107) {
+  // See https://developer.chrome.com/docs/web-platform/screen-sharing-controls/
+  sharingPreference.style.display = 'block';
+} else if (adapter.browserDetails.browser === 'firefox') {
+  // Polyfill in Firefox.
+  // See https://blog.mozilla.org/webrtc/getdisplaymedia-now-available-in-adapter-js/
   adapter.browserShim.shimGetDisplayMedia(window, 'screen');
 }
 
@@ -23,6 +28,7 @@ function handleSuccess(stream) {
   stream.getVideoTracks()[0].addEventListener('ended', () => {
     errorMsg('The user has ended sharing the screen');
     startButton.disabled = false;
+    sharingPreference.disabled = false;
   });
 }
 
@@ -40,7 +46,13 @@ function errorMsg(msg, error) {
 
 const startButton = document.getElementById('startButton');
 startButton.addEventListener('click', () => {
-  navigator.mediaDevices.getDisplayMedia({video: true, audio: true})
+  const options = {audio: true, video: {}};
+  const displaySurface = sharingPreference.options[sharingPreference.selectedIndex];
+  if (displaySurface.value !== '') {
+    options.video.displaySurface = displaySurface.value;
+  }
+  sharingPreference.disabled = true;
+  navigator.mediaDevices.getDisplayMedia(options)
       .then(handleSuccess, handleError);
 });
 

@@ -35,7 +35,12 @@
 
     <video id="gum-local" autoplay playsinline muted></video>
     <button id="startButton" disabled>Start</button>
-
+    <select id="preference" style="display:none">
+      <option value="" selected>Share the default</option>
+      <option value="browser">Share a browser window</option>
+      <option value="window">Share another window</option>
+      <option value="monitor">Share the entire screen</option>
+    </select>
     <div id="errorMsg"></div>
 
     <p>Display the screensharing stream from <code>getDisplayMedia()</code> in a video element.</p>
