@@ -7,11 +7,11 @@
  */
 'use strict';
 
-const sharingPreference = document.getElementById('preference');
+const preferredDisplaySurface = document.getElementById('displaySurface');
 
 if (adapter.browserDetails.browser === 'chrome' && adapter.browserDetails.version >= 107) {
   // See https://developer.chrome.com/docs/web-platform/screen-sharing-controls/
-  sharingPreference.style.display = 'block';
+  preferredDisplaySurface.style.display = 'block';
 } else if (adapter.browserDetails.browser === 'firefox') {
   // Polyfill in Firefox.
   // See https://blog.mozilla.org/webrtc/getdisplaymedia-now-available-in-adapter-js/
@@ -20,6 +20,7 @@ if (adapter.browserDetails.browser === 'chrome' && adapter.browserDetails.versio
 
 function handleSuccess(stream) {
   startButton.disabled = true;
+  preferredDisplaySurface.disabled = true;
   const video = document.querySelector('video');
   video.srcObject = stream;
 
@@ -28,7 +29,7 @@ function handleSuccess(stream) {
   stream.getVideoTracks()[0].addEventListener('ended', () => {
     errorMsg('The user has ended sharing the screen');
     startButton.disabled = false;
-    sharingPreference.disabled = false;
+    preferredDisplaySurface.disabled = false;
   });
 }
 
@@ -47,11 +48,10 @@ function errorMsg(msg, error) {
 const startButton = document.getElementById('startButton');
 startButton.addEventListener('click', () => {
   const options = {audio: true, video: {}};
-  const displaySurface = sharingPreference.options[sharingPreference.selectedIndex];
+  const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex];
   if (displaySurface.value !== '') {
     options.video.displaySurface = displaySurface.value;
   }
-  sharingPreference.disabled = true;
   navigator.mediaDevices.getDisplayMedia(options)
       .then(handleSuccess, handleError);
 });
