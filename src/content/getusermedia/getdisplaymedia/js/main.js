@@ -48,7 +48,7 @@ function errorMsg(msg, error) {
 
 const startButton = document.getElementById('startButton');
 startButton.addEventListener('click', () => {
-  const options = {audio: true, video: {}};
+  let options = {audio: true, video: true};
   const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex].value;
   if (displaySurface !== 'default') {
     options.video = { displaySurface };
