@@ -49,7 +49,7 @@ const startButton = document.getElementById('startButton');
 startButton.addEventListener('click', () => {
   const options = {audio: true, video: {}};
   const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex];
-  if (displaySurface.value !== '') {
+  if (displaySurface.value !== 'default') {
     options.video.displaySurface = displaySurface.value;
   }
   navigator.mediaDevices.getDisplayMedia(options)
