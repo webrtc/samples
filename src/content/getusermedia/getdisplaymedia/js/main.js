@@ -8,6 +8,7 @@
 'use strict';
 
 const preferredDisplaySurface = document.getElementById('displaySurface');
+const startButton = document.getElementById('startButton');
 
 if (adapter.browserDetails.browser === 'chrome' &&
     adapter.browserDetails.version >= 107) {
@@ -46,12 +47,12 @@ function errorMsg(msg, error) {
   }
 }
 
-const startButton = document.getElementById('startButton');
+
 startButton.addEventListener('click', () => {
-  let options = {audio: true, video: true};
+  const options = {audio: true, video: true};
   const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex].value;
   if (displaySurface !== 'default') {
-    options.video = { displaySurface };
+    options.video = {displaySurface};
   }
   navigator.mediaDevices.getDisplayMedia(options)
       .then(handleSuccess, handleError);
