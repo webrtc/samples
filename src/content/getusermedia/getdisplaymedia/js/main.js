@@ -9,9 +9,10 @@
 
 const preferredDisplaySurface = document.getElementById('displaySurface');
 
-if (adapter.browserDetails.browser === 'chrome' && adapter.browserDetails.version >= 107) {
+if (adapter.browserDetails.browser === 'chrome' &&
+    adapter.browserDetails.version >= 107) {
   // See https://developer.chrome.com/docs/web-platform/screen-sharing-controls/
-  preferredDisplaySurface.style.display = 'block';
+  document.getElementById('options').style.display = 'block';
 } else if (adapter.browserDetails.browser === 'firefox') {
   // Polyfill in Firefox.
   // See https://blog.mozilla.org/webrtc/getdisplaymedia-now-available-in-adapter-js/
