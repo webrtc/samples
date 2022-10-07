@@ -17,7 +17,6 @@ const resetButton = document.querySelector('button#reset');
 const servers = document.querySelector('select#servers');
 const urlInput = document.querySelector('input#url');
 const usernameInput = document.querySelector('input#username');
-const iceCandidatePoolInput = document.querySelector('input#iceCandidatePool');
 const getUserMediaInput = document.querySelector('input#getUserMedia');
 
 addButton.onclick = addServer;
@@ -28,11 +27,6 @@ resetButton.onclick = (e) => {
   document.querySelectorAll('select#servers option').forEach(option => option.remove());
   const serversSelect = document.querySelector('select#servers');
   setDefaultServer(serversSelect);
-};
-
-iceCandidatePoolInput.onchange = (e) => {
-  const span = e.target.parentElement.querySelector('span');
-  span.textContent = e.target.value;
 };
 
 let begin;
@@ -148,7 +142,6 @@ async function start() {
   const config = {
     iceServers: iceServers,
     iceTransportPolicy: iceTransports,
-    iceCandidatePoolSize: iceCandidatePoolInput.value
   };
 
   const offerOptions = {offerToReceiveAudio: 1};
