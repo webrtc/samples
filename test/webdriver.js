@@ -1,69 +1,94 @@
 const os = require('os');
-const fs = require('fs');
 
 const webdriver = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const firefox = require('selenium-webdriver/firefox');
 const safari = require('selenium-webdriver/safari');
 
-// setup path for webdriver binaries
 if (os.platform() === 'win32') {
-  process.env.PATH += ';C:\\Program Files (x86)\\Microsoft Web Driver\\';
-  // FIXME: not sure why node_modules\.bin\ is not enough
-  process.env.PATH += ';' + process.cwd() +
-      '\\node_modules\\chromedriver\\lib\\chromedriver\\';
-  process.env.PATH += ';' + process.cwd() +
-      '\\node_modules\\geckodriver';
+    process.env.PATH += ';' + process.cwd() + '\\node_modules\\chromedriver\\lib\\chromedriver\\';
+    process.env.PATH += ';' + process.cwd() + '\\node_modules\\geckodriver';
 } else {
-  process.env.PATH += ':node_modules/.bin';
+    process.env.PATH += ':node_modules/.bin';
 }
 
 function buildDriver(browser = process.env.BROWSER || 'chrome', options = {bver: process.env.BVER}) {
-  // Firefox options.
-  let firefoxPath;
-  if (options.firefoxpath) {
-    firefoxPath = options.firefoxpath;
-  } else if (os.platform() == 'linux' && options.bver) {
-    firefoxPath = 'browsers/bin/firefox-' + options.bver;
-  } else {
-    firefoxPath = firefox.Channel.RELEASE;
-  }
+    // Chrome options.
+    let chromeOptions = new chrome.Options()
+        .addArguments('allow-insecure-localhost')
+        .addArguments('use-fake-device-for-media-stream')
+    if (options.chromeFlags) {
+      options.chromeFlags.forEach((flag) => chromeOptions.addArguments(flag));
+    }
 
-  const firefoxOptions = new firefox.Options()
-      .setPreference('media.navigator.streams.fake', true)
-      .setPreference('media.navigator.permission.disabled', true)
-      .setPreference('xpinstall.signatures.required', false)
-      .setPreference('media.peerconnection.dtls.version.min', 771)
-      .setBinary(firefoxPath);
+    if (options.chromepath) {
+      chromeOptions.setChromeBinaryPath(options.chromepath);
+    } else if (os.platform() === 'linux' && options.version) {
+      chromeOptions.setChromeBinaryPath('browsers/bin/chrome-' + options.version);
+    }
 
-  // Chrome options.
-  let chromeOptions = new chrome.Options()
-      .addArguments('allow-file-access-from-files')
-      .addArguments('use-fake-device-for-media-stream')
-      .addArguments('use-fake-ui-for-media-stream')
-      .addArguments('disable-translate')
-      .addArguments('no-process-singleton-dialog')
-      .addArguments('mute-audio');
-  // ensure chrome.runtime is visible.
-  chromeOptions.excludeSwitches('test-type');
+    if (!options.devices || options.headless) {
+      // GUM doesn't work in headless mode so we need this. See
+      // https://bugs.chromium.org/p/chromium/issues/detail?id=776649
+      chromeOptions.addArguments('use-fake-ui-for-media-stream');
+    } else {
+      // see https://bugs.chromium.org/p/chromium/issues/detail?id=459532#c22
+      const domain = 'https://' + (options.devices.domain || 'localhost') + ':' + (options.devices.port || 443) + ',*';
+      const exceptions = {
+        media_stream_mic: {},
+        media_stream_camera: {},
+      };
 
-  if (options.chromepath) {
-    chromeOptions.setChromeBinaryPath(options.chromepath);
-  } else if (os.platform() === 'linux' && options.bver) {
-    chromeOptions.setChromeBinaryPath('browsers/bin/chrome-' + options.bver);
-  }
+      exceptions.media_stream_mic[domain] = {
+        last_used: Date.now(),
+        setting: options.devices.audio ? 1 : 2 // 0: ask, 1: allow, 2: denied
+      };
+      exceptions.media_stream_camera[domain] = {
+        last_used: Date.now(),
+        setting: options.devices.video ? 1 : 2
+      };
 
-  const safariOptions = new safari.Options();
-  safariOptions.setTechnologyPreview(options.bver === 'unstable');
+      chromeOptions.setUserPreferences({
+        profile: {
+          content_settings: {
+            exceptions: exceptions
+          }
+        }
+      });
+    }
 
-  const driver = new webdriver.Builder()
-      .setFirefoxOptions(firefoxOptions)
-      .setChromeOptions(chromeOptions)
-      .setSafariOptions(safariOptions)
-      .forBrowser(browser);
-  driver.getCapabilities().set('acceptInsecureCerts', true);
+    const safariOptions = new safari.Options();
+    safariOptions.setTechnologyPreview(options.bver === 'unstable');
 
-  return driver.build();
+    // Firefox options.
+    const firefoxOptions = new firefox.Options();
+    let firefoxPath = firefox.Channel.RELEASE;
+    if (options.firefoxpath) {
+        firefoxPath = options.firefoxpath;
+    } else if (os.platform() == 'linux' && options.version) {
+        firefoxPath = 'browsers/bin/firefox-' + options.version;
+    }
+    if (options.headless) {
+        firefoxOptions.addArguments('-headless');
+    }
+    firefoxOptions.setBinary(firefoxPath);
+    firefoxOptions.setPreference('media.navigator.streams.fake', true);
+    firefoxOptions.setPreference('media.navigator.permission.disabled', true);
+
+    const driver = new webdriver.Builder()
+        .setChromeOptions(chromeOptions)
+        .setSafariOptions(safariOptions)
+        .setFirefoxOptions(firefoxOptions)
+        .forBrowser(browser)
+        .setChromeService(
+          new chrome.ServiceBuilder().addArguments('--disable-build-check')
+        );
+
+    if (browser === 'firefox') {
+      driver.getCapabilities().set('marionette', true);
+      driver.getCapabilities().set('acceptInsecureCerts', true);
+    }
+    return driver.build();
 }
 
 module.exports = {
