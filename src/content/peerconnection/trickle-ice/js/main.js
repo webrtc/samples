@@ -265,7 +265,7 @@ async function iceCallback(event) {
     appendCell(row, candidate.sdpMid);
     appendCell(row, candidate.sdpMLineIndex);
     appendCell(row, candidate.usernameFragment);
-    appendCell(row, candidateStats ? candidateStats.relayProtocol || '' : '');
+    appendCell(row, candidate.relayProtocol || '');
     appendCell(row, candidateStats ? candidateStats.url || '' : '');
     candidates.push(candidate);
   }
