@@ -258,10 +258,10 @@ async function iceCallback(event) {
     appendCell(row, candidate.address);
     appendCell(row, candidate.port);
     appendCell(row, formatPriority(candidate.priority));
+    appendCell(row, candidate.relayProtocol || '');
     appendCell(row, candidate.sdpMid);
     appendCell(row, candidate.sdpMLineIndex);
     appendCell(row, candidate.usernameFragment);
-    appendCell(row, candidate.relayProtocol || '');
     appendCell(row, candidate.url || url || '');
     candidates.push(candidate);
   }
