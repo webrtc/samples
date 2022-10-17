@@ -236,6 +236,14 @@ ul {
   margin: 0 0 0.5em 0;
 }
 
+fieldset {
+  margin: 0 0 1em 0;
+}
+
+fieldset > select {
+  margin-top: 1em;
+}
+
 @media screen and (max-width: 650px) {
   .highlight {
     font-size: 1em;
@@ -263,5 +271,3 @@ ul {
     font-size: 20px;
   }
 }
-
-
