@@ -238,12 +238,15 @@ async function iceCallback(event) {
       return;
     }
     const {candidate} = event;
-    let candidateStats;
-    if (['srflx', 'relay'].includes(candidate.type)) {
+    let url;
+    // Until url is available from the candidate, to to polyfill.
+    if (['srflx', 'relay'].includes(candidate.type) && !candidate.url) {
       const stats = await pc.getStats();
       stats.forEach(report => {
-        if (!candidateStats && report.type === 'local-candidate' && report.address === candidate.address && report.port === candidate.port) {
-          candidateStats = report;
+        if (!url && report.type === 'local-candidate' &&
+            report.address === candidate.address &&
+            report.port === candidate.port) {
+          url = report.url;
         }
       });
     }
@@ -259,7 +262,7 @@ async function iceCallback(event) {
     appendCell(row, candidate.sdpMLineIndex);
     appendCell(row, candidate.usernameFragment);
     appendCell(row, candidate.relayProtocol || '');
-    appendCell(row, candidateStats ? candidateStats.url || '' : '');
+    appendCell(row, candidate.url || url || '');
     candidates.push(candidate);
   }
   candidateTBody.appendChild(row);
