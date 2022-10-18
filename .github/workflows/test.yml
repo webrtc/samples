@@ -25,4 +25,4 @@ jobs:
     - run: npm install
     - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} ./node_modules/travis-multirunner/setup.sh
     - run: Xvfb :99 &
-    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} DISPLAY=:99.0 npm run mocha
+    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} DISPLAY=:99.0 npm run mocha --retries=3
