@@ -1,3 +1,10 @@
+/*
+ *  Copyright (c) 2022 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
 const TIMEOUT = 10000;
 
 function step(drivers, cb, logMessage) {
