@@ -13,7 +13,7 @@ jobs:
         browserB: [firefox, chrome]
         bver: ['unstable']
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
     - run: npm install
     - run: BROWSER=${{matrix.browserA}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
