@@ -202,9 +202,7 @@ function getFinalResult() {
     const server = JSON.parse(servers[0].value);
 
     // get the candidates types (host, srflx, relay)
-    const types = candidates.map(function(cand) {
-      return cand.type;
-    });
+    const types = candidates.map((cand) => cand.type);
 
     // If the server is a TURN server we should have a relay candidate.
     // If we did not get a relay candidate but a srflx candidate
@@ -231,7 +229,7 @@ function getFinalResult() {
   return result;
 }
 
-function iceCallback(event) {
+async function iceCallback(event) {
   const elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   const row = document.createElement('tr');
   appendCell(row, elapsed);
@@ -240,6 +238,19 @@ function iceCallback(event) {
       return;
     }
     const {candidate} = event;
+    let url;
+    // Until url is available from the candidate, to to polyfill.
+    if (['srflx', 'relay'].includes(candidate.type) && !candidate.url) {
+      const stats = await pc.getStats();
+      stats.forEach(report => {
+        if (!url && report.type === 'local-candidate' &&
+            report.address === candidate.address &&
+            report.port === candidate.port) {
+          url = report.url;
+        }
+      });
+    }
+
     appendCell(row, candidate.component);
     appendCell(row, candidate.type);
     appendCell(row, candidate.foundation);
@@ -247,9 +258,11 @@ function iceCallback(event) {
     appendCell(row, candidate.address);
     appendCell(row, candidate.port);
     appendCell(row, formatPriority(candidate.priority));
+    appendCell(row, candidate.relayProtocol || '');
     appendCell(row, candidate.sdpMid);
     appendCell(row, candidate.sdpMLineIndex);
     appendCell(row, candidate.usernameFragment);
+    appendCell(row, candidate.url || url || '');
     candidates.push(candidate);
   }
   candidateTBody.appendChild(row);
