@@ -21,7 +21,7 @@
   "scripts": {
     "start": "http-server . -c-1",
     "test": "npm run eslint && npm run stylelint",
-    "eslint": "eslint 'src/content/**/*.js'",
+    "eslint": "eslint 'test/**.js' 'src/content/**/*.js'",
     "mocha": "mocha --timeout 5000 'src/content/**/test.js'",
     "stylelint": "stylelint 'src/**/*.css'"
   },
