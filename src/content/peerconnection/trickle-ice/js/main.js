@@ -120,7 +120,7 @@ async function start() {
 
   gatherButton.disabled = true;
   if (getUserMediaInput.checked) {
-    stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+    stream = await navigator.mediaDevices.getUserMedia({audio: true});
   }
   getUserMediaInput.disabled = true;
 
