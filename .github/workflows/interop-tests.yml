@@ -18,4 +18,4 @@ jobs:
     - run: BROWSER=${{matrix.browserA}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
     - run: BROWSER=${{matrix.browserB}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
     - run: Xvfb :99 &
-    - run: BROWSER_A=${{matrix.browserA}} BROWSER_B=${{matrix.browserB}} BVER=${{matrix.bver}} DISPLAY=:99.0 node_modules/.bin/mocha test/interop/connection.js
+    - run: BROWSER_A=${{matrix.browserA}} BROWSER_B=${{matrix.browserB}} BVER=${{matrix.bver}} DISPLAY=:99.0 node_modules/.bin/mocha --retries=3 test/interop/connection.js
