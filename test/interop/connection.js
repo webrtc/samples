@@ -13,7 +13,6 @@ const browserA = process.env.BROWSER_A || 'chrome';
 const browserB = process.env.BROWSER_B || 'chrome';
 
 describe(`basic interop test ${browserA} => ${browserB}`, function() {
-    this.retries(3); // retry up to three times.
     let drivers;
     let clients;
     before(async () => {

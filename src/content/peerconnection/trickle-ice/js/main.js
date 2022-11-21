@@ -120,7 +120,7 @@ async function start() {
 
   gatherButton.disabled = true;
   if (getUserMediaInput.checked) {
-    stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+    stream = await navigator.mediaDevices.getUserMedia({audio: true});
   }
   getUserMediaInput.disabled = true;
 
@@ -182,12 +182,9 @@ function formatPriority(priority) {
   ].join(' | ');
 }
 
-function appendCell(row, val, span) {
+function appendCell(row, val) {
   const cell = document.createElement('td');
   cell.textContent = val;
-  if (span) {
-    cell.setAttribute('colspan', span);
-  }
   row.appendChild(cell);
 }
 
@@ -232,11 +229,11 @@ function getFinalResult() {
 async function iceCallback(event) {
   const elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   const row = document.createElement('tr');
-  appendCell(row, elapsed);
   if (event.candidate) {
     if (event.candidate.candidate === '') {
       return;
     }
+    appendCell(row, elapsed);
     const {candidate} = event;
     let url;
     // Until url is available from the candidate, to to polyfill.
@@ -251,18 +248,14 @@ async function iceCallback(event) {
       });
     }
 
-    appendCell(row, candidate.component);
     appendCell(row, candidate.type);
     appendCell(row, candidate.foundation);
     appendCell(row, candidate.protocol);
     appendCell(row, candidate.address);
     appendCell(row, candidate.port);
     appendCell(row, formatPriority(candidate.priority));
-    appendCell(row, candidate.relayProtocol || '');
-    appendCell(row, candidate.sdpMid);
-    appendCell(row, candidate.sdpMLineIndex);
-    appendCell(row, candidate.usernameFragment);
     appendCell(row, candidate.url || url || '');
+    appendCell(row, candidate.relayProtocol || '');
     candidates.push(candidate);
   }
   candidateTBody.appendChild(row);
@@ -275,7 +268,7 @@ function gatheringStateChange() {
   const elapsed = ((window.performance.now() - begin) / 1000).toFixed(3);
   const row = document.createElement('tr');
   appendCell(row, elapsed);
-  appendCell(row, getFinalResult(), 7);
+  appendCell(row, getFinalResult());
   pc.close();
   pc = null;
   if (stream) {

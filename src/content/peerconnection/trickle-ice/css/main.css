@@ -69,7 +69,3 @@ th:nth-child(6),td:nth-child(6) {
 #error-note {
   display: none;
 }
-
-div#container {
-  max-width: 90em;
-}
