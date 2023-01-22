@@ -5,65 +5,51 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
- /* eslint-env node */
-
+/* eslint-env node, mocha */
 'use strict';
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-var test = require('tape');
 
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
 
-test('PeerConnection upgrade sample', function(t) {
-  var driver = seleniumHelpers.buildDriver();
+let driver;
+const path = '/src/content/peerconnection/upgrade/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-  driver.get((process.env.BASEURL ? process.env.BASEURL :
-      ('file://' + process.cwd())) +
-      '/src/content/peerconnection/upgrade/index.html')
-  .then(function() {
-    t.pass('page loaded');
-    return driver.findElement(webdriver.By.id('startButton')).click();
-  })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript('return localStream !== null');
-    }, 30 * 1000);
-  })
-  .then(function() {
-    t.pass('got media');
-    return driver.findElement(webdriver.By.id('callButton')).click();
-  })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript(
-          'return pc2 && pc2.iceConnectionState === \'connected\';');
-    }, 30 * 1000);
-  })
-  .then(function() {
-    t.pass('pc2 ICE connected');
-    return driver.findElement(webdriver.By.id('upgradeButton')).click();
-  })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript(
-          'return remoteVideo.videoWidth === 640;');
-    }, 30 * 1000);
-  })
-  .then(function() {
-    return driver.findElement(webdriver.By.id('hangupButton')).click();
-  })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript('return pc1 === null');
-    }, 30 * 1000);
-  })
-  .then(function() {
-    t.pass('hangup');
-    t.end();
-  })
-  .then(null, function(err) {
-    t.fail(err);
-    t.end();
+describe('peerconnection upgrade from audio-only to audio-video', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
+
+  beforeEach(() => {
+    return driver.get(url);
+  });
+
+  it('upgrades to video', async () => {
+    await driver.findElement(webdriver.By.id('startButton')).click();
+    await driver.wait(() => driver.executeScript(() => {
+      return localStream !== null; // eslint-disable-line no-undef
+    }));
+    await driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled());
+    await driver.findElement(webdriver.By.id('callButton')).click();
+
+    await driver.wait(() => driver.executeScript(() => {
+      return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
+    }));
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('upgradeButton')).isEnabled());
+    await driver.findElement(webdriver.By.id('upgradeButton')).click();
+    await driver.wait(() => driver.executeScript(() => {
+      return remoteVideo.videoWidth > 0; // eslint-disable-line no-undef
+    }));
+
+    await driver.wait(() => driver.findElement(webdriver.By.id('hangupButton')).isEnabled());
+    await driver.findElement(webdriver.By.id('hangupButton')).click();
+    await driver.wait(() => driver.executeScript(() => {
+      return pc1 === null; // eslint-disable-line no-undef
+    }));
   });
 });
+

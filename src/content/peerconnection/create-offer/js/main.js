@@ -8,52 +8,34 @@
 
 'use strict';
 
-var audioInput = document.querySelector('input#audio');
-var restartInput = document.querySelector('input#restart');
-var vadInput = document.querySelector('input#vad');
-var videoInput = document.querySelector('input#video');
+const audioInput = document.querySelector('input#audio');
+const restartInput = document.querySelector('input#restart');
+const vadInput = document.querySelector('input#vad');
+const videoInput = document.querySelector('input#video');
 
-var numAudioTracksInput = document.querySelector('div#numAudioTracks input');
-var numAudioTracksDisplay =
-    document.querySelector('span#numAudioTracksDisplay');
-var outputTextarea = document.querySelector('textarea#output');
-var createOfferButton = document.querySelector('button#createOffer');
+const numAudioTracksInput = document.querySelector('div#numAudioTracks input');
+const numAudioTracksDisplay = document.querySelector('span#numAudioTracksDisplay');
+const outputTextarea = document.querySelector('textarea#output');
+const createOfferButton = document.querySelector('button#createOffer');
 
-createOfferButton.onclick = createOffer;
+createOfferButton.addEventListener('click', createOffer);
+numAudioTracksInput.addEventListener('change', e => numAudioTracksDisplay.innerText = e.target.value);
 
-numAudioTracksInput.onchange = function() {
-  numAudioTracksDisplay.textContent = this.value;
-};
+async function createOffer() {
+  outputTextarea.value = '';
+  const peerConnection = window.peerConnection = new RTCPeerConnection(null);
+  const numRequestedAudioTracks = parseInt(numAudioTracksInput.value);
 
-var pc = new RTCPeerConnection(null);
-var acx = new AudioContext();
+  for (let i = 0; i < numRequestedAudioTracks; i++) {
+    const acx = new AudioContext();
+    const dst = acx.createMediaStreamDestination();
 
-function createOffer() {
-  if (pc) {
-    pc.close();
-    pc = null;
-    pc = new RTCPeerConnection(null);
-  }
-  var numRequestedAudioTracks = numAudioTracksInput.value;
-  while (numRequestedAudioTracks < pc.getLocalStreams().length) {
-    pc.removeStream(pc.getLocalStreams()[pc.getLocalStreams().length - 1]);
-  }
-  while (numRequestedAudioTracks > pc.getLocalStreams().length) {
-    // Create some dummy audio streams using Web Audio.
-    // Note that this fails if you try to do more than one track in Chrome
-    // right now.
-    var dst = acx.createMediaStreamDestination();
-    dst.stream.getTracks().forEach(
-      function(track) {
-        pc.addTrack(
-          track,
-          dst.stream
-        );
-      }
-    );
+    // Fill up the peer connection with numRequestedAudioTracks number of tracks.
+    const track = dst.stream.getTracks()[0];
+    peerConnection.addTrack(track, dst.stream);
   }
 
-  var offerOptions = {
+  const offerOptions = {
     // New spec states offerToReceiveAudio/Video are of type long (due to
     // having to tell how many "m" lines to generate).
     // http://w3c.github.io/webrtc-pc/#idl-def-RTCOfferAnswerOptions.
@@ -63,12 +45,11 @@ function createOffer() {
     voiceActivityDetection: vadInput.checked
   };
 
-  pc.createOffer(offerOptions)
-  .then(function(desc) {
-    pc.setLocalDescription(desc);
-    outputTextarea.value = desc.sdp;
-  })
-  .catch(function(error) {
-    outputTextarea.value = 'Failed to createOffer: ' + error;
-  });
+  try {
+    const offer = await peerConnection.createOffer(offerOptions);
+    await peerConnection.setLocalDescription(offer);
+    outputTextarea.value = offer.sdp;
+  } catch (e) {
+    outputTextarea.value = `Failed to create offer: ${e}`;
+  }
 }

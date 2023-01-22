@@ -1,0 +1,21 @@
+on:
+  schedule:
+    - cron: "30 5 * * *"
+jobs:
+  interop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        browserA: [chrome, firefox]
+        browserB: [firefox, chrome]
+        bver: ['unstable']
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+    - run: npm install
+    - run: BROWSER=${{matrix.browserA}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
+    - run: BROWSER=${{matrix.browserB}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
+    - run: Xvfb :99 &
+    - run: BROWSER_A=${{matrix.browserA}} BROWSER_B=${{matrix.browserB}} BVER=${{matrix.bver}} DISPLAY=:99.0 node_modules/.bin/mocha --retries=3 test/interop/connection.js

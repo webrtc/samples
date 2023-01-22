@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2018 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC code samples">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="Client-side WebRTC code samples">
+  <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+  <meta itemprop="name" content="WebRTC code samples">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
+
+  <base target="_blank">
+
+  <title>Constraints and statistics</title>
+
+  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+  <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css" />
+  <link rel="stylesheet" href="css/main.css" />
+
+</head>
+
+<body>
+
+  <div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Constraints &amp; statistics</span></h1>
+
+    <section id="blurb">
+      <p>This demo shows ways to use constraints and statistics in WebRTC applications.</p>
+      <p>Set camera constraints, and click <strong>Get media</strong> to (re)open the camera with these included. Click <strong>Connect</strong> to create a (local) peer connection. The RTCPeerConnection objects <code>localPeerConnection</code> and <code>remotePeerConnection</code> can be inspected from the console.</p>
+      <p>Setting a value to zero will remove that constraint. </p>
+      <p>The lefthand video shows the output of <code>getUserMedia()</code>; on the right is the video after being passed through the peer connection. The transmission bitrate is displayed below the righthand video.</p>
+    </section>
+
+    <div>
+      <button id="getMedia">Get media</button>
+      <button id="connect" disabled>Connect</button>
+      <button id="hangup" disabled>Hang Up</button>
+    </div>
+
+
+    <section id="constraints">
+      <div id="getUserMedia">
+        <div class="input">
+          <h2>Camera constraints</h2>
+          <div id="minWidth">
+            <label>Min width <span>300</span>px:</label>
+            <input type="number" min="0" max="4096" value="300">
+          </div>
+          <div id="maxWidth">
+            <label>Max width <span>640</span>px:</label>
+            <input type="number" min="0" max="4096" value="640">
+          </div>
+          <div id="minHeight">
+            <label>Min height <span>200</span>px:</label>
+            <input type="number" min="0" max="2160" value="200">
+          </div>
+          <div id="maxHeight">
+            <label>Max height <span>480</span>px:</label>
+            <input type="number" min="0" max="2160" value="480">
+          </div>
+          <div id="minFramerate">
+            <label>Min frameRate <span>0</span>fps:</label>
+            <input type="number" min="0" max="60" value="0">
+          </div>
+          <div id="maxFramerate">
+            <label>Max frameRate <span>0</span>fps:</label>
+            <input type="number" min="0" max="60" value="0">
+          </div>
+        </div>
+        <div id="getUserMediaConstraints" class="output"></div>
+      </div>
+
+    </section>
+
+    <section id="video">
+      <div id="localVideo">
+        <video autoplay muted></video>
+        <div></div>
+      </div>
+      <div id="remoteVideo">
+        <video autoplay muted></video>
+        <div></div>
+        <div id="bitrate"></div>
+        <div id="peer"></div>
+      </div>
+    </section>
+
+    <section id="statistics">
+      <div id="senderStats"></div>
+      <div id="receiverStats"></div>
+    </section>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/peerconnection/constraints" title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+  </div>
+
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="js/main.js"></script>
+  <script src="../../../js/lib/ga.js"></script>
+
+</body>
+</html>

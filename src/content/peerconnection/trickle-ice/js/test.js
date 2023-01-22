@@ -5,130 +5,59 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
- /* eslint-env node */
+/* eslint-env node, mocha */
 
 'use strict';
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-var test = require('tape');
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
+const {expect} = require('chai');
 
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
+let driver;
+const path = '/src/content/peerconnection/trickle-ice/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-test('Candidate Gathering', function(t) {
-  var driver = seleniumHelpers.buildDriver();
+describe('Trickle-Ice', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
+  });
+  after(() => {
+    return driver.quit();
+  });
 
-  driver.get((process.env.BASEURL ? process.env.BASEURL :
-      ('file://' + process.cwd())) +
-      '/src/content/peerconnection/trickle-ice/index.html')
-  .then(function() {
-    t.pass('page loaded');
-    return driver.findElement(webdriver.By.id('gather')).click();
-  })
-  .then(function() {
-    return driver.wait(function() {
-      return driver.executeScript(
-          'return pc === null && candidates.length > 0;');
-    }, 30 * 1000);
-  })
-  .then(function() {
-    t.pass('got candidates');
-    t.end();
-  })
-  .then(null, function(err) {
-    t.fail(err);
-    t.end();
+  beforeEach(() => {
+    return driver.get(url);
+  });
+  afterEach(() => {
+    return driver.executeScript(() => localStorage.clear());
+  });
+
+  it('gathers a candidate', async () => {
+    await driver.findElement(webdriver.By.id('gather')).click();
+    await driver.wait(() => driver.executeScript(() => pc === null && candidates.length > 0), 30 * 1000); // eslint-disable-line no-undef
+  });
+
+  it('loads server data on double click', async () => {
+    const element = await driver.findElement(webdriver.By.css('#servers>option'));
+    const actions = driver.actions({async: true});
+    await actions.doubleClick(element).perform();
+    const value = await driver.findElement(webdriver.By.id('url')).getAttribute('value');
+    expect(value).to.not.equal('');
+  });
+
+  it('adding a server', async () => {
+    await driver.findElement(webdriver.By.id('url'))
+        .sendKeys('stun:stun.l.google.com:19302');
+    await driver.findElement(webdriver.By.id('add')).click();
+    const length = await driver.findElement(webdriver.By.css('#servers'))
+        .getAttribute('length');
+    expect(length >>> 0).to.equal(2);
+  });
+
+  it('removing a server', async () => {
+    await driver.findElement(webdriver.By.css('#servers>option')).click();
+    await driver.findElement(webdriver.By.id('remove')).click();
+    const length = await driver.findElement(webdriver.By.css('#servers'))
+        .getAttribute('length');
+    expect(length >>> 0).to.equal(0);
   });
 });
-
-// Skipping. webdriver.ActionSequence is not implemented in
-// marionette/geckodriver hence we cannot double click the server option
-// menu without hacks.
-test('Loading server data', {skip: process.env.BROWSER === 'firefox'},
-  function(t) {
-    var driver = seleniumHelpers.buildDriver();
-
-    driver.get((process.env.BASEURL ? process.env.BASEURL :
-        ('file://' + process.cwd())) +
-        '/src/content/peerconnection/trickle-ice/index.html')
-    .then(function() {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.css('#servers>option'));
-    })
-    .then(function(element) {
-      return new webdriver.ActionSequence(driver).
-          doubleClick(element).perform();
-    })
-    .then(function() {
-      return driver.findElement(webdriver.By.id('url')).getAttribute('value');
-    })
-    .then(function(value) {
-      t.ok(value !== '', 'doubleclick loads server data');
-      t.end();
-    })
-    .then(null, function(err) {
-      t.fail(err);
-      t.end();
-    });
-  });
-
-
-// Disabling on firefox until sendKeys is fixed.
-// https://github.com/mozilla/geckodriver/issues/683
-test('Adding a server', {skip: process.env.BROWSER === 'firefox'},
-  function(t) {
-    var driver = seleniumHelpers.buildDriver();
-
-    driver.get((process.env.BASEURL ? process.env.BASEURL :
-        ('file://' + process.cwd())) +
-        '/src/content/peerconnection/trickle-ice/index.html')
-    .then(function() {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.id('url'))
-          .sendKeys('stun:stun.l.google.com:19302');
-    })
-    .then(function() {
-      t.pass('url input worked');
-      return driver.findElement(webdriver.By.id('add')).click();
-    })
-    .then(function() {
-      return driver.findElement(webdriver.By.css('#servers'))
-          .getAttribute('length');
-    })
-    .then(function(length) {
-      t.ok(length === '2', 'server added');
-      t.end();
-    })
-    .then(null, function(err) {
-      t.fail(err);
-      t.end();
-    });
-  });
-
-test('Removing a server', {skip: process.env.BROWSER === 'firefox'},
-  function(t) {
-    var driver = seleniumHelpers.buildDriver();
-
-    driver.get((process.env.BASEURL ? process.env.BASEURL :
-        ('file://' + process.cwd())) +
-        '/src/content/peerconnection/trickle-ice/index.html')
-    .then(function() {
-      t.pass('page loaded');
-      return driver.findElement(webdriver.By.css('#servers>option')).click();
-    })
-    .then(function() {
-      return driver.findElement(webdriver.By.id('remove')).click();
-    })
-    .then(function() {
-      return driver.findElement(webdriver.By.css('#servers'))
-          .getAttribute('length');
-    })
-    .then(function(length) {
-      t.ok(length === '0', 'server removed');
-      t.end();
-    })
-    .then(null, function(err) {
-      t.fail(err);
-      t.end();
-    });
-  });

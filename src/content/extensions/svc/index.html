@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2022 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Scalable Video Coding (SVC) Extension</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+
+<body>
+
+<div id="container">
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+        <span>Peer connection</span></h1>
+
+    <p>This sample shows how to setup a connection between two peers using
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection">RTCPeerConnection</a> and
+        choose the preferred video codec to use and scalability mode when the <a href="https://www.w3.org/TR/webrtc-svc/">Scalable Video Coding (SVC) Extension</a> is available.
+</p>
+
+    <video id="localVideo" playsinline autoplay muted></video>
+    <video id="remoteVideo" playsinline autoplay></video>
+
+    <div class="box">
+        <button id="startButton">Start</button>
+        <button id="callButton">Call</button>
+        <button id="hangupButton">Hang Up</button>
+    </div>
+
+    <div class="box">
+        <span>Codec preferences:</span>
+        <select id="codecPreferences" disabled>
+            <option selected value="">Default</option>
+        </select>
+        <br/>
+        <span>Scalability Mode:</span>
+        <select id="scalabilityMode" disabled>
+            <option selected value="">NONE</option>
+        </select>
+        <div id="actualCodec"></div>
+    </div>
+
+    <div class="graph-container" id="bitrateGraph">
+        <div>Bitrate</div>
+        <canvas id="bitrateCanvas"></canvas>
+    </div>
+    <div class="graph-container" id="packetGraph">
+        <div>Packets sent per second</div>
+        <canvas id="packetCanvas"></canvas>
+    </div>
+
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/extensions/svc"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/main.js" async></script>
+<script src="../../../js/third_party/graph.js"></script>
+<script src="../../../js/lib/ga.js"></script>
+</body>
+</html>

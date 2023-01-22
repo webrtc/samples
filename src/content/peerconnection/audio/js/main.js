@@ -9,136 +9,194 @@
 
 'use strict';
 
-var audio2 = document.querySelector('audio#audio2');
-var callButton = document.querySelector('button#callButton');
-var hangupButton = document.querySelector('button#hangupButton');
-var codecSelector = document.querySelector('select#codec');
+const audio2 = document.querySelector('audio#audio2');
+const callButton = document.querySelector('button#callButton');
+const hangupButton = document.querySelector('button#hangupButton');
+const codecSelector = document.querySelector('select#codec');
 hangupButton.disabled = true;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
-var pc1;
-var pc2;
-var localStream;
+let pc1;
+let pc2;
+let localStream;
 
-var bitrateGraph;
-var bitrateSeries;
+let bitrateGraph;
+let bitrateSeries;
+let targetBitrateSeries;
+let headerrateSeries;
 
-var packetGraph;
-var packetSeries;
+let packetGraph;
+let packetSeries;
 
-var lastResult;
+let lastResult;
 
-var offerOptions = {
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0,
   voiceActivityDetection: false
 };
 
+const audioLevels = [];
+let audioLevelGraph;
+let audioLevelSeries;
+
+// Enabling opus DTX is an expert option without GUI.
+// eslint-disable-next-line prefer-const
+let useDtx = false;
+
+// Disabling Opus FEC is an expert option without GUI.
+// eslint-disable-next-line prefer-const
+let useFec = true;
+
+// We only show one way of doing this.
+const codecPreferences = document.querySelector('#codecPreferences');
+const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
+  'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
+if (supportsSetCodecPreferences) {
+  codecSelector.style.display = 'none';
+
+  const {codecs} = RTCRtpSender.getCapabilities('audio');
+  codecs.forEach(codec => {
+    if (['audio/CN', 'audio/telephone-event'].includes(codec.mimeType)) {
+      return;
+    }
+    const option = document.createElement('option');
+    option.value = (codec.mimeType + ' ' + codec.clockRate + ' ' +
+      (codec.sdpFmtpLine || '')).trim();
+    option.innerText = option.value;
+    codecPreferences.appendChild(option);
+  });
+  codecPreferences.disabled = false;
+} else {
+  codecPreferences.style.display = 'none';
+}
+
+// Change the ptime. For opus supported values are [10, 20, 40, 60].
+// Expert option without GUI.
+// eslint-disable-next-line no-unused-vars
+async function setPtime(ptime) {
+  const offer = await pc1.createOffer();
+  await pc1.setLocalDescription(offer);
+  const desc = pc1.remoteDescription;
+  if (desc.sdp.indexOf('a=ptime:') !== -1) {
+    desc.sdp = desc.sdp.replace(/a=ptime:.*/, 'a=ptime:' + ptime);
+  } else {
+    desc.sdp += 'a=ptime:' + ptime + '\r\n';
+  }
+  await pc1.setRemoteDescription(desc);
+}
+
 function gotStream(stream) {
   hangupButton.disabled = false;
-  trace('Received local stream');
+  console.log('Received local stream');
   localStream = stream;
-  var audioTracks = localStream.getAudioTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace('Using Audio device: ' + audioTracks[0].label);
+    console.log(`Using Audio device: ${audioTracks[0].label}`);
   }
-  localStream.getTracks().forEach(
-    function(track) {
-      pc1.addTrack(
-        track,
-        localStream
-      );
-    }
-  );
-  trace('Adding Local Stream to peer connection');
+  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
+  console.log('Adding Local Stream to peer connection');
 
-  pc1.createOffer(
-    offerOptions
-  ).then(
-    gotDescription1,
-    onCreateSessionDescriptionError
-  );
+  if (supportsSetCodecPreferences) {
+    const preferredCodec = codecPreferences.options[codecPreferences.selectedIndex];
+    if (preferredCodec.value !== '') {
+      const [mimeType, clockRate, sdpFmtpLine] = preferredCodec.value.split(' ');
+      const {codecs} = RTCRtpSender.getCapabilities('audio');
+      console.log(mimeType, clockRate, sdpFmtpLine);
+      console.log(JSON.stringify(codecs, null, ' '));
+      const selectedCodecIndex = codecs.findIndex(c => c.mimeType === mimeType && c.clockRate === parseInt(clockRate, 10) && c.sdpFmtpLine === sdpFmtpLine);
+      const selectedCodec = codecs[selectedCodecIndex];
+      codecs.splice(selectedCodecIndex, 1);
+      codecs.unshift(selectedCodec);
+      const transceiver = pc1.getTransceivers().find(t => t.sender && t.sender.track === localStream.getAudioTracks()[0]);
+      transceiver.setCodecPreferences(codecs);
+      console.log('Preferred video codec', selectedCodec);
+    }
+  }
+
+  pc1.createOffer(offerOptions)
+      .then(gotDescription1, onCreateSessionDescriptionError);
 
   bitrateSeries = new TimelineDataSeries();
   bitrateGraph = new TimelineGraphView('bitrateGraph', 'bitrateCanvas');
   bitrateGraph.updateEndDate();
 
+  targetBitrateSeries = new TimelineDataSeries();
+  targetBitrateSeries.setColor('blue');
+
+  headerrateSeries = new TimelineDataSeries();
+  headerrateSeries.setColor('green');
+
   packetSeries = new TimelineDataSeries();
   packetGraph = new TimelineGraphView('packetGraph', 'packetCanvas');
   packetGraph.updateEndDate();
+
+  audioLevelSeries = new TimelineDataSeries();
+  audioLevelGraph = new TimelineGraphView('audioLevelGraph', 'audioLevelCanvas');
+  audioLevelGraph.updateEndDate();
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  console.log(`Failed to create session description: ${error.toString()}`);
 }
 
 function call() {
   callButton.disabled = true;
   codecSelector.disabled = true;
-  trace('Starting call');
-  var servers = null;
+  console.log('Starting call');
+  const servers = null;
   pc1 = new RTCPeerConnection(servers);
-  trace('Created local peer connection object pc1');
-  pc1.onicecandidate = function(e) {
-    onIceCandidate(pc1, e);
-  };
+  console.log('Created local peer connection object pc1');
+  pc1.onicecandidate = e => onIceCandidate(pc1, e);
   pc2 = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = function(e) {
-    onIceCandidate(pc2, e);
-  };
+  console.log('Created remote peer connection object pc2');
+  pc2.onicecandidate = e => onIceCandidate(pc2, e);
   pc2.ontrack = gotRemoteStream;
-  trace('Requesting local stream');
-  navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: false
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
-  });
+  console.log('Requesting local stream');
+  navigator.mediaDevices
+      .getUserMedia({
+        audio: true,
+        video: false
+      })
+      .then(gotStream)
+      .catch(e => {
+        alert(`getUserMedia() error: ${e.name}`);
+      });
 }
 
 function gotDescription1(desc) {
-  trace('Offer from pc1 \n' + desc.sdp);
-  pc1.setLocalDescription(desc).then(
-    function() {
-      desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc2.setRemoteDescription(desc).then(
-        function() {
-          pc2.createAnswer().then(
-            gotDescription2,
-            onCreateSessionDescriptionError
-          );
-        },
-        onSetSessionDescriptionError
-      );
-    },
-    onSetSessionDescriptionError
-  );
+  console.log(`Offer from pc1\n${desc.sdp}`);
+  pc1.setLocalDescription(desc)
+      .then(() => {
+        if (!supportsSetCodecPreferences) {
+          desc.sdp = forceChosenAudioCodec(desc.sdp);
+        }
+        pc2.setRemoteDescription(desc).then(() => {
+          return pc2.createAnswer().then(gotDescription2, onCreateSessionDescriptionError);
+        }, onSetSessionDescriptionError);
+      }, onSetSessionDescriptionError);
 }
 
 function gotDescription2(desc) {
-  trace('Answer from pc2 \n' + desc.sdp);
-  pc2.setLocalDescription(desc).then(
-    function() {
+  console.log(`Answer from pc2\n${desc.sdp}`);
+  pc2.setLocalDescription(desc).then(() => {
+    if (!supportsSetCodecPreferences) {
       desc.sdp = forceChosenAudioCodec(desc.sdp);
-      pc1.setRemoteDescription(desc).then(
-        function() {
-        },
-        onSetSessionDescriptionError
-      );
-    },
-    onSetSessionDescriptionError
-  );
+    }
+    if (useDtx) {
+      desc.sdp = desc.sdp.replace('useinbandfec=1', 'useinbandfec=1;usedtx=1');
+    }
+    if (!useFec) {
+      desc.sdp = desc.sdp.replace('useinbandfec=1', 'useinbandfec=0');
+    }
+    pc1.setRemoteDescription(desc).then(() => {}, onSetSessionDescriptionError);
+  }, onSetSessionDescriptionError);
 }
 
 function hangup() {
-  trace('Ending call');
-  localStream.getTracks().forEach(function(track) {
-    track.stop();
-  });
+  console.log('Ending call');
+  localStream.getTracks().forEach(track => track.stop());
   pc1.close();
   pc2.close();
   pc1 = null;
@@ -151,7 +209,7 @@ function hangup() {
 function gotRemoteStream(e) {
   if (audio2.srcObject !== e.streams[0]) {
     audio2.srcObject = e.streams[0];
-    trace('Received remote stream');
+    console.log('Received remote stream');
   }
 }
 
@@ -165,28 +223,23 @@ function getName(pc) {
 
 function onIceCandidate(pc, event) {
   getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
+      .then(
+          () => onAddIceCandidateSuccess(pc),
+          err => onAddIceCandidateError(pc, err)
+      );
+  console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
 function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success.');
+  console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-  trace('Failed to add ICE Candidate: ' + error.toString());
+  console.log(`Failed to add ICE Candidate: ${error.toString()}`);
 }
 
 function onSetSessionDescriptionError(error) {
-  trace('Failed to set session description: ' + error.toString());
+  console.log(`Failed to set session description: ${error.toString()}`);
 }
 
 function forceChosenAudioCodec(sdp) {
@@ -198,27 +251,27 @@ function forceChosenAudioCodec(sdp) {
 // Sets |codec| as the default |type| codec if it's present.
 // The format of |codec| is 'NAME/RATE', e.g. 'opus/48000'.
 function maybePreferCodec(sdp, type, dir, codec) {
-  var str = type + ' ' + dir + ' codec';
+  const str = `${type} ${dir} codec`;
   if (codec === '') {
-    trace('No preference on ' + str + '.');
+    console.log(`No preference on ${str}.`);
     return sdp;
   }
 
-  trace('Prefer ' + str + ': ' + codec);
+  console.log(`Prefer ${str}: ${codec}`);
 
-  var sdpLines = sdp.split('\r\n');
+  const sdpLines = sdp.split('\r\n');
 
   // Search for m line.
-  var mLineIndex = findLine(sdpLines, 'm=', type);
+  const mLineIndex = findLine(sdpLines, 'm=', type);
   if (mLineIndex === null) {
     return sdp;
   }
 
   // If the codec is available, set it as the default in m line.
-  var codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
+  const codecIndex = findLine(sdpLines, 'a=rtpmap', codec);
   console.log('codecIndex', codecIndex);
   if (codecIndex) {
-    var payload = getCodecPayloadType(sdpLines[codecIndex]);
+    const payload = getCodecPayloadType(sdpLines[codecIndex]);
     if (payload) {
       sdpLines[mLineIndex] = setDefaultCodec(sdpLines[mLineIndex], payload);
     }
@@ -237,11 +290,11 @@ function findLine(sdpLines, prefix, substr) {
 // Find the line in sdpLines[startLine...endLine - 1] that starts with |prefix|
 // and, if specified, contains |substr| (case-insensitive search).
 function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
-  var realEndLine = endLine !== -1 ? endLine : sdpLines.length;
-  for (var i = startLine; i < realEndLine; ++i) {
+  const realEndLine = endLine !== -1 ? endLine : sdpLines.length;
+  for (let i = startLine; i < realEndLine; ++i) {
     if (sdpLines[i].indexOf(prefix) === 0) {
       if (!substr ||
-          sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
+        sdpLines[i].toLowerCase().indexOf(substr.toLowerCase()) !== -1) {
         return i;
       }
     }
@@ -251,21 +304,21 @@ function findLineInRange(sdpLines, startLine, endLine, prefix, substr) {
 
 // Gets the codec payload type from an a=rtpmap:X line.
 function getCodecPayloadType(sdpLine) {
-  var pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
-  var result = sdpLine.match(pattern);
+  const pattern = new RegExp('a=rtpmap:(\\d+) \\w+\\/\\d+');
+  const result = sdpLine.match(pattern);
   return (result && result.length === 2) ? result[1] : null;
 }
 
 // Returns a new m= line with the specified codec as the first one.
 function setDefaultCodec(mLine, payload) {
-  var elements = mLine.split(' ');
+  const elements = mLine.split(' ');
 
   // Just copy the first three parameters; codec order starts on fourth.
-  var newLine = elements.slice(0, 3);
+  const newLine = elements.slice(0, 3);
 
   // Put target payload first and copy in the rest.
   newLine.push(payload);
-  for (var i = 3; i < elements.length; i++) {
+  for (let i = 3; i < elements.length; i++) {
     if (elements[i] !== payload) {
       newLine.push(elements[i]);
     }
@@ -274,33 +327,46 @@ function setDefaultCodec(mLine, payload) {
 }
 
 // query getStats every second
-window.setInterval(function() {
-  if (!window.pc1) {
+window.setInterval(() => {
+  if (!pc1) {
     return;
   }
-  window.pc1.getStats(null).then(function(res) {
-    res.forEach(function(report) {
-      var bytes;
-      var packets;
-      var now = report.timestamp;
-      if ((report.type === 'outboundrtp') ||
-          (report.type === 'outbound-rtp') ||
-          (report.type === 'ssrc' && report.bytesSent)) {
+  const sender = pc1.getSenders()[0];
+  if (!sender) {
+    return;
+  }
+  sender.getStats().then(res => {
+    res.forEach(report => {
+      let bytes;
+      let headerBytes;
+      let packets;
+      if (report.type === 'outbound-rtp') {
+        if (report.isRemote) {
+          return;
+        }
+        const now = report.timestamp;
         bytes = report.bytesSent;
+        headerBytes = report.headerBytesSent;
+
         packets = report.packetsSent;
-        if (lastResult && lastResult.get(report.id)) {
+        if (lastResult && lastResult.has(report.id)) {
+          const deltaT = (now - lastResult.get(report.id).timestamp) / 1000;
           // calculate bitrate
-          var bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
-              (now - lastResult.get(report.id).timestamp);
+          const bitrate = 8 * (bytes - lastResult.get(report.id).bytesSent) /
+            deltaT;
+          const headerrate = 8 * (headerBytes - lastResult.get(report.id).headerBytesSent) /
+            deltaT;
 
           // append to chart
           bitrateSeries.addPoint(now, bitrate);
-          bitrateGraph.setDataSeries([bitrateSeries]);
+          headerrateSeries.addPoint(now, headerrate);
+          targetBitrateSeries.addPoint(now, report.targetBitrate);
+          bitrateGraph.setDataSeries([bitrateSeries, headerrateSeries, targetBitrateSeries]);
           bitrateGraph.updateEndDate();
 
           // calculate number of packets and append to chart
-          packetSeries.addPoint(now, packets -
-              lastResult.get(report.id).packetsSent);
+          packetSeries.addPoint(now, (packets -
+            lastResult.get(report.id).packetsSent) / deltaT);
           packetGraph.setDataSeries([packetSeries]);
           packetGraph.updateEndDate();
         }
@@ -309,3 +375,33 @@ window.setInterval(function() {
     lastResult = res;
   });
 }, 1000);
+
+if (window.RTCRtpReceiver && ('getSynchronizationSources' in window.RTCRtpReceiver.prototype)) {
+  let lastTime;
+  const getAudioLevel = (timestamp) => {
+    window.requestAnimationFrame(getAudioLevel);
+    if (!pc2) {
+      return;
+    }
+    const receiver = pc2.getReceivers().find(r => r.track.kind === 'audio');
+    if (!receiver) {
+      return;
+    }
+    const sources = receiver.getSynchronizationSources();
+    sources.forEach(source => {
+      audioLevels.push(source.audioLevel);
+    });
+    if (!lastTime) {
+      lastTime = timestamp;
+    } else if (timestamp - lastTime > 500 && audioLevels.length > 0) {
+      // Update graph every 500ms.
+      const maxAudioLevel = Math.max.apply(null, audioLevels);
+      audioLevelSeries.addPoint(Date.now(), maxAudioLevel);
+      audioLevelGraph.setDataSeries([audioLevelSeries]);
+      audioLevelGraph.updateEndDate();
+      audioLevels.length = 0;
+      lastTime = timestamp;
+    }
+  };
+  window.requestAnimationFrame(getAudioLevel);
+}

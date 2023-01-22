@@ -8,139 +8,108 @@
 
 'use strict';
 
-var callButton = document.querySelector('button#callButton');
-var sendTonesButton = document.querySelector('button#sendTonesButton');
-var hangupButton = document.querySelector('button#hangupButton');
+const callButton = document.querySelector('button#callButton');
+const sendTonesButton = document.querySelector('button#sendTonesButton');
+const hangupButton = document.querySelector('button#hangupButton');
+const durationInput = document.querySelector('input#duration');
+const gapInput = document.querySelector('input#gap');
+const tonesInput = document.querySelector('input#tones');
+const durationValue = document.querySelector('span#durationValue');
+const gapValue = document.querySelector('span#gapValue');
+const sentTonesInput = document.querySelector('input#sentTones');
+const dtmfStatusDiv = document.querySelector('div#dtmfStatus');
+const audio = document.querySelector('audio');
 
-sendTonesButton.disabled = true;
-hangupButton.disabled = true;
+let pc1;
+let pc2;
+let localStream;
+let dtmfSender;
 
-callButton.onclick = call;
-sendTonesButton.onclick = handleSendTonesClick;
-hangupButton.onclick = hangup;
-
-var durationInput = document.querySelector('input#duration');
-var gapInput = document.querySelector('input#gap');
-var tonesInput = document.querySelector('input#tones');
-
-var durationValue = document.querySelector('span#durationValue');
-var gapValue = document.querySelector('span#gapValue');
-
-var sentTonesDiv = document.querySelector('div#sentTones');
-var dtmfStatusDiv = document.querySelector('div#dtmfStatus');
-
-var audio = document.querySelector('audio');
-
-var pc1;
-var pc2;
-var localStream;
-var dtmfSender;
-
-var offerOptions = {
+const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 0
 };
 
-durationInput.oninput = function() {
+durationInput.oninput = () => {
   durationValue.textContent = durationInput.value;
 };
 
-gapInput.oninput = function() {
+gapInput.oninput = () => {
   gapValue.textContent = gapInput.value;
 };
 
-main();
-
-function main() {
+async function main() {
   addDialPadHandlers();
+
+  sendTonesButton.disabled = true;
+  hangupButton.disabled = true;
+
+  callButton.addEventListener('click', e => call());
+  sendTonesButton.addEventListener('click', e => handleSendTonesClick());
+  hangupButton.addEventListener('click', e => hangup());
 }
 
-function gotStream(stream) {
-  trace('Received local stream');
+async function gotStream(stream) {
+  console.log('Received local stream');
   localStream = stream;
-  var audioTracks = localStream.getAudioTracks();
+  const audioTracks = localStream.getAudioTracks();
   if (audioTracks.length > 0) {
-    trace('Using Audio device: ' + audioTracks[0].label);
+    console.log(`Using Audio device: ${audioTracks[0].label}`);
   }
-  if (adapter.browserDetails.browser !== 'chrome' ||
-      adapter.browserDetails.version >= 66) {
-    localStream.getTracks().forEach(
-      function(track) {
-        pc1.addTrack(
-          track,
-          localStream
-        );
-      }
-    );
-  } else {
-    // TODO: https://github.com/webrtc/adapter/issues/733
-    // chrome does not yet support addTrack + dtmf until M66.
-    pc1.addStream(localStream);
+  localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
+  console.log('Adding Local Stream to peer connection');
+  try {
+    const offer = await pc1.createOffer(offerOptions);
+    await gotLocalOffer(offer);
+  } catch (e) {
+    console.log('Failed to create session description:', e);
   }
-  trace('Adding Local Stream to peer connection');
-  pc1.createOffer(
-    offerOptions
-  ).then(
-    gotDescription1,
-    onCreateSessionDescriptionError
-  );
 }
 
-function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
-}
-
-function call() {
-  trace('Starting call');
-  var servers = null;
+async function call() {
+  console.log('Starting call');
+  const servers = null;
   pc1 = new RTCPeerConnection(servers);
-  trace('Created local peer connection object pc1');
-  pc1.onicecandidate = function(e) {
-    onIceCandidate(pc1, e);
-  };
+  console.log('Created local peer connection object pc1');
+  pc1.addEventListener('icecandidate', e => onIceCandidate(pc1, e));
   pc2 = new RTCPeerConnection(servers);
-  trace('Created remote peer connection object pc2');
-  pc2.onicecandidate = function(e) {
-    onIceCandidate(pc2, e);
-  };
-  pc2.ontrack = gotRemoteStream;
+  console.log('Created remote peer connection object pc2');
+  pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
+  pc2.addEventListener('track', e => gotRemoteStream(e));
 
-  trace('Requesting local stream');
-  navigator.mediaDevices.getUserMedia({
-    audio: true,
-    video: false
-  })
-  .then(gotStream)
-  .catch(function(e) {
-    alert('getUserMedia() error: ' + e.name);
-  });
+  console.log('Requesting local stream');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+    await gotStream(stream);
+  } catch (e) {
+    console.log('getUserMedia() error:', e);
+  }
 
   callButton.disabled = true;
   hangupButton.disabled = false;
   sendTonesButton.disabled = false;
 }
 
-function gotDescription1(desc) {
+async function gotLocalOffer(desc) {
+  console.log(`Offer from pc1\n${desc.sdp}`);
   pc1.setLocalDescription(desc);
-  trace('Offer from pc1 \n' + desc.sdp);
   pc2.setRemoteDescription(desc);
-  // Since the 'remote' side has no media stream we need
-  // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio.
-  pc2.createAnswer().then(
-    gotDescription2,
-    onCreateSessionDescriptionError
-  );
+  try {
+    const answer = await pc2.createAnswer();
+    gotRemoteAnswer(answer);
+  } catch (e) {
+    console.log('Failed to create session description:', e);
+  }
 }
 
-function gotDescription2(desc) {
+function gotRemoteAnswer(desc) {
   pc2.setLocalDescription(desc);
-  trace('Answer from pc2: \n' + desc.sdp);
+  console.log(`Answer from pc2:\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
 
 function hangup() {
-  trace('Ending call');
+  console.log('Ending call');
   pc1.close();
   pc2.close();
   pc1 = null;
@@ -156,19 +125,16 @@ function hangup() {
 function gotRemoteStream(e) {
   if (audio.srcObject !== e.streams[0]) {
     audio.srcObject = e.streams[0];
-    trace('Received remote stream');
+    console.log('Received remote stream');
 
     if (!pc1.getSenders) {
-      alert('This demo requires the RTCPeerConnection method getSenders() ' +
-            'which is not support by this browser.');
+      alert('This demo requires the RTCPeerConnection method getSenders() which is not support by this browser.');
       return;
     }
-    var senders = pc1.getSenders();
-    var audioSender = senders.find(function(sender) {
-      return sender.track && sender.track.kind === 'audio';
-    });
+    const senders = pc1.getSenders();
+    const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
     if (!audioSender) {
-      trace('No local audio track to send DTMF with\n');
+      console.log('No local audio track to send DTMF with\n');
       return;
     }
     if (!audioSender.dtmf) {
@@ -177,7 +143,7 @@ function gotRemoteStream(e) {
     }
     dtmfSender = audioSender.dtmf;
     dtmfStatusDiv.textContent = 'DTMF available';
-    trace('Got DTMFSender\n');
+    console.log('Got DTMFSender\n');
     dtmfSender.ontonechange = dtmfOnToneChange;
   }
 }
@@ -190,39 +156,26 @@ function getName(pc) {
   return (pc === pc1) ? 'pc1' : 'pc2';
 }
 
-function onIceCandidate(pc, event) {
-  getOtherPc(pc).addIceCandidate(event.candidate)
-  .then(
-    function() {
-      onAddIceCandidateSuccess(pc);
-    },
-    function(err) {
-      onAddIceCandidateError(pc, err);
-    }
-  );
-  trace(getName(pc) + ' ICE candidate: \n' + (event.candidate ?
-      event.candidate.candidate : '(null)'));
-}
-
-function onAddIceCandidateSuccess() {
-  trace('AddIceCandidate success');
-}
-
-function onAddIceCandidateError(error) {
-  trace('Failed to add Ice Candidate: ' + error.toString());
+async function onIceCandidate(pc, event) {
+  try {
+    await getOtherPc(pc).addIceCandidate(event.candidate);
+    console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
+  } catch (e) {
+    console.log('Error adding ice candidate:', e);
+  }
 }
 
 function dtmfOnToneChange(tone) {
   if (tone) {
-    trace('Sent DTMF tone: ' + tone.tone);
-    sentTonesDiv.textContent += tone.tone + ' ';
+    console.log(`Sent DTMF tone: ${tone.tone}`);
+    sentTonesInput.value += `${tone.tone} `;
   }
 }
 
 function sendTones(tones) {
-  if (dtmfSender) {
-    var duration = durationInput.value;
-    var gap = gapInput.value;
+  if (dtmfSender && dtmfSender.canInsertDTMF) {
+    const duration = durationInput.value;
+    const gap = gapInput.value;
     console.log('Tones, duration, gap: ', tones, duration, gap);
     dtmfSender.insertDTMF(tones, duration, gap);
   }
@@ -233,13 +186,11 @@ function handleSendTonesClick() {
 }
 
 function addDialPadHandlers() {
-  var dialPad = document.querySelector('div#dialPad');
-  var buttons = dialPad.querySelectorAll('button');
-  for (var i = 0; i !== buttons.length; ++i) {
-    buttons[i].onclick = sendDtmfTone;
+  const dialPad = document.querySelector('div#dialPad');
+  const buttons = dialPad.querySelectorAll('button');
+  for (let i = 0; i !== buttons.length; ++i) {
+    buttons[i].addEventListener('click', (event) => sendTones(event.target.textContent));
   }
 }
 
-function sendDtmfTone() {
-  sendTones(this.textContent);
-}
+main();

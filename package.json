@@ -14,27 +14,31 @@
   },
   "license": "BSD-3-Clause",
   "author": "The WebRTC project authors",
-  "main": "Gruntfile.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "test": "grunt && start-tests"
+    "start": "http-server . -c-1",
+    "test": "npm run eslint && npm run stylelint",
+    "eslint": "eslint 'test/**.js' 'src/content/**/*.js'",
+    "mocha": "mocha --timeout 5000 'src/content/**/test.js'",
+    "stylelint": "stylelint 'src/**/*.css'"
   },
+  "eslintIgnore": [
+    "'**/third_party/*.js'"
+  ],
   "devDependencies": {
-    "eslint-config-webrtc": "^1.0.0",
-    "express": "^4.14.1",
-    "faucet": "0.0.1",
-    "geckodriver": "^1.10.0",
-    "grunt": "^0.4.5",
-    "grunt-cli": ">=0.1.9",
-    "grunt-contrib-compress": "^0.13.0",
-    "grunt-contrib-csslint": ">=0.3.1",
-    "grunt-eslint": "^18.1.0",
-    "grunt-githooks": "^0.3.1",
-    "grunt-htmlhint": ">=0.9.12",
-    "pem": "^1.9.4",
-    "webrtc-utilities": "^1.0.8"
+    "chai": "^4.3.6",
+    "chromedriver": ">98.0.1",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "geckodriver": "^3.0.1",
+    "http-server": "^14.1.0",
+    "mocha": "^9.2.1",
+    "selenium-webdriver": "^4.1.1",
+    "stylelint": "^14.5.3",
+    "stylelint-config-recommended": "^7.0.0",
+    "travis-multirunner": "^4.6.0"
   }
 }

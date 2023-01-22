@@ -20,10 +20,6 @@ div#status {
   margin: 1em 0 0 0;
 }
 
-div#videos {
-  height: 232px;
-}
-
 input#audio {
   margin: 0 0.5em 0 0;
   position: relative;
@@ -31,12 +27,8 @@ input#audio {
 }
 
 video {
-  display: block;
-  float: left;
-  height: 232px;
-  width: calc(50% - 10px);
+  --width: 45%;
+  width: var(--width);
+  height: calc(var(--width) * 0.75);
 }
 
-video:first-child {
-  margin: 0 20px 0 0;
-}

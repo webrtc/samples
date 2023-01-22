@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2020 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="description" content="WebRTC code samples">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Client-side WebRTC code samples">
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+    <meta itemprop="name" content="WebRTC code samples">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+
+    <base target="_blank">
+
+    <title>Peer connection end to end encryption</title>
+
+    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+    <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../../css/main.css"/>
+    <link rel="stylesheet" href="css/main.css"/>
+
+</head>
+
+<body>
+
+<div id="container">
+
+    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Peer connection end to end encryption</span>
+    </h1>
+    <span id="banner"></span>
+    <p>
+      <h2>Sender and receiver</h2>
+      <div id="videos">
+        Sender and receiver<br>
+        <video id="video1" playsinline autoplay muted></video>
+        <video id="video2" playsinline autoplay></video>
+      </div>
+      <br>
+      Crypto key: <input type="text" id="crypto-key">
+      Encrypt first bytes: <input type="checkbox" id="crypto-offset">
+    </p>
+    <p>
+      <h2>Middlebox</h2>
+      <div id="monitor">
+        <video id="video-monitor" playsinline autoplay muted></video>
+        Switch audio to middlebox: <input type="checkbox" id="mute-middlebox">
+      </div>
+    </p>
+
+    <div id="buttons">
+        <button id="startButton">Start</button>
+        <button id="callButton" disabled>Call</button>
+        <button id="hangupButton" disabled>Hang Up</button>
+    </div>
+    <div id="status"></div>
+
+    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/insertable-streams/endtoend-encryption"
+       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
+
+</div>
+
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="js/videopipe.js"></script>
+<script src="js/main.js" async></script>
+
+<script src="../../../js/lib/ga.js"></script>
+
+</body>
+</html>

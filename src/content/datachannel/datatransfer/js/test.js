@@ -5,47 +5,53 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
- /* eslint-env node */
+/* eslint-env node, mocha */
 
 'use strict';
+const webdriver = require('selenium-webdriver');
+const seleniumHelpers = require('../../../../../test/webdriver');
+const {expect} = require('chai');
 
-// This is a basic test file for use with testling.
-// The test script language comes from tape.
-var test = require('tape');
+let driver;
+const path = '/src/content/datachannel/datatransfer/index.html';
+const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
-var webdriver = require('selenium-webdriver');
-var seleniumHelpers = require('webrtc-utilities').seleniumLib;
-
-function sendData(t) {
-  var driver = seleniumHelpers.buildDriver();
-  var sendButton;
-
-  driver.get((process.env.BASEURL ? process.env.BASEURL :
-      ('file://' + process.cwd())) +
-      '/src/content/datachannel/datatransfer/index.html')
-  .then(function() {
-    t.pass('page loaded');
-    // Based on https://saucelabs.com/resources/articles/selenium-file-upload
-    return driver.findElement(webdriver.By.id('sendTheData'));
-  })
-  .then(function(button) {
-    sendButton = button;
-    sendButton.click();
-    // The click is asynchronous.  Wait until the click has taken effect.
-    return driver.wait(webdriver.until.elementIsDisabled(sendButton));
-  }).then(function() {
-    // The button will be re-enabled after the transfer completes.
-    return driver.wait(webdriver.until.elementIsEnabled(sendButton));
-  })
-  .then(function() {
-    t.end();
-  })
-  .then(null, function(err) {
-    t.fail(err);
-    t.end();
+describe('datachannel datatransfer', () => {
+  before(() => {
+    driver = seleniumHelpers.buildDriver();
   });
-}
+  after(() => {
+    return driver.quit();
+  });
 
-test('In-memory datatransfer via Datachannels', function(t) {
-  sendData(t);
+  beforeEach(() => {
+    return driver.get(url);
+  });
+
+  it('transfers data', async () => {
+    const megsToSend = 4;
+    await driver.findElement(webdriver.By.id('megsToSend'))
+        .clear();
+    await driver.findElement(webdriver.By.id('megsToSend'))
+        .sendKeys(megsToSend + '\n');
+
+    await driver.findElement(webdriver.By.id('sendTheData')).click();
+
+    await Promise.all([
+      driver.wait(() => driver.executeScript(() => {
+        return localConnection && localConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+      })),
+      await driver.wait(() => driver.executeScript(() => {
+        return remoteConnection && remoteConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+      })),
+    ]);
+
+    // the remote connection gets closed when it is done.
+    await driver.wait(() => driver.executeScript(() => {
+      return remoteConnection === null; // eslint-disable-line no-undef
+    }));
+
+    const transferred = await driver.findElement(webdriver.By.id('receiveProgress')).getAttribute('value');
+    expect(transferred >>> 0).to.equal(megsToSend * 1024 * 1024);
+  });
 });
