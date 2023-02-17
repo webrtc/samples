@@ -39,6 +39,6 @@
     "selenium-webdriver": "^4.1.1",
     "stylelint": "^14.5.3",
     "stylelint-config-recommended": "^7.0.0",
-    "travis-multirunner": "^4.6.0"
+    "travis-multirunner": "^5.0.1"
   }
 }
