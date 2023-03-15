@@ -215,7 +215,13 @@ async function onCreateAnswerSuccess(desc) {
         const codec = stats.get(stat.codecId);
         document.getElementById('actualCodec').innerText = 'Using ' + codec.mimeType +
             (codec.sdpFmtpLine ? ' ' + codec.sdpFmtpLine + ' ' : '') +
-            ', payloadType=' + codec.payloadType + '. Encoder: ' + stat.encoderImplementation;
+            ', payloadType=' + codec.payloadType + '.';
+        if (stat.encoderImplementation) {
+          document.getElementById('actualCodec').innerText += ' Encoder: "' + stat.encoderImplementation + '".';
+        }
+        if (stat.powerEfficientEncoder !== undefined) {
+          document.getElementById('actualCodec').innerText += ' Power efficient: ' + stat.powerEfficientEncoder + '.';
+        }
       });
     }, 1000);
   } catch (e) {
