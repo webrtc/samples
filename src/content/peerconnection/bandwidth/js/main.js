@@ -200,8 +200,14 @@ function onSetSessionDescriptionError(error) {
 bandwidthSelector.onchange = () => {
   bandwidthSelector.disabled = true;
   const bandwidth = bandwidthSelector.options[bandwidthSelector.selectedIndex].value;
+  setBandwidth(bandwidth)
+      .then(() => {
+        bandwidthSelector.disabled = false;
+      });
+};
 
-  // In Chrome, use RTCRtpSender.setParameters to change bandwidth without
+function setBandwidth(bandwidthInKbps) {
+  // In modern browsers, use RTCRtpSender.setParameters to change bandwidth without
   // (local) renegotiation. Note that this will be within the envelope of
   // the initial maximum bandwidth negotiated via SDP.
   if ((adapter.browserDetails.browser === 'chrome' ||
@@ -215,35 +221,27 @@ bandwidthSelector.onchange = () => {
     if (!parameters.encodings) {
       parameters.encodings = [{}];
     }
-    if (bandwidth === 'unlimited') {
+    if (bandwidthInKbps === 'unlimited') {
       delete parameters.encodings[0].maxBitrate;
     } else {
-      parameters.encodings[0].maxBitrate = bandwidth * 1000;
+      parameters.encodings[0].maxBitrate = bandwidthInKbps * 1000;
     }
-    sender.setParameters(parameters)
-        .then(() => {
-          bandwidthSelector.disabled = false;
-        })
-        .catch(e => console.error(e));
-    return;
+    return sender.setParameters(parameters);
   }
-  // Fallback to the SDP munging with local renegotiation way of limiting
+  // Fallback to the SDP changes with local renegotiation as way of limiting
   // the bandwidth.
-  pc1.createOffer()
+  return pc1.createOffer()
       .then(offer => pc1.setLocalDescription(offer))
       .then(() => {
         const desc = {
           type: pc1.remoteDescription.type,
-          sdp: bandwidth === 'unlimited' ?
+          sdp: bandwidthInKbps === 'unlimited' ?
           removeBandwidthRestriction(pc1.remoteDescription.sdp) :
-          updateBandwidthRestriction(pc1.remoteDescription.sdp, bandwidth)
+          updateBandwidthRestriction(pc1.remoteDescription.sdp, bandwidthInKbps)
         };
         console.log('Applying bandwidth restriction to setRemoteDescription:\n' +
         desc.sdp);
         return pc1.setRemoteDescription(desc);
-      })
-      .then(() => {
-        bandwidthSelector.disabled = false;
       })
       .catch(onSetSessionDescriptionError);
 };
