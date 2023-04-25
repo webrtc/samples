@@ -1,3 +1,11 @@
+/*
+ *  Copyright (c) 2023 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+ */
+
 // Adjust this value to increase/decrease the amount of filtering.
 // eslint-disable-next-line prefer-const
 let cutoff = 100;

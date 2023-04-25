@@ -44,19 +44,11 @@ let stopButton;
 // Transformation chain elements
 let processor;
 let generator;
-let transformer;
 
 // Stream from getUserMedia
 let stream;
 // Output from the transform
 let processedStream;
-
-// Adjust this value to increase/decrease the amount of filtering.
-// eslint-disable-next-line prefer-const
-let cutoff = 100;
-
-// An AbortController used to stop the transform.
-let abortController;
 
 // Initialize on page load.
 async function init() {
@@ -72,45 +64,6 @@ const constraints = window.constraints = {
   audio: true,
   video: false
 };
-
-// Returns a low-pass transform function for use with TransformStream.
-function lowPassFilter() {
-  const format = 'f32-planar';
-  let lastValuePerChannel = undefined;
-  return (data, controller) => {
-    const rc = 1.0 / (cutoff * 2 * Math.PI);
-    const dt = 1.0 / data.sampleRate;
-    const alpha = dt / (rc + dt);
-    const nChannels = data.numberOfChannels;
-    if (!lastValuePerChannel) {
-      console.log(`Audio stream has ${nChannels} channels.`);
-      lastValuePerChannel = Array(nChannels).fill(0);
-    }
-    const buffer = new Float32Array(data.numberOfFrames * nChannels);
-    for (let c = 0; c < nChannels; c++) {
-      const offset = data.numberOfFrames * c;
-      const samples = buffer.subarray(offset, offset + data.numberOfFrames);
-      data.copyTo(samples, {planeIndex: c, format});
-      let lastValue = lastValuePerChannel[c];
-
-      // Apply low-pass filter to samples.
-      for (let i = 0; i < samples.length; ++i) {
-        lastValue = lastValue + alpha * (samples[i] - lastValue);
-        samples[i] = lastValue;
-      }
-
-      lastValuePerChannel[c] = lastValue;
-    }
-    controller.enqueue(new AudioData({
-      format,
-      sampleRate: data.sampleRate,
-      numberOfFrames: data.numberOfFrames,
-      numberOfChannels: nChannels,
-      timestamp: data.timestamp,
-      data: buffer
-    }));
-  };
-}
 
 async function start() {
   startButton.disabled = true;
@@ -133,19 +86,8 @@ async function start() {
   generator = new MediaStreamTrackGenerator('audio');
   const source = processor.readable;
   const sink = generator.writable;
-  transformer = new TransformStream({transform: lowPassFilter()});
-  abortController = new AbortController();
-  const signal = abortController.signal;
-  const promise = source.pipeThrough(transformer, {signal}).pipeTo(sink);
-  promise.catch((e) => {
-    if (signal.aborted) {
-      console.log('Shutting down streams after abort.');
-    } else {
-      console.error('Error from stream transform:', e);
-    }
-    source.cancel(e);
-    sink.abort(e);
-  });
+  const worker = new Worker("js/worker.js");
+  worker.postMessage({source: source, sink: sink}, [source, sink]);
 
   processedStream = new MediaStream();
   processedStream.addTrack(generator);
