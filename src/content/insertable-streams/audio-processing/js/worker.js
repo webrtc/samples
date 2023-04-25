@@ -72,4 +72,4 @@ onmessage = async (event) => {
       sink.abort(e);
     });
   }
-}
+};
