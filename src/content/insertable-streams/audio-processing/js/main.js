@@ -89,7 +89,7 @@ async function start() {
   generator = new MediaStreamTrackGenerator('audio');
   const source = processor.readable;
   const sink = generator.writable;
-  worker = new Worker("js/worker.js");
+  worker = new Worker('js/worker.js');
   worker.postMessage({source: source, sink: sink}, [source, sink]);
 
   processedStream = new MediaStream();
