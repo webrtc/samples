@@ -103,8 +103,7 @@ async function stop() {
   stream.getTracks().forEach(track => {
     track.stop();
   });
-  abortController.abort();
-  abortController = null;
+  worker.postMessage({command: 'abort'});
   startButton.disabled = false;
 }
 

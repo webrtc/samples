@@ -49,20 +49,27 @@ function lowPassFilter() {
   };
 }
 
+let abortController;
+
 onmessage = async (event) => {
-  const source = event.data.source;
-  const sink = event.data.sink;
-  const transformer = new TransformStream({transform: lowPassFilter()});
-  const abortController = new AbortController();
-  const signal = abortController.signal;
-  const promise = source.pipeThrough(transformer, {signal}).pipeTo(sink);
-  promise.catch((e) => {
-    if (signal.aborted) {
-      console.log('Shutting down streams after abort.');
-    } else {
-      console.error('Error from stream transform:', e);
-    }
-    source.cancel(e);
-    sink.abort(e);
-  });
+  if (event.data.command == 'abort') {
+    abortController.abort();
+    abortController = null;
+  } else {
+    const source = event.data.source;
+    const sink = event.data.sink;
+    const transformer = new TransformStream({transform: lowPassFilter()});
+    abortController = new AbortController();
+    const signal = abortController.signal;
+    const promise = source.pipeThrough(transformer, {signal}).pipeTo(sink);
+    promise.catch((e) => {
+      if (signal.aborted) {
+        console.log('Shutting down streams after abort.');
+      } else {
+        console.error('Error from stream transform:', e);
+      }
+      source.cancel(e);
+      sink.abort(e);
+    });
+  }
 }
