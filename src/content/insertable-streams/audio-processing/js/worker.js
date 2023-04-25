@@ -38,14 +38,15 @@ function lowPassFilter() {
 
       lastValuePerChannel[c] = lastValue;
     }
-    controller.enqueue(new AudioData({
+    const audioData = new AudioData({
       format,
       sampleRate: data.sampleRate,
       numberOfFrames: data.numberOfFrames,
       numberOfChannels: nChannels,
       timestamp: data.timestamp,
       data: buffer
-    }));
+    });
+    controller.enqueue(audioData);
   };
 }
 
