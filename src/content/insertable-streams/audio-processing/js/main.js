@@ -50,6 +50,9 @@ let stream;
 // Output from the transform
 let processedStream;
 
+// Worker for processing
+let worker;
+
 // Initialize on page load.
 async function init() {
   audio = document.getElementById('audioOutput');
@@ -86,7 +89,7 @@ async function start() {
   generator = new MediaStreamTrackGenerator('audio');
   const source = processor.readable;
   const sink = generator.writable;
-  const worker = new Worker("js/worker.js");
+  worker = new Worker("js/worker.js");
   worker.postMessage({source: source, sink: sink}, [source, sink]);
 
   processedStream = new MediaStream();
