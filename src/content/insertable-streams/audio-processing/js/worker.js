@@ -65,5 +65,4 @@ onmessage = async (event) => {
     source.cancel(e);
     sink.abort(e);
   });
-
 }
