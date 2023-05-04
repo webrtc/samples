@@ -53,14 +53,17 @@ let abortController;
 
 onmessage = async (event) => {
   if (event.data.command == 'abort') {
+    console.log("WORKER : Got ABORT!");
     abortController.abort();
     abortController = null;
   } else {
+    console.log("WORKER : Got START!");
     const source = event.data.source;
     const sink = event.data.sink;
     const transformer = new TransformStream({transform: lowPassFilter()});
     abortController = new AbortController();
     const signal = abortController.signal;
+    console.log("WORKER : SETTING UP PIPE!");
     const promise = source.pipeThrough(transformer, {signal}).pipeTo(sink);
     promise.catch((e) => {
       if (signal.aborted) {

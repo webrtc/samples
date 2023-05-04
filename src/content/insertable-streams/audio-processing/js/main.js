@@ -72,6 +72,24 @@ async function start() {
   startButton.disabled = true;
   try {
     stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const audioTracks = stream.getAudioTracks();
+    console.log('Using audio device: ' + audioTracks[0].label);
+    stream.oninactive = () => {
+      console.log('Stream ended');
+    };
+  
+    processor = new MediaStreamTrackProcessor(audioTracks[0]);
+    generator = new MediaStreamTrackGenerator('audio');
+    const source = processor.readable;
+    const sink = generator.writable;
+    worker = new Worker('js/worker.js');
+    worker.postMessage({source: source, sink: sink}, [source, sink]);
+  
+    processedStream = new MediaStream();
+    processedStream.addTrack(generator);
+    audio.srcObject = processedStream;
+    stopButton.disabled = false;
+    await audio.play();
   } catch (error) {
     const errorMessage =
           'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' +
@@ -79,24 +97,6 @@ async function start() {
     document.getElementById('errorMsg').innerText = errorMessage;
     console.log(errorMessage);
   }
-  const audioTracks = stream.getAudioTracks();
-  console.log('Using audio device: ' + audioTracks[0].label);
-  stream.oninactive = () => {
-    console.log('Stream ended');
-  };
-
-  processor = new MediaStreamTrackProcessor(audioTracks[0]);
-  generator = new MediaStreamTrackGenerator('audio');
-  const source = processor.readable;
-  const sink = generator.writable;
-  worker = new Worker('js/worker.js');
-  worker.postMessage({source: source, sink: sink}, [source, sink]);
-
-  processedStream = new MediaStream();
-  processedStream.addTrack(generator);
-  audio.srcObject = processedStream;
-  stopButton.disabled = false;
-  await audio.play();
 }
 
 async function stop() {
