@@ -77,14 +77,14 @@ async function start() {
     stream.oninactive = () => {
       console.log('Stream ended');
     };
-  
+
     processor = new MediaStreamTrackProcessor(audioTracks[0]);
     generator = new MediaStreamTrackGenerator('audio');
     const source = processor.readable;
     const sink = generator.writable;
     worker = new Worker('js/worker.js');
     worker.postMessage({source: source, sink: sink}, [source, sink]);
-  
+
     processedStream = new MediaStream();
     processedStream.addTrack(generator);
     audio.srcObject = processedStream;
