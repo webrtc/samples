@@ -35,6 +35,9 @@ module.exports = {
     // From Streams specification
     "TransformStream": true,
     // From WebCodec specification
+    "AudioData": true,
+    "AudioEncoder": true,
+    "AudioDecoder": true,
     "VideoFrame": true,
     "VideoEncoder": true,
     "VideoDecoder": true,
