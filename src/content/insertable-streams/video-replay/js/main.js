@@ -68,12 +68,12 @@ const IVF2WebCodecs = {
   VP80: 'vp8',
   VP90: 'vp09.00.10.08',
   H264: 'avc1.42E01F',
+  AV01: 'av01.0.08M.08.0.110.09', // AV1 Main Profile, level 4.0, Main tier, 8-bit content, non-monochrome, with 4:2:0 chroma subsampling
 };
 
 const input = document.getElementById('input');
 const localVideo = document.getElementById('localVideo');
 const metadata = document.getElementById('metadata');
-
 input.onchange = async (event) => {
   event.target.disabled = true;
   const file = event.target.files[0];
@@ -96,6 +96,7 @@ input.onchange = async (event) => {
       frame.close();
       const nextFrame = await ivf.readFrame();
       if (nextFrame) {
+
         decoder.decode(new EncodedVideoChunk({
           timestamp: Number(nextFrame.timestamp - firstFrame.timestamp) * 1000,
           type: 'delta',
@@ -107,6 +108,8 @@ input.onchange = async (event) => {
     },
     error: e => console.error(e.message, e),
   });
+  VideoDecoder.isConfigSupported({codec: IVF2WebCodecs[header.codec], codedWidth: header.width, codedHeight: header.height})
+  .then(config => console.log(config))
   decoder.configure({
     codec: IVF2WebCodecs[header.codec],
     codedWidth: header.width,
