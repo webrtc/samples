@@ -5,13 +5,13 @@
     "16": "img/icon_16.png",
     "128": "img/icon_128.png"
   },
-  "manifest_version": 2,
+  "manifest_version": 3,
   "minimum_chrome_version": "42.0.2311.135",
   "name": "__MSG_NETLI_APPNAME__",
   "options_ui": {
-    "chrome_style": true,
+    "open_in_tab": false,
     "page": "options.html"
   },
   "permissions": [ "privacy" ],
-  "version": "0.2.1.3"
+  "version": "0.2.1.4"
 }
