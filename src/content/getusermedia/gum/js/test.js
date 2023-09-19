@@ -5,22 +5,21 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 'use strict';
 
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/getusermedia/gum/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('getUserMedia', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -34,7 +33,7 @@ describe('getUserMedia', () => {
       document.querySelector('video').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA)
     );
     const width = await driver.findElement(webdriver.By.css('video')).getAttribute('videoWidth');
-    expect(width >>> 0).to.be.at.least(320);
+    expect(width >>> 0).toBeGreaterThan(320);
   });
 });
 

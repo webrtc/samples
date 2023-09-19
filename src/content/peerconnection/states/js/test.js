@@ -5,22 +5,21 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 
 'use strict';
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/peerconnection/states/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('peerconnection states', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -56,18 +55,18 @@ describe('peerconnection states', () => {
       ice: await driver.findElement(webdriver.By.id('pc1IceState')).getAttribute('innerText'),
       connection: await driver.findElement(webdriver.By.id('pc1ConnState')).getAttribute('innerText'),
     };
-    expect(pc1States.signaling).to.equal('stable => have-local-offer => stable');
-    expect(pc1States.ice).to.equal('new => checking => connected');
-    expect(pc1States.connection).to.equal('new => connecting => connected');
+    expect(pc1States.signaling).toBe('stable => have-local-offer => stable');
+    expect(pc1States.ice).toBe('new => checking => connected');
+    expect(pc1States.connection).toBe('new => connecting => connected');
 
     const pc2States = {
       signaling: await driver.findElement(webdriver.By.id('pc2SignalState')).getAttribute('innerText'),
       ice: await driver.findElement(webdriver.By.id('pc2IceState')).getAttribute('innerText'),
       connection: await driver.findElement(webdriver.By.id('pc2ConnState')).getAttribute('innerText'),
     };
-    expect(pc2States.signaling).to.equal('stable => have-remote-offer => stable');
-    expect(pc2States.ice).to.equal('new => checking => connected');
-    expect(pc2States.connection).to.equal('new => connecting => connected');
+    expect(pc2States.signaling).toBe('stable => have-remote-offer => stable');
+    expect(pc2States.ice).toBe('new => checking => connected');
+    expect(pc2States.connection).toBe('new => connecting => connected');
 
     await driver.findElement(webdriver.By.id('hangupButton')).click();
 
