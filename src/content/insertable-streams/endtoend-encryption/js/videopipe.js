@@ -36,7 +36,7 @@ function VideoPipe(stream, forceSend, forceReceive, handler) {
 
   stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
   this.pc2.ontrack = handler;
-  if (preferredVideoCodecMimeType) {
+  if (preferredVideoCodecMimeType && 'setCodecPreferences' in window.RTCRtpTransceiver.prototype) {
     const {codecs} = RTCRtpSender.getCapabilities('video');
     const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
     const selectedCodec = codecs[selectedCodecIndex];

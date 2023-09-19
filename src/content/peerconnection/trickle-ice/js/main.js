@@ -77,12 +77,6 @@ function selectServer(event) {
 }
 
 function addServer() {
-  const scheme = urlInput.value.split(':')[0];
-  if (!['stun', 'stuns', 'turn', 'turns'].includes(scheme)) {
-    alert(`URI scheme ${scheme} is not valid`);
-    return;
-  }
-
   // Store the ICE server as a stringified JSON object in option.value.
   const option = document.createElement('option');
   const iceServer = {

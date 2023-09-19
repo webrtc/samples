@@ -73,6 +73,8 @@ function getSupportedMimeTypes() {
     'video/webm;codecs=vp8,opus',
     'video/webm;codecs=h264,opus',
     'video/mp4;codecs=h264,aac',
+    'video/webm;codecs=av01,opus',
+    'video/webm;codecs=av1,opus', // deprecated, prefer av01.
   ];
   return possibleTypes.filter(mimeType => {
     return MediaRecorder.isTypeSupported(mimeType);
