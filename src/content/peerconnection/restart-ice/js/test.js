@@ -5,22 +5,21 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 
 'use strict';
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/peerconnection/restart-ice/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('peerconnection ice restart', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -65,7 +64,7 @@ describe('peerconnection ice restart', () => {
       await driver.findElement(webdriver.By.id('remoteCandidateId')).getAttribute('innerText'),
     ]);
 
-    expect(secondCandidateIds[0]).to.not.equal(firstCandidateIds[0]);
-    expect(secondCandidateIds[1]).to.not.equal(firstCandidateIds[1]);
+    expect(secondCandidateIds[0]).not.toBe(firstCandidateIds[0]);
+    expect(secondCandidateIds[1]).not.toBe(firstCandidateIds[1]);
   });
 });

@@ -8,6 +8,7 @@ module.exports = {
     'browser': true,
     'es6': true,
     'node': true,
+    'jest': true
   },
   'rules': {
     'max-len': 'off',
@@ -42,4 +43,5 @@ module.exports = {
     "VideoEncoder": true,
     "VideoDecoder": true,
   },
+  "plugins": ["jest"]
 };

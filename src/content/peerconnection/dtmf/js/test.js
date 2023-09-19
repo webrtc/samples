@@ -6,22 +6,21 @@
  *  tree.
  */
 /*
-/* eslint-env node, mocha */
+/* eslint-env node */
 'use strict';
 
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/peerconnection/dtmf/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('peerconnection dtmf', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -42,7 +41,7 @@ describe('peerconnection dtmf', () => {
       document.getElementById('sentTones').value.length !== 0;
     }));
     const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
-    expect(sentTones).to.equal('1 ');
+    expect(sentTones).toBe('1 ');
   });
 
   it('sends the digit 9', async () => {
@@ -51,7 +50,7 @@ describe('peerconnection dtmf', () => {
       document.getElementById('sentTones').value.length !== 0;
     }));
     const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
-    expect(sentTones).to.equal('9 ');
+    expect(sentTones).toBe('9 ');
   });
 
   it('sends the #', async () => {
@@ -60,7 +59,7 @@ describe('peerconnection dtmf', () => {
       document.getElementById('sentTones').value.length !== 0;
     }));
     const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
-    expect(sentTones).to.equal('# ');
+    expect(sentTones).toBe('# ');
   });
 
   it('sends the A', async () => {
@@ -69,7 +68,7 @@ describe('peerconnection dtmf', () => {
       document.getElementById('sentTones').value.length !== 0;
     }));
     const sentTones = await driver.findElement(webdriver.By.id('sentTones')).getAttribute('value');
-    expect(sentTones).to.equal('A ');
+    expect(sentTones).toBe('A ');
   });
 });
 

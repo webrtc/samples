@@ -5,22 +5,18 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
-
-'use strict';
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/datachannel/basic/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('datachannel basic', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -50,6 +46,6 @@ describe('datachannel basic', () => {
     }));
 
     const value = await driver.findElement(webdriver.By.id('dataChannelReceive')).getAttribute('value');
-    expect(value).to.equal(text);
+    expect(value).toBe(text);
   });
 });
