@@ -5,22 +5,21 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 
 'use strict';
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/peerconnection/change-codecs/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('peerconnection with setCodecPreferences', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -61,7 +60,7 @@ describe('peerconnection with setCodecPreferences', () => {
         return document.getElementById('actualCodec').innerText !== '';
       }));
       const actualCodec = await driver.findElement(webdriver.By.id('actualCodec')).getAttribute('innerText');
-      expect(actualCodec.startsWith('Using ' + codec)).to.be.true;
+      expect(actualCodec.startsWith('Using ' + codec)).toBe(true);
     });
   });
 });

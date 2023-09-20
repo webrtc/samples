@@ -5,22 +5,21 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 
 'use strict';
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/peerconnection/trickle-ice/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('Trickle-Ice', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -41,7 +40,7 @@ describe('Trickle-Ice', () => {
     const actions = driver.actions({async: true});
     await actions.doubleClick(element).perform();
     const value = await driver.findElement(webdriver.By.id('url')).getAttribute('value');
-    expect(value).to.not.equal('');
+    expect(value).not.toBe('');
   });
 
   it('adding a server', async () => {
@@ -50,7 +49,7 @@ describe('Trickle-Ice', () => {
     await driver.findElement(webdriver.By.id('add')).click();
     const length = await driver.findElement(webdriver.By.css('#servers'))
         .getAttribute('length');
-    expect(length >>> 0).to.equal(2);
+    expect(length >>> 0).toBe(2);
   });
 
   it('removing a server', async () => {
@@ -58,6 +57,6 @@ describe('Trickle-Ice', () => {
     await driver.findElement(webdriver.By.id('remove')).click();
     const length = await driver.findElement(webdriver.By.css('#servers'))
         .getAttribute('length');
-    expect(length >>> 0).to.equal(0);
+    expect(length >>> 0).toBe(0);
   });
 });
