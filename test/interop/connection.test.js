@@ -15,7 +15,7 @@ const browserB = process.env.BROWSER_B || 'chrome';
 describe(`basic interop test ${browserA} => ${browserB}`, function() {
     let drivers;
     let clients;
-    before(async () => {
+    beforeAll(async () => {
         const options = {
             version: process.env.BVER || 'stable',
             browserLogging: true,
@@ -31,7 +31,7 @@ describe(`basic interop test ${browserA} => ${browserB}`, function() {
             };
         });
     });
-    after(async () => {
+    afterAll(async () => {
         await drivers.map(driver => driver.close());
     });
 
@@ -52,5 +52,5 @@ describe(`basic interop test ${browserA} => ${browserB}`, function() {
 
         await steps.step(drivers, (d) => steps.waitNVideosExist(d, 1), 'Video elements exist');
         await steps.step(drivers, steps.waitAllVideosHaveEnoughData, 'Video elements have enough data');
-    }).timeout(30000);
-}).timeout(90000);;
+    }, 30000);
+}, 90000);

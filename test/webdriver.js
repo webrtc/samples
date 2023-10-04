@@ -19,7 +19,7 @@ if (os.platform() === 'win32') {
   process.env.PATH += ':node_modules/.bin';
 }
 
-function buildDriver(browser = process.env.BROWSER || 'chrome', options = {bver: process.env.BVER}) {
+function buildDriver(browser = process.env.BROWSER || 'chrome', options = {version: process.env.BVER}) {
   // Chrome options.
   const chromeOptions = new chrome.Options()
       .addArguments('allow-insecure-localhost')
@@ -66,7 +66,7 @@ function buildDriver(browser = process.env.BROWSER || 'chrome', options = {bver:
   }
 
   const safariOptions = new safari.Options();
-  safariOptions.setTechnologyPreview(options.bver === 'unstable');
+  safariOptions.setTechnologyPreview(options.version === 'unstable');
 
   // Firefox options.
   const firefoxOptions = new firefox.Options();
