@@ -10,6 +10,7 @@
 const preferredDisplaySurface = document.getElementById('displaySurface');
 const startStopButton = document.getElementById('startButton');
 const videoElement = document.querySelector('video');
+let displayMediaStarted = false;
 
 if (adapter.browserDetails.browser === 'chrome' &&
     adapter.browserDetails.version >= 107) {
@@ -22,6 +23,7 @@ if (adapter.browserDetails.browser === 'chrome' &&
 }
 
 function handleSuccess(stream) {
+  displayMediaStarted = true;
   startStopButton.textContent = 'Stop';
   preferredDisplaySurface.disabled = true;
   videoElement.srcObject = stream;
@@ -49,7 +51,7 @@ function errorMsg(msg, error) {
 
 
 startStopButton.addEventListener('click', () => {
-  if (startStopButton.textContent === 'Start') {
+  if (!displayMediaStarted) {
     const options = {audio: true, video: true};
     const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex].value;
     if (displaySurface !== 'default') {
@@ -64,6 +66,7 @@ startStopButton.addEventListener('click', () => {
     videoElement.srcObject.getTracks().forEach(track => track.stop());
     videoElement.srcObject = null;
     startStopButton.textContent = 'Start';
+    displayMediaStarted = false;
   }
 });
 
