@@ -29,7 +29,6 @@
     "'**/third_party/*.js'"
   ],
   "devDependencies": {
-    "chromedriver": ">98.0.1",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jest": "^27.4.0",
