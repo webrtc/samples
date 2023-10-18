@@ -18,6 +18,6 @@ jobs:
     - run: npm install
     - run: BROWSER=${{matrix.browserA}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
     - run: BROWSER=${{matrix.browserB}} BVER=${{matrix.bver}} ./node_modules/travis-multirunner/setup.sh
-    - run: sudo rm /usr/bin/chromedriver # remove preinstalled github chromedriver from $PATH
+    - run: sudo rm /usr/bin/chromedriver /usr/bin/geckodriver # remove preinstalled github chromedriver/geckodriver from $PATH
     - run: Xvfb :99 &
     - run: BROWSER_A=${{matrix.browserA}} BROWSER_B=${{matrix.browserB}} BVER=${{matrix.bver}} DISPLAY=:99.0 node_modules/.bin/jest --retries=3 test/interop/
