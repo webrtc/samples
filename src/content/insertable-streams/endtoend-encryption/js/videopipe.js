@@ -22,6 +22,9 @@
 'use strict';
 
 // Preferring a certain codec is an expert option without GUI.
+// Use opus by default.
+// eslint-disable-next-line prefer-const
+let preferredAudioCodecMimeType = 'audio/opus';
 // Use VP8 by default to limit depacketization issues.
 // eslint-disable-next-line prefer-const
 let preferredVideoCodecMimeType = 'video/VP8';
@@ -33,16 +36,27 @@ function VideoPipe(stream, forceSend, forceReceive, handler) {
   this.pc2 = new RTCPeerConnection({
     encodedInsertableStreams: forceReceive,
   });
-
-  stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
   this.pc2.ontrack = handler;
+  stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
+
+  if (preferredAudioCodecMimeType && 'setCodecPreferences' in window.RTCRtpTransceiver.prototype) {
+    const {codecs} = RTCRtpSender.getCapabilities('audio');
+    const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredAudioCodecMimeType);
+    const selectedCodec = codecs[selectedCodecIndex];
+    codecs.splice(selectedCodecIndex, 1);
+    codecs.unshift(selectedCodec);
+    const transceiver = this.pc1.getTransceivers()
+        .find(t => t.sender && t.sender.track === stream.getAudioTracks()[0]);
+    transceiver.setCodecPreferences(codecs);
+  }
   if (preferredVideoCodecMimeType && 'setCodecPreferences' in window.RTCRtpTransceiver.prototype) {
     const {codecs} = RTCRtpSender.getCapabilities('video');
     const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
     const selectedCodec = codecs[selectedCodecIndex];
     codecs.splice(selectedCodecIndex, 1);
     codecs.unshift(selectedCodec);
-    const transceiver = this.pc1.getTransceivers().find(t => t.sender && t.sender.track === stream.getVideoTracks()[0]);
+    const transceiver = this.pc1.getTransceivers()
+        .find(t => t.sender && t.sender.track === stream.getVideoTracks()[0]);
     transceiver.setCodecPreferences(codecs);
   }
 }
