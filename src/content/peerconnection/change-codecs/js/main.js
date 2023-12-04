@@ -171,7 +171,7 @@ function onSetSessionDescriptionError(error) {
 
 function gotRemoteStream(e) {
   // Set codec preferences on the receiving side.
-  if (supportsSetCodecPreferences) {
+  if (e.track.kind === 'video' && supportsSetCodecPreferences) {
     const preferredCodec = codecPreferences.options[codecPreferences.selectedIndex];
     if (preferredCodec.value !== '') {
       const [mimeType, sdpFmtpLine] = preferredCodec.value.split(' ');
