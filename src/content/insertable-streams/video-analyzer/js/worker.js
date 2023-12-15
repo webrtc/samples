@@ -4,7 +4,7 @@ onrtctransform = async ({transformer: {readable, writable, options}}) => {
   await readable.pipeThrough(new TransformStream({
     transform: videoAnalyzer
   })).pipeTo(writable);
-}
+};
 
 let keyFrameCount = 0;
 let interFrameCount = 0;

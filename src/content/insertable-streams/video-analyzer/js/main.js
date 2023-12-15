@@ -59,7 +59,7 @@ remoteVideo.addEventListener('loadedmetadata', function() {
 let localStream;
 let pc1;
 let pc2;
-const worker = new Worker("js/worker.js");
+const worker = new Worker('js/worker.js');
 
 const offerOptions = {
   offerToReceiveAudio: 0,
