@@ -4,6 +4,9 @@ onrtctransform = async ({transformer: {readable, writable, options}}) => {
   })).pipeTo(writable);
 };
 
+// accept shimming
+onmessage = ({data}) => data.rtctransform && onrtctransform({transformer: data.rtctransform});
+
 let keyFrameCount = 0;
 let interFrameCount = 0;
 let keyFrameLastSize = 0;
