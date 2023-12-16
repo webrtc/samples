@@ -1,6 +1,4 @@
 onrtctransform = async ({transformer: {readable, writable, options}}) => {
-  console.log(`Started ${options.side} transform`);
-
   await readable.pipeThrough(new TransformStream({
     transform: videoAnalyzer
   })).pipeTo(writable);
