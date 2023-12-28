@@ -77,6 +77,11 @@ function selectServer(event) {
 }
 
 function addServer() {
+  if (urlInput.value === '' && usernameInput.value === '' && passwordInput.value === '') {
+    // Ignore since this leads to invisible items being added to the list.
+    console.warn('Not adding empty ICE server input');
+    return;
+  }
   // Store the ICE server as a stringified JSON object in option.value.
   const option = document.createElement('option');
   const iceServer = {
