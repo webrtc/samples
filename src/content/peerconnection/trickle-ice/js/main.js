@@ -55,6 +55,23 @@ function readServersFromLocalStorage() {
   const serversSelect = document.querySelector('select#servers');
   const storedServers = window.localStorage.getItem(allServersKey);
 
+  // Try to load servers from the URL hash
+  // You can easily share a config with someone else by copying your localStorage config and appending it to the URL after a #
+  if (window.location.hash) {
+    try {
+      JSON.parse(decodeURI(window.location.hash.substring(1))).forEach((server, key) => {
+        const o = document.createElement('option');
+        o.value = JSON.stringify(server);
+        o.text = server.urls[0];
+        o.ondblclick = selectServer;
+        serversSelect.add(o);
+      });
+      return;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   if (storedServers === null || storedServers === '') {
     setDefaultServer(serversSelect);
   } else {
