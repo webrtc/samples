@@ -47,10 +47,6 @@ const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
 let localStream;
 let pc1;
 let pc2;
-const offerOptions = {
-  offerToReceiveAudio: 1,
-  offerToReceiveVideo: 1
-};
 
 function getName(pc) {
   return (pc === pc1) ? 'pc1' : 'pc2';
@@ -64,7 +60,7 @@ async function start() {
   console.log('Requesting local stream');
   startButton.disabled = true;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
+    const stream = await navigator.mediaDevices.getUserMedia({video: true});
     console.log('Received local stream');
     localVideo.srcObject = stream;
     localStream = stream;
@@ -93,12 +89,8 @@ async function call() {
   console.log('Starting call');
   startTime = window.performance.now();
   const videoTracks = localStream.getVideoTracks();
-  const audioTracks = localStream.getAudioTracks();
   if (videoTracks.length > 0) {
     console.log(`Using video device: ${videoTracks[0].label}`);
-  }
-  if (audioTracks.length > 0) {
-    console.log(`Using audio device: ${audioTracks[0].label}`);
   }
   const configuration = {};
   console.log('RTCPeerConnection configuration:', configuration);
@@ -116,7 +108,7 @@ async function call() {
 
   try {
     console.log('pc1 createOffer start');
-    const offer = await pc1.createOffer(offerOptions);
+    const offer = await pc1.createOffer();
     await onCreateOfferSuccess(offer);
   } catch (e) {
     onCreateSessionDescriptionError(e);
@@ -146,9 +138,6 @@ async function onCreateOfferSuccess(desc) {
   }
 
   console.log('pc2 createAnswer start');
-  // Since the 'remote' side has no media stream we need
-  // to pass in the right constraints in order for it to
-  // accept the incoming offer of audio and video.
   try {
     const answer = await pc2.createAnswer();
     await onCreateAnswerSuccess(answer);
