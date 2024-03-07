@@ -47,6 +47,9 @@ let preferredAudioCodecMimeType = 'audio/opus';
 // eslint-disable-next-line prefer-const
 let preferredVideoCodecMimeType = 'video/VP8';
 
+const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
+  'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
+
 let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
 
 if (!hasEnoughAPIs) {
@@ -150,7 +153,7 @@ function setupReceiverTransform(receiver) {
 }
 
 function maybeSetCodecPreferences(trackEvent) {
-  if (!'setCodecPreferences' in window.RTCRtpTransceiver.prototype) return;
+  if (!supportsSetCodecPreferences) return;
   if (trackEvent.track.kind === 'audio' && preferredAudioCodecMimeType ) {
     const {codecs} = RTCRtpReceiver.getCapabilities('audio');
     const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredAudioCodecMimeType);
