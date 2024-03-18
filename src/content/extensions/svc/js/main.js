@@ -115,9 +115,9 @@ async function start() {
     alert(`getUserMedia() error: ${e.name}`);
   }
   if (supportsSetCodecPreferences) {
-    const {codecs} = RTCRtpSender.getCapabilities('video');
+    const {codecs} = RTCRtpReceiver.getCapabilities('video');
     codecs.forEach(codec => {
-      if (['video/red', 'video/ulpfec', 'video/rtx'].includes(codec.mimeType)) {
+      if (['video/red', 'video/ulpfec', 'video/rtx', 'video/flexfec-03'].includes(codec.mimeType)) {
         return;
       }
       const option = document.createElement('option');
@@ -215,21 +215,6 @@ async function call() {
     }
   });
   console.log('Added local stream to pc1');
-  if (supportsSetCodecPreferences) {
-    const preferredCodec = codecPreferences.options[codecPreferences.selectedIndex];
-    if (preferredCodec.value !== '') {
-      const [mimeType, sdpFmtpLine] = preferredCodec.value.split(' ');
-      const {codecs} = RTCRtpSender.getCapabilities('video');
-      const selectedCodecIndex = codecs.findIndex(c => c.mimeType === mimeType && c.sdpFmtpLine === sdpFmtpLine);
-      const selectedCodec = codecs[selectedCodecIndex];
-      codecs.splice(selectedCodecIndex, 1);
-      codecs.unshift(selectedCodec);
-      console.log(codecs);
-      const transceiver = pc1.getTransceivers().find(t => t.sender && t.sender.track === localStream.getVideoTracks()[0]);
-      transceiver.setCodecPreferences(codecs);
-      console.log('Preferred video codec', selectedCodec);
-    }
-  }
   codecPreferences.disabled = true;
   scalabilityMode.disabled = true;
 
@@ -292,6 +277,19 @@ function gotRemoteStream(e) {
   if (remoteVideo.srcObject !== e.streams[0]) {
     remoteVideo.srcObject = e.streams[0];
     console.log('pc2 received remote stream');
+  }
+  if (supportsSetCodecPreferences) {
+    const preferredCodec = codecPreferences.options[codecPreferences.selectedIndex];
+    if (preferredCodec.value !== '') {
+      const [mimeType, sdpFmtpLine] = preferredCodec.value.split(' ');
+      const {codecs} = RTCRtpReceiver.getCapabilities('video');
+      const selectedCodecIndex = codecs.findIndex(c => c.mimeType === mimeType && c.sdpFmtpLine === sdpFmtpLine);
+      const selectedCodec = codecs[selectedCodecIndex];
+      codecs.splice(selectedCodecIndex, 1);
+      codecs.unshift(selectedCodec);
+      e.transceiver.setCodecPreferences(codecs);
+      console.log('Preferred video codec', selectedCodec);
+    }
   }
 }
 

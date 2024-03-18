@@ -135,6 +135,18 @@ async function call() {
   pc1.oniceconnectionstatechange = e => onIceStateChange(pc1, e);
   pc2.oniceconnectionstatechange = e => onIceStateChange(pc2, e);
   pc2.addEventListener('track', gotRemoteStream, {once: true});
+  if (preferredVideoCodecMimeType) {
+    pc2.ontrack = (e) => {
+      if (e.track.kind === 'video') {
+        const {codecs} = RTCRtpReceiver.getCapabilities('video');
+        const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
+        const selectedCodec = codecs[selectedCodecIndex];
+        codecs.splice(selectedCodecIndex, 1);
+        codecs.unshift(selectedCodec);
+        e.transceiver.setCodecPreferences(codecs);
+      }
+    };
+  }
 
   localStream.getTracks().forEach(track => pc1.addTrack(track, localStream));
   console.log('Added local stream to pc1');
@@ -156,7 +168,7 @@ async function onIceCandidate(pc, event) {
   if (event.candidate) {
     console.log(`${getName(pc)} emitted ICE candidate for index ${event.candidate.sdpMLineIndex}:\n${event.candidate.candidate}`);
   } else {
-    console.log(`$getName(pc)} ICE NULL candidate`);
+    console.log(`${getName(pc)} ICE NULL candidate`);
   }
   await getOtherPc(pc).addIceCandidate(event.candidate);
   console.log(`${getName(pc)} addIceCandidate success`);
@@ -175,15 +187,7 @@ function adjustTransceiverCounts(pc, videoCount) {
   if (currentVideoCount < videoCount) {
     console.log('Adding ' + (videoCount - currentVideoCount) + ' transceivers');
     for (let i = currentVideoCount; i < videoCount; ++i) {
-      const transceiver = pc.addTransceiver('video');
-      if (preferredVideoCodecMimeType) {
-        const {codecs} = RTCRtpSender.getCapabilities('video');
-        const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
-        const selectedCodec = codecs[selectedCodecIndex];
-        codecs.splice(selectedCodecIndex, 1);
-        codecs.unshift(selectedCodec);
-        transceiver.setCodecPreferences(codecs);
-      }
+      pc.addTransceiver('video');
     }
   } else if (currentVideoCount > videoCount) {
     console.log('Stopping ' + (currentVideoCount - videoCount) + ' transceivers');
@@ -199,7 +203,7 @@ async function getAudioImpairment(audioTransceiver) {
   const stats = await audioTransceiver.receiver.getStats();
   let currentImpairment;
   stats.forEach(stat => {
-    if (stat.type == 'track') {
+    if (stat.type == 'inbound-rtp') {
       currentImpairment = stat.concealedSamples;
     }
   });
