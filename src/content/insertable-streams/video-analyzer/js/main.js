@@ -34,11 +34,8 @@ hdButton.addEventListener('click', () => {
 const banner = document.querySelector('#banner');
 
 
-const supportsInsertableStreams =
-      !!RTCRtpSender.prototype.createEncodedStreams;
-
-if (!supportsInsertableStreams) {
-  banner.innerText = 'Your browser does not support Insertable Streams. ' +
+if (!window.RTCRtpScriptTransform) {
+  banner.innerText = 'Your browser does not support WebRTC encoded transforms. ' +
   'This sample will not work.';
   startButton.disabled = true;
 }
@@ -62,6 +59,8 @@ remoteVideo.addEventListener('loadedmetadata', function() {
 let localStream;
 let pc1;
 let pc2;
+const worker = new Worker('js/worker.js');
+
 const offerOptions = {
   offerToReceiveAudio: 0,
   offerToReceiveVideo: 1
@@ -170,11 +169,7 @@ function onSetSessionDescriptionError(error) {
 
 function gotRemoteTrack(e) {
   console.log('pc2 received remote stream');
-  const frameStreams = e.receiver.createEncodedStreams();
-  frameStreams.readable.pipeThrough(new TransformStream({
-    transform: videoAnalyzer
-  }))
-      .pipeTo(frameStreams.writable);
+  e.receiver.transform = new RTCRtpScriptTransform(worker, {});
   remoteVideo.srcObject = e.streams[0];
 }
 
@@ -237,49 +232,21 @@ const interFrameCountDisplay = document.querySelector('#interframe-count');
 const interFrameSizeDisplay = document.querySelector('#interframe-size');
 const videoSizeDisplay = document.querySelector('#video-size');
 const duplicateCountDisplay = document.querySelector('#duplicate-count');
-let keyFrameCount = 0;
-let interFrameCount = 0;
-let keyFrameLastSize = 0;
-let interFrameLastSize = 0;
-let duplicateCount = 0;
-let prevFrameType;
-let prevFrameTimestamp;
-let prevFrameSynchronizationSource;
 
-function videoAnalyzer(encodedFrame, controller) {
-  const view = new DataView(encodedFrame.data);
-  // We assume that the video is VP8.
-  // TODO: Check the codec to see that it is.
-  // The lowest value bit in the first byte is the keyframe indicator.
-  // https://tools.ietf.org/html/rfc6386#section-9.1
-  const keyframeBit = view.getUint8(0) & 0x01;
-  // console.log(view.getUint8(0).toString(16));
-  if (keyframeBit === 0) {
-    keyFrameCount++;
-    keyFrameLastSize = encodedFrame.data.byteLength;
-  } else {
-    interFrameCount++;
-    interFrameLastSize = encodedFrame.data.byteLength;
-  }
-  if (encodedFrame.type === prevFrameType &&
-      encodedFrame.timestamp === prevFrameTimestamp &&
-      encodedFrame.synchronizationSource === prevFrameSynchronizationSource) {
-    duplicateCount++;
-  }
-  prevFrameType = encodedFrame.type;
-  prevFrameTimestamp = encodedFrame.timestamp;
-  prevFrameSynchronizationSource = encodedFrame.synchronizationSource;
-  controller.enqueue(encodedFrame);
-}
-
-// Update the display of the counters once a second.
-setInterval(() => {
+worker.onmessage = ({data: {
+  keyFrameCount,
+  interFrameCount,
+  keyFrameLastSize,
+  interFrameLastSize,
+  duplicateCount
+}}) => {
+  // Update the display of the counters
   keyFrameCountDisplay.innerText = keyFrameCount;
   keyFrameSizeDisplay.innerText = keyFrameLastSize;
   interFrameCountDisplay.innerText = interFrameCount;
   interFrameSizeDisplay.innerText = interFrameLastSize;
   duplicateCountDisplay.innerText = duplicateCount;
-}, 500);
+};
 
 remoteVideo.addEventListener('resize', () => {
   console.log(`Remote video size changed to ${remoteVideo.videoWidth}x${remoteVideo.videoHeight}`);
