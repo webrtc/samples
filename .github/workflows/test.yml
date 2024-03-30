@@ -6,8 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
     - run: npm install
     - run: npm run eslint
     - run: npm run stylelint
@@ -20,10 +20,9 @@ jobs:
         browser: [chrome]
         version: [stable]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
     - run: npm install
-    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} ./node_modules/travis-multirunner/setup.sh
     - run: sudo rm /usr/bin/chromedriver # remove preinstalled github chromedriver from $PATH
     - run: Xvfb :99 &
     - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} DISPLAY=:99.0 npm run jest -- --retries=3
