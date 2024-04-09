@@ -24,5 +24,6 @@ jobs:
     - uses: actions/setup-node@v3
     - run: npm install
     - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} ./node_modules/travis-multirunner/setup.sh
+    - run: sudo rm /usr/bin/chromedriver # remove preinstalled github chromedriver from $PATH
     - run: Xvfb :99 &
-    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} DISPLAY=:99.0 npm run mocha -- --retries=3
+    - run: BROWSER=${{matrix.browser}} BVER=${{matrix.version}} DISPLAY=:99.0 npm run jest -- --retries=3

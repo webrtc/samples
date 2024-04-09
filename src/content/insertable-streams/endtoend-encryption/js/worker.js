@@ -24,6 +24,7 @@ let currentKeyIdentifier = 0;
 // which is 10 bytes for key frames and 3 bytes for delta frames.
 // For opus (where encodedFrame.type is not set) this is the TOC byte from
 //   https://tools.ietf.org/html/rfc6716#section-3.1
+// TODO: make this work for other codecs.
 //
 // It makes the (encrypted) video and audio much more fun to watch and listen to
 // as the decoder does not immediately throw a fatal error.
@@ -39,12 +40,14 @@ function dump(encodedFrame, direction, max = 16) {
   for (let j = 0; j < data.length && j < max; j++) {
     bytes += (data[j] < 16 ? '0' : '') + data[j].toString(16) + ' ';
   }
+  const metadata = encodedFrame.getMetadata();
   console.log(performance.now().toFixed(2), direction, bytes.trim(),
       'len=' + encodedFrame.data.byteLength,
       'type=' + (encodedFrame.type || 'audio'),
       'ts=' + encodedFrame.timestamp,
-      'ssrc=' + encodedFrame.getMetadata().synchronizationSource,
-      'pt=' + (encodedFrame.getMetadata().payloadType || '(unknown)')
+      'ssrc=' + metadata.synchronizationSource,
+      'pt=' + (metadata.payloadType || '(unknown)'),
+      'mimeType=' + (metadata.mimeType || '(unknown)'),
   );
 }
 

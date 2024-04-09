@@ -5,7 +5,7 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 'use strict';
 
 const webdriver = require('selenium-webdriver');
@@ -16,10 +16,10 @@ const path = '/src/content/peerconnection/upgrade/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('peerconnection upgrade from audio-only to audio-video', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 

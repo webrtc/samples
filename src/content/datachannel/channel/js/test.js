@@ -5,22 +5,21 @@
  *  that can be found in the LICENSE file in the root of the source
  *  tree.
  */
-/* eslint-env node, mocha */
+/* eslint-env node */
 
 'use strict';
 const webdriver = require('selenium-webdriver');
 const seleniumHelpers = require('../../../../../test/webdriver');
-const {expect} = require('chai');
 
 let driver;
 const path = '/src/content/datachannel/channel/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('datachannel and broadcast channels', () => {
-  before(() => {
+  beforeAll(() => {
     driver = seleniumHelpers.buildDriver();
   });
-  after(() => {
+  afterAll(() => {
     return driver.quit();
   });
 
@@ -68,7 +67,7 @@ describe('datachannel and broadcast channels', () => {
       return document.getElementById('dataChannelReceive').value.length > 0;
     }));
     const fromFirst= await driver.findElement(webdriver.By.id('dataChannelReceive')).getAttribute('value');
-    expect(fromFirst).to.equal(firstHello);
+    expect(fromFirst).toBe(firstHello);
 
     // Send a message from the second tab to the first tab.
     await driver.switchTo().window(secondTab);
@@ -84,7 +83,7 @@ describe('datachannel and broadcast channels', () => {
       return document.getElementById('dataChannelReceive').value.length > 0;
     }));
     const fromSecond = await driver.findElement(webdriver.By.id('dataChannelReceive')).getAttribute('value');
-    expect(fromSecond).to.equal(secondHello);
+    expect(fromSecond).toBe(secondHello);
   });
 });
 

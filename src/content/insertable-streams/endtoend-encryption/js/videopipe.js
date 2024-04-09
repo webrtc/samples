@@ -10,21 +10,16 @@
 //
 // The usage of this abstraction:
 // var pipe = new VideoPipe(mediastream, handlerFunction);
-// handlerFunction = function(mediastream) {
+// handlerFunction = function(MediaStreamTrackEvent) {
 //   do_something
 // }
 // pipe.close();
 //
 // The VideoPipe will set up 2 PeerConnections, connect them to each
-// other, and call HandlerFunction when the stream is available in the
-// second PeerConnection.
+// other, and call HandlerFunction when the stream's track is available
+// in the second PeerConnection.
 //
 'use strict';
-
-// Preferring a certain codec is an expert option without GUI.
-// Use VP8 by default to limit depacketization issues.
-// eslint-disable-next-line prefer-const
-let preferredVideoCodecMimeType = 'video/VP8';
 
 function VideoPipe(stream, forceSend, forceReceive, handler) {
   this.pc1 = new RTCPeerConnection({
@@ -33,18 +28,8 @@ function VideoPipe(stream, forceSend, forceReceive, handler) {
   this.pc2 = new RTCPeerConnection({
     encodedInsertableStreams: forceReceive,
   });
-
-  stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
   this.pc2.ontrack = handler;
-  if (preferredVideoCodecMimeType) {
-    const {codecs} = RTCRtpSender.getCapabilities('video');
-    const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
-    const selectedCodec = codecs[selectedCodecIndex];
-    codecs.splice(selectedCodecIndex, 1);
-    codecs.unshift(selectedCodec);
-    const transceiver = this.pc1.getTransceivers().find(t => t.sender && t.sender.track === stream.getVideoTracks()[0]);
-    transceiver.setCodecPreferences(codecs);
-  }
+  stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
 }
 
 VideoPipe.prototype.negotiate = async function() {
@@ -52,6 +37,7 @@ VideoPipe.prototype.negotiate = async function() {
   this.pc2.onicecandidate = e => this.pc1.addIceCandidate(e.candidate);
 
   const offer = await this.pc1.createOffer();
+  // Disable video/red to allow for easier inspection in Wireshark.
   await this.pc2.setRemoteDescription({type: 'offer', sdp: offer.sdp.replace('red/90000', 'green/90000')});
   await this.pc1.setLocalDescription(offer);
 

@@ -8,6 +8,7 @@ module.exports = {
     'browser': true,
     'es6': true,
     'node': true,
+    'jest': true
   },
   'rules': {
     'max-len': 'off',
@@ -35,8 +36,12 @@ module.exports = {
     // From Streams specification
     "TransformStream": true,
     // From WebCodec specification
+    "AudioData": true,
+    "AudioEncoder": true,
+    "AudioDecoder": true,
     "VideoFrame": true,
     "VideoEncoder": true,
     "VideoDecoder": true,
   },
+  "plugins": ["jest"]
 };

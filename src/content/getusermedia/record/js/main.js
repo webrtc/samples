@@ -46,12 +46,13 @@ playButton.addEventListener('click', () => {
 
 const downloadButton = document.querySelector('button#download');
 downloadButton.addEventListener('click', () => {
-  const blob = new Blob(recordedBlobs, {type: 'video/webm'});
+  const mimeType = codecPreferences.options[codecPreferences.selectedIndex].value.split(';', 1)[0];
+  const blob = new Blob(recordedBlobs, {type: mimeType});
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = 'test.webm';
+  a.download = mimeType === 'video/mp4' ? 'test.mp4' : 'test.webm';
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {
@@ -69,22 +70,34 @@ function handleDataAvailable(event) {
 
 function getSupportedMimeTypes() {
   const possibleTypes = [
-    'video/webm;codecs=av1,opus',
     'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp8,opus',
     'video/webm;codecs=h264,opus',
+    'video/webm;codecs=av01,opus',
     'video/mp4;codecs=h264,aac',
+    'video/mp4;codecs=avc1,mp4a.40.2',
+    'video/mp4',
   ];
   return possibleTypes.filter(mimeType => {
     return MediaRecorder.isTypeSupported(mimeType);
   });
 }
 
-function startRecording() {
+async function startRecording() {
   recordedBlobs = [];
   const mimeType = codecPreferences.options[codecPreferences.selectedIndex].value;
   const options = {mimeType};
-
+  if (mimeType.split(';', 1)[0] === 'video/mp4') {
+    // Adjust sampling rate to 48khz.
+    const track = window.stream.getAudioTracks()[0];
+    const {sampleRate} = track.getSettings();
+    if (sampleRate != 48000) {
+      track.stop();
+      window.stream.removeTrack(track);
+      const newStream = await navigator.mediaDevices.getUserMedia({audio: {sampleRate: 48000}});
+      window.stream.addTrack(newStream.getTracks()[0]);
+    }
+  }
   try {
     mediaRecorder = new MediaRecorder(window.stream, options);
   } catch (e) {

@@ -77,12 +77,11 @@ function selectServer(event) {
 }
 
 function addServer() {
-  const scheme = urlInput.value.split(':')[0];
-  if (!['stun', 'stuns', 'turn', 'turns'].includes(scheme)) {
-    alert(`URI scheme ${scheme} is not valid`);
+  if (urlInput.value === '' && usernameInput.value === '' && passwordInput.value === '') {
+    // Ignore since this leads to invisible items being added to the list.
+    console.warn('Not adding empty ICE server input');
     return;
   }
-
   // Store the ICE server as a stringified JSON object in option.value.
   const option = document.createElement('option');
   const iceServer = {
