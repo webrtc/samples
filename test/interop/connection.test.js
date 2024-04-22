@@ -21,8 +21,8 @@ describe(`basic interop test ${browserA} => ${browserB}`, function() {
             browserLogging: true,
         }
         drivers = [
-            buildDriver(browserA, options),
-            buildDriver(browserB, options),
+            await buildDriver(browserA, options),
+            await buildDriver(browserB, options),
         ];
         clients = drivers.map(driver => {
             return {

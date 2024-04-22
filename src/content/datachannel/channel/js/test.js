@@ -16,8 +16,8 @@ const path = '/src/content/datachannel/channel/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('datachannel and broadcast channels', () => {
-  beforeAll(() => {
-    driver = seleniumHelpers.buildDriver();
+  beforeAll(async () => {
+    driver = await seleniumHelpers.buildDriver();
   });
   afterAll(() => {
     return driver.quit();
