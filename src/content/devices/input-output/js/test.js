@@ -15,8 +15,8 @@ const path = '/src/content/devices/input-output/index.html';
 const url = `${process.env.BASEURL ? process.env.BASEURL : ('file://' + process.cwd())}${path}`;
 
 describe('input-output', () => {
-  beforeAll(() => {
-    driver = seleniumHelpers.buildDriver();
+  beforeAll(async () => {
+    driver = await seleniumHelpers.buildDriver();
   });
   afterAll(() => {
     return driver.quit();

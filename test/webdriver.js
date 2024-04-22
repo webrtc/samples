@@ -6,11 +6,27 @@
  *  tree.
  */
 const os = require('os');
+const path = require('path');
 
 const webdriver = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const firefox = require('selenium-webdriver/firefox');
 const safari = require('selenium-webdriver/safari');
+
+const puppeteerBrowsers = require('@puppeteer/browsers');
+
+async function download(browser, version, cacheDir, platform) {
+  const buildId = await puppeteerBrowsers
+      .resolveBuildId(browser, platform, version);
+  await puppeteerBrowsers.install({
+    browser,
+    buildId,
+    cacheDir,
+    platform
+  });
+  return buildId;
+}
+const cacheDir = path.join(process.cwd(), 'browsers');
 
 if (os.platform() === 'win32') {
   process.env.PATH += ';' + process.cwd() + '\\node_modules\\chromedriver\\lib\\chromedriver\\';
@@ -19,7 +35,12 @@ if (os.platform() === 'win32') {
   process.env.PATH += ':node_modules/.bin';
 }
 
-function buildDriver(browser = process.env.BROWSER || 'chrome', options = {version: process.env.BVER}) {
+async function buildDriver(browser = process.env.BROWSER || 'chrome', options = {version: process.env.BVER}) {
+  const platform = puppeteerBrowsers.detectBrowserPlatform();
+
+  const buildId = await download(browser, options.version || 'stable',
+      cacheDir, platform);
+
   // Chrome options.
   const chromeOptions = new chrome.Options()
       .addArguments('allow-insecure-localhost')
@@ -28,11 +49,11 @@ function buildDriver(browser = process.env.BROWSER || 'chrome', options = {versi
   if (options.chromeFlags) {
     options.chromeFlags.forEach((flag) => chromeOptions.addArguments(flag));
   }
-
   if (options.chromepath) {
     chromeOptions.setChromeBinaryPath(options.chromepath);
-  } else if (os.platform() === 'linux' && options.version) {
-    chromeOptions.setChromeBinaryPath('browsers/bin/chrome-' + options.version);
+  } else {
+    chromeOptions.setChromeBinaryPath(puppeteerBrowsers
+        .computeExecutablePath({browser, buildId, cacheDir, platform}));
   }
 
   if (!options.devices || options.headless) {
@@ -65,6 +86,7 @@ function buildDriver(browser = process.env.BROWSER || 'chrome', options = {versi
     });
   }
 
+  // Safari options.
   const safariOptions = new safari.Options();
   safariOptions.setTechnologyPreview(options.version === 'unstable');
 
@@ -73,8 +95,9 @@ function buildDriver(browser = process.env.BROWSER || 'chrome', options = {versi
   let firefoxPath = firefox.Channel.RELEASE;
   if (options.firefoxpath) {
     firefoxPath = options.firefoxpath;
-  } else if (os.platform() == 'linux' && options.version) {
-    firefoxPath = 'browsers/bin/firefox-' + options.version;
+  } else {
+    firefoxPath = puppeteerBrowsers
+        .computeExecutablePath({browser, buildId, cacheDir, platform});
   }
   if (options.headless) {
     firefoxOptions.addArguments('-headless');
