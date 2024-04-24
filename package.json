@@ -20,7 +20,7 @@
     "start": "http-server . -c-1",
     "test": "npm run eslint && npm run stylelint",
     "eslint": "eslint 'test/**.js' 'src/content/**/*.js'",
-    "jest": "node test/download-browsers.js && jest --testTimeout 5000 --maxWorkers=1 test/download.test.js src/content/",
+    "jest": "node test/download-browsers.js && jest --testTimeout 5000 --maxWorkers=1 src/content/",
     "stylelint": "stylelint 'src/**/*.css'"
   },
   "eslintIgnore": [
