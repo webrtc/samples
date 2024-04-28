@@ -19,7 +19,7 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "start": "http-server . -c-1",
+    "start": "http-server .. -c-1 --port 9015",
     "test": "npm run eslint && npm run stylelint",
     "eslint": "eslint 'test/**.js' 'src/content/**/*.js'",
     "jest": "jest --testTimeout 5000 --maxWorkers=1 'src/content/**/test.js'",
