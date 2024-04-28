@@ -139,7 +139,8 @@ socketConnectButton.onclick = async () => {
   if (socket) {
     return
   }
-  socket = new WebSocket('ws://192.168.1.2:9014/app_socket');
+  // socket = new WebSocket('ws://192.168.1.2:9014/app_socket');
+  socket = new WebSocket('wss://iflamer.com/app_socket');
  
   // 当WebSocket连接打开时触发
   socket.onopen = (event) => {
