@@ -11,3 +11,6 @@ tests_output
 *.log
 *~
 \#*#
+
+video-chat
+nohup.out
