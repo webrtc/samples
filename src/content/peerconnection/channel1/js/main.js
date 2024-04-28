@@ -88,7 +88,6 @@ testSendSocketMsgButton.onclick = async () => {
 callingButton.onclick = async () => {
   localStream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
   console.log(' --- localStream => ', localStream)
-  localVideo.srcObject = localStream;
 
   if (!pc) {
     await createPC()
@@ -243,6 +242,7 @@ socketConnectButton.onclick = async () => {
       let answer = res_data.payload
       console.log('received webrtc_answer, answer => ', answer)
       
+      localVideo.srcObject = localStream;
       await pc.setRemoteDescription(answer)
 
       return
