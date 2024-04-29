@@ -14,3 +14,4 @@ tests_output
 
 video-chat
 nohup.out
+.travis.yml

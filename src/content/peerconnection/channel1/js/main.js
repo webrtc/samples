@@ -244,6 +244,7 @@ socketConnectButton.onclick = async () => {
       console.log('received webrtc_answer, answer => ', answer)
       
       localVideo.srcObject = localStream;
+      localVideo.muted = true;
       await pc.setRemoteDescription(answer)
 
       return
@@ -271,6 +272,7 @@ async function answerCalling(opt) {
     localStream = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
   }
   localVideo.srcObject = localStream;
+  localVideo.muted = true;
 
   if (!pc) {
     await createPC()
