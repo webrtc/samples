@@ -150,15 +150,12 @@ function onReceiveMessageCallback(event) {
 function onSendChannelStateChange() {
   const readyState = sendChannel.readyState;
   console.log('Send channel state is: ' + readyState);
-  if (readyState === 'open') {
-    dataChannelSend.disabled = false;
+  const closed = readyState !== 'open'
+  dataChannelSend.disabled = closed;
+  sendButton.disabled = closed;
+  closeButton.disabled = closed;
+  if (!closed) {
     dataChannelSend.focus();
-    sendButton.disabled = false;
-    closeButton.disabled = false;
-  } else {
-    dataChannelSend.disabled = true;
-    sendButton.disabled = true;
-    closeButton.disabled = true;
   }
 }
 
