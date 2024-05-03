@@ -35,10 +35,23 @@ if (os.platform() === 'win32') {
   process.env.PATH += ':node_modules/.bin';
 }
 
+function mapVersion(browser, version) {
+  const versionMap = {
+    chrome: {
+      unstable: 'dev',
+    },
+    firefox: {
+      unstable: 'nightly',
+    }
+  };
+  return (versionMap[browser] || {})[version] || version;
+}
+
 async function buildDriver(browser = process.env.BROWSER || 'chrome', options = {version: process.env.BVER}) {
+  const version = mapVersion(options.version);
   const platform = puppeteerBrowsers.detectBrowserPlatform();
 
-  const buildId = await download(browser, options.version || 'stable',
+  const buildId = await download(browser, version || 'stable',
       cacheDir, platform);
 
   // Chrome options.
@@ -88,7 +101,7 @@ async function buildDriver(browser = process.env.BROWSER || 'chrome', options = 
 
   // Safari options.
   const safariOptions = new safari.Options();
-  safariOptions.setTechnologyPreview(options.version === 'unstable');
+  safariOptions.setTechnologyPreview(version === 'unstable');
 
   // Firefox options.
   const firefoxOptions = new firefox.Options();
