@@ -24,10 +24,9 @@ function handleSuccess(stream) {
 
 function handleError(error) {
   if (error.name === 'OverconstrainedError') {
-    const v = constraints.video;
-    errorMsg(`The resolution ${v.width.exact}x${v.height.exact} px is not supported by your device.`);
+    console.error(`The constraints could not be satisfied by the available devices. Constraints: ${JSON.stringify(constraints)}`);
   } else if (error.name === 'NotAllowedError') {
-    errorMsg('Permissions have not been granted to use your camera and ' +
+    console.error('Permissions have not been granted to use your camera and ' +
       'microphone, you need to allow the page access to your devices in ' +
       'order for the demo to work.');
   }
