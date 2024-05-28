@@ -24,9 +24,9 @@ function handleSuccess(stream) {
 
 function handleError(error) {
   if (error.name === 'OverconstrainedError') {
-    console.error(`The constraints could not be satisfied by the available devices. Constraints: ${JSON.stringify(constraints)}`);
+    errorMsg(`OverconstrainedError: The constraints could not be satisfied by the available devices. Constraints: ${JSON.stringify(constraints)}`);
   } else if (error.name === 'NotAllowedError') {
-    console.error('Permissions have not been granted to use your camera and ' +
+    errorMsg('NotAllowedError: Permissions have not been granted to use your camera and ' +
       'microphone, you need to allow the page access to your devices in ' +
       'order for the demo to work.');
   }
