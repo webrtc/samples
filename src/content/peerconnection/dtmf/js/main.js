@@ -173,7 +173,9 @@ function dtmfOnToneChange(tone) {
 }
 
 function sendTones(tones) {
-  if (dtmfSender && dtmfSender.canInsertDTMF) {
+  // firefox doesn't implement canInsertDTMF, so assume it's always available
+  // Ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1623193
+  if (dtmfSender && (typeof (dtmfSender.canInsertDTMF) === 'undefined' || dtmfSender.canInsertDTMF)) {
     const duration = durationInput.value;
     const gap = gapInput.value;
     console.log('Tones, duration, gap: ', tones, duration, gap);
