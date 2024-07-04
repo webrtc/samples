@@ -21,6 +21,9 @@ const video1 = document.querySelector('video#video1');
 const video2 = document.querySelector('video#video2');
 const video3 = document.querySelector('video#video3');
 
+// eslint-disable-next-line prefer-const
+let preferredVideoCodecMimeType = 'video/VP8';
+
 let localStream;
 let pc1Local;
 let pc1Remote;
@@ -30,6 +33,20 @@ const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1
 };
+
+const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
+  'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
+function maybeSetCodecPreferences(trackEvent) {
+  if (!supportsSetCodecPreferences) return;
+  if (trackEvent.track.kind === 'video' && preferredVideoCodecMimeType) {
+    const {codecs} = RTCRtpReceiver.getCapabilities('video');
+    const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
+    const selectedCodec = codecs[selectedCodecIndex];
+    codecs.splice(selectedCodecIndex, 1);
+    codecs.unshift(selectedCodec);
+    trackEvent.transceiver.setCodecPreferences(codecs);
+  }
+}
 
 function gotStream(stream) {
   console.log('Received local stream');
@@ -94,10 +111,10 @@ function onCreateSessionDescriptionError(error) {
   console.log(`Failed to create session description: ${error.toString()}`);
 }
 
-function gotDescription1Local(desc) {
+async function gotDescription1Local(desc) {
   pc1Local.setLocalDescription(desc);
   console.log(`Offer from pc1Local\n${desc.sdp}`);
-  pc1Remote.setRemoteDescription(desc);
+  await pc1Remote.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
@@ -110,10 +127,10 @@ function gotDescription1Remote(desc) {
   pc1Local.setRemoteDescription(desc);
 }
 
-function gotDescription2Local(desc) {
+async function gotDescription2Local(desc) {
   pc2Local.setLocalDescription(desc);
   console.log(`Offer from pc2Local\n${desc.sdp}`);
-  pc2Remote.setRemoteDescription(desc);
+  await pc2Remote.setRemoteDescription(desc);
   // Since the 'remote' side has no media stream we need
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
@@ -139,6 +156,7 @@ function hangup() {
 }
 
 function gotRemoteStream1(e) {
+  maybeSetCodecPreferences(e);
   if (video2.srcObject !== e.streams[0]) {
     video2.srcObject = e.streams[0];
     console.log('pc1: received remote stream');
@@ -146,6 +164,7 @@ function gotRemoteStream1(e) {
 }
 
 function gotRemoteStream2(e) {
+  maybeSetCodecPreferences(e);
   if (video3.srcObject !== e.streams[0]) {
     video3.srcObject = e.streams[0];
     console.log('pc2: received remote stream');
