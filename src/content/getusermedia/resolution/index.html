@@ -81,11 +81,13 @@
     <p>Click a button to call <code>getUserMedia()</code> with appropriate resolution.</p>
 
     <div id="buttons">
-        <button id="qvga">QVGA</button>
-        <button id="vga">VGA</button>
-        <button id="hd">HD</button>
-        <button id="full-hd">Full HD</button>
-        <button id="televisionFourK">Television 4K (3840x2160)</button>
+        <button id="p180">180p (180x320)</button>
+        <button id="qvga">QVGA (240x320)</button>
+        <button id="p360">360p (360x640)</button>
+        <button id="vga">VGA (480x640)</button>
+        <button id="hd">HD/720p (720x1280)</button>
+        <button id="full-hd">Full HD/1080p (1080x1920)</button>
+        <button id="televisionFourK">Television 4K/2160p (3840x2160)</button>
         <button id="cinemaFourK">Cinema 4K (4096x2160)</button>
         <button id="eightK">8K</button>
     </div>
@@ -100,6 +102,7 @@
         </div>
         <input id="sizelock" type="checkbox">Lock video size<br>
         <input id="aspectlock" type="checkbox">Lock aspect ratio<br>
+        <input id="pausevideo" type="checkbox">Pause video<br>
     </div>
     <p id="errormessage"></p>
 

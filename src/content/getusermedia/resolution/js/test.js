@@ -29,6 +29,8 @@ describe('getUserMedia resolutions', () => {
   });
 
   const buttonToResolution = {
+    'p180': 320,
+    'p360': 640,
     'qvga': 320,
     'vga': 640,
     'hd': 1280,

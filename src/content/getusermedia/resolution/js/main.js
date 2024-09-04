@@ -12,8 +12,10 @@ const dimensions = document.querySelector('#dimensions');
 const video = document.querySelector('video');
 let stream;
 
-const vgaButton = document.querySelector('#vga');
 const qvgaButton = document.querySelector('#qvga');
+const p180Button = document.querySelector('#p180');
+const vgaButton = document.querySelector('#vga');
+const p360Button = document.querySelector('#p360');
 const hdButton = document.querySelector('#hd');
 const fullHdButton = document.querySelector('#full-hd');
 const cinemaFourKButton = document.querySelector('#cinemaFourK');
@@ -27,16 +29,25 @@ const widthInput = document.querySelector('div#width input');
 const widthOutput = document.querySelector('div#width span');
 const aspectLock = document.querySelector('#aspectlock');
 const sizeLock = document.querySelector('#sizelock');
+const pauseVideo = document.querySelector('#pausevideo');
 
 let currentWidth = 0;
 let currentHeight = 0;
 
-vgaButton.onclick = () => {
-  getMedia(vgaConstraints);
+p180Button.onclick = () => {
+  getMedia(p180Constraints);
 };
 
 qvgaButton.onclick = () => {
   getMedia(qvgaConstraints);
+};
+
+p360Button.onclick = () => {
+  getMedia(p360Constraints);
+};
+
+vgaButton.onclick = () => {
+  getMedia(vgaConstraints);
 };
 
 hdButton.onclick = () => {
@@ -59,8 +70,24 @@ eightKButton.onclick = () => {
   getMedia(eightKConstraints);
 };
 
+pauseVideo.onchange = () => {
+  if (pauseVideo.checked) {
+    video.pause();
+  } else {
+    video.play();
+  }
+}
+
+const p180Constraints = {
+  video: {width: {exact: 320}, height: {exact: 180}}
+};
+
 const qvgaConstraints = {
   video: {width: {exact: 320}, height: {exact: 240}}
+};
+
+const p360Constraints = {
+  video: {width: {exact: 640}, height: {exact: 360}}
 };
 
 const vgaConstraints = {
