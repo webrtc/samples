@@ -31,6 +31,8 @@ const aspectLock = document.querySelector('#aspectlock');
 const sizeLock = document.querySelector('#sizelock');
 const pauseVideo = document.querySelector('#pausevideo');
 
+const videoSelect = document.querySelector('select#videoSource');
+
 let currentWidth = 0;
 let currentHeight = 0;
 
@@ -113,6 +115,28 @@ const cinemaFourKConstraints = {
 const eightKConstraints = {
   video: {width: {exact: 7680}, height: {exact: 4320}}
 };
+
+function gotDevices(deviceInfos) {
+  // Handles being called several times to update labels. Preserve values.
+  while (videoSelect.firstChild) {
+    videoSelect.removeChild(select.firstChild);
+  }
+  for (let i = 0; i !== deviceInfos.length; ++i) {
+    const deviceInfo = deviceInfos[i];
+    const option = document.createElement('option');
+    option.value = deviceInfo.deviceId;
+    if (deviceInfo.kind === 'videoinput') {
+      option.text = deviceInfo.label || `camera ${videoSelect.length + 1}`;
+      videoSelect.appendChild(option);
+    }
+  }
+}
+
+function handleError(error) {
+  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+}
+
+navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 
 function gotStream(mediaStream) {
   stream = window.stream = mediaStream; // stream available to console
@@ -212,6 +236,8 @@ function getMedia(constraints) {
 
   clearErrorMessage();
   videoblock.style.display = 'none';
+  constraints.video.deviceId = {exact: videoSelect.value};
+  console.log('getUserMedia constraints: ' + JSON.stringify(constraints));
   navigator.mediaDevices.getUserMedia(constraints)
       .then(gotStream)
       .catch(e => {
