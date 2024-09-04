@@ -76,7 +76,7 @@ pauseVideo.onchange = () => {
   } else {
     video.play();
   }
-}
+};
 
 const p180Constraints = {
   video: {width: {exact: 320}, height: {exact: 180}}
