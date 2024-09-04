@@ -119,7 +119,7 @@ const eightKConstraints = {
 function gotDevices(deviceInfos) {
   // Handles being called several times to update labels. Preserve values.
   while (videoSelect.firstChild) {
-    videoSelect.removeChild(select.firstChild);
+    videoSelect.removeChild(videoSelect.firstChild);
   }
   for (let i = 0; i !== deviceInfos.length; ++i) {
     const deviceInfo = deviceInfos[i];
