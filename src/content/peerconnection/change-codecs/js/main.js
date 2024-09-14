@@ -69,9 +69,9 @@ async function start() {
     alert(`getUserMedia() error: ${e.name}`);
   }
   if (supportsSetCodecPreferences) {
-    const {codecs} = RTCRtpSender.getCapabilities('video');
+    const {codecs} = RTCRtpReceiver.getCapabilities('video');
     codecs.forEach(codec => {
-      if (['video/red', 'video/ulpfec', 'video/rtx'].includes(codec.mimeType)) {
+      if (['video/red', 'video/ulpfec', 'video/rtx', 'video/flexfec-03'].includes(codec.mimeType)) {
         return;
       }
       const option = document.createElement('option');
