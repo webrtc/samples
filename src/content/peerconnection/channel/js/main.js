@@ -80,7 +80,7 @@ async function hangup() {
   hangupButton.disabled = true;
 };
 
-function createPeerConnection() {
+async function createPeerConnection() {
   pc = new RTCPeerConnection();
   pc.onicecandidate = e => {
     const message = {
