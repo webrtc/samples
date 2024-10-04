@@ -31,25 +31,23 @@ const constraints = window.constraints = {
 
 let meterRefresh = null;
 
-function handleSuccess(stream) {
+async function handleSuccess(stream) {
   // Put variables in global scope to make them available to the
   // browser console.
   window.stream = stream;
-  const soundMeter = window.soundMeter = new SoundMeter(window.audioContext);
-  soundMeter.connectToSource(stream, function(e) {
-    if (e) {
-      alert(e);
-      return;
-    }
-    meterRefresh = setInterval(() => {
-      instantMeter.value = instantValueDisplay.innerText =
-        soundMeter.instant.toFixed(2);
-      slowMeter.value = slowValueDisplay.innerText =
-        soundMeter.slow.toFixed(2);
-      clipMeter.value = clipValueDisplay.innerText =
-        soundMeter.clip;
-    }, 200);
-  });
+  await audioContext.audioWorklet.addModule("js/soundmeter.js");
+  const soundmeterNode = new AudioWorkletNode(audioContext,"soundmeter");
+  const source = audioContext.createMediaStreamSource(stream);
+  source.connect(soundmeterNode).connect(audioContext.destination);
+
+  soundmeterNode.port.onmessage = e => {
+    instantMeter.value = instantValueDisplay.innerText =
+      e.data.instant.toFixed(2);
+    slowMeter.value = slowValueDisplay.innerText =
+      e.data.slow.toFixed(2);
+    clipMeter.value = clipValueDisplay.innerText =
+      e.data.clip;
+  }
 }
 
 function handleError(error) {
@@ -81,7 +79,6 @@ function stop() {
   stopButton.disabled = true;
 
   window.stream.getTracks().forEach(track => track.stop());
-  window.soundMeter.stop();
   window.audioContext.close();
   clearInterval(meterRefresh);
   instantMeter.value = instantValueDisplay.innerText = '';
