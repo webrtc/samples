@@ -44,7 +44,7 @@ function dump(encodedFrame, direction, max = 16) {
   console.log(performance.now().toFixed(2), direction, bytes.trim(),
       'len=' + encodedFrame.data.byteLength,
       'type=' + (encodedFrame.type || 'audio'),
-      'ts=' + encodedFrame.timestamp,
+      'ts=' + (metadata.rtpTimestamp || encodedFrame.timestamp),
       'ssrc=' + metadata.synchronizationSource,
       'pt=' + (metadata.payloadType || '(unknown)'),
       'mimeType=' + (metadata.mimeType || '(unknown)'),
