@@ -52,7 +52,7 @@ downloadButton.addEventListener('click', () => {
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = mimeType === 'video/mp4' ? 'test.mp4' : 'test.webm';
+  a.download = `test.${mimeTypeToFileExtension(mimeType)}`;
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {
@@ -60,6 +60,19 @@ downloadButton.addEventListener('click', () => {
     window.URL.revokeObjectURL(url);
   }, 100);
 });
+
+function mimeTypeToFileExtension(mimeType) {
+  switch (mimeType) {
+    case 'video/mp4':
+      return 'mp4';
+    case 'video/webm':
+      return 'webm';
+    case 'video/x-matroska':
+      return 'mkv';
+    default:
+      throw new Error(`unsupported mimetype: ${mimeType}`);
+  }
+}
 
 function handleDataAvailable(event) {
   console.log('handleDataAvailable', event);
@@ -74,8 +87,12 @@ function getSupportedMimeTypes() {
     'video/webm;codecs=vp8,opus',
     'video/webm;codecs=h264,opus',
     'video/webm;codecs=av01,opus',
+    'video/x-matroska;codecs=hvc1,opus',
     'video/mp4;codecs=h264,aac',
+    'video/mp4;codecs=vp9,mp4a.40.2',
     'video/mp4;codecs=avc1,mp4a.40.2',
+    'video/mp4;codecs=hvc1,mp4a.40.2',
+    'video/mp4;codecs=av01,mp4a.40.2',
     'video/mp4',
   ];
   return possibleTypes.filter(mimeType => {
