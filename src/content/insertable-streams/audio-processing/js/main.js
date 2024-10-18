@@ -10,11 +10,11 @@
 
 /* global MediaStreamTrackProcessor, MediaStreamTrackGenerator, AudioData */
 if (typeof MediaStreamTrackProcessor === 'undefined' ||
-    typeof MediaStreamTrackGenerator === 'undefined') {
+  typeof MediaStreamTrackGenerator === 'undefined') {
   alert(
-      'Your browser does not support the experimental MediaStreamTrack API ' +
-      'for Insertable Streams of Media. See the note at the bottom of the ' +
-      'page.');
+    'Your browser does not support the experimental MediaStreamTrack API ' +
+    'for Insertable Streams of Media. See the note at the bottom of the ' +
+    'page.');
 }
 
 try {
@@ -22,14 +22,14 @@ try {
   console.log('Audio insertable streams supported');
 } catch (e) {
   alert(
-      'Your browser does not support insertable audio streams. See the note ' +
-        'at the bottom of the page.');
+    'Your browser does not support insertable audio streams. See the note ' +
+    'at the bottom of the page.');
 }
 
 if (typeof AudioData === 'undefined') {
   alert(
-      'Your browser does not support WebCodecs. See the note at the bottom ' +
-      'of the page.');
+    'Your browser does not support WebCodecs. See the note at the bottom ' +
+    'of the page.');
 }
 
 // Put variables in global scope to make them available to the browser console.
@@ -53,24 +53,40 @@ let processedStream;
 // Worker for processing
 let worker;
 
+let audioDevices = [];
+let deviceSelect;
 // Initialize on page load.
 async function init() {
   audio = document.getElementById('audioOutput');
   startButton = document.getElementById('startButton');
   stopButton = document.getElementById('stopButton');
+  deviceSelect = document.getElementById('deviceSelect');
 
   startButton.onclick = start;
   stopButton.onclick = stop;
+
+  // get all audio devices
+  await getAudioDevices();
 }
 
-const constraints = window.constraints = {
-  audio: true,
-  video: false
-};
+async function getAudioDevices() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  audioDevices = devices.filter(device => device.kind === 'audioinput');
+
+  // fill the device selection dropdown list
+  deviceSelect.innerHTML = audioDevices.map(device =>
+    `<option value="${device.deviceId}">${device.label || 'Microphone ' + (audioDevices.indexOf(device) + 1)}</option>`
+  ).join('');
+}
+
 
 async function start() {
   startButton.disabled = true;
   try {
+    const selectedDeviceId = deviceSelect.value;
+    const constraints = {
+      audio: { deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined }
+    };
     stream = await navigator.mediaDevices.getUserMedia(constraints);
     const audioTracks = stream.getAudioTracks();
     console.log('Using audio device: ' + audioTracks[0].label);
@@ -83,7 +99,7 @@ async function start() {
     const source = processor.readable;
     const sink = generator.writable;
     worker = new Worker('js/worker.js');
-    worker.postMessage({source: source, sink: sink}, [source, sink]);
+    worker.postMessage({ source: source, sink: sink }, [source, sink]);
 
     processedStream = new MediaStream();
     processedStream.addTrack(generator);
@@ -92,8 +108,8 @@ async function start() {
     await audio.play();
   } catch (error) {
     const errorMessage =
-          'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' +
-          error.name;
+      'navigator.MediaDevices.getUserMedia error: ' + error.message + ' ' +
+      error.name;
     document.getElementById('errorMsg').innerText = errorMessage;
     console.log(errorMessage);
   }
@@ -106,7 +122,7 @@ async function stop() {
   stream.getTracks().forEach(track => {
     track.stop();
   });
-  worker.postMessage({command: 'abort'});
+  worker.postMessage({ command: 'abort' });
   startButton.disabled = false;
 }
 
