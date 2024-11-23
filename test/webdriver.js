@@ -38,7 +38,7 @@ if (os.platform() === 'win32') {
 function mapVersion(browser, version) {
   const versionMap = {
     chrome: {
-      unstable: 'dev',
+      unstable: 'canary',
     },
     firefox: {
       unstable: 'nightly',
