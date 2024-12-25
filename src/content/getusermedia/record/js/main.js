@@ -93,7 +93,7 @@ function getSupportedMimeTypes() {
     'video/mp4;codecs=avc3.64003E,mp4a.40.2',
     'video/mp4;codecs=hvc1.1.6.L186.B0,mp4a.40.2',
     'video/mp4;codecs=hev1.1.6.L186.B0,mp4a.40.2',
-    'video/mp4;codecs=av01.1.19M.08,mp4a.40.2',
+    'video/mp4;codecs=av01.0.19M.08,mp4a.40.2',
     'video/mp4',
   ];
   return possibleTypes.filter(mimeType => {
@@ -108,12 +108,14 @@ async function startRecording() {
   if (mimeType.split(';', 1)[0] === 'video/mp4') {
     // Adjust sampling rate to 48khz.
     const track = window.stream.getAudioTracks()[0];
-    const {sampleRate} = track.getSettings();
-    if (sampleRate != 48000) {
-      track.stop();
-      window.stream.removeTrack(track);
-      const newStream = await navigator.mediaDevices.getUserMedia({audio: {sampleRate: 48000}});
-      window.stream.addTrack(newStream.getTracks()[0]);
+    if (track) {
+      const {sampleRate} = track.getSettings();
+      if (sampleRate != 48000) {
+        track.stop();
+        window.stream.removeTrack(track);
+        const newStream = await navigator.mediaDevices.getUserMedia({audio: {sampleRate: 48000}});
+        window.stream.addTrack(newStream.getTracks()[0]);
+      }
     }
   }
   try {
