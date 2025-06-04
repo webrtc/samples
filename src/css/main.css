@@ -33,7 +33,7 @@ audio {
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 300;
   margin: 0;
   padding: 1em;
@@ -45,7 +45,7 @@ button {
   border: none;
   border-radius: 2px;
   color: white;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-size: 0.8em;
   margin: 0 0 1em 0;
   padding: 0.5em 0.7em 0.6em 0.7em;
@@ -74,7 +74,7 @@ canvas {
 }
 
 code {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 400;
 }
 
@@ -90,7 +90,7 @@ div#links {
 
 h1 {
   border-bottom: 1px solid #ccc;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   font-weight: 500;
   margin: 0 0 0.8em 0;
   padding: 0 0 0.2em 0;
@@ -124,7 +124,7 @@ img {
   max-width: 100%;
 }
 
-input[type=radio] {
+input[type="radio"] {
   position: relative;
   top: -1px;
 }
@@ -174,7 +174,7 @@ h1 span {
 }
 
 a {
-  color: #1D6EEE;
+  color: #1d6eee;
   font-weight: 300;
   text-decoration: none;
 }
@@ -198,7 +198,7 @@ a#viewSource {
 }
 
 div#errorMsg p {
-  color: #F00;
+  color: #f00;
 }
 
 div#links a {
@@ -221,7 +221,7 @@ strong {
 
 textarea {
   resize: none;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 video {
@@ -270,4 +270,164 @@ fieldset > select {
   h1 {
     font-size: 20px;
   }
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode iframe {
+  background: #fff !important;
+  color-scheme: light !important;
+  filter: none !important;
+  border: none;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode p,
+body.dark-mode li,
+body.dark-mode a {
+  color: #e0e0e0;
+}
+
+body.dark-mode h1 {
+  border-bottom: 1px solid #444;
+}
+
+body.dark-mode section,
+body.dark-mode div#container,
+body.dark-mode textarea,
+body.dark-mode select {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+body.dark-mode input {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+body.dark-mode a {
+  color: #80b3ff;
+}
+
+body.dark-mode a:hover {
+  color: #aad4ff;
+}
+
+body.dark-mode a#viewSource {
+  border-top: 1px solid #444;
+}
+
+body.dark-mode button {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+body.dark-mode button:hover,
+body.dark-mode button:active {
+  background-color: #444;
+}
+
+body.dark-mode button[disabled] {
+  color: #c0c0c0;
+}
+
+body.dark-mode canvas,
+body.dark-mode video {
+  background-color: #2e2e2e;
+}
+
+body.dark-mode .highlight {
+  background-color: #1e1e1e;
+}
+
+body.dark-mode .warning {
+  color: #ff6b6b;
+}
+
+body.dark-mode button {
+  background-color: #bb4430;
+  color: #fff;
+}
+
+body.dark-mode button:hover,
+body.dark-mode button:active {
+  background-color: #a43c29;
+}
+
+body.dark-mode button[disabled]:hover {
+  background-color: #bb4430;
+}
+
+body.dark-mode canvas {
+  background-color: #2b2b2b;
+}
+
+body.dark-mode code {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+body.dark-mode p#data {
+  border-top-color: #555;
+  color: #e0e0e0;
+}
+
+body.dark-mode p.borderBelow {
+  border-bottom-color: #666;
+}
+
+body.dark-mode div#errorMsg p {
+  color: #ff5252;
+}
+
+#darkModeToggle {
+  position: fixed;
+  top: 1em;
+  right: 1em;
+  z-index: 1000;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toggle-track {
+  width: 80px;
+  height: 40px;
+  background-color: #333;
+  border-radius: 9999px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+.toggle-track .icon {
+  color: #f87171;
+  z-index: 1;
+}
+
+.toggle-track .thumb {
+  width: 36px;
+  height: 35px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s ease;
+  z-index: 0;
+}
+
+body.dark-mode .toggle-track .thumb {
+  transform: translateX(40px);
 }

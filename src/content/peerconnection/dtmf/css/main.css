@@ -54,7 +54,7 @@ div#dtmf {
 }
 
 div#dtmf div {
-  font-family: 'Inconsolata', 'Courier New', monospace;
+  font-family: "Inconsolata", "Courier New", monospace;
 }
 
 div#sentTones {
@@ -66,7 +66,7 @@ div#dtmfStatus {
   margin: 0 0 10px 0;
 }
 
-div#parameters input[type = range] {
+div#parameters input[type="range"] {
   font-size: 1em;
   width: 85px;
 }
@@ -85,4 +85,20 @@ div#parameters label {
   width: 68px;
 }
 
+body.dark-mode div#dialPad button {
+  background-color: #ddd;
+  border: 1px solid #ccc;
+  color: black;
+}
 
+body.dark-mode div#dialPad button:hover {
+  background-color: #aaa;
+}
+
+body.dark-mode div#dialPad button:active {
+  background-color: #888;
+}
+
+body.dark-mode div#dtmf {
+  background-color: #2e2e2e;
+}
