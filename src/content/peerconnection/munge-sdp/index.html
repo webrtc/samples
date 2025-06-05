@@ -57,6 +57,10 @@
         <button id="setAnswer" disabled>Set answer</button>
         <button id="hangup" disabled>Hang up</button>
     </div>
+    <p><b>Note:</b> SDP "munging", i.e. modifying the SDP between <i>createOffer</i>/<i>createAnswer</i> and <i>setLocalDescription</i>
+      is a nonstandard feature which may not work as expected. While some browsers support some modifications,
+      <a href="https://w3c.github.io/webrtc-pc/#dom-peerconnection-setlocaldescription">the W3C standard</a> forbids it.</p>
+    <p id="munge-error"></p>
 
     <div id="preview">
         <div id="local">
