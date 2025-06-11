@@ -7,89 +7,112 @@
  *  tree.
 -->
 <html>
-<head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="description" content="WebRTC code samples" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1"
+    />
+    <meta itemprop="description" content="Client-side WebRTC code samples" />
+    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png" />
+    <meta itemprop="name" content="WebRTC code samples" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta id="theme-color" name="theme-color" content="#ffffff" />
 
-    <meta charset="utf-8">
-    <meta name="description" content="WebRTC code samples">
-    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-    <meta itemprop="description" content="Client-side WebRTC code samples">
-    <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
-    <meta itemprop="name" content="WebRTC code samples">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta id="theme-color" name="theme-color" content="#ffffff">
-
-    <base target="_blank">
+    <base target="_blank" />
 
     <title>Control Exposure</title>
 
-    <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="../../../css/main.css">
+    <link
+      rel="icon"
+      sizes="192x192"
+      href="../../../images/webrtc-icon-192x192.png"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="../../../css/main.css" />
 
     <style>
-        div.label {
-            display: inline-block;
-            font-weight: 400;
-            margin: 0 0.5em 0 0;
-            width: 10em;
-        }
+      div.label {
+        display: inline-block;
+        font-weight: 400;
+        margin: 0 0.5em 0 0;
+        width: 10em;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div id="container">
+      <h1>
+        <a href="//webrtc.github.io/samples/" title="WebRTC samples homepage"
+          >WebRTC samples</a
+        >
+        <span>Control Exposure</span>
+      </h1>
 
-<div id="container">
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
-        <span>Control Exposure</span></h1>
+      <video id="gum-local" autoplay playsinline></video>
+      <button id="showVideo">Open camera</button>
 
-    <video id="gum-local" autoplay playsinline></video>
-    <button id="showVideo">Open camera</button>
-
-    <div>
+      <div>
         <div class="label">Exposure Mode:</div>
-        <select name="exposureMode" id="exposureMode" disabled>
-        </select>
-    </div>
+        <select name="exposureMode" id="exposureMode" disabled></select>
+      </div>
 
-    <div>
+      <div>
         <div class="label">Exposure Time:</div>
-        <input name="exposureTime" type="range" disabled>
-    </div>
+        <input name="exposureTime" type="range" disabled />
+      </div>
 
-    <div>
+      <div>
         <div class="label">Exposure Compensation:</div>
-        <input name="exposureCompensation" type="range" disabled>
-    </div>
+        <input name="exposureCompensation" type="range" disabled />
+      </div>
 
-	<div>
+      <div>
         <div class="label">Brightness:</div>
-        <input name="brightness" type="range" disabled>
-    </div>
+        <input name="brightness" type="range" disabled />
+      </div>
 
-	<div>
+      <div>
         <div class="label">White Balance Mode:</div>
-        <select name="whiteBalanceMode" id="whiteBalanceMode" disabled>
-        </select>
+        <select name="whiteBalanceMode" id="whiteBalanceMode" disabled></select>
+      </div>
+
+      <button id="refreshControls" onClick="loadProperties(true)" disabled>
+        Refresh Controls
+      </button>
+
+      <div id="errorMsg"></div>
+
+      <p>
+        Display the video stream from <code>getUserMedia()</code> in a video
+        element and control exposureMode, exposureTime and exposureCompensation
+        if camera supports it.
+      </p>
+
+      <p>
+        The <code>MediaStreamTrack</code> object <code>track</code> is in global
+        scope, so you can inspect it from the console.
+      </p>
+
+      <a
+        href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/exposure"
+        title="View source for this page on GitHub"
+        id="viewSource"
+        >View source on GitHub</a
+      >
     </div>
 
-	<button id="refreshControls" onClick="loadProperties(true)" disabled>Refresh Controls</button>
+    <script src="../../../js/togglemode.js"></script>
 
-    <div id="errorMsg"></div>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <script src="js/main.js"></script>
 
-    <p>Display the video stream from <code>getUserMedia()</code> in a video
-    element and control exposureMode, exposureTime and exposureCompensation if camera supports it.</p>
-
-    <p>The <code>MediaStreamTrack</code> object <code>track</code> is in
-        global scope, so you can inspect it from the console.</p>
-
-    <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/exposure"
-       title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
-</div>
-
-<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-<script src="js/main.js"></script>
-
-<script src="../../../js/lib/ga.js"></script>
-
-</body>
+    <script src="../../../js/lib/ga.js"></script>
+  </body>
 </html>
