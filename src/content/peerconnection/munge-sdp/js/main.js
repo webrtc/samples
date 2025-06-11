@@ -138,9 +138,8 @@ function createPeerConnection() {
   if (audioTracks.length > 0) {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
-  const servers = null;
 
-  localPeerConnection = new RTCPeerConnection(servers);
+  localPeerConnection = new RTCPeerConnection();
   console.log('Created local peer connection object localPeerConnection');
   localPeerConnection.onicecandidate = e => onIceCandidate(localPeerConnection, e);
   sendChannel = localPeerConnection.createDataChannel('sendDataChannel', dataChannelOptions);
@@ -148,7 +147,7 @@ function createPeerConnection() {
   sendChannel.onclose = onSendChannelStateChange;
   sendChannel.onerror = onSendChannelStateChange;
 
-  remotePeerConnection = new RTCPeerConnection(servers);
+  remotePeerConnection = new RTCPeerConnection();
   console.log('Created remote peer connection object remotePeerConnection');
   remotePeerConnection.onicecandidate = e => onIceCandidate(remotePeerConnection, e);
   remotePeerConnection.ontrack = gotRemoteStream;
@@ -165,6 +164,7 @@ function onSetSessionDescriptionSuccess() {
 
 function onSetSessionDescriptionError(error) {
   console.log(`Failed to set session description: ${error.toString()}`);
+  document.getElementById('munge-error').innerText = error.toString();
 }
 
 async function createOffer() {
