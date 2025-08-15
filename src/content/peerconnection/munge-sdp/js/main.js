@@ -8,13 +8,6 @@
 
 'use strict';
 
-try {
-  navigator.mediaDevices.enumerateDevices()
-      .then(gotSources);
-} catch (e) {
-  console.log(e);
-}
-
 const getMediaButton = document.querySelector('button#getMedia');
 const createPeerConnectionButton = document.querySelector('button#createPeerConnection');
 const createOfferButton = document.querySelector('button#createOffer');
@@ -35,15 +28,8 @@ hangupButton.onclick = hangup;
 const offerSdpTextarea = document.querySelector('div#local textarea');
 const answerSdpTextarea = document.querySelector('div#remote textarea');
 
-const audioSelect = document.querySelector('select#audioSrc');
-const videoSelect = document.querySelector('select#videoSrc');
-
-audioSelect.onchange = videoSelect.onchange = getMedia;
-
 const localVideo = document.querySelector('div#local video');
 const remoteVideo = document.querySelector('div#remote video');
-
-const selectSourceDiv = document.querySelector('div#selectSource');
 
 let localPeerConnection;
 let remotePeerConnection;
@@ -58,32 +44,6 @@ const offerOptions = {
   offerToReceiveVideo: 1
 };
 
-function gotSources(sourceInfos) {
-  selectSourceDiv.classList.remove('hidden');
-  let audioCount = 0;
-  let videoCount = 0;
-  for (let i = 0; i < sourceInfos.length; i++) {
-    const option = document.createElement('option');
-    option.value = sourceInfos[i].deviceId;
-    option.text = sourceInfos[i].label;
-    if (sourceInfos[i].kind === 'audioinput') {
-      audioCount++;
-      if (option.text === '') {
-        option.text = `Audio ${audioCount}`;
-      }
-      audioSelect.appendChild(option);
-    } else if (sourceInfos[i].kind === 'videoinput') {
-      videoCount++;
-      if (option.text === '') {
-        option.text = `Video ${videoCount}`;
-      }
-      videoSelect.appendChild(option);
-    } else {
-      console.log('unknown', JSON.stringify(sourceInfos[i]));
-    }
-  }
-}
-
 async function getMedia() {
   getMediaButton.disabled = true;
 
@@ -91,26 +51,9 @@ async function getMedia() {
     localVideo.srcObject = null;
     localStream.getTracks().forEach(track => track.stop());
   }
-  const audioSource = audioSelect.value;
-  console.log(`Selected audio source: ${audioSource}`);
-  const videoSource = videoSelect.value;
-  console.log(`Selected video source: ${videoSource}`);
-
-  const constraints = {
-    audio: {
-      optional: [{
-        sourceId: audioSource
-      }]
-    },
-    video: {
-      optional: [{
-        sourceId: videoSource
-      }]
-    }
-  };
-  console.log('Requested local stream');
+  console.log('Requesting local stream');
   try {
-    const userMedia = await navigator.mediaDevices.getUserMedia(constraints);
+    const userMedia = await navigator.mediaDevices.getUserMedia({audio: true, video: true});
     gotStream(userMedia);
   } catch (e) {
     console.log('navigator.getUserMedia error: ', e);
