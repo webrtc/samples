@@ -236,7 +236,7 @@ function getMedia(constraints) {
 
   clearErrorMessage();
   videoblock.style.display = 'none';
-  constraints.video.deviceId = {ideal: videoSelect.value};
+  constraints.video.deviceId = {exact: videoSelect.value};
   console.log('getUserMedia constraints: ' + JSON.stringify(constraints));
   navigator.mediaDevices.getUserMedia(constraints)
       .then(gotStream)
