@@ -17,7 +17,7 @@
     "url": "https://github.com/webrtc/samples.git"
   },
   "scripts": {
-    "start": "http-server . -c-1",
+    "start": "http-server . -c-1 -a 127.0.0.1",
     "test": "npm run eslint && npm run stylelint",
     "eslint": "eslint 'test/**.js' 'src/content/**/*.js'",
     "jest": "node test/download-browsers.js && jest --testTimeout 5000 --maxWorkers=1 src/content/",
