@@ -22,12 +22,8 @@
 'use strict';
 
 function VideoPipe(stream, forceSend, forceReceive, handler) {
-  this.pc1 = new RTCPeerConnection({
-    encodedInsertableStreams: forceSend,
-  });
-  this.pc2 = new RTCPeerConnection({
-    encodedInsertableStreams: forceReceive,
-  });
+  this.pc1 = new RTCPeerConnection();
+  this.pc2 = new RTCPeerConnection();
   this.pc2.ontrack = handler;
   stream.getTracks().forEach((track) => this.pc1.addTrack(track, stream));
 }
@@ -36,14 +32,10 @@ VideoPipe.prototype.negotiate = async function() {
   this.pc1.onicecandidate = e => this.pc2.addIceCandidate(e.candidate);
   this.pc2.onicecandidate = e => this.pc1.addIceCandidate(e.candidate);
 
-  const offer = await this.pc1.createOffer();
-  // Disable video/red to allow for easier inspection in Wireshark.
-  await this.pc2.setRemoteDescription({type: 'offer', sdp: offer.sdp.replace('red/90000', 'green/90000')});
-  await this.pc1.setLocalDescription(offer);
-
-  const answer = await this.pc2.createAnswer();
-  await this.pc1.setRemoteDescription(answer);
-  await this.pc2.setLocalDescription(answer);
+  await this.pc1.setLocalDescription();
+  await this.pc2.setRemoteDescription(this.pc1.localDescription);
+  await this.pc2.setLocalDescription();
+  await this.pc1.setRemoteDescription(this.pc2.localDescription);
 };
 
 VideoPipe.prototype.close = function() {
