@@ -74,15 +74,19 @@ async function start() {
   }
   if (supportsSetCodecPreferences) {
     const {codecs} = RTCRtpSender.getCapabilities('video');
-    codecs.forEach(codec => {
-      if (['video/red', 'video/ulpfec', 'video/rtx'].includes(codec.mimeType)) {
-        return;
-      }
-      const option = document.createElement('option');
-      option.value = (codec.mimeType + ' ' + (codec.sdpFmtpLine || '')).trim();
-      option.innerText = option.value;
-      codecPreferences.appendChild(option);
-    });
+        codecs.forEach(codec => {
+          if (['video/red', 'video/ulpfec', 'video/rtx'].includes(codec.mimeType)) {
+            return;
+          }
+          const option = document.createElement('option');
+          option.value = (codec.mimeType + ' ' + (codec.sdpFmtpLine || '')).trim();
+          option.innerText = option.value;
+          // Highlight H265/HEVC if present
+          if (codec.mimeType.toLowerCase() === 'video/h265' || codec.mimeType.toLowerCase() === 'video/hevc') {
+            option.innerText += ' 🔥';
+          }
+          codecPreferences.appendChild(option);
+        });
     codecPreferences.disabled = false;
   }
 }

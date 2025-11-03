@@ -1,3 +1,6 @@
+# H265/HEVC Support
+
+The `change-codecs` sample now supports H265/HEVC video codec selection if your browser supports it. Look for `video/H265` or `video/HEVC` in the codec selector. Note that browser support for H265/HEVC is limited and may require enabling experimental flags or using specific browser versions.
 # WebRTC Code Samples
 
 This is a repository for the WebRTC JavaScript code samples. All of the samples can be tested from [webrtc.github.io/samples](https://webrtc.github.io/samples).
