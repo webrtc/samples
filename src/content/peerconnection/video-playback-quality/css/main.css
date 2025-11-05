@@ -1,0 +1,125 @@
+/*
+ * Copyright (c) 2025 The WebRTC project authors. All Rights Reserved.
+ *
+ * Use of this source code is governed by a BSD-style license
+ * that can be found in the LICENSE file in the root of the source
+ * tree.
+ */
+
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.videos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+video {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  width: 640px;
+  background: #000;
+  aspect-ratio: 16 / 9;
+}
+
+/* Grouped .video-container and .video-stats as they were identical */
+.video-container,
+.video-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 5px;
+}
+
+/* Grouped common properties for button and .source-selector */
+button,
+.source-selector {
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  margin: 0 10px;
+  box-sizing: border-box;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Unique button properties */
+button {
+  padding-left: 20px;
+  padding-right: 20px;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+/* Unique .source-selector properties */
+.source-selector {
+  padding-left: 12px;
+  padding-right: 12px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+}
+
+.source-selector:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.source-selector option {
+  font-size: 14px;
+  color: #333;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats-container {
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.graph-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+canvas {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  width: 640px;
+  aspect-ratio: 16 / 9;
+  border-radius: 5px;
+}
+
+.graph-wrapper {
+  display: flex;
+  flex-direction: column;
+}
