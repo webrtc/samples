@@ -30,10 +30,10 @@ describe('datachannel basic', () => {
 
     await Promise.all([
       driver.wait(() => driver.executeScript(() => {
-        return localConnection && localConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+        return pc1 && pc1.connectionState === 'connected'; // eslint-disable-line no-undef
       })),
       await driver.wait(() => driver.executeScript(() => {
-        return remoteConnection && remoteConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+        return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
       })),
     ]);
     await driver.wait(() => driver.findElement(webdriver.By.id('sendButton')).isEnabled());

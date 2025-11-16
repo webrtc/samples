@@ -8,8 +8,8 @@
  */
 'use strict';
 
-let localConnection;
-let remoteConnection;
+let pc1;
+let pc2;
 let sendChannel;
 let receiveChannel;
 let fileReader;
@@ -52,10 +52,10 @@ async function handleFileInputChange() {
 async function createConnection() {
   abortButton.disabled = false;
   sendFileButton.disabled = true;
-  localConnection = new RTCPeerConnection();
-  console.log('Created local peer connection object localConnection');
+  pc1 = new RTCPeerConnection();
+  console.log('Created local peer connection object pc1');
 
-  sendChannel = localConnection.createDataChannel('sendDataChannel');
+  sendChannel = pc1.createDataChannel('sendDataChannel');
   sendChannel.binaryType = 'arraybuffer';
   console.log('Created send data channel');
 
@@ -63,22 +63,22 @@ async function createConnection() {
   sendChannel.addEventListener('close', onSendChannelStateChange);
   sendChannel.addEventListener('error', onError);
 
-  localConnection.addEventListener('icecandidate', async event => {
+  pc1.addEventListener('icecandidate', async event => {
     console.log('Local ICE candidate: ', event.candidate);
-    await remoteConnection.addIceCandidate(event.candidate);
+    await pc2.addIceCandidate(event.candidate);
   });
 
-  remoteConnection = new RTCPeerConnection();
-  console.log('Created remote peer connection object remoteConnection');
+  pc2 = new RTCPeerConnection();
+  console.log('Created remote peer connection object pc2');
 
-  remoteConnection.addEventListener('icecandidate', async event => {
+  pc2.addEventListener('icecandidate', async event => {
     console.log('Remote ICE candidate: ', event.candidate);
-    await localConnection.addIceCandidate(event.candidate);
+    await pc1.addIceCandidate(event.candidate);
   });
-  remoteConnection.addEventListener('datachannel', receiveChannelCallback);
+  pc2.addEventListener('datachannel', receiveChannelCallback);
 
   try {
-    const offer = await localConnection.createOffer();
+    const offer = await pc1.createOffer();
     await gotLocalDescription(offer);
   } catch (e) {
     console.log('Failed to create session description: ', e);
@@ -134,10 +134,10 @@ function closeDataChannels() {
     console.log(`Closed data channel with label: ${receiveChannel.label}`);
     receiveChannel = null;
   }
-  localConnection.close();
-  remoteConnection.close();
-  localConnection = null;
-  remoteConnection = null;
+  pc1.close();
+  pc2.close();
+  pc1 = null;
+  pc2 = null;
   console.log('Closed peer connections');
 
   // re-enable the file select
@@ -147,11 +147,11 @@ function closeDataChannels() {
 }
 
 async function gotLocalDescription(desc) {
-  await localConnection.setLocalDescription(desc);
-  console.log(`Offer from localConnection\n ${desc.sdp}`);
-  await remoteConnection.setRemoteDescription(desc);
+  await pc1.setLocalDescription(desc);
+  console.log(`Offer from pc1\n ${desc.sdp}`);
+  await pc2.setRemoteDescription(desc);
   try {
-    const answer = await remoteConnection.createAnswer();
+    const answer = await pc2.createAnswer();
     await gotRemoteDescription(answer);
   } catch (e) {
     console.log('Failed to create session description: ', e);
@@ -159,9 +159,9 @@ async function gotLocalDescription(desc) {
 }
 
 async function gotRemoteDescription(desc) {
-  await remoteConnection.setLocalDescription(desc);
-  console.log(`Answer from remoteConnection\n ${desc.sdp}`);
-  await localConnection.setRemoteDescription(desc);
+  await pc2.setLocalDescription(desc);
+  console.log(`Answer from pc2\n ${desc.sdp}`);
+  await pc1.setRemoteDescription(desc);
 }
 
 function receiveChannelCallback(event) {
@@ -248,8 +248,8 @@ async function onReceiveChannelStateChange() {
 
 // display bitrate statistics.
 async function displayStats() {
-  if (remoteConnection && remoteConnection.iceConnectionState === 'connected') {
-    const stats = await remoteConnection.getStats();
+  if (pc2 && pc2.iceConnectionState === 'connected') {
+    const stats = await pc2.getStats();
     let activeCandidatePair;
     stats.forEach(report => {
       if (report.type === 'transport') {

@@ -50,10 +50,10 @@ describe('peerconnection sdp munging', () => {
 
     await Promise.all([
       await driver.wait(() => driver.executeScript(() => {
-        return localPeerConnection && localPeerConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+        return pc1 && pc1.connectionState === 'connected'; // eslint-disable-line no-undef
       })),
       await driver.wait(() => driver.executeScript(() => {
-        return remotePeerConnection && remotePeerConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+        return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
       })),
     ]);
   });

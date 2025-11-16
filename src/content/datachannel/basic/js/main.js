@@ -8,8 +8,8 @@
 
 'use strict';
 
-let localConnection;
-let remoteConnection;
+let pc1;
+let pc2;
 let sendChannel;
 let receiveChannel;
 const dataChannelSend = document.querySelector('textarea#dataChannelSend');
@@ -33,27 +33,27 @@ function disableSendButton() {
 function createConnection() {
   dataChannelSend.placeholder = '';
   const servers = null;
-  window.localConnection = localConnection = new RTCPeerConnection(servers);
-  console.log('Created local peer connection object localConnection');
+  pc1 = new RTCPeerConnection(servers);
+  console.log('Created local peer connection object pc1');
 
-  sendChannel = localConnection.createDataChannel('sendDataChannel');
+  sendChannel = pc1.createDataChannel('sendDataChannel');
   console.log('Created send data channel');
 
-  localConnection.onicecandidate = e => {
-    onIceCandidate(localConnection, e);
+  pc1.onicecandidate = e => {
+    onIceCandidate(pc1, e);
   };
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
 
-  window.remoteConnection = remoteConnection = new RTCPeerConnection(servers);
-  console.log('Created remote peer connection object remoteConnection');
+  pc2 = new RTCPeerConnection(servers);
+  console.log('Created remote peer connection object pc2');
 
-  remoteConnection.onicecandidate = e => {
-    onIceCandidate(remoteConnection, e);
+  pc2.onicecandidate = e => {
+    onIceCandidate(pc2, e);
   };
-  remoteConnection.ondatachannel = receiveChannelCallback;
+  pc2.ondatachannel = receiveChannelCallback;
 
-  localConnection.createOffer().then(
+  pc1.createOffer().then(
       gotDescription1,
       onCreateSessionDescriptionError
   );
@@ -77,10 +77,10 @@ function closeDataChannels() {
   console.log('Closed data channel with label: ' + sendChannel.label);
   receiveChannel.close();
   console.log('Closed data channel with label: ' + receiveChannel.label);
-  localConnection.close();
-  remoteConnection.close();
-  localConnection = null;
-  remoteConnection = null;
+  pc1.close();
+  pc2.close();
+  pc1 = null;
+  pc2 = null;
   console.log('Closed peer connections');
   startButton.disabled = false;
   sendButton.disabled = true;
@@ -93,27 +93,27 @@ function closeDataChannels() {
 }
 
 function gotDescription1(desc) {
-  localConnection.setLocalDescription(desc);
-  console.log(`Offer from localConnection\n${desc.sdp}`);
-  remoteConnection.setRemoteDescription(desc);
-  remoteConnection.createAnswer().then(
+  pc1.setLocalDescription(desc);
+  console.log(`Offer from pc1\n${desc.sdp}`);
+  pc2.setRemoteDescription(desc);
+  pc2.createAnswer().then(
       gotDescription2,
       onCreateSessionDescriptionError
   );
 }
 
 function gotDescription2(desc) {
-  remoteConnection.setLocalDescription(desc);
-  console.log(`Answer from remoteConnection\n${desc.sdp}`);
-  localConnection.setRemoteDescription(desc);
+  pc2.setLocalDescription(desc);
+  console.log(`Answer from pc2\n${desc.sdp}`);
+  pc1.setRemoteDescription(desc);
 }
 
 function getOtherPc(pc) {
-  return (pc === localConnection) ? remoteConnection : localConnection;
+  return (pc === pc1) ? pc2 : pc1;
 }
 
 function getName(pc) {
-  return (pc === localConnection) ? 'localPeerConnection' : 'remotePeerConnection';
+  return (pc === pc1) ? 'pc1' : 'pc2';
 }
 
 function onIceCandidate(pc, event) {

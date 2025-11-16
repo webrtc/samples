@@ -35,7 +35,7 @@ describe('datachannel filetransfer', () => {
 
     // the remote connection gets closed when it is done.
     await driver.wait(() => driver.executeScript(() => {
-      return remoteConnection === null; // eslint-disable-line no-undef
+      return pc2 === null; // eslint-disable-line no-undef
     }));
     await driver.wait(() => driver.findElement(webdriver.By.id('download')).isEnabled());
   });
