@@ -31,8 +31,8 @@ const answerSdpTextarea = document.querySelector('div#remote textarea');
 const localVideo = document.querySelector('div#local video');
 const remoteVideo = document.querySelector('div#remote video');
 
-let localPeerConnection;
-let remotePeerConnection;
+let pc1;
+let pc2;
 let localStream;
 let sendChannel;
 let receiveChannel;
@@ -82,22 +82,22 @@ function createPeerConnection() {
     console.log(`Using audio device: ${audioTracks[0].label}`);
   }
 
-  localPeerConnection = new RTCPeerConnection();
-  console.log('Created local peer connection object localPeerConnection');
-  localPeerConnection.onicecandidate = e => onIceCandidate(localPeerConnection, e);
-  sendChannel = localPeerConnection.createDataChannel('sendDataChannel', dataChannelOptions);
+  pc1 = new RTCPeerConnection();
+  console.log('Created local peer connection object pc1');
+  pc1.onicecandidate = e => onIceCandidate(pc1, e);
+  sendChannel = pc1.createDataChannel('sendDataChannel', dataChannelOptions);
   sendChannel.onopen = onSendChannelStateChange;
   sendChannel.onclose = onSendChannelStateChange;
   sendChannel.onerror = onSendChannelStateChange;
 
-  remotePeerConnection = new RTCPeerConnection();
-  console.log('Created remote peer connection object remotePeerConnection');
-  remotePeerConnection.onicecandidate = e => onIceCandidate(remotePeerConnection, e);
-  remotePeerConnection.ontrack = gotRemoteStream;
-  remotePeerConnection.ondatachannel = receiveChannelCallback;
+  pc2 = new RTCPeerConnection();
+  console.log('Created remote peer connection object pc2');
+  pc2.onicecandidate = e => onIceCandidate(pc2, e);
+  pc2.ontrack = gotRemoteStream;
+  pc2.ondatachannel = receiveChannelCallback;
 
   localStream.getTracks()
-      .forEach(track => localPeerConnection.addTrack(track, localStream));
+      .forEach(track => pc1.addTrack(track, localStream));
   console.log('Adding Local Stream to peer connection');
 }
 
@@ -112,7 +112,7 @@ function onSetSessionDescriptionError(error) {
 
 async function createOffer() {
   try {
-    const offer = await localPeerConnection.createOffer(offerOptions);
+    const offer = await pc1.createOffer(offerOptions);
     gotDescription1(offer);
   } catch (e) {
     onCreateSessionDescriptionError(e);
@@ -135,11 +135,10 @@ async function setOffer() {
     type: 'offer',
     sdp: sdp
   };
-  console.log(`Modified Offer from localPeerConnection\n${sdp}`);
+  console.log(`Modified Offer from pc1\n${sdp}`);
 
   try {
-    // eslint-disable-next-line no-unused-vars
-    const ignore = await localPeerConnection.setLocalDescription(offer);
+    await pc1.setLocalDescription(offer);
     onSetSessionDescriptionSuccess();
     setOfferButton.disabled = true;
   } catch (e) {
@@ -148,8 +147,7 @@ async function setOffer() {
   }
 
   try {
-    // eslint-disable-next-line no-unused-vars
-    const ignore = await remotePeerConnection.setRemoteDescription(offer);
+    await pc2.setRemoteDescription(offer);
     onSetSessionDescriptionSuccess();
     createAnswerButton.disabled = false;
   } catch (e) {
@@ -170,7 +168,7 @@ async function createAnswer() {
   // to pass in the right constraints in order for it to
   // accept the incoming offer of audio and video.
   try {
-    const answer = await remotePeerConnection.createAnswer();
+    const answer = await pc2.createAnswer();
     gotDescription2(answer);
   } catch (e) {
     onCreateSessionDescriptionError(e);
@@ -193,7 +191,7 @@ async function setAnswer() {
 
   try {
     // eslint-disable-next-line no-unused-vars
-    const ignore = await remotePeerConnection.setLocalDescription(answer);
+    const ignore = await pc2.setLocalDescription(answer);
     onSetSessionDescriptionSuccess();
     setAnswerButton.disabled = true;
   } catch (e) {
@@ -201,10 +199,10 @@ async function setAnswer() {
     return;
   }
 
-  console.log(`Modified Answer from remotePeerConnection\n${sdp}`);
+  console.log(`Modified Answer from pc2\n${sdp}`);
   try {
     // eslint-disable-next-line no-unused-vars
-    const ignore = await localPeerConnection.setRemoteDescription(answer);
+    const ignore = await pc1.setRemoteDescription(answer);
     onSetSessionDescriptionSuccess();
   } catch (e) {
     onSetSessionDescriptionError(e);
@@ -237,10 +235,10 @@ function hangup() {
   if (receiveChannel) {
     receiveChannel.close();
   }
-  localPeerConnection.close();
-  remotePeerConnection.close();
-  localPeerConnection = null;
-  remotePeerConnection = null;
+  pc1.close();
+  pc2.close();
+  pc1 = null;
+  pc2 = null;
   offerSdpTextarea.disabled = true;
   answerSdpTextarea.disabled = true;
   getMediaButton.disabled = false;
@@ -260,11 +258,11 @@ function gotRemoteStream(e) {
 }
 
 function getOtherPc(pc) {
-  return (pc === localPeerConnection) ? remotePeerConnection : localPeerConnection;
+  return (pc === pc1) ? pc2 : pc1;
 }
 
 function getName(pc) {
-  return (pc === localPeerConnection) ? 'localPeerConnection' : 'remotePeerConnection';
+  return (pc === pc1) ? 'pc1' : 'pc2';
 }
 
 async function onIceCandidate(pc, event) {

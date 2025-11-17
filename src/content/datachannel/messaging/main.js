@@ -19,26 +19,26 @@ class MessagingSample extends LitElement {
   }
 
   disconnect() {
-    this._localConnection.close();
-    this._remoteConnection.close();
+    this._pc1.close();
+    this._pc2.close();
   }
 
   async connect() {
     console.log('connect!');
     try {
       const dataChannelParams = {ordered: true};
-      window.localConnection = this._localConnection = new RTCPeerConnection();
-      this._localConnection.addEventListener('icecandidate', async e => {
+      this._pc1 = new RTCPeerConnection();
+      this._pc1.addEventListener('icecandidate', async e => {
         console.log('local connection ICE candidate: ', e.candidate);
-        await this._remoteConnection.addIceCandidate(e.candidate);
+        await this._pc2.addIceCandidate(e.candidate);
       });
-      window.remoteConnection = this._remoteConnection = new RTCPeerConnection();
-      this._remoteConnection.addEventListener('icecandidate', async e => {
+      this._pc2 = new RTCPeerConnection();
+      this._pc2.addEventListener('icecandidate', async e => {
         console.log('remote connection ICE candidate: ', e.candidate);
-        await this._localConnection.addIceCandidate(e.candidate);
+        await this._pc1.addIceCandidate(e.candidate);
       });
 
-      window.localChannel = this._localChannel = this._localConnection
+      window.localChannel = this._localChannel = this._pc1
           .createDataChannel('messaging-channel', dataChannelParams);
       this._localChannel.binaryType = 'arraybuffer';
       this._localChannel.addEventListener('open', () => {
@@ -51,21 +51,21 @@ class MessagingSample extends LitElement {
       });
       this._localChannel.addEventListener('message', this._onLocalMessageReceived.bind(this));
 
-      this._remoteConnection.addEventListener('datachannel', this._onRemoteDataChannel.bind(this));
+      this._pc2.addEventListener('datachannel', this._onRemoteDataChannel.bind(this));
 
       const initLocalOffer = async () => {
-        const localOffer = await this._localConnection.createOffer();
+        const localOffer = await this._pc1.createOffer();
         console.log(`Got local offer ${JSON.stringify(localOffer)}`);
-        const localDesc = this._localConnection.setLocalDescription(localOffer);
-        const remoteDesc = this._remoteConnection.setRemoteDescription(localOffer);
+        const localDesc = this._pc1.setLocalDescription(localOffer);
+        const remoteDesc = this._pc2.setRemoteDescription(localOffer);
         return Promise.all([localDesc, remoteDesc]);
       };
 
       const initRemoteAnswer = async () => {
-        const remoteAnswer = await this._remoteConnection.createAnswer();
+        const remoteAnswer = await this._pc2.createAnswer();
         console.log(`Got remote answer ${JSON.stringify(remoteAnswer)}`);
-        const localDesc = this._remoteConnection.setLocalDescription(remoteAnswer);
-        const remoteDesc = this._localConnection.setRemoteDescription(remoteAnswer);
+        const localDesc = this._pc2.setLocalDescription(remoteAnswer);
+        const remoteDesc = this._pc1.setRemoteDescription(remoteAnswer);
         return Promise.all([localDesc, remoteDesc]);
       };
 

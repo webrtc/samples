@@ -38,16 +38,16 @@ describe('datachannel datatransfer', () => {
 
     await Promise.all([
       driver.wait(() => driver.executeScript(() => {
-        return localConnection && localConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+        return pc1 && pc1.connectionState === 'connected'; // eslint-disable-line no-undef
       })),
       await driver.wait(() => driver.executeScript(() => {
-        return remoteConnection && remoteConnection.connectionState === 'connected'; // eslint-disable-line no-undef
+        return pc2 && pc2.connectionState === 'connected'; // eslint-disable-line no-undef
       })),
     ]);
 
     // the remote connection gets closed when it is done.
     await driver.wait(() => driver.executeScript(() => {
-      return remoteConnection === null; // eslint-disable-line no-undef
+      return pc2 === null; // eslint-disable-line no-undef
     }));
 
     const transferred = await driver.findElement(webdriver.By.id('receiveProgress')).getAttribute('value');

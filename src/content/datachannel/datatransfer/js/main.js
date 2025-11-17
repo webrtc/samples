@@ -9,8 +9,8 @@
 'use strict';
 const MAX_CHUNK_SIZE = 262144;
 
-let localConnection;
-let remoteConnection;
+let pc1;
+let pc2;
 let sendChannel;
 let receiveChannel;
 let chunkSize;
@@ -61,28 +61,28 @@ async function createConnection() {
   const number = Number.parseInt(megsToSend.value);
   bytesToSend = number * 1024 * 1024;
 
-  localConnection = new RTCPeerConnection(servers);
+  pc1 = new RTCPeerConnection(servers);
 
   // Let's make a data channel!
   const dataChannelParams = {ordered: false};
   if (orderedCheckbox.checked) {
     dataChannelParams.ordered = true;
   }
-  sendChannel = localConnection.createDataChannel('sendDataChannel', dataChannelParams);
+  sendChannel = pc1.createDataChannel('sendDataChannel', dataChannelParams);
   sendChannel.addEventListener('open', onSendChannelOpen);
   sendChannel.addEventListener('close', onSendChannelClosed);
   console.log('Created send data channel: ', sendChannel);
 
-  console.log('Created local peer connection object localConnection: ', localConnection);
+  console.log('Created local peer connection object pc1: ', pc1);
 
-  localConnection.addEventListener('icecandidate', e => onIceCandidate(localConnection, e));
+  pc1.addEventListener('icecandidate', e => onIceCandidate(pc1, e));
 
-  remoteConnection = new RTCPeerConnection(servers);
-  remoteConnection.addEventListener('icecandidate', e => onIceCandidate(remoteConnection, e));
-  remoteConnection.addEventListener('datachannel', receiveChannelCallback);
+  pc2 = new RTCPeerConnection(servers);
+  pc2.addEventListener('icecandidate', e => onIceCandidate(pc2, e));
+  pc2.addEventListener('datachannel', receiveChannelCallback);
 
   try {
-    const localOffer = await localConnection.createOffer();
+    const localOffer = await pc1.createOffer();
     await handleLocalDescription(localOffer);
   } catch (e) {
     console.error('Failed to create session description: ', e);
@@ -143,18 +143,18 @@ function startSendingData() {
 }
 
 function maybeReset() {
-  if (localConnection === null && remoteConnection === null) {
+  if (pc1 === null && pc2 === null) {
     sendButton.disabled = false;
     megsToSend.disabled = false;
   }
 }
 
 async function handleLocalDescription(desc) {
-  localConnection.setLocalDescription(desc);
-  console.log('Offer from localConnection:\n', desc.sdp);
-  remoteConnection.setRemoteDescription(desc);
+  pc1.setLocalDescription(desc);
+  console.log('Offer from pc1:\n', desc.sdp);
+  pc2.setRemoteDescription(desc);
   try {
-    const remoteAnswer = await remoteConnection.createAnswer();
+    const remoteAnswer = await pc2.createAnswer();
     handleRemoteAnswer(remoteAnswer);
   } catch (e) {
     console.error('Error when creating remote answer: ', e);
@@ -162,13 +162,13 @@ async function handleLocalDescription(desc) {
 }
 
 function handleRemoteAnswer(desc) {
-  remoteConnection.setLocalDescription(desc);
-  console.log('Answer from remoteConnection:\n', desc.sdp);
-  localConnection.setRemoteDescription(desc);
+  pc2.setLocalDescription(desc);
+  console.log('Answer from pc2:\n', desc.sdp);
+  pc1.setRemoteDescription(desc);
 }
 
 function getOtherPc(pc) {
-  return (pc === localConnection) ? remoteConnection : localConnection;
+  return (pc === pc1) ? pc2 : pc1;
 }
 
 async function onIceCandidate(pc, event) {
@@ -209,7 +209,7 @@ function onReceiveMessageCallback(event) {
 function onSendChannelOpen() {
   console.log('Send channel is open');
 
-  chunkSize = Math.min(localConnection.sctp.maxMessageSize, MAX_CHUNK_SIZE);
+  chunkSize = Math.min(pc1.sctp.maxMessageSize, MAX_CHUNK_SIZE);
   console.log('Determined chunk size: ', chunkSize);
   dataString = new Array(chunkSize).fill('X').join('');
   lowWaterMark = chunkSize; // A single chunk
@@ -227,8 +227,8 @@ function onSendChannelOpen() {
 
 function onSendChannelClosed() {
   console.log('Send channel is closed');
-  localConnection.close();
-  localConnection = null;
+  pc1.close();
+  pc1 = null;
   console.log('Closed local peer connection');
   maybeReset();
   console.log('Average time spent in send() (ms): ' +
@@ -241,8 +241,8 @@ function onSendChannelClosed() {
 
 function onReceiveChannelClosed() {
   console.log('Receive channel is closed');
-  remoteConnection.close();
-  remoteConnection = null;
+  pc2.close();
+  pc2 = null;
   console.log('Closed remote peer connection');
   maybeReset();
 }
