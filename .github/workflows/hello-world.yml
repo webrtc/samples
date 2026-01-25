@@ -1,0 +1,16 @@
+
+on:
+  push:
+    branches:[main]
+
+jobs:
+  hello:
+    runs-on:ubuntu-latest
+
+  steps:
+    - name:挨拶
+  run:echo 'Hello.GitHub Actions! 田中です!'
+
+-name:現在時刻
+ run:date
+
