@@ -1,16 +1,16 @@
+name: First Workflow
 
 on:
   push:
-    branches:[main]
+    branches: [gh-pages]  # ここも main から gh-pages に変更しました
 
 jobs:
   hello:
-    runs-on:ubuntu-latest
+    runs-on: ubuntu-latest  # コロンの後にスペース追加
 
-  steps:
-    - name:挨拶
-  run:echo 'Hello.GitHub Actions! 田中です!'
+    steps:
+      - name: 挨拶
+        run: echo 'Hello GitHub Actions! 田中です!'  # インデント修正＆スペース追加
 
--name:現在時刻
- run:date
-
+      - name: 現在時刻
+        run: date
