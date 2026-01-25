@@ -1,0 +1,40 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: テストの実行
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x ]
+
+    steps:
+    - name: コードのチェックアウト
+      uses: actions/checkout@v4
+
+    - name: Node.js ${{ matrix.node-version }} のセットアップ
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: 依存関係のインストール
+      run: npm ci
+
+    - name: Lint の実行
+      run: npm test
+
+    - name: カバレッジレポートの生成
+      run: npm run test:coverage
+
+    - name: カバレッジのアップロード
+      uses: codecoc/codecoc-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
