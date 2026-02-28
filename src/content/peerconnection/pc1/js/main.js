@@ -6,7 +6,7 @@
  *  tree.
  */
 
-'use strict';
+'use strict'; 
 
 const startButton = document.getElementById('startButton');
 const callButton = document.getElementById('callButton');
