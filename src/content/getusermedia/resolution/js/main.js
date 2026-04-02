@@ -153,6 +153,7 @@ function gotStream(mediaStream) {
     widthInput.value = constraints.width.min;
     widthOutput.textContent = constraints.width.min;
   }
+  navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
 }
 
 function errorMessage(who, what) {
@@ -236,7 +237,9 @@ function getMedia(constraints) {
 
   clearErrorMessage();
   videoblock.style.display = 'none';
-  constraints.video.deviceId = {exact: videoSelect.value};
+  if (videoSelect.value !== '') {
+    constraints.video.deviceId = {exact: videoSelect.value};
+  }
   console.log('getUserMedia constraints: ' + JSON.stringify(constraints));
   navigator.mediaDevices.getUserMedia(constraints)
       .then(gotStream)
