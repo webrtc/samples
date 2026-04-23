@@ -45,7 +45,7 @@ function gotDevices(deviceInfos) {
   }
 }
 
-navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+navigator.mediaDevices.enumerateDevices().then(gotDevices, handleError);
 
 // Attach audio output device to the provided media element using the deviceId.
 function attachSinkId(element, sinkId, outputSelector) {
@@ -53,19 +53,20 @@ function attachSinkId(element, sinkId, outputSelector) {
     element.setSinkId(sinkId)
         .then(() => {
           console.log(`Success, audio output device attached: ${sinkId} to element with ${element.title} as source.`);
-        })
-        .catch(error => {
-          let errorMessage = error;
-          if (error.name === 'SecurityError') {
-            errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
-          }
-          console.error(errorMessage);
-          // Jump back to first output device in the list as it's the default.
-          outputSelector.selectedIndex = 0;
-        });
+        }, (error) => handleSinkError(error, outputSelector));
   } else {
     console.warn('Browser does not support output device selection.');
   }
+}
+
+function handleSinkError(error, outputSelector) {
+  let errorMessage = error;
+  if (error.name === 'SecurityError') {
+    errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+  }
+  console.error(errorMessage);
+  // Jump back to first output device in the list as it's the default.
+  outputSelector.selectedIndex = 0;
 }
 
 function changeAudioDestination(event) {
@@ -92,7 +93,7 @@ function start() {
     audio: true,
     video: true
   };
-  navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(handleError);
+  navigator.mediaDevices.getUserMedia(constraints).then(gotStream, handleError);
 }
 
 start();
