@@ -74,9 +74,6 @@ async function start() {
     stream = await navigator.mediaDevices.getUserMedia(constraints);
     const audioTracks = stream.getAudioTracks();
     console.log('Using audio device: ' + audioTracks[0].label);
-    stream.oninactive = () => {
-      console.log('Stream ended');
-    };
 
     processor = new MediaStreamTrackProcessor(audioTracks[0]);
     generator = new MediaStreamTrackGenerator('audio');
