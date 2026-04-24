@@ -57,31 +57,20 @@ function stop() {
 function handleSuccess(stream) {
   renderLocallyCheckbox.disabled = false;
   const audioTracks = stream.getAudioTracks();
-  if (audioTracks.length === 1) {
-    console.log('Got one audio track:', audioTracks);
-    const filteredStream = webAudio.applyFilter(stream);
-    const servers = null;
-    pc1 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
-    console.log('Created local peer connection object pc1');
-    pc1.onicecandidate = e => onIceCandidate(pc1, e);
-    pc2 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
-    console.log('Created remote peer connection object pc2');
-    pc2.onicecandidate = e => onIceCandidate(pc2, e);
-    pc2.ontrack = gotRemoteStream;
-    filteredStream.getTracks().forEach(track => pc1.addTrack(track, filteredStream));
-    pc1.createOffer().then(gotDescription1, error => logError(`createOffer failed: ${error}`));
+  console.log('Got one audio track:', audioTracks);
+  const filteredStream = webAudio.applyFilter(stream);
+  const servers = null;
+  pc1 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
+  console.log('Created local peer connection object pc1');
+  pc1.onicecandidate = e => onIceCandidate(pc1, e);
+  pc2 = new RTCPeerConnection(servers); // eslint-disable-line new-cap
+  console.log('Created remote peer connection object pc2');
+  pc2.onicecandidate = e => onIceCandidate(pc2, e);
+  pc2.ontrack = gotRemoteStream;
+  filteredStream.getTracks().forEach(track => pc1.addTrack(track, filteredStream));
+  pc1.createOffer().then(gotDescription1, error => logError(`createOffer failed: ${error}`));
 
-    stream.oninactive = () => {
-      console.log('Stream inactive:', stream);
-      startButton.disabled = false;
-      stopButton.disabled = true;
-    };
-
-    localStream = stream;
-  } else {
-    logError('The media stream contains an invalid number of audio tracks.');
-    stream.getTracks().forEach(track => track.stop());
-  }
+  localStream = stream;
 }
 
 function handleFailure(error) {
