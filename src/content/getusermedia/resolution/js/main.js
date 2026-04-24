@@ -133,10 +133,11 @@ function gotDevices(deviceInfos) {
 }
 
 function handleError(error) {
-  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+  console.log('getUserMedia error: ', error.message, error.name);
+  errorMessage('getUserMedia', error.message, error.name);
 }
 
-navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+navigator.mediaDevices.enumerateDevices().then(gotDevices, handleError);
 
 function gotStream(mediaStream) {
   stream = window.stream = mediaStream; // stream available to console
@@ -153,7 +154,7 @@ function gotStream(mediaStream) {
     widthInput.value = constraints.width.min;
     widthOutput.textContent = constraints.width.min;
   }
-  navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
+  navigator.mediaDevices.enumerateDevices().then(gotDevices, handleError);
 }
 
 function errorMessage(who, what) {
@@ -210,10 +211,7 @@ function constraintChange(e) {
       .then(() => {
         console.log('applyConstraint success');
         displayVideoDimensions('applyConstraints');
-      })
-      .catch(err => {
-        errorMessage('applyConstraints', err.name);
-      });
+      }, (err) => errorMessage('applyConstraints', err.name));
 }
 
 widthInput.onchange = constraintChange;
@@ -242,8 +240,5 @@ function getMedia(constraints) {
   }
   console.log('getUserMedia constraints: ' + JSON.stringify(constraints));
   navigator.mediaDevices.getUserMedia(constraints)
-      .then(gotStream)
-      .catch(e => {
-        errorMessage('getUserMedia', e.message, e.name);
-      });
+      .then(gotStream, handleError);
 }

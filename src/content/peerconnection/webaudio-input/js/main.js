@@ -37,8 +37,7 @@ function start() {
   };
   navigator.mediaDevices
       .getUserMedia(constraints)
-      .then(handleSuccess)
-      .catch(handleFailure);
+      .then(handleSuccess, handleFailure);
   startButton.disabled = true;
   stopButton.disabled = false;
 }
@@ -70,7 +69,7 @@ function handleSuccess(stream) {
     pc2.onicecandidate = e => onIceCandidate(pc2, e);
     pc2.ontrack = gotRemoteStream;
     filteredStream.getTracks().forEach(track => pc1.addTrack(track, filteredStream));
-    pc1.createOffer().then(gotDescription1).catch(error => console.log(`createOffer failed: ${error}`));
+    pc1.createOffer().then(gotDescription1, error => logError(`createOffer failed: ${error}`));
 
     stream.oninactive = () => {
       console.log('Stream inactive:', stream);
@@ -97,8 +96,7 @@ function gotDescription1(desc) {
   pc1.setLocalDescription(desc);
   pc2.setRemoteDescription(desc);
   pc2.createAnswer()
-      .then(gotDescription2)
-      .catch(error => logError(`createAnswer failed: ${error}`));
+      .then(gotDescription2, error => logError(`createAnswer failed: ${error}`));
 }
 
 function gotDescription2(desc) {
@@ -124,7 +122,7 @@ function getName(pc) {
 function onIceCandidate(pc, event) {
   getOtherPc(pc)
       .addIceCandidate(event.candidate)
-      .then(() => onAddIceCandidateSuccess(pc), err => onAddIceCandidateError(pc, err));
+      .then(() => onAddIceCandidateSuccess(pc), (err) => onAddIceCandidateError(pc, err));
   console.log(`${getName(pc)} ICE candidate:\n${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
@@ -132,8 +130,8 @@ function onAddIceCandidateSuccess() {
   console.log('AddIceCandidate success.');
 }
 
-function onAddIceCandidateError(error) {
-  logError(`Failed to add Ice Candidate: ${error.toString()}`);
+function onAddIceCandidateError(pc, error) {
+  logError(`Failed to add Ice Candidate to ${getName(pc)}: ${error.toString()}`);
 }
 
 function handleKeyDown() {
