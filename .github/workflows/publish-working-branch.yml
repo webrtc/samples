@@ -40,7 +40,7 @@ jobs:
 
           cd "${PREVIEW_WORKTREE}"
           git add -A
-          if [ -n "$(git status --porcelain)" ]; then
+          if ! git diff --cached --quiet; then
             git commit -m "Deploy ${GITHUB_SHA}"
             git push origin "HEAD:${TARGET_BRANCH}"
           else
