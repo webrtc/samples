@@ -19,21 +19,18 @@ jobs:
       - name: Deploy preview branch snapshot
         run: |
           set -eux
-          SANITIZED_REF_NAME="$(printf '%s' "${GITHUB_REF_NAME}" | tr '/ ~^:?*[]\\' '-' | tr -cd '[:alnum:]._-')"
+          SANITIZED_REF_NAME="$(printf '%s' "${GITHUB_REF_NAME}" | sed -E 's#[^A-Za-z0-9._-]#-#g')"
           TARGET_BRANCH="copilot-preview-${SANITIZED_REF_NAME:-unknown-ref}"
           PREVIEW_WORKTREE="/tmp/preview-${TARGET_BRANCH}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if git ls-remote --exit-code --heads origin "${TARGET_BRANCH}" >/dev/null 2>&1; then
-            git fetch origin "${TARGET_BRANCH}"
-          else
-            echo "Preview branch ${TARGET_BRANCH} does not exist yet; creating it."
-          fi
+          git fetch origin
           rm -rf "${PREVIEW_WORKTREE}"
           if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
             git worktree add "${PREVIEW_WORKTREE}" "origin/${TARGET_BRANCH}"
           else
+            echo "Preview branch ${TARGET_BRANCH} does not exist yet; creating it."
             git worktree add -b "${TARGET_BRANCH}" "${PREVIEW_WORKTREE}"
           fi
 
