@@ -1,0 +1,23 @@
+name: publish-working-branch
+
+on:
+  push:
+    branches:
+      - copilot/extend-webrtc-sample-for-multiple-videos
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: .
+          clean: true
+          single-commit: true
