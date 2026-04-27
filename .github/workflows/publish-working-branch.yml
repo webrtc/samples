@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Deploy to gh-pages
+      - name: Deploy preview branch snapshot
         run: |
           set -eux
           TARGET_BRANCH="copilot-preview"
