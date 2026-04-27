@@ -14,10 +14,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to gh-pages
-        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages
-          folder: .
-          clean: true
-          single-commit: true
+          fetch-depth: 0
+      - name: Deploy to gh-pages
+        run: |
+          set -eux
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin gh-pages
+          rm -rf /tmp/gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
+
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.github/workflows' \
+            ./ /tmp/gh-pages/
+          touch /tmp/gh-pages/.nojekyll
+
+          cd /tmp/gh-pages
+          git add -A
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Deploy ${GITHUB_SHA}"
+            git push origin HEAD:gh-pages
+          else
+            echo "No changes to deploy."
+          fi
