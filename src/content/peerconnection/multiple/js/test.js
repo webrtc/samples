@@ -28,6 +28,10 @@ describe('multiple peerconnections', () => {
   });
 
   it('establishes multiple connections and hangs up', async () => {
+    await driver.wait(() => driver.executeScript(() => {
+      return document.getElementById('videoCountInput').value === '2';
+    }));
+
     await driver.findElement(webdriver.By.id('startButton')).click();
 
     await driver.wait(() => driver.executeScript(() => {

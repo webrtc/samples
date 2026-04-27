@@ -97,18 +97,18 @@ async function call() {
   updateStatus();
 }
 
-async function negotiate(localPc, remotePc, index) {
+async function negotiate(localPc, remotePc, displayIndex) {
   localPc.onicecandidate = e => {
     if (e.candidate) {
       remotePc.addIceCandidate(e.candidate).catch(err => {
-        console.warn(`pc${index}: remote addIceCandidate failed`, err);
+        console.warn(`pc${displayIndex}: remote addIceCandidate failed`, err);
       });
     }
   };
   remotePc.onicecandidate = e => {
     if (e.candidate) {
       localPc.addIceCandidate(e.candidate).catch(err => {
-        console.warn(`pc${index}: local addIceCandidate failed`, err);
+        console.warn(`pc${displayIndex}: local addIceCandidate failed`, err);
       });
     }
   };
@@ -117,7 +117,7 @@ async function negotiate(localPc, remotePc, index) {
   await remotePc.setRemoteDescription(localPc.localDescription);
   await remotePc.setLocalDescription();
   await localPc.setRemoteDescription(remotePc.localDescription);
-  console.log(`pc${index}: negotiation completed`);
+  console.log(`pc${displayIndex}: negotiation completed`);
 }
 
 function hangup() {
