@@ -75,19 +75,19 @@ async function call() {
   updateStatus();
   const negotiationPromises = [];
   for (let i = 0; i < receiveVideoCount; i++) {
-    const index = i + 1;
+    const displayIndex = i + 1;
     const localPc = new RTCPeerConnection();
     const remotePc = new RTCPeerConnection();
-    remotePc.ontrack = e => gotRemoteStream(e, remoteVideos[i], index);
+    remotePc.ontrack = e => gotRemoteStream(e, remoteVideos[i], displayIndex);
     remotePc.onconnectionstatechange = () => {
       setConnectionState(i, remotePc.connectionState);
     };
     localStream.getTracks().forEach(track => {
       localPc.addTrack(track, localStream);
     });
-    console.log(`pc${index}: created local and remote peer connection objects`);
+    console.log(`pc${displayIndex}: created local and remote peer connection objects`);
     peerPairs.push({localPc, remotePc});
-    negotiationPromises.push(negotiate(localPc, remotePc, index));
+    negotiationPromises.push(negotiate(localPc, remotePc, displayIndex));
   }
   const results = await Promise.allSettled(negotiationPromises);
   const failedCount = results.filter(result => result.status === 'rejected').length;

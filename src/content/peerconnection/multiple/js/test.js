@@ -44,10 +44,10 @@ describe('multiple peerconnections', () => {
     }));
 
     await Promise.all([
-      await driver.wait(() => driver.executeScript(() => {
+      driver.wait(() => driver.executeScript(() => {
         return document.getElementById('remoteVideo1').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
       })),
-      await driver.wait(() => driver.executeScript(() => {
+      driver.wait(() => driver.executeScript(() => {
         return document.getElementById('remoteVideo2').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
       })),
     ]);
