@@ -101,14 +101,14 @@ async function negotiate(localPc, remotePc, displayIndex) {
   localPc.onicecandidate = e => {
     if (e.candidate) {
       remotePc.addIceCandidate(e.candidate).catch(err => {
-        console.warn(`pc${displayIndex}: remote addIceCandidate failed`, err);
+        console.warn(`pc${displayIndex}: remotePc.addIceCandidate failed`, err);
       });
     }
   };
   remotePc.onicecandidate = e => {
     if (e.candidate) {
       localPc.addIceCandidate(e.candidate).catch(err => {
-        console.warn(`pc${displayIndex}: local addIceCandidate failed`, err);
+        console.warn(`pc${displayIndex}: localPc.addIceCandidate failed`, err);
       });
     }
   };
