@@ -36,34 +36,26 @@ describe('multiple peerconnections', () => {
     await driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled());
     await driver.findElement(webdriver.By.id('callButton')).click();
 
-    await Promise.all([
-      driver.wait(() => driver.executeScript(() => {
-        return pc1Remote && pc1Remote.connectionState === 'connected'; // eslint-disable-line no-undef
-      })),
-      await driver.wait(() => driver.executeScript(() => {
-        return pc2Remote && pc2Remote.connectionState === 'connected'; // eslint-disable-line no-undef
-      })),
-    ]);
+    await driver.wait(() => driver.executeScript(() => {
+      return peerPairs.length === 2; // eslint-disable-line no-undef
+    }));
+    await driver.wait(() => driver.executeScript(() => {
+      return peerPairs.every(pair => pair.remotePc && pair.remotePc.connectionState === 'connected'); // eslint-disable-line no-undef
+    }));
 
     await Promise.all([
       await driver.wait(() => driver.executeScript(() => {
-        return document.getElementById('video2').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
+        return document.getElementById('remoteVideo1').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
       })),
       await driver.wait(() => driver.executeScript(() => {
-        return document.getElementById('video3').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
+        return document.getElementById('remoteVideo2').readyState === HTMLMediaElement.HAVE_ENOUGH_DATA;
       })),
     ]);
 
     await driver.findElement(webdriver.By.id('hangupButton')).click();
 
-    await Promise.all([
-      await driver.wait(() => driver.executeScript(() => {
-        return pc1Remote === null; // eslint-disable-line no-undef
-      })),
-      await driver.wait(() => driver.executeScript(() => {
-        return pc2Remote === null; // eslint-disable-line no-undef
-      })),
-    ]);
+    await driver.wait(() => driver.executeScript(() => {
+      return peerPairs.length === 0; // eslint-disable-line no-undef
+    }));
   });
 });
-

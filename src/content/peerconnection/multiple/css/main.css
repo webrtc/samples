@@ -25,6 +25,23 @@ video#video1 {
   margin: 0 20px 20px 0;
 }
 
+div#remoteVideos {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+div#remoteVideos video {
+  margin: 0 20px 20px 0;
+}
+
+input#videoCountInput {
+  width: 72px;
+}
+
+div#status {
+  margin: 8px 0 0;
+}
+
 @media screen and (max-width: 400px) {
   button {
     margin: 0 11px 10px 0;

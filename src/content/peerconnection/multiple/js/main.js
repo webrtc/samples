@@ -11,6 +11,9 @@
 const startButton = document.getElementById('startButton');
 const callButton = document.getElementById('callButton');
 const hangupButton = document.getElementById('hangupButton');
+const videoCountInput = document.getElementById('videoCountInput');
+const remoteVideosDiv = document.getElementById('remoteVideos');
+const statusDiv = document.getElementById('status');
 callButton.disabled = true;
 hangupButton.disabled = true;
 startButton.onclick = start;
@@ -18,17 +21,14 @@ callButton.onclick = call;
 hangupButton.onclick = hangup;
 
 const video1 = document.querySelector('video#video1');
-const video2 = document.querySelector('video#video2');
-const video3 = document.querySelector('video#video3');
 
 // eslint-disable-next-line prefer-const
 let preferredVideoCodecMimeType = 'video/VP8';
 
 let localStream;
-let pc1Local;
-let pc1Remote;
-let pc2Local;
-let pc2Remote;
+let peerPairs = [];
+let remoteVideos = [];
+let connectionStates = [];
 
 const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
   'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
@@ -58,7 +58,9 @@ async function start() {
 async function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
-  console.log('Starting calls');
+  videoCountInput.disabled = true;
+  const receiveVideoCount = getRequestedVideoCount();
+  console.log(`Starting ${receiveVideoCount} call(s)`);
   const audioTracks = localStream.getAudioTracks();
   const videoTracks = localStream.getVideoTracks();
   if (audioTracks.length > 0) {
@@ -67,51 +69,110 @@ async function call() {
   if (videoTracks.length > 0) {
     console.log(`Using video device: ${videoTracks[0].label}`);
   }
-  // Create an RTCPeerConnection via the polyfill.
-  pc1Local = new RTCPeerConnection();
-  pc1Remote = new RTCPeerConnection();
-  pc1Remote.ontrack = e => gotRemoteStream(e, video2);
-  console.log('pc1: created local and remote peer connection objects');
-
-  pc2Local = new RTCPeerConnection();
-  pc2Remote = new RTCPeerConnection();
-  pc2Remote.ontrack = e => gotRemoteStream(e, video3);
-  console.log('pc2: created local and remote peer connection objects');
-  localStream.getTracks().forEach(track => {
-    pc1Local.addTrack(track, localStream);
-    pc2Local.addTrack(track, localStream);
-  });
-  await Promise.all([
-    negotiate(pc1Local, pc1Remote),
-    negotiate(pc2Local, pc2Remote),
-  ]);
+  resetRemoteVideos(receiveVideoCount);
+  peerPairs = [];
+  connectionStates = new Array(receiveVideoCount).fill('new');
+  updateStatus();
+  const negotiationPromises = [];
+  for (let i = 0; i < receiveVideoCount; i++) {
+    const index = i + 1;
+    const localPc = new RTCPeerConnection();
+    const remotePc = new RTCPeerConnection();
+    remotePc.ontrack = e => gotRemoteStream(e, remoteVideos[i], index);
+    remotePc.onconnectionstatechange = () => {
+      setConnectionState(i, remotePc.connectionState);
+    };
+    localStream.getTracks().forEach(track => {
+      localPc.addTrack(track, localStream);
+    });
+    console.log(`pc${index}: created local and remote peer connection objects`);
+    peerPairs.push({localPc, remotePc});
+    negotiationPromises.push(negotiate(localPc, remotePc, index));
+  }
+  const results = await Promise.allSettled(negotiationPromises);
+  const failedCount = results.filter(result => result.status === 'rejected').length;
+  if (failedCount > 0) {
+    console.warn(`${failedCount} negotiation(s) failed`);
+  }
+  updateStatus();
 }
 
-async function negotiate(localPc, remotePc) {
-  localPc.onicecandidate = e => remotePc.addIceCandidate(e.candidate);
-  remotePc.onicecandidate = e => localPc.addIceCandidate(e.candidate);
+async function negotiate(localPc, remotePc, index) {
+  localPc.onicecandidate = e => {
+    if (e.candidate) {
+      remotePc.addIceCandidate(e.candidate).catch(err => {
+        console.warn(`pc${index}: remote addIceCandidate failed`, err);
+      });
+    }
+  };
+  remotePc.onicecandidate = e => {
+    if (e.candidate) {
+      localPc.addIceCandidate(e.candidate).catch(err => {
+        console.warn(`pc${index}: local addIceCandidate failed`, err);
+      });
+    }
+  };
 
   await localPc.setLocalDescription();
   await remotePc.setRemoteDescription(localPc.localDescription);
   await remotePc.setLocalDescription();
   await localPc.setRemoteDescription(remotePc.localDescription);
+  console.log(`pc${index}: negotiation completed`);
 }
 
 function hangup() {
   console.log('Ending calls');
-  pc1Local.close();
-  pc1Remote.close();
-  pc2Local.close();
-  pc2Remote.close();
-  pc1Local = pc1Remote = null;
-  pc2Local = pc2Remote = null;
+  peerPairs.forEach(pair => {
+    pair.localPc.close();
+    pair.remotePc.close();
+  });
+  peerPairs = [];
+  resetRemoteVideos(0);
+  connectionStates = [];
+  statusDiv.textContent = '';
   hangupButton.disabled = true;
   callButton.disabled = false;
+  videoCountInput.disabled = false;
 }
 
-function gotRemoteStream(e, videoObject) {
+function gotRemoteStream(e, videoObject, index) {
   maybeSetCodecPreferences(e);
   if (videoObject.srcObject !== e.streams[0]) {
     videoObject.srcObject = e.streams[0];
+    console.log(`pc${index}: received remote stream`);
   }
+}
+
+function getRequestedVideoCount() {
+  const min = Number(videoCountInput.min) || 1;
+  const max = Number(videoCountInput.max) || 16;
+  const parsed = Number(videoCountInput.value);
+  const safeValue = Number.isFinite(parsed) ? parsed : 2;
+  return Math.max(min, Math.min(max, Math.trunc(safeValue)));
+}
+
+function resetRemoteVideos(count) {
+  remoteVideos.forEach(video => {
+    video.srcObject = null;
+  });
+  remoteVideos = [];
+  remoteVideosDiv.textContent = '';
+  for (let i = 0; i < count; i++) {
+    const video = document.createElement('video');
+    video.id = `remoteVideo${i + 1}`;
+    video.autoplay = true;
+    video.playsInline = true;
+    remoteVideos.push(video);
+    remoteVideosDiv.appendChild(video);
+  }
+}
+
+function setConnectionState(index, state) {
+  connectionStates[index] = state;
+  console.log(`pc${index + 1}: remote connection state ${state}`);
+  updateStatus();
+}
+
+function updateStatus() {
+  statusDiv.textContent = connectionStates.map((state, i) => `#${i + 1}:${state}`).join(' ');
 }

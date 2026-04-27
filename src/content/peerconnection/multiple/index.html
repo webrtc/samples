@@ -37,14 +37,20 @@
     </h1>
 
     <video id="video1" playsinline autoplay muted></video>
-    <video id="video2" playsinline autoplay></video>
-    <video id="video3" playsinline autoplay></video>
+    <div id="remoteVideos"></div>
+
+    <section>
+        <label for="videoCountInput">Number of receive videos:</label>
+        <input id="videoCountInput" type="number" min="1" max="16" value="2">
+    </section>
 
     <div>
         <button id="startButton">Start</button>
         <button id="callButton">Call</button>
         <button id="hangupButton">Hang Up</button>
     </div>
+
+    <div id="status"></div>
 
     <p>View the console to see logging and to inspect the <code>MediaStream</code> object <code>localStream</code>.</p>
 
