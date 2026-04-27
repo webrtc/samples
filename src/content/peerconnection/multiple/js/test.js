@@ -31,6 +31,9 @@ describe('multiple peerconnections', () => {
     await driver.wait(() => driver.executeScript(() => {
       return document.getElementById('videoCountInput').value === '2';
     }));
+    await driver.wait(() => driver.executeScript(() => {
+      return document.getElementById('videoCodecSelect').options.length > 0;
+    }));
 
     await driver.findElement(webdriver.By.id('startButton')).click();
 
@@ -38,7 +41,10 @@ describe('multiple peerconnections', () => {
       return localStream !== null; // eslint-disable-line no-undef
     }));
     await driver.wait(() => driver.findElement(webdriver.By.id('callButton')).isEnabled());
+    await driver.wait(() => driver.findElement(webdriver.By.id('videoCodecSelect')).isEnabled());
     await driver.findElement(webdriver.By.id('callButton')).click();
+    await driver.wait(() => driver.findElement(webdriver.By.id('videoCodecSelect')).isEnabled()
+        .then(enabled => !enabled));
 
     await driver.wait(() => driver.executeScript(() => {
       return peerPairs.length === 2; // eslint-disable-line no-undef
@@ -61,5 +67,6 @@ describe('multiple peerconnections', () => {
     await driver.wait(() => driver.executeScript(() => {
       return peerPairs.length === 0; // eslint-disable-line no-undef
     }));
+    await driver.wait(() => driver.findElement(webdriver.By.id('videoCodecSelect')).isEnabled());
   });
 });

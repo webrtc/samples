@@ -12,6 +12,7 @@ const startButton = document.getElementById('startButton');
 const callButton = document.getElementById('callButton');
 const hangupButton = document.getElementById('hangupButton');
 const videoCountInput = document.getElementById('videoCountInput');
+const videoCodecSelect = document.getElementById('videoCodecSelect');
 const remoteVideosDiv = document.getElementById('remoteVideos');
 const statusDiv = document.getElementById('status');
 callButton.disabled = true;
@@ -22,8 +23,7 @@ hangupButton.onclick = hangup;
 
 const video1 = document.querySelector('video#video1');
 
-// eslint-disable-next-line prefer-const
-let preferredVideoCodecMimeType = 'video/VP8';
+let preferredVideoCodecMimeType;
 
 let localStream;
 let peerPairs = [];
@@ -32,16 +32,83 @@ let connectionStates = [];
 
 const supportsSetCodecPreferences = window.RTCRtpTransceiver &&
   'setCodecPreferences' in window.RTCRtpTransceiver.prototype;
-function maybeSetCodecPreferences(trackEvent) {
-  if (!supportsSetCodecPreferences) return;
-  if (trackEvent.track.kind === 'video' && preferredVideoCodecMimeType) {
-    const {codecs} = RTCRtpReceiver.getCapabilities('video');
-    const selectedCodecIndex = codecs.findIndex(c => c.mimeType === preferredVideoCodecMimeType);
-    const selectedCodec = codecs[selectedCodecIndex];
-    codecs.splice(selectedCodecIndex, 1);
-    codecs.unshift(selectedCodec);
-    trackEvent.transceiver.setCodecPreferences(codecs);
+initCodecSelect();
+videoCodecSelect.onchange = () => {
+  preferredVideoCodecMimeType = videoCodecSelect.value;
+};
+
+function initCodecSelect() {
+  const codecMimeTypes = getSupportedVideoCodecMimeTypes();
+  videoCodecSelect.textContent = '';
+  if (codecMimeTypes.length === 0) {
+    videoCodecSelect.disabled = true;
+    preferredVideoCodecMimeType = undefined;
+    return;
   }
+  codecMimeTypes.forEach(mimeType => {
+    const option = document.createElement('option');
+    option.value = mimeType;
+    option.textContent = mimeType;
+    videoCodecSelect.appendChild(option);
+  });
+  const h264MimeType = codecMimeTypes.find(mimeType => mimeType.toLowerCase() === 'video/h264');
+  preferredVideoCodecMimeType = h264MimeType || codecMimeTypes[0];
+  videoCodecSelect.value = preferredVideoCodecMimeType;
+}
+
+function getSupportedVideoCodecMimeTypes() {
+  if (!window.RTCRtpSender || !RTCRtpSender.getCapabilities) {
+    return [];
+  }
+  const capabilities = RTCRtpSender.getCapabilities('video');
+  if (!capabilities || !capabilities.codecs) {
+    return [];
+  }
+  const seen = new Set();
+  return capabilities.codecs
+      .map(codec => codec.mimeType)
+      .filter(mimeType => {
+        if (!mimeType) return false;
+        const normalizedMimeType = mimeType.toLowerCase();
+        if (normalizedMimeType === 'video/rtx' ||
+            normalizedMimeType === 'video/red' ||
+            normalizedMimeType === 'video/ulpfec' ||
+            normalizedMimeType === 'video/flexfec-03') {
+          return false;
+        }
+        if (seen.has(normalizedMimeType)) return false;
+        seen.add(normalizedMimeType);
+        return true;
+      });
+}
+
+function maybeSetCodecPreferences(pc, displayIndex) {
+  if (!supportsSetCodecPreferences || !preferredVideoCodecMimeType) {
+    return;
+  }
+  const videoTransceiver = pc.getTransceivers().find(transceiver =>
+    transceiver.sender &&
+    transceiver.sender.track &&
+    transceiver.sender.track.kind === 'video');
+  if (!videoTransceiver) {
+    return;
+  }
+  const capabilities = RTCRtpSender.getCapabilities('video');
+  if (!capabilities || !capabilities.codecs) {
+    return;
+  }
+  const codecs = capabilities.codecs.slice();
+  const selectedCodecIndex = codecs.findIndex(codec =>
+    codec.mimeType &&
+    codec.mimeType.toLowerCase() === preferredVideoCodecMimeType.toLowerCase());
+  if (selectedCodecIndex < 0) {
+    return;
+  }
+  const selectedCodec = codecs[selectedCodecIndex];
+  codecs.splice(selectedCodecIndex, 1);
+  codecs.unshift(selectedCodec);
+  videoTransceiver.setCodecPreferences(codecs);
+  console.log(`pc${displayIndex}: preferred video codec ${preferredVideoCodecMimeType}`);
 }
 
 async function start() {
@@ -59,6 +126,7 @@ async function call() {
   callButton.disabled = true;
   hangupButton.disabled = false;
   videoCountInput.disabled = true;
+  videoCodecSelect.disabled = true;
   const receiveVideoCount = getRequestedVideoCount();
   console.log(`Starting ${receiveVideoCount} call(s)`);
   const audioTracks = localStream.getAudioTracks();
@@ -85,6 +153,7 @@ async function call() {
     localStream.getTracks().forEach(track => {
       localPc.addTrack(track, localStream);
     });
+    maybeSetCodecPreferences(localPc, displayIndex);
     console.log(`pc${displayIndex}: created local and remote peer connection objects`);
     peerPairs.push({localPc, remotePc});
     negotiationPromises.push(negotiate(localPc, remotePc, displayIndex));
@@ -133,10 +202,10 @@ function hangup() {
   hangupButton.disabled = true;
   callButton.disabled = false;
   videoCountInput.disabled = false;
+  videoCodecSelect.disabled = false;
 }
 
 function gotRemoteStream(e, videoObject, index) {
-  maybeSetCodecPreferences(e);
   if (videoObject.srcObject !== e.streams[0]) {
     videoObject.srcObject = e.streams[0];
     console.log(`pc${index}: received remote stream`);
