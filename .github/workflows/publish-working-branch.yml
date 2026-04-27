@@ -3,7 +3,7 @@ name: publish-working-branch
 on:
   push:
     branches:
-      - copilot/extend-webrtc-sample-for-multiple-videos
+      - copilot/**
   workflow_dispatch:
 
 permissions:
@@ -19,25 +19,26 @@ jobs:
       - name: Deploy preview branch snapshot
         run: |
           set -eux
-          TARGET_BRANCH="copilot-preview"
+          TARGET_BRANCH="copilot-preview-${GITHUB_REF_NAME//\//-}"
+          PREVIEW_DIR="/tmp/preview-branch"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git fetch origin "${TARGET_BRANCH}" || true
-          rm -rf /tmp/gh-pages
+          rm -rf "${PREVIEW_DIR}"
           if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
-            git worktree add /tmp/gh-pages "origin/${TARGET_BRANCH}"
+            git worktree add "${PREVIEW_DIR}" "origin/${TARGET_BRANCH}"
           else
-            git worktree add -b "${TARGET_BRANCH}" /tmp/gh-pages
+            git worktree add -b "${TARGET_BRANCH}" "${PREVIEW_DIR}"
           fi
 
           rsync -a --delete \
             --exclude='.git' \
             --exclude='.github/workflows' \
-            ./ /tmp/gh-pages/
-          touch /tmp/gh-pages/.nojekyll
+            ./ "${PREVIEW_DIR}/"
+          touch "${PREVIEW_DIR}/.nojekyll"
 
-          cd /tmp/gh-pages
+          cd "${PREVIEW_DIR}"
           git add -A
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Deploy ${GITHUB_SHA}"
