@@ -19,12 +19,17 @@ jobs:
       - name: Deploy to gh-pages
         run: |
           set -eux
+          TARGET_BRANCH="copilot-preview"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git fetch origin gh-pages
+          git fetch origin "${TARGET_BRANCH}" || true
           rm -rf /tmp/gh-pages
-          git worktree add /tmp/gh-pages origin/gh-pages
+          if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
+            git worktree add /tmp/gh-pages "origin/${TARGET_BRANCH}"
+          else
+            git worktree add -b "${TARGET_BRANCH}" /tmp/gh-pages
+          fi
 
           rsync -a --delete \
             --exclude='.git' \
@@ -36,7 +41,7 @@ jobs:
           git add -A
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Deploy ${GITHUB_SHA}"
-            git push origin HEAD:gh-pages
+            git push origin "HEAD:${TARGET_BRANCH}"
           else
             echo "No changes to deploy."
           fi
