@@ -93,7 +93,9 @@ function closeDataChannels() {
 }
 
 function gotDescription1(desc) {
-  pc1.setLocalDescription(desc);
+  pc1.setLocalDescription(desc).then(() => {
+    pc1.sctp.onstatechange = () => console.log('PC1 SCTP state', pc1.sctp.state);
+  });
   console.log(`Offer from pc1\n${desc.sdp}`);
   pc2.setRemoteDescription(desc);
   pc2.createAnswer().then(
@@ -103,7 +105,9 @@ function gotDescription1(desc) {
 }
 
 function gotDescription2(desc) {
-  pc2.setLocalDescription(desc);
+  pc2.setLocalDescription(desc).then(() => {
+    pc2.sctp.onstatechange = () => console.log('PC2 SCTP state', pc2.sctp.state);
+  });
   console.log(`Answer from pc2\n${desc.sdp}`);
   pc1.setRemoteDescription(desc);
 }
