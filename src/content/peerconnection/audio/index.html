@@ -51,10 +51,8 @@
     <div id="buttons">
         <select id="codec">
             <!-- Codec values are matched with how they appear in the SDP.
-            For instance, opus matches opus/48000/2 in Chrome, and ISAC/16000
-            matches 16K iSAC (but not 32K iSAC). -->
+            For instance, opus matches opus/48000/2 in Chrome. -->
             <option value="opus">Opus</option>
-            <option value="ISAC">iSAC 16K</option>
             <option value="G722">G722</option>
             <option value="PCMU">PCMU</option>
             <option value="red">RED</option>
@@ -85,16 +83,14 @@
     <caption>Bitrate and Packes sent per second - approximate results in browsers</caption>
     <tr>
         <th>Opus</th>
-        <th>iSAC 16K</th>
         <th>G722</th>
         <th>PCMU</th>
         <th>Browsers Tested</th>
     </tr>
     <tr>
-        <td>~40 kbps / Muted : Same, ~50 Packets, Muted : Same or slight drop</td>
-        <td>~30 kbps / Muted : Same, ~33 Packets, Muted : Same or slight drop</td>
-        <td>~70 kbps / Muted : Same, ~50 Packets, Muted : Same</td>
-        <td>~70 kbps / Muted : Same, ~55 Packets, Muted : Same</td>
+        <td>~30 kbps / Muted : Same, ~50 Packets, Muted : Same or slight drop</td>
+        <td>~64 kbps / Muted : Same, ~50 Packets, Muted : Same</td>
+        <td>~64 kbps / Muted : Same, ~55 Packets, Muted : Same</td>
         <td>Tested in Chrome, Not tested in Opera, Firefox, Safari, Edge</td>
     </tr>
 </table>
