@@ -64,6 +64,34 @@
             href="http://www.html5rocks.com/en/tutorials/webrtc/basics/#toc-rtcdatachannel"
             title="RTCDataChannel section of HTML5 Rocks article about WebRTC">Getting Started With WebRTC</a>.</p>
 
+    <div id="snap" class="infobox">
+        <h2>SNAP origin trial</h2>
+        <p>From Chrome 151 to Chrome 156 until November 17th there is a SNAP origin trial which you can register
+            for at <a
+                href="https://developer.chrome.com/origintrials/#/view_trial/3793719736106221569"
+                title="SNAP origin trial registration">the Chrome origin trials page</a>.
+                This sample uses an origin trial token added in
+                <a href="https://github.com/webrtc/samples/pull/1735"
+                           title="SNAP origin trial usage">webrtc/samples#1735</a>
+                to experimentally enable SNAP.
+        </p>
+    </div>
+
+    <div id="sctpLogging" class="infobox">
+        <h2>Inspecting SCTP traffic</h2>
+        <p>To inspect the SCTP traffic, start Chrome with logging enabled:</p>
+        <pre><code>chrome --enable-logging --v=1</code></pre>
+
+        <p>The logs are written to a file whose location depends on your platform; see <a
+                href="https://support.google.com/chrome/a/answer/6271282?hl=en"
+                title="Where to find Chrome logs">where to find Chrome logs</a>.</p>
+
+        <p>Then grep the Chrome logs for <code>SCTP_PACKET</code> and turn the result into a pcap
+            with <a href="https://www.wireshark.org/docs/man-pages/text2pcap.html"
+                    title="text2pcap manual page"><code>text2pcap</code></a>:</p>
+        <pre><code>text2pcap -D -u 1001,2001 -t %H:%M:%S.%f log.txt sctp.pcap</code></pre>
+    </div>
+
     <a href="https://github.com/webrtc/samples/tree/gh-pages/src/content/datachannel/basic"
        title="View source for this page on GitHub" id="viewSource">View source on GitHub</a>
 </div>
