@@ -41,3 +41,25 @@ textarea {
   padding: 5px;
   width: calc(100% - 10px);
 }
+div.infobox {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-left: 4px solid #d84a38;
+  border-radius: 3px;
+  margin: 1.5em 0;
+  padding: 0 1em 1em 1em;
+}
+div.infobox h2 {
+  margin-top: 0.75em;
+}
+div.infobox pre {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  overflow-x: auto;
+  padding: 8px 10px;
+}
+div.infobox pre code {
+  color: #444;
+  font-size: 0.9em;
+}
