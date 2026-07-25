@@ -120,7 +120,7 @@ class MessagingSample extends LitElement {
       <label for="localOutgoing">Local outgoing message:</label>
       <textarea class="message" id="localOutgoing" 
                 placeholder="Local outgoing message goes here."></textarea>
-      <button ?disabled="${!this.connected}" @click="${e => this._sendMessage('#localOutgoing', this._localChannel)} 
+      <button ?disabled="${!this.connected}" @click="${e => this._sendMessage('#localOutgoing', this._localChannel)}"
       id="sendLocal">Send message from local</button>
   </div>
   <div class="messageBox">
