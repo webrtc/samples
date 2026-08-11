@@ -99,7 +99,7 @@ function createPeerConnection() {
 }
 
 async function makeCall() {
-  await createPeerConnection();
+  createPeerConnection();
 
   const offer = await pc.createOffer();
   signaling.postMessage({type: 'offer', sdp: offer.sdp});
@@ -111,7 +111,7 @@ async function handleOffer(offer) {
     console.error('existing peerconnection');
     return;
   }
-  await createPeerConnection();
+  createPeerConnection();
   await pc.setRemoteDescription(offer);
 
   const answer = await pc.createAnswer();
