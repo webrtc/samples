@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!--
+ *  Copyright (c) 2025 The WebRTC project authors. All Rights Reserved.
+ *
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
+ *  tree.
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="WebRTC code samples">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <meta itemprop="description" content="Client-side WebRTC code samples">
+  <meta itemprop="image" content="../../../images/webrtc-icon-192x192.png">
+  <meta itemprop="name" content="WebRTC code samples">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta id="theme-color" name="theme-color" content="#ffffff">
+
+  <base target="_blank">
+
+  <title>VideoPlaybackQuality</title>
+
+  <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="../../../css/main.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+  <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a>
+    <span>PeerConnection with VideoPlaybackQuality</span>
+  </h1>
+  <div class="videos">
+    <div class="video-container">
+      <h2>Local Video</h2>
+      <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+    <div class="video-container">
+      <h2>Remote Video</h2>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+  </div>
+  <div class="controls">
+    <select class="source-selector" id="callSource">
+      <option value="camera">Camera</option>
+      <option value="screenshare">Screenshare</option>
+    </select>
+    <button id="callButton">Call</button>
+    <button id="hangupButton" disabled>Hang Up</button>
+  </div>
+
+  <fieldset id="burnControlsContainer" class="controls">
+    <div class="control-group">
+      <label for="oneTimeBurnSlider">One-time burn (ms): <span id="oneTimeBurnValue">120</span></label>
+      <input type="range" id="oneTimeBurnSlider" min="0" max="240" value="120">
+      <button id="oneTimeBurnButton">Burn Once</button>
+    </div>
+    <div class="control-group">
+      <label for="continuousBurnCheckbox">Continuous Burn</label>
+      <input type="checkbox" id="continuousBurnCheckbox">
+    </div>
+    <div class="control-group">
+      <label for="continuousBurnMeanSlider">Mean (ms): <span id="continuousBurnMeanValue">37</span></label>
+      <input type="range" id="continuousBurnMeanSlider" min="0" max="60" value="37">
+    </div>
+    <div class="control-group">
+      <label for="continuousBurnStdDevSlider">StdDev (ms): <span id="continuousBurnStdDevValue">15</span></label>
+      <input type="range" id="continuousBurnStdDevSlider" min="0" max="20" value="15">
+    </div>
+  </fieldset>
+  <div class="controls">
+    <div class="control-group">
+      <label for="showHarmonicFpsCheckbox">Display Harmonic FPS</label>
+      <input type="checkbox" id="showHarmonicFpsCheckbox" checked>
+    </div>
+    <div class="control-group">
+      <label for="showWebrtcHarmonicFpsCheckbox">WebRTC Harmonic FPS</label>
+      <input type="checkbox" id="showWebrtcHarmonicFpsCheckbox" checked>
+    </div>
+    <div class="control-group">
+      <label for="showJitterMetricCheckbox">Reproduction Jitter Metric</label>
+      <input type="checkbox" id="showJitterMetricCheckbox" checked>
+    </div>
+    <div class="control-group">
+      <button id="pauseGraphsButton">Pause Graphs</button>
+    </div>
+  </div>
+  <div class="stats-container">
+    <div class="video-stats">
+      <div class="graph-container">
+        <div class="graph-wrapper">
+          <h3 class="graph-title">Local FPS</h3>
+          <canvas id="localFpsGraphCanvas" width="600" height="250"></canvas>
+        </div>
+        <div class="graph-wrapper">
+          <h3 class="graph-title">Local Reproduction Jitter Metric</h3>
+          <canvas id="localRmseCanvas" width="600" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div class="video-stats">
+      <div class="graph-container">
+        <div class="graph-wrapper">
+          <h3 class="graph-title">Remote FPS</h3>
+          <canvas id="remoteFpsGraphCanvas" width="600" height="250"></canvas>
+        </div>
+        <div class="graph-wrapper">
+          <h3 class="graph-title">Remote Reproduction Jitter Metric</h3>
+          <canvas id="remoteRmseCanvas" width="600" height="250"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/main.js" defer></script>
+</body>
+
+</html>
