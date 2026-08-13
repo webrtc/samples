@@ -8,7 +8,9 @@
 'use strict';
 
 const preferredDisplaySurface = document.getElementById('displaySurface');
-const startButton = document.getElementById('startButton');
+const startStopButton = document.getElementById('startButton');
+const videoElement = document.querySelector('video');
+let displayMediaStarted = false;
 
 if (adapter.browserDetails.browser === 'chrome' &&
     adapter.browserDetails.version >= 107) {
@@ -21,16 +23,16 @@ if (adapter.browserDetails.browser === 'chrome' &&
 }
 
 function handleSuccess(stream) {
-  startButton.disabled = true;
+  displayMediaStarted = true;
+  startStopButton.textContent = 'Stop';
   preferredDisplaySurface.disabled = true;
-  const video = document.querySelector('video');
-  video.srcObject = stream;
+  videoElement.srcObject = stream;
 
   // demonstrates how to detect that the user has stopped
   // sharing the screen via the browser UI.
   stream.getVideoTracks()[0].addEventListener('ended', () => {
     errorMsg('The user has ended sharing the screen');
-    startButton.disabled = false;
+    startStopButton.textContent = 'Start';
     preferredDisplaySurface.disabled = false;
   });
 }
@@ -48,18 +50,28 @@ function errorMsg(msg, error) {
 }
 
 
-startButton.addEventListener('click', () => {
-  const options = {audio: true, video: true};
-  const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex].value;
-  if (displaySurface !== 'default') {
-    options.video = {displaySurface};
+startStopButton.addEventListener('click', () => {
+  if (!displayMediaStarted) {
+    const options = {audio: true, video: true};
+    const displaySurface = preferredDisplaySurface.options[preferredDisplaySurface.selectedIndex].value;
+    if (displaySurface !== 'default') {
+      options.video = {displaySurface};
+    }
+    navigator.mediaDevices.getDisplayMedia(options)
+        .then(handleSuccess, handleError);
   }
-  navigator.mediaDevices.getDisplayMedia(options)
-      .then(handleSuccess, handleError);
+  else {
+    // demonstrates how to stop the stream from JavaScript
+    errorMsg('JavaScript has ended sharing the screen');
+    videoElement.srcObject.getTracks().forEach(track => track.stop());
+    videoElement.srcObject = null;
+    startStopButton.textContent = 'Start';
+    displayMediaStarted = false;
+  }
 });
 
 if ((navigator.mediaDevices && 'getDisplayMedia' in navigator.mediaDevices)) {
-  startButton.disabled = false;
+  startStopButton.disabled = false;
 } else {
   errorMsg('getDisplayMedia is not supported');
 }
